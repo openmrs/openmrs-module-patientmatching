@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry path="src" kind="src"/>
+	<classpathentry path="org.eclipse.jdt.launching.JRE_CONTAINER" kind="con"/>
+	<classpathentry path="commons-logging-1.0.4.jar" kind="lib"/>
+	<classpathentry path="openmrs-api-1.0.54.1540.jar" kind="lib"/>
+	<classpathentry path="web-openmrs-api-1.0.54.1540.jar" kind="lib"/>
+	<classpathentry path="simmetrics_jar_v1_4_d03_03_06.jar" kind="lib"/>
+	<classpathentry path="bin" kind="output"/>
+</classpath>
