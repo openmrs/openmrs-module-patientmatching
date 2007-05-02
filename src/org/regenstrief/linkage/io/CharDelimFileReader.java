@@ -67,7 +67,7 @@ public class CharDelimFileReader extends DataSourceReader{
 			}
 		}
 		
-		File switched = new File(mc.getName() + ".switched");
+		File switched = new File(mc.getName() + "." + f.getName() + ".switched");
 		try{
 			ColumnSwitcher cs = new ColumnSwitcher(f, switched, order1, data_source.getAccess().charAt(0));
 			cs.switchColumns();
@@ -101,7 +101,7 @@ public class CharDelimFileReader extends DataSourceReader{
 		// create FileOutputStream for the result of the sort
 		File sorted;
 		
-		sorted = new File(mc.getName() + ".sorted");
+		sorted = new File(mc.getName() + "." + f.getName() + ".sorted");
 		try{
 			FileOutputStream data1_fos = new FileOutputStream(sorted);
 			ColumnSorter sort_data1 = new ColumnSorter(data_source.getAccess().charAt(0), options, f, data1_fos);
