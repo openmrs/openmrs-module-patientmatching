@@ -162,7 +162,7 @@ public class RecordLinker extends Linker{
 		// if the data file are different files, need to sort each
 		// using two ColumnSorter objects with the respective seperating characters
 		// method returns true or false depending on success of sorting
-		int[] column_order = lds1.getIndexesOfColumnNames(mc.getBlockingColumns());
+		int[] column_order = lds1.getIncludeIndexesOfColumnNames(mc.getBlockingColumns());
 		column_types = new int[column_order.length];
 		for(int i = 0; i < column_order.length; i++){
 			column_types[i] = lds1.getColumnTypeByName(mc.getRowName(column_order[i]));

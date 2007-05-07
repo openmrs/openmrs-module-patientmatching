@@ -68,7 +68,7 @@ public class EM {
 		double gMsum, gUsum, gMtemp, gUtemp, p;
 		double termM, termU;
 		
-		int[] included_columns = lds.getIndexesOfColumnNames(mc.getIncludedColumnsNames());
+		int[] included_columns = lds.getIncludeIndexesOfColumnNames(mc.getIncludedColumnsNames());
 		int used_len = included_columns.length;
 		int length = mc.getRowNames().length;
 		

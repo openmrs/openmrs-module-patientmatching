@@ -52,7 +52,7 @@ public class MatchVector {
 	
 	/**
 	 * 
-	 * @return
+	 * @return returns the matches for the comparison
 	 */
 	public Hashtable getMatchTable(){
 		return match_table;

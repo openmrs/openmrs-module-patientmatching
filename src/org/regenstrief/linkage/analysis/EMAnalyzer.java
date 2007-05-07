@@ -34,7 +34,6 @@ public class EMAnalyzer { //extends Analyzer {
 	 * Constructor needs a name to use when created the temporary
 	 * .vct file
 	 * 
-	 * @param name a unique name for the EMAnalyzer
 	 */
 	public EMAnalyzer(){
 		vector_count = new Hashtable<MatchVector,Integer>();

@@ -146,7 +146,7 @@ public class MatchFinder {
 	 * @param test
 	 * @param threshold_limit
 	 * @param limit
-	 * @return
+	 * @return a list of matches that meet the requirements
 	 */
 	public List<MatchResult> findMatch(Record test, double threshold_limit, int limit) throws UnMatchableRecordException{
 		List<MatchResult> matches = findMatch(test, threshold_limit);

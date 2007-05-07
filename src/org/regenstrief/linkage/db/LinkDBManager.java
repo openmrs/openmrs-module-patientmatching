@@ -102,7 +102,7 @@ public class LinkDBManager {
 	 * among the objects represented in the database.
 	 * 
 	 * @param r	the Record object that needs its database representation removed
-	 * @param	the demographic in the Record that uniquely identifies the object
+	 * @param key_demographic the demographic in the Record that uniquely identifies the object
 	 * @return	the number of rows deleted from the database
 	 */
 	public int deleteRecord(Record r, String key_demographic){
@@ -133,7 +133,7 @@ public class LinkDBManager {
 	 * 
 	 * @param original
 	 * @param new_record
-	 * @return
+	 * @return true if merge was successful, false if otherwise
 	 */
 	public boolean mergeRecord(Record original, Record new_record){
 		return false;

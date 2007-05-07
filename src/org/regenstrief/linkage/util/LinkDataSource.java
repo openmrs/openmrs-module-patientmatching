@@ -40,10 +40,25 @@ public class LinkDataSource {
 	 * returns the display position of them.  Method uses lds1
 	 * since lds2 might not be present if linking between same file
 	 */
-	public int[] getIndexesOfColumnNames(String[] names){
+	public int[] getIncludeIndexesOfColumnNames(String[] names){
 		int[] ret = new int[names.length];
 		for(int i = 0; i < names.length; i++){
 			ret[i] = getDisplayPositionByName(names[i]);
+		}
+		return ret;
+	}
+	
+	/**
+	 * Returns the column ID values for the given array of
+	 * 
+	 * 
+	 * @param names
+	 * @return
+	 */
+	public String[] getColumnIDsofColumnNames(String[] names){
+		String[] ret = new String[names.length];
+		for(int i = 0; i < names.length; i++){
+			ret[i] = getColumnIDByName(names[i]);
 		}
 		return ret;
 	}
@@ -77,6 +92,17 @@ public class LinkDataSource {
 			}
 		}
 		return DataColumn.INCLUDE_NA;
+	}
+	
+	public String getColumnIDByName(String name){
+		Iterator<DataColumn> it = column_settings.iterator();
+		while(it.hasNext()){
+			DataColumn dc = it.next();
+			if(dc.getName().equals(name)){
+				return dc.getColumnID();
+			}
+		}
+		return null;
 	}
 	
 	public int getColumnTypeByName(String name){

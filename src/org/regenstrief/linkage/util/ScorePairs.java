@@ -37,7 +37,7 @@ public class ScorePairs {
 		
 		DecimalFormat df = new DecimalFormat(DECIMAL_OUTPUT_FORMAT);
 		
-		int[] included_columns = lds.getIndexesOfColumnNames(matching_config.getIncludedColumnsNames());
+		int[] included_columns = lds.getIncludeIndexesOfColumnNames(matching_config.getIncludedColumnsNames());
 		int used_len = included_columns.length;
 		int length = matching_config.getRowNames().length;
 		

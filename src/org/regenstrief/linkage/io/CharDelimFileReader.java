@@ -85,7 +85,22 @@ public class CharDelimFileReader extends DataSourceReader{
 		// if the data file are different files, need to sort each
 		// using two ColumnSorter objects with the respective seperating characters
 		// method returns true or false depending on success of sorting
-		int[] column_order = data_source.getIndexesOfColumnNames(mc.getBlockingColumns());
+		//int[] column_order = data_source.getIndexesOfColumnNames(mc.getBlockingColumns());
+		
+		// column IDs for character delimited file should hold line array index
+		// of column
+		String[] column_IDs = data_source.getColumnIDsofColumnNames(mc.getBlockingColumns());
+		int[] column_order = new int[column_IDs.length];
+		try{
+			for(int i = 0; i < column_IDs.length; i++){
+				column_order[i] = Integer.parseInt(column_IDs[i]);
+			}
+		}
+		catch(NumberFormatException nfe){
+			// improper info in the column ID field
+			return null;
+		}
+		
 		int[] column_types = new int[column_order.length];
 		for(int i = 0; i < column_order.length; i++){
 			column_types[i] = data_source.getColumnTypeByName(mc.getRowName(column_order[i]));

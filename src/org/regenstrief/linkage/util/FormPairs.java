@@ -57,7 +57,7 @@ public class FormPairs {
 	 * 
 	 */
 	private void determineBlockingIndexesAndTypes(MatchingConfig mc){
-		blocking_indexes = lds1.getIndexesOfColumnNames(mc.getBlockingColumns());
+		blocking_indexes = lds1.getIncludeIndexesOfColumnNames(mc.getBlockingColumns());
 		int block_col_count = blocking_indexes.length;
 		
 		// initialize blocking_indexes or correct length, and populate them with the order
