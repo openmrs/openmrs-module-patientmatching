@@ -146,13 +146,11 @@ public class MatchingConfig {
 		return ret;
 	}
 	
-	/*
+	/**
 	 * Returns the indexes of the columns included in the matching run
 	 * 
-	 * Method returns an array of the row names instead of the order
-	 * within the row_options list, since the order of the MatchingConfigRow
-	 * objects within the list is independent of the column indexes in the
-	 * data file
+	 * @return an array of the column names included in the analysis,
+	 * including blocking columns
 	 */
 	public String[] getIncludedColumnsNames(){
 		int include_count = 0;
@@ -171,6 +169,36 @@ public class MatchingConfig {
 		for(int i = 0; i < row_options.size(); i++){
 			MatchingConfigRow mcr = row_options.get(i);
 			if(mcr.isIncluded()){
+				ret[ret_index] = mcr.getName();
+				ret_index++;
+			}
+		}
+		return ret;
+	}
+	
+	/**
+	 * Method returns the names of the columns used in the comparison, excluding 
+	 * blocking columns.
+	 * 
+	 * @return
+	 */
+	public String[] getLinkComparisonColumns(){
+		int include_count = 0;
+		Iterator<MatchingConfigRow> it = row_options.iterator();
+		while(it.hasNext()){
+			MatchingConfigRow mcr = it.next();
+			if(mcr.isIncluded() && mcr.getBlockOrder() != MatchingConfigRow.DEFAULT_BLOCK_ORDER){
+				include_count++;
+			}
+		}
+		if(include_count == 0){
+			return null;
+		}
+		String[] ret = new String[include_count];
+		int ret_index = 0;
+		for(int i = 0; i < row_options.size(); i++){
+			MatchingConfigRow mcr = row_options.get(i);
+			if(mcr.isIncluded() && mcr.getBlockOrder() != MatchingConfigRow.DEFAULT_BLOCK_ORDER){
 				ret[ret_index] = mcr.getName();
 				ret_index++;
 			}

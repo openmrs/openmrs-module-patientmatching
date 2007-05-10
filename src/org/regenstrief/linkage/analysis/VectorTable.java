@@ -38,10 +38,12 @@ public class VectorTable {
 			double match_rate = mcr.getAgreement();
 			double umatch_rate = mcr.getNonAgreement();
 			if(match_rate > MATCH_ONE || match_rate < MATCH_ZERO){
-				System.out.println("ERROR: m-value is out of range");
+				// need to determine proper error action
+				//System.out.println("ERROR: m-value is out of range");
 			}
 			if(umatch_rate > MATCH_ONE || match_rate < MATCH_ZERO){
-				System.out.println("ERROR: u-value is out of range");
+				// need to determine proper error action
+				//System.out.println("ERROR: u-value is out of range");
 			}
 			// m[k] = log(mtx[used[k]].m  /    mtx[used[k]].u) / log(2);
 			// u[k] = log( (1 - mtx[used[k]].m) / (1 - mtx[used[k]].u) ) / log(2);
@@ -56,57 +58,56 @@ public class VectorTable {
 		
 		List<MatchVector> vectors = getPossibleMatchingVectors();
 		Iterator<MatchVector> it2 = vectors.iterator();
-		List<MatchResult> results = new ArrayList<MatchResult>();
+		LinkedList<MatchVector> sorted_vectors = new LinkedList<MatchVector>(); 
 		while(it2.hasNext()){
 			MatchVector mv = it2.next();
+			insertMatchVector(mv, sorted_vectors);
 			double score = getMatchVectorScore(mv);
 			match_scores.put(mv, new Double(score));
-			double true_prob = getMatchVectorTrueProbability(mv);
-			double false_prob = getMatchVectorFalseProbability(mv);
-			results.add(new MatchResult(score, true_prob, false_prob, mv, null, null));
 		}
 		
-		// sort the match results (since it sorts on score) and get running
+		// get running
 		// total of true and false probabilities to create sensitivity and
 		// specificity
-		Collections.sort(results, Collections.reverseOrder());
-		Iterator<MatchResult> results_it = results.iterator();
+		Iterator<MatchVector> vector_it = sorted_vectors.iterator();
 		double sens = 0;
-		while(results_it.hasNext()){
-			MatchResult mr = results_it.next();
-			sens = sens + mr.getTrueProbability();
-			match_sensitivities.put(mr.getMatchVector(), sens);
+		while(vector_it.hasNext()){
+			MatchVector mv = vector_it.next();
+			sens = sens + getMatchVectorTrueProbability(mv);
+			match_sensitivities.put(mv, sens);
+			//System.out.println(mv + "," + getMatchVectorScore(mv) + "," + getMatchVectorTrueProbability(mv) + "," + getMatchVectorFalseProbability(mv));
 		}
 		
-		// sort the match results to start with the lowest scores and
-		// calculate specificity
-		Collections.sort(results);
+		// calculate specificity, need to start at end of list
 		double spec = 0;
-		results_it = results.iterator();
-		while(results_it.hasNext()){
-			MatchResult mr = results_it.next();
-			match_specificities.put(mr.getMatchVector(), spec);
-			spec = spec + mr.getFalseProbability();
+		ListIterator<MatchVector> vector_it2 = sorted_vectors.listIterator(sorted_vectors.size());
+		while(vector_it2.hasPrevious()){
+			MatchVector mv = vector_it2.previous();
+			match_specificities.put(mv, spec);
+			spec = spec + getMatchVectorFalseProbability(mv);
 		}
 		
 	}
 	
 	public double getScore(MatchVector mv){
-		return match_scores.get(getEquivalentMatchVector(mv)).doubleValue();
+		//return match_scores.get(getEquivalentMatchVector(mv)).doubleValue();
+		return match_scores.get(mv).doubleValue();
 	}
 	
 	public double getSensitivity(MatchVector mv){
-		return match_sensitivities.get(getEquivalentMatchVector(mv)).doubleValue();
+		//return match_sensitivities.get(getEquivalentMatchVector(mv)).doubleValue();
+		return match_sensitivities.get(mv).doubleValue();
 	}
 	
 	public double getSpecificity(MatchVector mv){
-		return match_specificities.get(getEquivalentMatchVector(mv)).doubleValue();
+		//return match_specificities.get(getEquivalentMatchVector(mv)).doubleValue();
+		return match_specificities.get(mv).doubleValue();
 	}
 	
 	/*
 	 * Method created since Hashtable.get(MatchVector) will
 	 * not work directly.
-	 */
+	 *
 	private MatchVector getEquivalentMatchVector(MatchVector mv){
 		Iterator<MatchVector> it = match_scores.keySet().iterator();
 		while(it.hasNext()){
@@ -116,6 +117,51 @@ public class VectorTable {
 			}
 		}
 		return null;
+	}*/
+	
+	/*
+	 * MatchVector objects need to be inserted to the list based on
+	 * certain derived numbers.  The sort order is:
+	 * 	score
+	 * 	true positive
+	 * 	false positive
+	 *  vector (numeric value)
+	 */
+	private void insertMatchVector(MatchVector mv, LinkedList<MatchVector> list){
+		double test_score = Double.NEGATIVE_INFINITY;
+		double insert_score = getMatchVectorScore(mv);
+		double insert_tp = getMatchVectorTrueProbability(mv);
+		double insert_fp = getMatchVectorFalseProbability(mv);
+		double insert_num_val = Integer.parseInt(mv.toString());
+		int index = 0;
+		for(; index < list.size(); index++){
+			MatchVector test = list.get(index);
+			test_score = getMatchVectorScore(test);
+			if(test_score < insert_score){
+				list.add(index, mv);
+				return;
+			} else if(test_score == insert_score){
+				double test_tp = getMatchVectorTrueProbability(test);
+				if(test_tp < insert_tp){
+					list.add(index, mv);
+					return;
+				} else if(test_tp == insert_tp){
+					double test_fp = getMatchVectorFalseProbability(mv);
+					if(test_fp < insert_fp){
+						list.add(index, mv);
+						return;
+					} else if(test_fp == insert_fp){
+						double test_num_val = Integer.parseInt(test.toString());
+						if(test_num_val < insert_num_val){
+							list.add(index, mv);
+							return;
+						}
+					}
+				}
+			}
+			
+		}
+		list.add(mv);
 	}
 	
 	/*
@@ -125,6 +171,7 @@ public class VectorTable {
 	 */
 	private List<MatchVector> getPossibleMatchingVectors(){
 		ArrayList<MatchVector> mvs = new ArrayList<MatchVector>();
+		//String[] demographics = mc.getLinkComparisonColumns();
 		String[] demographics = mc.getIncludedColumnsNames();
 		for(int i = 0; i < Math.pow(2,demographics.length); i++){
 			MatchVector mv = new MatchVector();

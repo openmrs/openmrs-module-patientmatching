@@ -69,11 +69,9 @@ public class MatchVector {
 		//return true;
 	}
 	
-// returns a unique integer per possible match vector object, but
-// more than 7 comparison demographics overflows int data type
-//	public int hashCode(){
-//		return Integer.parseInt(this.toString());
-//	}
+	public int hashCode(){
+		return Integer.parseInt(this.toString(), 2);
+	}
 	
 	public String toString(){
 		Iterator<String> it = match_table.keySet().iterator();

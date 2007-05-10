@@ -89,17 +89,8 @@ public class CharDelimFileReader extends DataSourceReader{
 		
 		// column IDs for character delimited file should hold line array index
 		// of column
-		String[] column_IDs = data_source.getColumnIDsofColumnNames(mc.getBlockingColumns());
-		int[] column_order = new int[column_IDs.length];
-		try{
-			for(int i = 0; i < column_IDs.length; i++){
-				column_order[i] = Integer.parseInt(column_IDs[i]);
-			}
-		}
-		catch(NumberFormatException nfe){
-			// improper info in the column ID field
-			return null;
-		}
+		int[] column_order = data_source.getIncludeIndexesOfColumnNames(mc.getBlockingColumns());
+		
 		
 		int[] column_types = new int[column_order.length];
 		for(int i = 0; i < column_order.length; i++){
@@ -116,7 +107,7 @@ public class CharDelimFileReader extends DataSourceReader{
 		// create FileOutputStream for the result of the sort
 		File sorted;
 		
-		sorted = new File(mc.getName() + "." + f.getName() + ".sorted");
+		sorted = new File(f.getName() + ".sorted");
 		try{
 			FileOutputStream data1_fos = new FileOutputStream(sorted);
 			ColumnSorter sort_data1 = new ColumnSorter(data_source.getAccess().charAt(0), options, f, data1_fos);
