@@ -132,7 +132,7 @@ public class VectorTable {
 		double insert_score = getMatchVectorScore(mv);
 		double insert_tp = getMatchVectorTrueProbability(mv);
 		double insert_fp = getMatchVectorFalseProbability(mv);
-		double insert_num_val = Integer.parseInt(mv.toString());
+		double insert_num_val = Double.parseDouble(mv.toString());
 		int index = 0;
 		for(; index < list.size(); index++){
 			MatchVector test = list.get(index);
@@ -151,7 +151,7 @@ public class VectorTable {
 						list.add(index, mv);
 						return;
 					} else if(test_fp == insert_fp){
-						double test_num_val = Integer.parseInt(test.toString());
+						double test_num_val = Double.parseDouble(test.toString());
 						if(test_num_val < insert_num_val){
 							list.add(index, mv);
 							return;
