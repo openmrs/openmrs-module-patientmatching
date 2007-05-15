@@ -32,8 +32,6 @@ public class FormPairs {
 	private static final int EQUAL = 0;
 	private static final int LESS_THAN = -1;
 	
-	private int c1 = 0;
-	private int c2 = 0;
 	
 	/**
 	 * 
@@ -96,6 +94,7 @@ public class FormPairs {
 		while(comparison != EQUAL){
 			if(comparison == LESS_THAN){
 				dsr1_rec = dsr1.nextRecord();
+				dsr1_next = dsr1_rec;
 			}else if(comparison == GREATER_THAN){
 				fillDSR2Buffer();
 				if(dsr2_buffer.size() == 0){
@@ -158,7 +157,7 @@ public class FormPairs {
 				ret = compareString(str1, str2, type_table.get(comp).intValue());
 			}
 			catch(ComparisonException ce){
-				
+				//System.err.println("comparison exception with " + rec1 + " and " + rec2);
 			}
 			if(ret != EQUAL){
 				return ret;
