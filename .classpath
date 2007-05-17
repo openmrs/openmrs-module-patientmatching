@@ -6,5 +6,6 @@
 	<classpathentry path="openmrs-api-1.0.54.1540.jar" kind="lib"/>
 	<classpathentry path="web-openmrs-api-1.0.54.1540.jar" kind="lib"/>
 	<classpathentry path="simmetrics_jar_v1_4_d03_03_06.jar" kind="lib"/>
+	<classpathentry path="lib-common/spring-2.0.jar" kind="lib"/>
 	<classpathentry path="bin" kind="output"/>
 </classpath>
