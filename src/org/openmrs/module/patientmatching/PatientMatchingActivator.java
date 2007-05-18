@@ -2,6 +2,7 @@ package org.openmrs.module.patientmatching;
 
 import java.util.*;
 import java.io.*;
+import java.lang.reflect.*;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -10,6 +11,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.module.*;
+import org.openmrs.module.patientmatching.advice.*;
 import org.openmrs.*;
 import org.regenstrief.linkage.*;
 import org.regenstrief.linkage.db.*;
@@ -17,11 +19,10 @@ import org.regenstrief.linkage.util.*;
 import org.regenstrief.linkage.analysis.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+import org.springframework.aop.*;
+import org.aopalliance.aop.*;
 
 /*
- * As of a meeting on May 1st, the module will no longer be responsible
- * for converting between an OpenMRS patient or person object and will
- * be given Record objects and return ResultSet objects.
  * 
  * The demographic information used in the linkage process is the same:
  * 
@@ -44,9 +45,10 @@ import org.xml.sax.SAXException;
  * 	"drln" - Dr. last name 
  *
  */
-public class PatientMatchingActivator implements Activator{
+public class PatientMatchingActivator implements Activator, AfterReturningAdvice, Advisor{
 	
 	public final static String CONFIG_FILE = "link_config.xml";
+	public final static double DEFAULT_THRESHOLD = 0;
 	
 	private Log log = LogFactory.getLog(this.getClass());
 	
@@ -60,6 +62,10 @@ public class PatientMatchingActivator implements Activator{
 	
 	public void startup() {
 		log.info("Starting Patient Matching Module");
+		boolean ready = parseConfig(new File(CONFIG_FILE));
+		if(!ready){
+			log.info("error parsing config file and creating linkage objects");
+		}
 	}
 	
 	/*
@@ -92,34 +98,71 @@ public class PatientMatchingActivator implements Activator{
 		return true;
 	}
 	
-	public Patient createPatient(Patient patient){
-		
-		return null;
+	public void afterReturning(Object returnValue, Method method, Object[] args, Object target) throws Throwable {
+		if(method.getName().equals("createPatient")){
+			if(args[0] != null && args[0] instanceof Patient){
+				Patient new_patient = (Patient)args[0];
+				boolean success = createPatient(new_patient);
+				if(success){
+					
+				} else {
+					log.info("error inserting patient into matching database");
+				}
+			}
+			
+		} else if(method.getName().equals("modifyPatient")){
+			if(args[0] != null && args[0] instanceof Patient){
+				Patient new_patient = (Patient)args[0];
+				boolean success = updatePatient(new_patient);
+				if(success){
+					
+				} else {
+					log.info("error updating patient in matching database");
+				}
+			}
+		}
 	}
 	
-	public Patient updatePatient(Patient patient){
-		
-		return null;
+	public Advice getAdvice(){
+		return new PatientMatchingAdvice(matcher);
 	}
 	
-	public Patient findPatient(Patient patient){
-		
-		try{
-			matcher.findBestMatch(patientToRecord(patient));
-		}
-		catch(UnMatchableRecordException umre){
-			log.info("not matching record: record contains unmatchable data");
-		}
-		
-		return null;
+	public boolean isPerInstance(){
+		return false;
 	}
 	
 	/**
+	 * Method intercepts the createPatient method to 
 	 * 
 	 * @param patient
 	 * @return
 	 */
-	private Record patientToRecord(Patient patient){
+	public boolean createPatient(Patient patient){
+		
+		return false;
+	}
+	
+	/**
+	 * Method intercepts the OpenMRS core updatePatient method to
+	 * modify the matching database in order to keep the two
+	 * synchonized.
+	 * 
+	 * @param patient	the patient to modify
+	 * @return	the modified patient
+	 */
+	public boolean updatePatient(Patient patient){
+		
+		return false;
+	}
+	
+	/**
+	 * Method gets the demographic information used in the record linkage from
+	 * the Patient object and creates a Record object with all the fields
+	 * 
+	 * @param patient	the Patient object to transform
+	 * @return	a new Record object representing the Patient
+	 */
+	public static Record patientToRecord(Patient patient){
 		Record ret = new Record();
 		
 		// "mrn" - medical record number
@@ -130,7 +173,7 @@ public class PatientMatchingActivator implements Activator{
 		ret.addDemographic("ln", name.getFamilyName());
 		
 		// "lny" - last name NYSIIS
-		
+		// currently not being used
 		
 		// 	"fn"  - first name
 		ret.addDemographic("fn", name.getGivenName());
