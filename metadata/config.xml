@@ -19,5 +19,11 @@
  	        <!-- /Base Module Properties -->
  	       
  	        <require_version>1.1</require_version>
- 	       
+ 	        <!-- AOP -->
+ 	        <advice>
+ 	                <point>org.openmrs.api.PatientService</point>
+ 	                <class>@MODULE_PACKAGE@.PatientMatchingActivator</class>
+ 	        </advice>
+ 	        
+ 	        <!-- /AOP -->
  	</module>

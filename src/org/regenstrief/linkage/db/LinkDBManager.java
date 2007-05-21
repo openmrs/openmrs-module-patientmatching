@@ -30,7 +30,6 @@ import java.util.*;
 public class LinkDBManager {
 	String driver, url, table, user, passwd;
 	LinkDataSource lds;
-	MatchingConfig mc;
 	Connection db;
 	
 	/**
@@ -44,7 +43,6 @@ public class LinkDBManager {
 	public LinkDBManager(LinkDataSource lds, MatchingConfig mc){
 		this.table = lds.getName();
 		this.lds = lds;
-		this.mc = mc;
 		String[] access = lds.getAccess().split(",");
 		driver = access[0];
 		url = access[1];
@@ -182,42 +180,23 @@ public class LinkDBManager {
 		return false;
 	}
 	
-	private Record findMatchInDB(Record r){
-		DataSourceReader db_reader = new DataBaseReader(lds, mc);
-		DataSourceReader new_record_reader = new VectorReader(r);
-		VectorTable vt = new VectorTable(mc);
-		Record[] max_pair = new Record[2];
-		double max_score = Double.NEGATIVE_INFINITY;
+	/**
+	 * 
+	 * @return	the name of the table in the database with the Record objects
+	 */
+	public String getTable(){
+		return table;
+	}
+	
+	/**
+	 * Method creates the table as described in the LinkDataSource.  Since this class
+	 * provides a means of adding Records, it's possible the table starts out empty or
+	 * does not exist.
+	 * 
+	 * @return	true if the table was created, false if there was an error
+	 */
+	public boolean createTable(){
 		
-		Hashtable<String, Integer> type_table = new Hashtable<String, Integer>();
-		List<DataColumn> dc = lds.getDataColumns();
-		Iterator<DataColumn> it = dc.iterator();
-		while(it.hasNext()){
-			DataColumn d = it.next();
-			if(d.getIncludePosition() != DataColumn.INCLUDE_NA){
-				type_table.put(d.getName(), new Integer(d.getType()));
-			}
-		}
-		org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(db_reader, new_record_reader, mc, type_table);
-		Record[] pair;
-		ScorePair sp = new ScorePair(mc);
-		int i = 0;
-		while((pair = fp.getNextRecordPair()) != null){
-			Record r1 = pair[0];
-			Record r2 = pair[1];
-			String str1 = new String(r1.getDemographic("FN") + "|" + r1.getDemographic("LN") +"|" + r1.getDemographic("F") +"|" + r1.getDemographic("Year"));
-			String str2 = new String(r2.getDemographic("FN") + "|" + r2.getDemographic("LN") +"|" + r2.getDemographic("F") +"|" + r2.getDemographic("Year"));
-			
-			MatchResult mr = sp.scorePair(r1, r2);
-			double score = mr.getScore();
-			if(score > max_score){
-				max_score = score;
-				max_pair[0] = r1;
-				max_pair[1] = r2;
-			}
-			
-		}
-		
-		return max_pair[1];
+		return false;
 	}
 }

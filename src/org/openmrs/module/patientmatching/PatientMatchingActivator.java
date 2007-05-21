@@ -1,26 +1,32 @@
 package org.openmrs.module.patientmatching;
 
-import java.util.*;
-import java.io.*;
-import java.lang.reflect.*;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.aopalliance.aop.Advice;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openmrs.module.*;
-import org.openmrs.module.patientmatching.advice.*;
-import org.openmrs.*;
-import org.regenstrief.linkage.*;
-import org.regenstrief.linkage.db.*;
-import org.regenstrief.linkage.util.*;
-import org.regenstrief.linkage.analysis.*;
+import org.openmrs.Patient;
+import org.openmrs.module.Activator;
+import org.openmrs.module.patientmatching.advice.PatientMatchingAdvice;
+import org.regenstrief.linkage.MatchFinder;
+import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.analysis.RecordFieldAnalyzer;
+import org.regenstrief.linkage.db.LinkDBManager;
+import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.RecMatchConfig;
+import org.regenstrief.linkage.util.XMLTranslator;
+import org.springframework.aop.Advisor;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
-import org.springframework.aop.*;
-import org.aopalliance.aop.*;
 
 /*
  * 
@@ -45,7 +51,7 @@ import org.aopalliance.aop.*;
  * 	"drln" - Dr. last name 
  *
  */
-public class PatientMatchingActivator implements Activator, AfterReturningAdvice, Advisor{
+public class PatientMatchingActivator implements Activator, Advisor{
 	
 	public final static String CONFIG_FILE = "link_config.xml";
 	public final static double DEFAULT_THRESHOLD = 0;
@@ -66,6 +72,20 @@ public class PatientMatchingActivator implements Activator, AfterReturningAdvice
 		if(!ready){
 			log.info("error parsing config file and creating linkage objects");
 		}
+	}
+	
+	/**
+	 * Method iterates through existing Patient objects and adds them to the linkage
+	 * database for use when matching.  Method also creates the table, if needed,
+	 * with the correct column taken from the LinkDataSource object
+	 *
+	 */
+	private void populateMatchingTable(){
+		// get the list of patient objects
+		
+		// iterate through them, and if linkage tables does not contain 
+		// a record with openmrs_id equal to patient.getID, then add
+		
 	}
 	
 	/*
@@ -98,60 +118,11 @@ public class PatientMatchingActivator implements Activator, AfterReturningAdvice
 		return true;
 	}
 	
-	public void afterReturning(Object returnValue, Method method, Object[] args, Object target) throws Throwable {
-		if(method.getName().equals("createPatient")){
-			if(args[0] != null && args[0] instanceof Patient){
-				Patient new_patient = (Patient)args[0];
-				boolean success = createPatient(new_patient);
-				if(success){
-					
-				} else {
-					log.info("error inserting patient into matching database");
-				}
-			}
-			
-		} else if(method.getName().equals("modifyPatient")){
-			if(args[0] != null && args[0] instanceof Patient){
-				Patient new_patient = (Patient)args[0];
-				boolean success = updatePatient(new_patient);
-				if(success){
-					
-				} else {
-					log.info("error updating patient in matching database");
-				}
-			}
-		}
-	}
-	
 	public Advice getAdvice(){
 		return new PatientMatchingAdvice(matcher);
 	}
 	
 	public boolean isPerInstance(){
-		return false;
-	}
-	
-	/**
-	 * Method intercepts the createPatient method to 
-	 * 
-	 * @param patient
-	 * @return
-	 */
-	public boolean createPatient(Patient patient){
-		
-		return false;
-	}
-	
-	/**
-	 * Method intercepts the OpenMRS core updatePatient method to
-	 * modify the matching database in order to keep the two
-	 * synchonized.
-	 * 
-	 * @param patient	the patient to modify
-	 * @return	the modified patient
-	 */
-	public boolean updatePatient(Patient patient){
-		
 		return false;
 	}
 	
@@ -165,18 +136,21 @@ public class PatientMatchingActivator implements Activator, AfterReturningAdvice
 	public static Record patientToRecord(Patient patient){
 		Record ret = new Record();
 		
+		// OpenMRS unique patient ID
+		ret.addDemographic("openmrs_id", Integer.toString(patient.getPatientId()));
+		
 		// "mrn" - medical record number
 		
 		
-		PatientName name = patient.getPatientName();
+		
 		//	"ln"  - last name
-		ret.addDemographic("ln", name.getFamilyName());
+		//ret.addDemographic("ln", name.getFamilyName());
 		
 		// "lny" - last name NYSIIS
 		// currently not being used
 		
 		// 	"fn"  - first name
-		ret.addDemographic("fn", name.getGivenName());
+		//ret.addDemographic("fn", name.getGivenName());
 		
 		// 	"sex"  - sex/gender
 		ret.addDemographic("sex", patient.getGender());
@@ -193,21 +167,21 @@ public class PatientMatchingActivator implements Activator, AfterReturningAdvice
 		// 	"yb" - year of birth
 		ret.addDemographic("yb", Integer.toString(cal.get(Calendar.YEAR)));
 		
-		PatientAddress address = patient.getPatientAddress();
+		
 		// 	"city" - address city
-		ret.addDemographic("city", address.getCityVillage());
+		//ret.addDemographic("city", address.getCityVillage());
 		
 		// 	"st" - address street
-		String adr1 = address.getAddress1();
-		String adr2 = address.getAddress2();
-		if(adr2 == null){
-			ret.addDemographic("st", adr1);
-		} else {
-			ret.addDemographic("st", adr1 + " " + adr2);
-		}
+		//String adr1 = address.getAddress1();
+		//String adr2 = address.getAddress2();
+		//if(adr2 == null){
+		//	ret.addDemographic("st", adr1);
+		//} else {
+		//	ret.addDemographic("st", adr1 + " " + adr2);
+		//}
 		
 		// 	"zip" - address zip code
-		ret.addDemographic("zip", address.getPostalCode());
+		//ret.addDemographic("zip", address.getPostalCode());
 		
 		// 	"tel" - telephone number
 		
