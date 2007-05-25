@@ -75,25 +75,6 @@ public class LinkDBManager {
 	}
 	
 	/**
-	 * Method adds the given Record object to the linkage database.  
-	 * It first checks if the database's linkage analytics 
-	 * finds a match within the database.  If there isn't, 
-	 * then it adds the record using addRecordToDB
-	 * 
-	 * @param r	the new Record object needed in the table
-	 * @return	true if the Record was successfully added, false if not
-	 */
-	public boolean addRecord(Record r){
-		//Record match = findMatchInDB(r);
-		Record match = null;
-		if(match == null){
-			return addRecordToDB(r);
-		}
-		
-		return false;
-	}
-	
-	/**
 	 * Method removes all database row that matches this Record object.  Method
 	 * checks for multiple rows that contain the Record's information.  The
 	 * unique demographic parameter signifies what demographic is globally unique
@@ -139,12 +120,11 @@ public class LinkDBManager {
 	
 	/**
 	 * Method immediately adds the given record to the linkage database.
-	 * It's called by addRecord if that method decides to add the object.
 	 * 
 	 * @param r	the Record object to add
 	 * @return	boolean indicating success of insertion
 	 */
-	private boolean addRecordToDB(Record r){
+	public boolean addRecordToDB(Record r){
 		String query = new String();
 		String columns = new String("(");
 		String values = new String("('");
@@ -181,6 +161,69 @@ public class LinkDBManager {
 	}
 	
 	/**
+	 * Method returns a list of Record objects created from database rows where
+	 * the demographic column matched the value.
+	 * 
+	 * @param demographic	the demographic of interest
+	 * @param value	the value the demographic must have to be returned
+	 * @return	a list of Record objects that correspond to the row in the database; null if
+	 * thing matches
+	 */
+	public List<Record> getRecordFromDB(String demographic, String value){
+		String query = "SELECT * FROM " + table + " WHERE " + demographic + "= '" + value + "'";
+		ArrayList<Record> ret = new ArrayList<Record>();
+		try{
+			Statement stmt = db.createStatement();
+			ResultSet rows = stmt.executeQuery(query);
+			
+			while(rows.next()){
+				Record row_rec = new Record();
+				ResultSetMetaData meta = rows.getMetaData();
+				for(int i = 1; i <= meta.getColumnCount(); i++){
+					String d = meta.getColumnName(i);
+					String v = rows.getString(i);
+					row_rec.addDemographic(d, v);
+					ret.add(row_rec);
+				}
+				
+			}
+		}
+		catch(SQLException sqle){
+			return null;
+		}
+		if(ret.size() > 0){
+			return ret;
+		}
+		return ret;
+	}
+	
+	/**
+	 * Method is similar to getRecordFromDB, except that it returns how many items
+	 * would be in the list if getRecordFromDB were called.  It's a separate method
+	 * since this information is needed at module start-up and creating thousands
+	 * of Record objects is not needed.
+	 * 
+	 * @param demographic	the demographic of interest
+	 * @param value	the value the demographic must have to be counted
+	 * @return	the count of records in the database that match the demographic value, -1 if
+	 * there was an error determing the count
+	 */
+	public int getRecordCountFromDB(String demographic, String value){
+		String query = "SELECT COUNT(*) FROM " + table + " WHERE " + demographic + " = '" + value + "'";
+		int count = 0;
+		try{
+			Statement stmt = db.createStatement();
+			ResultSet rows = stmt.executeQuery(query);
+			rows.next();
+			count = rows.getInt(1);
+		}
+		catch(Exception e){
+			return -1;
+		}
+		return count;
+	}
+	
+	/**
 	 * 
 	 * @return	the name of the table in the database with the Record objects
 	 */
@@ -196,7 +239,42 @@ public class LinkDBManager {
 	 * @return	true if the table was created, false if there was an error
 	 */
 	public boolean createTable(){
+		// sql statement to be created:
+		// CREATE TABLE <table name> (
+		// 	<column name>	<type>
+		// 	. . .
+		// );
+		String query = new String();
+		String columns = new String("(");		
+		query += "CREATE TABLE " + table + " ";
+		Iterator<DataColumn> it = lds.getDataColumns().iterator();
+		while(it.hasNext()){
+			DataColumn dc = it.next();
+			String name = dc.getName();
+			int type = dc.getType();
+			String sql_type;
+			if(type == DataColumn.STRING_TYPE){
+				sql_type = "varchar";
+			} else {
+				sql_type = "float";
+			}
+			
+			if(it.hasNext()){
+				columns += name + " " + type + ",";
+			} else {
+				columns += name + " " + type + ")";
+			}
+		}
 		
-		return false;
+		try{
+			Statement stmt = db.createStatement();
+			stmt.executeUpdate(query);
+		}
+		catch(SQLException sqle){
+			System.err.println(sqle.getMessage());
+			return false;
+		}
+		
+		return true;
 	}
 }
