@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -33,6 +34,7 @@ import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.RecMatchConfig;
 import org.regenstrief.linkage.util.XMLTranslator;
 import org.springframework.aop.Advisor;
+import org.springframework.aop.support.StaticMethodMatcherPointcutAdvisor;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -59,7 +61,11 @@ import org.xml.sax.SAXException;
  * 	"drln" - Dr. last name 
  *
  */
-public class PatientMatchingActivator implements Activator, Advisor{
+public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor implements Activator, Advisor{
+	
+	public static final String CREATE_METHOD = "createPatient";
+	public static final String UPDATE_METHOD = "updatePatient";
+	public static final String FIND_METHOD = "findPatient";
 	
 	public final static String CONFIG_FILE = "link_config.xml";
 	public final static double DEFAULT_THRESHOLD = 0;
@@ -78,33 +84,13 @@ public class PatientMatchingActivator implements Activator, Advisor{
 	}
 	
 	public void startup() {
-		try{
-			link_log = new BufferedWriter(new FileWriter("linkage_test_log.log"));
-		}
-		catch(IOException ioe){
-			link_log = null;
-		}
-		log.info("Starting Patient Matching Module");
+		log.warn("Starting Patient Matching Module");
 		boolean ready = parseConfig(new File(CONFIG_FILE));
-		writeLog("starting to populate table");
+		log.warn("starting to populate matching table");
 		populateMatchingTable();
+		log.warn("matching table populated");
 		if(!ready){
-			log.info("error parsing config file and creating linkage objects");
-			writeLog("error creating objects");
-		}
-	}
-	
-	public void writeLog(String str){
-		if(link_log == null){
-			return;
-		}
-		try{
-			String line = new Date().toString() + ": " + str + "\n";
-			link_log.write(line);
-			link_log.flush();
-		}
-		catch(IOException ioe){
-			
+			log.warn("error parsing config file and creating linkage objects");
 		}
 	}
 	
@@ -123,22 +109,16 @@ public class PatientMatchingActivator implements Activator, Advisor{
 		// a record with openmrs_id equal to patient.getID, then add
 		PatientSetService pss = Context.getPatientSetService();
 		List<Patient> patient_list = pss.getAllPatients().getPatients();
-		writeLog("populating table with " + patient_list.size() + " patients");
-		
 		Iterator<Patient> it = patient_list.iterator();
 		while(it.hasNext()){
 			Patient p = it.next();
 			Integer id = p.getPatientId();
-			writeLog("adding patient " + id);
-			String patient_attr = p.printAttributes();
-			writeLog("patient attributes: "  + patient_attr);
 			int existing_patients = link_db.getRecordCountFromDB("openmrs_id", id.toString());
-			writeLog("found " + existing_patients + " patients that match on id");
 			if(existing_patients == 0){
 				if(link_db.addRecordToDB(patientToRecord(p))){
-					writeLog("add patient to link DB succeeded");
+					log.warn("add patient to link DB succeeded");
 				} else {
-					writeLog("add patient to link DB failed");
+					log.warn("add patient to link DB failed");
 				}
 			}
 		}
@@ -149,7 +129,7 @@ public class PatientMatchingActivator implements Activator, Advisor{
 	 */
 	private boolean parseConfig(File config){
 		try{
-			writeLog("parsing config file " + config);
+			log.debug("parsing config file " + config);
 			// Load the XML configuration file
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -172,12 +152,26 @@ public class PatientMatchingActivator implements Activator, Advisor{
 			//writeLog(ioe.getMessage());
 			return false;
 		}
-		writeLog("file parsed");
+		log.debug("file parsed");
 		return link_db.connect();
 	}
 	
+	public boolean matches(Method method, Class targetClass) {
+		String method_name = method.getName();
+		if(method_name.equals(CREATE_METHOD)){
+			return true;
+		} else if(method_name.equals(UPDATE_METHOD)){
+			return true;
+		} else if(method_name.equals(FIND_METHOD)){
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
 	public Advice getAdvice(){
-		return new PatientMatchingAdvice(matcher);
+		log.warn("returning new advice object");
+		return new PatientMatchingAdvice(matcher, link_db);
 	}
 	
 	public boolean isPerInstance(){
@@ -203,6 +197,13 @@ public class PatientMatchingActivator implements Activator, Advisor{
 			// expected attribute with information is present, so use all the information from there
 			PersonAttribute matching_attr = patient.getAttribute(matching_attr_type.getPersonAttributeTypeId());
 			String matching_string = matching_attr.getValue();
+			
+			String[] demographics = matching_string.split(";");
+			for(int i = 0; i < demographics.length; i++){
+				String demographic_value = demographics[i];
+				String[] pair = demographic_value.split(":", -1);
+				ret.addDemographic(pair[0], pair[1]);
+			}
 			
 		} else {
 			// parse the Patient fields as best we can to get the information

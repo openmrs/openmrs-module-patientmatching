@@ -1,18 +1,16 @@
 package org.openmrs.module.patientmatching.advice;
 
-import java.lang.reflect.Method;
-
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Patient;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.patientmatching.PatientMatchingActivator;
 import org.regenstrief.linkage.MatchFinder;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;
-import org.regenstrief.linkage.analysis.UnMatchableRecordException;
-import org.springframework.aop.support.StaticMethodMatcherPointcutAdvisor;
+import org.regenstrief.linkage.db.LinkDBManager;
 
 /**
  * Class intercepts the findPatient method call and
@@ -23,84 +21,47 @@ import org.springframework.aop.support.StaticMethodMatcherPointcutAdvisor;
  *
  */
 
-public class PatientMatchingAdvice extends StaticMethodMatcherPointcutAdvisor implements MethodInterceptor {
+public class PatientMatchingAdvice implements MethodInterceptor {
 	
-	public static final String CREATE_METHOD = "createPatient";
-	public static final String UPDATE_METHOD = "updatePatient";
-	public static final String FIND_METHOD = "findPatient";
+	
 	
 	private Log log = LogFactory.getLog(this.getClass());
 	private MatchFinder matcher;
+	private PatientMatchingActivator activator;
+	private LinkDBManager link_db;
 	
-	
-	public PatientMatchingAdvice(MatchFinder matcher){
+	public PatientMatchingAdvice(MatchFinder matcher, LinkDBManager link_db){
 		this.matcher = matcher;
-	}
-	
-	public boolean matches(Method method, Class targetClass) {
-		String method_name = method.getName();
-		if(method_name.equals(CREATE_METHOD)){
-			return true;
-		} else if(method_name.equals(UPDATE_METHOD)){
-			return true;
-		} else if(method_name.equals(FIND_METHOD)){
-			return true;
-		}
-		return false;
+		this.link_db = link_db;
 	}
 	
 	public Object invoke(MethodInvocation invocation) throws Throwable {
+		log.warn("advice intercepting " + invocation.getMethod().getName());
 		Object[] args = invocation.getArguments();
+		Object o = invocation.proceed();
 		if(args[0] != null && args[0] instanceof Patient){
-			//Patient to_match = (Patient)args[0];
-			//Record r = PatientMatchingActivator.patientToRecord(to_match);
-			
+			Patient to_match = (Patient)args[0];
+			Record r = PatientMatchingActivator.patientToRecord(to_match);
+			String method_name = invocation.getMethod().getName();
+			if(method_name.equals(PatientMatchingActivator.CREATE_METHOD)){
+				if(o instanceof Patient){
+					Patient just_added = (Patient)o;
+					link_db.addRecordToDB(PatientMatchingActivator.patientToRecord(just_added));
+				}
+			} else if(method_name.equals(PatientMatchingActivator.FIND_METHOD)){
+				MatchResult mr = matcher.findBestMatch(r);
+				if(mr.getScore() > PatientMatchingActivator.DEFAULT_THRESHOLD){
+					Record rec_match = mr.getRecord1();
+					Patient patient_match = Context.getPatientService().getPatient(new Integer(rec_match.getDemographic("openmrs_id")));
+					//return patient_match;
+				}
+			} else if(method_name.equals(PatientMatchingActivator.UPDATE_METHOD)){
+				log.warn("updating patient");
+				
+			}
 		}
 		
-		return null;
+		return o;
 	}
 	
-	/**
-	 * Method intercepts the createPatient method to 
-	 * 
-	 * @param patient
-	 * @return
-	 */
-	public boolean createPatient(Patient patient){
-		
-		return false;
-	}
-	
-	/**
-	 * Method intercepts the OpenMRS core updatePatient method to
-	 * modify the matching database in order to keep the two
-	 * synchonized.
-	 * 
-	 * @param patient	the patient to modify
-	 * @return	the modified patient
-	 */
-	public boolean updatePatient(Patient patient){
-		
-		return false;
-	}
-	
-	/**
-	 * Method calls the findBestMatch method in MatchFinder to get a
-	 * Record of the best match in the linkage database.  The openmrs_id
-	 * field in the Record is the key to getting the existing Patient
-	 * that the parameter matches.
-	 * 
-	 * @param patient	the Patient object to match
-	 * @return	the already existing OpenMRS Patient object that best matches patient
-	 */
-	public Patient findPatient(Patient patient) throws UnMatchableRecordException{
-		
-		MatchResult mr = matcher.findBestMatch(PatientMatchingActivator.patientToRecord(patient));
-		if(mr.getScore() > PatientMatchingActivator.DEFAULT_THRESHOLD){
-			mr.getRecord1();
-		}
-		
-		
-		return null;
-	}
 }
