@@ -74,6 +74,15 @@ public class LinkDBManager {
 		return true;
 	}
 	
+	public void disconnect(){
+		try{
+			db.close();
+		}
+		catch(SQLException sqle){
+			
+		}
+	}
+	
 	/**
 	 * Method removes all database row that matches this Record object.  Method
 	 * checks for multiple rows that contain the Record's information.  The
@@ -101,6 +110,53 @@ public class LinkDBManager {
 		}
 		
 		return deleted;
+	}
+	
+	/**
+	 * Method updates the row in the database with new values by
+	 * constructing an SQL statement similar to "UPDATE <table>
+	 * SET <demographic1> = <value1>,. . . <demographicN> = <valueN>
+	 * WHERE <key_demographic> = <r.getDemographic(key_demographic);"
+	 * 
+	 * This will allow partial updates, as only the demographics that
+	 * are present in Record r will be touched; other columns will be
+	 * uneffected.
+	 * 
+	 * @param r	the Record object containing the new demographics and values
+	 * @param key_demographic	the demographic that discriminates between records
+	 * @return	true if the jdbc method indicated row(s) were updated, false
+	 * if exceptions were thrown or no rows were changed
+	 */
+	public boolean updateRecord(Record r, String key_demographic){
+		String query = new String();
+		int update = 0;
+		
+		query += "UPDATE " + table + " SET ";
+		Iterator<String> it = r.getDemographics().keySet().iterator();
+		while(it.hasNext()){
+			String demographic = it.next();
+			String value = r.getDemographic(demographic);
+			if(it.hasNext()){
+				query += demographic + " = '" + value + "',";
+			} else {
+				query += demographic + " = '" + value + "'";
+			}
+		}
+		String conditional = key_demographic + " = '" + r.getDemographic(key_demographic) + "'";
+		query += " WHERE " + conditional;
+		try{
+			Statement stmt = db.createStatement();
+			update = stmt.executeUpdate(query);
+		}
+		catch(SQLException sqle){
+			System.err.println(sqle.getMessage());
+			return false;
+		}
+		
+		if(update > 0){
+			return true;
+		}
+		return false;
 	}
 	
 	/**

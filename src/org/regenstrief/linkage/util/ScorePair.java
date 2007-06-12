@@ -50,7 +50,7 @@ public class ScorePair {
 			
 		}
 		
-		MatchResult mr = new MatchResult(vt.getScore(mv),vt.getMatchVectorTrueProbability(mv),vt.getMatchVectorFalseProbability(mv),mv,rec1,rec2);
+		MatchResult mr = new MatchResult(vt.getScore(mv),vt.getMatchVectorTrueProbability(mv),vt.getMatchVectorFalseProbability(mv),vt.getSensitivity(mv),vt.getSpecificity(mv),mv,rec1,rec2);
 		return mr;
 	}
 }

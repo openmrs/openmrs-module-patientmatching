@@ -13,9 +13,15 @@ import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.db.LinkDBManager;
 
 /**
- * Class intercepts the findPatient method call and
- * instead uses the module's findPatient that's backed
- * by the record linkage database.
+ * Class provides AOP advice for the OpenMRS PatientService methods
+ * of createPatient, updatePatient, and findPatient using
+ * around advice.
+ * 
+ * If the class intercepts the findPatient method, then it might return
+ * a different patient than core based on how the MatchFinder object
+ * scores a match.  For the other two methods, the return value is
+ * not changed.  It intercepts these methods to keep the record linkage
+ * table consistent with the OpenMRS Patient table.
  *  
  * @author jegg
  *
@@ -23,11 +29,8 @@ import org.regenstrief.linkage.db.LinkDBManager;
 
 public class PatientMatchingAdvice implements MethodInterceptor {
 	
-	
-	
 	private Log log = LogFactory.getLog(this.getClass());
 	private MatchFinder matcher;
-	private PatientMatchingActivator activator;
 	private LinkDBManager link_db;
 	
 	public PatientMatchingAdvice(MatchFinder matcher, LinkDBManager link_db){
@@ -35,28 +38,78 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 		this.link_db = link_db;
 	}
 	
+	/**
+	 * Method intercepts the OpenMRS method invocation and depending on which
+	 * method is intercepts, uses the MatchFinder or LinkDBManager objects.
+	 * 
+	 * If MethodInvocation name matches PatientMatchingActivator.CREATE_METHOD,
+	 * the LinkDBManager object is used to add the patient to the record linkage table.
+	 * 
+	 * If MethodInvocation name matches PatientMatchingActivator.UPDATE_METHOD,
+	 * the LinkDBManager object is used to update patients in the record linkage table
+	 * that match on the key demographic.
+	 * 
+	 * If MethodInvocation name matches PatientMatchingActivator.FIND_METHOD,
+	 * the MatchFinder object is used to try to find a better match.  The linkage
+	 * table should be storing the unique OpenMRS patient ID and the method uses
+	 * that as the hook back to the OpenMRS Patient objects.
+	 */
 	public Object invoke(MethodInvocation invocation) throws Throwable {
-		log.warn("advice intercepting " + invocation.getMethod().getName());
+		log.debug("Advice intercepting " + invocation.getMethod().getName());
 		Object[] args = invocation.getArguments();
+		
+		// for two of the methods, need to let invocation proceed, so go ahead and let it
 		Object o = invocation.proceed();
+		
 		if(args[0] != null && args[0] instanceof Patient){
 			Patient to_match = (Patient)args[0];
 			Record r = PatientMatchingActivator.patientToRecord(to_match);
 			String method_name = invocation.getMethod().getName();
 			if(method_name.equals(PatientMatchingActivator.CREATE_METHOD)){
+				log.debug("Trying to add patient to link table");
 				if(o instanceof Patient){
 					Patient just_added = (Patient)o;
-					link_db.addRecordToDB(PatientMatchingActivator.patientToRecord(just_added));
+					if(link_db.addRecordToDB(PatientMatchingActivator.patientToRecord(just_added))){
+						if(log.isDebugEnabled()){
+							log.debug("LinkDBManager object successfully added patient");
+						} else {
+							log.warn("Error when using LinkDBManager object to add patient to linkage table");
+						}
+					}
+					
 				}
 			} else if(method_name.equals(PatientMatchingActivator.FIND_METHOD)){
-				MatchResult mr = matcher.findBestMatch(r);
-				if(mr.getScore() > PatientMatchingActivator.DEFAULT_THRESHOLD){
-					Record rec_match = mr.getRecord1();
-					Patient patient_match = Context.getPatientService().getPatient(new Integer(rec_match.getDemographic("openmrs_id")));
-					//return patient_match;
+				try{
+					MatchResult mr = matcher.findBestMatch(r);
+					if(mr != null && mr.getScore() > PatientMatchingActivator.DEFAULT_THRESHOLD){
+						Record rec_match = mr.getRecord1();
+						log.info("Found a best match - score: " + mr.getScore() + "\tTprob: " + mr.getTrueProbability() + "\tFprob: " + mr.getFalseProbability() + "\tSens: " + mr.getSensitivity() + "\tSpec: " + mr.getSpecificity());
+						Patient patient_match = Context.getPatientService().getPatient(new Integer(rec_match.getDemographic(PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC)));
+						return patient_match;
+					} else {
+						return o;
+					}
 				}
+				catch(Exception e){
+					log.warn("Exception when trying to match against link table: " + e.getMessage() + ", returning null");
+					return o;
+				}
+				
+				
 			} else if(method_name.equals(PatientMatchingActivator.UPDATE_METHOD)){
-				log.warn("updating patient");
+				log.debug("Updating patient");
+				if(o instanceof Patient){
+					Patient just_updated = (Patient)o;
+					
+					Record ju = PatientMatchingActivator.patientToRecord(just_updated);
+					if(link_db.updateRecord(ju, PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC)){
+						log.debug("Record for patient " + just_updated.getPatientId() + " updated in database");
+					} else {
+						log.warn("Update of Patient " + just_updated.getPatientId() + " to link db failed");
+					}
+					
+				}
+				
 				
 			}
 		}

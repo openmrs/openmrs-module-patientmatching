@@ -12,7 +12,7 @@ import java.util.*;
  */
 
 public class MatchResult implements Comparable{
-	private double score, true_prob, false_prob;
+	private double score, true_prob, false_prob, sensitivity, specificity;
 	private MatchVector match_vct;
 	private Record r1, r2;
 	
@@ -20,10 +20,12 @@ public class MatchResult implements Comparable{
 	 * Constructor initializes the Hashtable match_table
 	 *
 	 */
-	public MatchResult(double score, double true_prob, double false_prob, MatchVector match_vct, Record r1, Record r2){
+	public MatchResult(double score, double true_prob, double false_prob, double sensitivity, double specificity, MatchVector match_vct, Record r1, Record r2){
 		this.score = score;
 		this.true_prob = true_prob;
 		this.false_prob = false_prob;
+		this.sensitivity = sensitivity;
+		this.specificity = specificity;
 		this.match_vct = match_vct;
 		this.r1 = r1;
 		this.r2 = r2;
@@ -80,6 +82,24 @@ public class MatchResult implements Comparable{
 	 */
 	public boolean matchedOn(String demographic){
 		return match_vct.matchedOn(demographic);
+	}
+	
+	/**
+	 * Returns the sensitivity of the record pair
+	 * 
+	 * @return	the sensitivity
+	 */
+	public double getSensitivity(){
+		return sensitivity;
+	}
+	
+	/**
+	 * Returns the specificity of the record pair
+	 * 
+	 * @return	the specificity
+	 */
+	public double getSpecificity(){
+		return specificity;
 	}
 	
 	public int compareTo(Object o) throws ClassCastException{

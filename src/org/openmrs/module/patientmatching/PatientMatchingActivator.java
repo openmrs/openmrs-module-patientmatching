@@ -38,6 +38,17 @@ import org.springframework.aop.support.StaticMethodMatcherPointcutAdvisor;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+/**
+ * Class implements the startup and initial methods for the module.  When
+ * loading, module runs the populateMatchingTable() method to synchronize
+ * the OpenMRS patient database with the record linkage table.  To do this,
+ * the module needs to check that ever patient's openmrs_id exists in the table
+ * and add it if it is not present.  This can take a long time.
+ * 
+ * @author jegg
+ *
+ */
+
 /*
  * 
  * The demographic information used in the linkage process is the same:
@@ -70,34 +81,41 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	public final static String CONFIG_FILE = "link_config.xml";
 	public final static double DEFAULT_THRESHOLD = 0;
 	public final static String MATCHING_ATTRIBUTE = "Other Matching Information";
+	public final static String LINK_TABLE_KEY_DEMOGRAPHIC = "openmrs_id";
 	
 	private Log log = LogFactory.getLog(this.getClass());
 	private BufferedWriter link_log;
 	
-	// linkage objects to create at startup and keep for linkage use
 	private MatchFinder matcher;
 	private LinkDBManager link_db;
 	
+	/**
+	 * Method calls the disconnect method in the LinkDBManager object.
+	 */
 	public void shutdown() {
 		log.info("Shutting down Patient Matching Module");
-		
+		link_db.disconnect();
 	}
 	
+	/**
+	 * At startup, module parses the configuration file and makes sure the
+	 * record linkage table is populated with the existing patients in OpenMRS.
+	 */
 	public void startup() {
-		log.warn("Starting Patient Matching Module");
+		log.info("Starting Patient Matching Module");
 		boolean ready = parseConfig(new File(CONFIG_FILE));
-		log.warn("starting to populate matching table");
+		log.info("Starting to populate matching table");
 		populateMatchingTable();
-		log.warn("matching table populated");
+		log.info("Matching table populated");
 		if(!ready){
-			log.warn("error parsing config file and creating linkage objects");
+			log.warn("Error parsing config file and creating linkage objects");
 		}
 	}
 	
 	/**
 	 * Method iterates through existing Patient objects and adds them to the linkage
 	 * database for use when matching.  Method also creates the table, if needed,
-	 * with the correct column taken from the LinkDataSource object
+	 * with the correct column taken from the LinkDataSource object.
 	 *
 	 */
 	private void populateMatchingTable(){
@@ -113,19 +131,28 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		while(it.hasNext()){
 			Patient p = it.next();
 			Integer id = p.getPatientId();
-			int existing_patients = link_db.getRecordCountFromDB("openmrs_id", id.toString());
+			int existing_patients = link_db.getRecordCountFromDB(LINK_TABLE_KEY_DEMOGRAPHIC, id.toString());
 			if(existing_patients == 0){
 				if(link_db.addRecordToDB(patientToRecord(p))){
-					log.warn("add patient to link DB succeeded");
+					if(log.isDebugEnabled()){
+						log.debug("Adding patient " + p.getPatientId() + " to link DB succeeded");
+					}
 				} else {
-					log.warn("add patient to link DB failed");
+					log.warn("Adding patient " + p.getPatientId() + " to link DB failed");
 				}
 			}
 		}
 	}
 	
-	/*
-	 * Class parses a config file to create the objects needed for linkage
+	/**
+	 * Method parses a configuration file.  Program assumes that the information under
+	 * the first datasource tag in the file is the connection information for the 
+	 * record linkage table.  The columns to be used for matching and the string comparators
+	 * are also listed in this file.
+	 * 
+	 * @param config	the configuration file with connection and linkage information
+	 * @return	true if there were no errors while parsing the file, false if there was an 
+	 * exception
 	 */
 	private boolean parseConfig(File config){
 		try{
@@ -170,7 +197,12 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	
 	@Override
 	public Advice getAdvice(){
-		log.warn("returning new advice object");
+		log.debug("Returning new advice object from " + this);
+		if(link_db == null){
+			log.debug("Starting to parse config file for advice object");
+			parseConfig(new File(CONFIG_FILE));
+			log.debug("Config file parsed");
+		}
 		return new PatientMatchingAdvice(matcher, link_db);
 	}
 	
@@ -180,7 +212,17 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	
 	/**
 	 * Method gets the demographic information used in the record linkage from
-	 * the Patient object and creates a Record object with all the fields
+	 * the Patient object and creates a Record object with all the fields.
+	 * 
+	 * The module prefers and tries to find a patient attribute type of
+	 * MATCHING_ATTRIBUTE to parse the patient information.  This string is
+	 * in the form of "<demographic1>:<value1>;<demographic2>:<value2>" and
+	 * assumes that the labels for demographics match the labels in the config
+	 * file.
+	 * 
+	 * If there is no patient attribute of type MATCHING_ATTRIBUTE then the method
+	 * tries to get standard information such sa date of birth and name to provide
+	 * some information when making a Record object.
 	 * 
 	 * @param patient	the Patient object to transform
 	 * @return	a new Record object representing the Patient
