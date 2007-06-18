@@ -43,7 +43,7 @@ public class DBTest {
 			Document doc = builder.parse(config);
 			RecMatchConfig rmc = XMLTranslator.createRecMatchConfig(doc);
 			MatchingConfig test_mc = rmc.getMatchingConfigs().get(0);
-			LinkDBManager ldbm = new LinkDBManager(rmc.getLinkDataSource1(), test_mc);
+			LinkDBManager ldbm = new LinkDBManager(rmc.getLinkDataSource1());
 			
 			if(ldbm.connect()){
 				System.out.println("connected to db link data source");

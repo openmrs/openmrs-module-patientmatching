@@ -38,9 +38,8 @@ public class LinkDBManager {
 	 * when the findMatch is called when a Record is added to the database.
 	 * 
 	 * @param lds	contains a description of the connection information for the database
-	 * @param mc	rules to use when determining if a record already exists
 	 */
-	public LinkDBManager(LinkDataSource lds, MatchingConfig mc){
+	public LinkDBManager(LinkDataSource lds){
 		this.table = lds.getName();
 		this.lds = lds;
 		String[] access = lds.getAccess().split(",");

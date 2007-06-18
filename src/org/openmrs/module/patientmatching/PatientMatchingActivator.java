@@ -163,7 +163,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 			Document doc = builder.parse(config);
 			RecMatchConfig rmc = XMLTranslator.createRecMatchConfig(doc);
 			MatchingConfig test_mc = rmc.getMatchingConfigs().get(0);
-			link_db = new LinkDBManager(rmc.getLinkDataSource1(), test_mc);
+			link_db = new LinkDBManager(rmc.getLinkDataSource1());
 			matcher = new MatchFinder(rmc.getLinkDataSource1(), test_mc, new RecordFieldAnalyzer());
 			
 		}
