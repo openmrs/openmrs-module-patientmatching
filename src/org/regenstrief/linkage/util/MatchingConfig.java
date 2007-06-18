@@ -147,6 +147,36 @@ public class MatchingConfig {
 	}
 	
 	/**
+	 * Returns the indices of the columns for weight scaling
+	 * 
+	 * @return an array of the column names included in weight scaling,
+	 * null if no fields require weight scaling
+	 */
+	public String[] getScaleWeightColumns() {
+		int num_rows = row_options.size();
+		
+		// in the worst case, all columns will have weight scaling
+		ArrayList<String> scale_weight_columns = new ArrayList<String>(num_rows);
+		Iterator<MatchingConfigRow> it = row_options.iterator();
+		// find rows in the config that have specified weight scaling
+		while(it.hasNext()) {
+			MatchingConfigRow mcr = it.next();
+			if(mcr.isScaleWeight()) {
+				scale_weight_columns.add(mcr.getName());
+			}
+		}
+	
+		if(scale_weight_columns.size() == 0){
+			return null;
+		}
+		else {
+			String [] result  = new String[scale_weight_columns.size()];
+			return scale_weight_columns.toArray(result); 
+		}
+
+	}
+	
+	/**
 	 * Returns the indexes of the columns included in the matching run
 	 * 
 	 * @return an array of the column names included in the analysis,
