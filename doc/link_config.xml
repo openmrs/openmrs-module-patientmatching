@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Session>
+	<datasource name="table_name" type="DataBase" access="JDBC driver,database URL,user,passwd" n_records="-1">
+		<column include_position="0" column_id="mrn" label="mrn" type="string" n_non_null="-1" n_null="-1"/>
+		<column include_position="1" column_id="ln" label="ln" type="string" n_non_null="-1" n_null="-1"/>
+		<column include_position="2" column_id="lny" label="lny" type="string" n_non_null="-1" n_null="-1"/>
+		<column include_position="3" column_id="fn" label="fn" type="string" n_non_null="-1" n_null="-1"/>
+		<column include_position="4" column_id="yb" label="yb" type="string" n_non_null="-1" n_null="-1"/>
+		<column include_position="5" column_id="mb" label="mb" type="string" n_non_null="-1" n_null="-1"/>
+		<column include_position="6" column_id="db" label="db" type="string" n_non_null="-1" n_null="-1"/>
+		<column include_position="7" column_id="sex" label="sex" type="string" n_non_null="-1" n_null="-1"/>
+		<column include_position="8" column_id="city" label="city" type="string" n_non_null="-1" n_null="-1"/>
+		<column include_position="9" column_id="st" label="st" type="string" n_non_null="-1" n_null="-1"/>
+		<column include_position="10" column_id="zip" label="zip" type="string" n_non_null="-1" n_null="-1"/>
+		<column include_position="11" column_id="tel" label="tel" type="string" n_non_null="-1" n_null="-1"/>
+		<column include_position="12" column_id="nkln" label="nkln" type="string" n_non_null="-1" n_null="-1"/>
+		<column include_position="12" column_id="nkfn" label="nkfn" type="string" n_non_null="-1" n_null="-1"/>
+		<column include_position="14" column_id="drid" label="drid" type="string" n_non_null="-1" n_null="-1"/>
+		<column include_position="15" column_id="drln" label="drln" type="string" n_non_null="-1" n_null="-1"/>
+		<column include_position="16" column_id="drfn" label="drfn" type="string" n_non_null="-1" n_null="-1"/>
+		<column include_position="17" column_id="openmrs_id" label="openmrs_id" type="string" n_non_null="-1" n_null="-1"/>
+	</datasource>
+	<run estimate="true" name="sample">
+		<row name="yb">
+			<BlockOrder>1</BlockOrder>
+			<BlckChars>40</BlckChars>
+			<Include>false</Include>
+			<TAgreement>0.9</TAgreement>
+			<NonAgreement>0.1</NonAgreement>
+			<ScaleWeight>null</ScaleWeight>
+			<Algorithm>Exact Match</Algorithm>
+		</row>
+		<row name="mb">
+			<BlockOrder>null</BlockOrder>
+			<BlckChars>40</BlckChars>
+			<Include>true</Include>
+			<TAgreement>0.9</TAgreement>
+			<NonAgreement>0.1</NonAgreement>
+			<ScaleWeight>null</ScaleWeight>
+			<Algorithm>Exact Match</Algorithm>
+		</row>
+		<row name="db">
+			<BlockOrder>null</BlockOrder>
+			<BlckChars>40</BlckChars>
+			<Include>true</Include>
+			<TAgreement>0.9</TAgreement>
+			<NonAgreement>0.1</NonAgreement>
+			<ScaleWeight>null</ScaleWeight>
+			<Algorithm>Exact Match</Algorithm>
+		</row>
+		<row name="fn">
+			<BlockOrder>null</BlockOrder>
+			<BlckChars>40</BlckChars>
+			<Include>true</Include>
+			<TAgreement>0.9</TAgreement>
+			<NonAgreement>0.1</NonAgreement>
+			<ScaleWeight>null</ScaleWeight>
+			<Algorithm>LEV</Algorithm>
+		</row>
+		<row name="ln">
+			<BlockOrder>null</BlockOrder>
+			<BlckChars>40</BlckChars>
+			<Include>true</Include>
+			<TAgreement>0.9</TAgreement>
+			<NonAgreement>0.1</NonAgreement>
+			<ScaleWeight>null</ScaleWeight>
+			<Algorithm>LEV</Algorithm>
+		</row>
+		<row name="city">
+			<BlockOrder>null</BlockOrder>
+			<BlckChars>40</BlckChars>
+			<Include>true</Include>
+			<TAgreement>0.9</TAgreement>
+			<NonAgreement>0.1</NonAgreement>
+			<ScaleWeight>null</ScaleWeight>
+			<Algorithm>LCS</Algorithm>
+		</row>
+		<row name="zip">
+			<BlockOrder>null</BlockOrder>
+			<BlckChars>40</BlckChars>
+			<Include>true</Include>
+			<TAgreement>0.9</TAgreement>
+			<NonAgreement>0.1</NonAgreement>
+			<ScaleWeight>null</ScaleWeight>
+			<Algorithm>Exact Match</Algorithm>
+		</row>
+	</run>
+</Session>

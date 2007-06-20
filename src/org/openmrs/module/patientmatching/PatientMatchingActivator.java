@@ -105,8 +105,11 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		log.info("Starting Patient Matching Module");
 		boolean ready = parseConfig(new File(CONFIG_FILE));
 		log.info("Starting to populate matching table");
-		populateMatchingTable();
-		log.info("Matching table populated");
+		if(ready){
+			populateMatchingTable();
+			log.info("Matching table populated");
+		}
+		
 		if(!ready){
 			log.warn("Error parsing config file and creating linkage objects");
 		}
@@ -157,6 +160,10 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	private boolean parseConfig(File config){
 		try{
 			log.debug("parsing config file " + config);
+			if(!config.exists()){
+				log.warn("cannot find config file " + config.getPath());
+				return false;
+			}
 			// Load the XML configuration file
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
@@ -168,15 +175,15 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 			
 		}
 		catch(ParserConfigurationException pce){
-			//writeLog(pce.getMessage());
+			log.warn("XML parser error with config file: " + pce.getMessage());
 			return false;
 		}
 		catch(SAXException spe){
-			//writeLog(spe.getMessage());
+			log.warn("XML parser error with config file: " + spe.getMessage());
 			return false;
 		}
 		catch(IOException ioe){
-			//writeLog(ioe.getMessage());
+			log.warn("IOException with config file: " + ioe.getMessage());
 			return false;
 		}
 		log.debug("file parsed");
@@ -198,10 +205,9 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	@Override
 	public Advice getAdvice(){
 		log.debug("Returning new advice object from " + this);
-		if(link_db == null){
-			log.debug("Starting to parse config file for advice object");
-			parseConfig(new File(CONFIG_FILE));
-			log.debug("Config file parsed");
+		if(link_db == null && !parseConfig(new File(CONFIG_FILE))){
+			log.warn("Error parsing config file and creating linkage objects");
+			
 		}
 		return new PatientMatchingAdvice(matcher, link_db);
 	}
