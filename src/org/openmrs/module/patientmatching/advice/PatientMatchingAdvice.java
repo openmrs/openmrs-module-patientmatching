@@ -63,8 +63,8 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 		
 		if(args[0] != null && args[0] instanceof Patient){
 			Patient to_match = (Patient)args[0];
-			Record r = PatientMatchingActivator.patientToRecord(to_match);
 			String method_name = invocation.getMethod().getName();
+			
 			if(method_name.equals(PatientMatchingActivator.CREATE_METHOD)){
 				log.debug("Trying to add patient to link table");
 				if(o instanceof Patient){
@@ -80,6 +80,7 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 				}
 			} else if(method_name.equals(PatientMatchingActivator.FIND_METHOD)){
 				try{
+					Record r = PatientMatchingActivator.patientToRecord(to_match);
 					MatchResult mr = matcher.findBestMatch(r);
 					if(mr != null && mr.getScore() > PatientMatchingActivator.DEFAULT_THRESHOLD){
 						Record rec_match = mr.getRecord1();

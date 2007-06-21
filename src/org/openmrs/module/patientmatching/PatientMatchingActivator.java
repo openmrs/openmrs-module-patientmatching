@@ -161,7 +161,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		try{
 			log.debug("parsing config file " + config);
 			if(!config.exists()){
-				log.warn("cannot find config file " + config.getPath());
+				log.warn("cannot find config file in " + config.getPath());
 				return false;
 			}
 			// Load the XML configuration file
@@ -236,8 +236,13 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	public static Record patientToRecord(Patient patient){
 		Record ret = new Record();
 		
-		// OpenMRS unique patient ID
-		ret.addDemographic("openmrs_id", Integer.toString(patient.getPatientId()));
+		// OpenMRS unique patient ID should be present if the patient is within
+		// the OpenMRS patient store, but if patient is new and being searched on
+		// before inserted, it would be null
+		Integer id = patient.getPatientId();
+		if(id != null){
+			ret.addDemographic("openmrs_id", Integer.toString(id));
+		}
 		
 		// first, try to get the "Matching Information" attribute type
 		PersonAttributeType matching_attr_type = Context.getPersonService().getPersonAttributeType(MATCHING_ATTRIBUTE);
