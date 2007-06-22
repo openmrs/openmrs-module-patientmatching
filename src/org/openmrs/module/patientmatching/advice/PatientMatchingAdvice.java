@@ -61,6 +61,11 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 		// for two of the methods, need to let invocation proceed, so go ahead and let it
 		Object o = invocation.proceed();
 		
+		if(link_db == null || matcher == null){
+			log.warn("Advice has null objects for link database or matchfinder; returning default invocation object");
+			return o;
+		}
+		
 		if(args[0] != null && args[0] instanceof Patient){
 			Patient to_match = (Patient)args[0];
 			String method_name = invocation.getMethod().getName();
@@ -108,6 +113,7 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 					} else {
 						log.warn("Update of Patient " + just_updated.getPatientId() + " to link db failed");
 					}
+					
 					
 				}
 				

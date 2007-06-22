@@ -29,6 +29,9 @@ public class Record {
 	 * @param value	the value of the demographic
 	 */
 	public void addDemographic(String demographic, String value){
+		if(value == null){
+			value = "";
+		}
 		demographics.put(demographic, value);
 	}
 	

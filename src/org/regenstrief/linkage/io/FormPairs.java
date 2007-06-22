@@ -153,6 +153,14 @@ public class FormPairs {
 			String comp = block_cols[i];
 			String str1 = rec1.getDemographic(comp);
 			String str2 = rec2.getDemographic(comp);
+			
+			if(str1 == null){
+				str1 = "";
+			}
+			if(str2 == null){
+				str2 = "";
+			}
+			
 			try{
 				ret = compareString(str1, str2, type_table.get(comp).intValue());
 			}
