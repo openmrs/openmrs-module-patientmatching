@@ -20,6 +20,7 @@ import org.regenstrief.linkage.db.*;
 import org.regenstrief.linkage.io.CharDelimFileReader;
 import org.regenstrief.linkage.io.DataBaseReader;
 import org.regenstrief.linkage.io.DataSourceReader;
+import org.regenstrief.linkage.io.DataSourceReader.Job;
 import org.regenstrief.linkage.util.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -68,8 +69,8 @@ public class DBTest {
 					type_table.put(d.getName(), new Integer(d.getType()));
 				}
 			}
-			DataSourceReader dsr2 = new CharDelimFileReader(rmc.getLinkDataSource2(), test_mc);
-			DataSourceReader dsr1 = new DataBaseReader(rmc.getLinkDataSource1(), test_mc);
+			DataSourceReader dsr2 = new CharDelimFileReader(rmc.getLinkDataSource2(), test_mc, Job.Read);
+			DataSourceReader dsr1 = new DataBaseReader(rmc.getLinkDataSource1(), test_mc, Job.Read);
 			org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(dsr1, dsr2, test_mc, type_table);
 			
 			System.out.println("form pairs created");
