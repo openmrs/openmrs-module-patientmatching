@@ -30,14 +30,46 @@ public class CharDelimFileReader extends DataSourceReader{
 	 * @param lds	the LinkDataSource with information of a character delimited file
 	 * @param mc	MatchingConfig object with the blocking variables information
 	 */
-	public CharDelimFileReader(LinkDataSource lds, MatchingConfig mc){
+	public CharDelimFileReader(LinkDataSource lds, MatchingConfig mc, Job functionality){
 		super(lds, mc);
 		File raw_file = new File(lds.getName());
-		char raw_file_sep = lds.getAccess().charAt(0);
 		File switched_file = switchColumns(raw_file);
-		sorted_file = sortInputFile(switched_file, raw_file_sep);
+		if(functionality == Job.valueOf("Read"))
+		{
+			char raw_file_sep = lds.getAccess().charAt(0);
+			sorted_file = sortInputFile(switched_file, raw_file_sep);
+			try{
+				file_reader = new BufferedReader(new FileReader(sorted_file));
+				next_record = line2Record(file_reader.readLine());
+			}
+			catch(IOException ioe){
+				file_reader = null;
+				next_record = null;
+			}
+		}
+		else
+		{
+			try{
+				file_reader = new BufferedReader(new FileReader(switched_file));
+				next_record = line2Record(file_reader.readLine());
+			}
+			catch(IOException ioe){
+				file_reader = null;
+				next_record = null;
+			}
+		}
+
+	}
+	
+	/*
+	public CharDelimFileReader(LinkDataSource lds){
+		super(lds);
+		File raw_file = new File(lds.getName());
+	//	char raw_file_sep = lds.getAccess().charAt(0);
+		File switched_file = switchColumns(raw_file);
+	//	sorted_file = sortInputFile(switched_file, raw_file_sep);
 		try{
-			file_reader = new BufferedReader(new FileReader(sorted_file));
+			file_reader = new BufferedReader(new FileReader(switched_file));
 			next_record = line2Record(file_reader.readLine());
 		}
 		catch(IOException ioe){
@@ -45,6 +77,7 @@ public class CharDelimFileReader extends DataSourceReader{
 			next_record = null;
 		}
 	}
+	*/
 	
 	/*
 	 * Class switches columns

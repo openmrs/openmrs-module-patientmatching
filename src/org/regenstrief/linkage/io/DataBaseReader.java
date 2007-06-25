@@ -21,7 +21,7 @@ import java.util.*;
 public class DataBaseReader extends DataSourceReader {
 	
 	String driver, url, user, passwd, query;
-	Connection db;
+	public Connection db;
 	ResultSet data;
 	
 	// columns queried from the data base
@@ -35,9 +35,9 @@ public class DataBaseReader extends DataSourceReader {
 	 * @param lds	contains the database connection information
 	 * @param mc	contains blocking variable information required in query construction
 	 */
-	public DataBaseReader(LinkDataSource lds, MatchingConfig mc){
+	public DataBaseReader(LinkDataSource lds, MatchingConfig mc, Job functionality){
 		super(lds, mc);
-		query = constructQuery();
+
 		// parse the string in access variable to get driver and URL info
 		// then create DB connection
 		// decide how to handle different failures later
@@ -50,8 +50,12 @@ public class DataBaseReader extends DataSourceReader {
 			
 			Class.forName(driver);
 			db = DriverManager.getConnection(url, user, passwd);
-			Statement stmt = db.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
-			data = stmt.executeQuery(query);
+			
+			if(functionality == Job.Read) {
+				query = constructQuery();
+				Statement stmt = db.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
+				data = stmt.executeQuery(query);
+			}
 		}
 		catch(ArrayIndexOutOfBoundsException aioobe){
 			db = null;
@@ -62,9 +66,37 @@ public class DataBaseReader extends DataSourceReader {
 		catch(SQLException se){
 			db = null;
 		}
+	}
+	
+	public boolean executeUpdate(String query) {
+		int updated_rows = 0;
+		try{
+			Statement stmt = db.createStatement();
+			updated_rows = stmt.executeUpdate(query);
+		}
+		catch(SQLException sqle){
+			System.err.println(sqle.getMessage());
+			return false;
+		}
 		
-		
-		
+		if(updated_rows > 0){
+			return true;
+		}
+		return false;
+	}
+	
+	public int getQueryResult(String query){
+		int count = 0;
+		try{
+			Statement stmt = db.createStatement();
+			ResultSet rows = stmt.executeQuery(query);
+			rows.next();
+			count = rows.getInt(1);
+		}
+		catch(Exception e){
+			return -1;
+		}
+		return count;
 	}
 	
 	/*

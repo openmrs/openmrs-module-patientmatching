@@ -13,25 +13,29 @@ public class LinkDataSource {
 	private String type;
 	private String access;
 	private int n_records;
+	private String ds_id;
 	
 	public static final int UNKNOWN_REC_COUNT = -1;
+	public static final int UNKNOWN_DS_ID = -1;
 	
 	private List<DataColumn> column_settings;
 	
-	public LinkDataSource(String name, String type, String access){
+	public LinkDataSource(String name, String type, String access, String id){
 		this.source_name = name;
 		this.type = type;
 		this.access = access;
 		column_settings = new ArrayList<DataColumn>();
 		n_records = UNKNOWN_REC_COUNT;
+		ds_id = id;
 	}
 	
-	public LinkDataSource(String name, String type, String access, int n_records){
+	public LinkDataSource(String name, String type, String access, String id, int n_records){
 		this.source_name = name;
 		this.type = type;
 		this.access = access;
 		column_settings = new ArrayList<DataColumn>();
 		this.n_records = n_records;
+		this.ds_id = id;
 	}
 	
 	/*
@@ -172,5 +176,13 @@ public class LinkDataSource {
 			}
 		}
 		return type_table;
+	}
+
+	public String getDataSource_ID() {
+		return ds_id;
+	}
+
+	public void setDataSource_ID(String ds_id) {
+		this.ds_id = ds_id;
 	}
 }

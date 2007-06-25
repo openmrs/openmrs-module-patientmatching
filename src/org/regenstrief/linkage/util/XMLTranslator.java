@@ -14,6 +14,7 @@ import javax.xml.transform.stream.*;
 import javax.xml.transform.dom.*;
 
 import org.xml.sax.*;
+import org.regenstrief.linkage.db.LinkDBManager;
 import org.w3c.dom.*;
 
 public class XMLTranslator {
@@ -108,7 +109,7 @@ public class XMLTranslator {
 		ret.setAttribute("type", lds.getType());
 		ret.setAttribute("access", lds.getAccess());
 		ret.setAttribute("n_records", Integer.toString(lds.getRecordCount()));
-		
+		ret.setAttribute("id", lds.getDataSource_ID());
 		// add the nodes for the data column objects
 		Iterator<DataColumn> it = lds.getDataColumns().iterator();
 		while(it.hasNext()){
@@ -213,8 +214,10 @@ public class XMLTranslator {
 	public static RecMatchConfig createRecMatchConfig(Document doc){
 		List<MatchingConfig> mc_configs = new ArrayList<MatchingConfig>();
 		LinkDataSource lds1, lds2;
+		LinkDBManager sw_connection;
 		lds1 = null;
 		lds2 = null;
+		sw_connection = null;
 		
 		Element root_node = doc.getDocumentElement();
 		for(int i = 0; i < root_node.getChildNodes().getLength(); i++){
@@ -229,10 +232,20 @@ public class XMLTranslator {
 			} else if(n.getNodeName().equals("run")){
 				MatchingConfig mc = createMatchingConfig(n);
 				mc_configs.add(mc);
+			} else if(n.getNodeName().equals("scaleweight")) {
+				String access_values = n.getAttributes().getNamedItem("access").getTextContent();
+				String tokentable = n.getAttributes().getNamedItem("tokentable").getTextContent();
+				String [] access = access_values.split(",");
+				sw_connection = new LinkDBManager(access[0], access[1], tokentable, access[2], access[3]);
 			}
 		}
-		
-		return new RecMatchConfig(lds1, lds2, mc_configs);
+		if(sw_connection == null) {
+			return new RecMatchConfig(lds1, lds2, mc_configs);
+		}
+		else {
+			return new RecMatchConfig(lds1, lds2, mc_configs,sw_connection);
+		}
+
 	}
 	
 	/*
@@ -243,8 +256,9 @@ public class XMLTranslator {
 		String type = lds.getAttributes().getNamedItem("type").getTextContent();
 		String access = lds.getAttributes().getNamedItem("access").getTextContent();
 		String rec_count = lds.getAttributes().getNamedItem("n_records").getTextContent();
+		String ds_id = lds.getAttributes().getNamedItem("id").getTextContent();
 		
-		LinkDataSource ret = new LinkDataSource(name, type, access, Integer.parseInt(rec_count));
+		LinkDataSource ret = new LinkDataSource(name, type, access, ds_id, Integer.parseInt(rec_count));
 		for(int i = 0; i < lds.getChildNodes().getLength(); i++){
 			Node child = lds.getChildNodes().item(i);
 			if(child.getNodeName().equals("column")){

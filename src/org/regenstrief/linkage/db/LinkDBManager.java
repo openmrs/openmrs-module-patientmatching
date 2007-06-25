@@ -27,6 +27,9 @@ import org.regenstrief.linkage.util.*;
 import java.sql.*;
 import java.util.*;
 
+/*
+ * TODO: Add Connect to all constructors
+ */
 public class LinkDBManager {
 	String driver, url, table, user, passwd;
 	LinkDataSource lds;
@@ -55,6 +58,21 @@ public class LinkDBManager {
 		this.table = table;
 		this.user = user;
 		this.passwd = passwd;
+		connect();
+	}
+	
+	public LinkDBManager(String driver, String url, String table, String user, String passwd, LinkDataSource lds){
+		this.driver = driver;
+		this.url = url;
+		this.table = table;
+		this.user = user;
+		this.passwd = passwd;
+		this.lds = lds;
+	}
+	
+	public boolean insertToken(DataColumn field, String id, String token, int frequency){
+		String query = "INSERT INTO " + table +  " VALUES (" + id + "," + field.getColumnID() + ",'" + token + "'," + frequency + ")"; 
+		return executeUpdate(query);
 	}
 	
 	public boolean connect(){
@@ -80,6 +98,23 @@ public class LinkDBManager {
 		catch(SQLException sqle){
 			
 		}
+	}
+	
+	public boolean executeUpdate(String query) {
+		int updated_rows = 0;
+		try{
+			Statement stmt = db.createStatement();
+			updated_rows = stmt.executeUpdate(query);
+		}
+		catch(SQLException sqle){
+			System.err.println(sqle.getMessage());
+			return false;
+		}
+		
+		if(updated_rows > 0){
+			return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -128,7 +163,6 @@ public class LinkDBManager {
 	 */
 	public boolean updateRecord(Record r, String key_demographic){
 		String query = new String();
-		int update = 0;
 		
 		query += "UPDATE " + table + " SET ";
 		Iterator<String> it = r.getDemographics().keySet().iterator();
@@ -143,19 +177,8 @@ public class LinkDBManager {
 		}
 		String conditional = key_demographic + " = '" + r.getDemographic(key_demographic) + "'";
 		query += " WHERE " + conditional;
-		try{
-			Statement stmt = db.createStatement();
-			update = stmt.executeUpdate(query);
-		}
-		catch(SQLException sqle){
-			System.err.println(sqle.getMessage());
-			return false;
-		}
 		
-		if(update > 0){
-			return true;
-		}
-		return false;
+		return executeUpdate(query);
 	}
 	
 	/**
@@ -200,19 +223,7 @@ public class LinkDBManager {
 		}
 		
 		query += columns + " VALUES " + values;
-		try{
-			Statement stmt = db.createStatement();
-			update = stmt.executeUpdate(query);
-		}
-		catch(SQLException sqle){
-			System.err.println(sqle.getMessage());
-			return false;
-		}
-		
-		if(update > 0){
-			return true;
-		}
-		return false;
+		return executeUpdate(query);
 	}
 	
 	/**
@@ -331,5 +342,9 @@ public class LinkDBManager {
 		}
 		
 		return true;
+	}
+
+	public LinkDataSource getLds() {
+		return lds;
 	}
 }

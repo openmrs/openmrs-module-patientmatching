@@ -10,7 +10,11 @@ import org.regenstrief.linkage.*;
 import java.util.*;
 
 public abstract class DataSourceReader {
-	LinkDataSource data_source;
+	
+	public enum Job { Analysis, Read}
+	
+	public LinkDataSource data_source;
+	
 	MatchingConfig mc;
 	
 	public DataSourceReader(LinkDataSource lds, MatchingConfig mc){
@@ -35,6 +39,8 @@ public abstract class DataSourceReader {
 		return ret;
 	}
 	
+
+	
 	/**
 	 * 
 	 * @return	if the data source has more Records left
@@ -54,4 +60,5 @@ public abstract class DataSourceReader {
 	 * @return	true if the reset was successful, false if otherwise
 	 */
 	public abstract boolean reset();
+
 }

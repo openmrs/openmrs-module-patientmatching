@@ -20,6 +20,7 @@
 		<column include_position="16" column_id="drfn" label="drfn" type="string" n_non_null="-1" n_null="-1"/>
 		<column include_position="17" column_id="openmrs_id" label="openmrs_id" type="string" n_non_null="-1" n_null="-1"/>
 	</datasource>
+	<scaleweight tokentable="<NameOfTheTableWhereTokensAreStored>" access="<JDBC driver>,<database URL>,<user>,<passwd>"/>
 	<run estimate="true" name="sample">
 		<row name="yb">
 			<BlockOrder>1</BlockOrder>
