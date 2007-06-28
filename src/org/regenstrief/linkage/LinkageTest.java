@@ -4,16 +4,24 @@ package org.regenstrief.linkage;
  * Class written to test objects and methods
  */
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.regenstrief.linkage.io.*;
-import org.regenstrief.linkage.util.*;
-import org.regenstrief.linkage.analysis.*;
+import org.regenstrief.linkage.analysis.VectorTable;
+import org.regenstrief.linkage.io.CharDelimFileReader;
+import org.regenstrief.linkage.io.DataSourceReader;
+import org.regenstrief.linkage.util.DataColumn;
+import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.RecMatchConfig;
+import org.regenstrief.linkage.util.ScorePair;
+import org.regenstrief.linkage.util.XMLTranslator;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -51,8 +59,8 @@ public class LinkageTest {
 			System.out.println(vt);
 			
 			// create readers and a FormPairs object
-			DataSourceReader dsr1 = new CharDelimFileReader(rmc.getLinkDataSource1(), mc_test);
-			DataSourceReader dsr2 = new CharDelimFileReader(rmc.getLinkDataSource2(), mc_test);
+			DataSourceReader dsr1 = new CharDelimFileReader(rmc.getLinkDataSource1(), mc_test, DataSourceReader.Job.Read);
+			DataSourceReader dsr2 = new CharDelimFileReader(rmc.getLinkDataSource2(), mc_test, DataSourceReader.Job.Read);
 			org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(dsr1, dsr2, mc_test, type_table);
 			
 			// iterate through the Record pairs and print the score

@@ -4,7 +4,7 @@
  * (Temporarily)
  */
 
-package org.openmrs.testing;
+package org.openmrs.module.testing;
 import java.io.*;
 
 import java.util.*;

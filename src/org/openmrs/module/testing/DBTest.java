@@ -1,4 +1,4 @@
-package org.openmrs.testing;
+package org.openmrs.module.testing;
 
 /*
  * Class written to test the linkage database management code.
