@@ -2,7 +2,6 @@ package org.openmrs.module.patientmatching;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Calendar;
@@ -83,8 +82,11 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	public final static String MATCHING_ATTRIBUTE = "Other Matching Information";
 	public final static String LINK_TABLE_KEY_DEMOGRAPHIC = "openmrs_id";
 	
+	// to fix the automatic startup issue, need to get this privilege
+	// it's either "View Patients" or "View Cohorts"
+	public final static String PRIVILEGE = "View Patients"; 
+	
 	private Log log = LogFactory.getLog(this.getClass());
-	private BufferedWriter link_log;
 	
 	private MatchFinder matcher;
 	private LinkDBManager link_db;
@@ -95,6 +97,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	public void shutdown() {
 		log.info("Shutting down Patient Matching Module");
 		link_db.disconnect();
+		Context.removeProxyPrivilege(PRIVILEGE);
 	}
 	
 	/**
@@ -102,6 +105,9 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	 * record linkage table is populated with the existing patients in OpenMRS.
 	 */
 	public void startup() {
+		// to fix automatic startup, get privilege
+		Context.addProxyPrivilege(PRIVILEGE);
+		
 		log.info("Starting Patient Matching Module");
 		boolean ready = parseConfig(new File(CONFIG_FILE));
 		log.info("Starting to populate matching table");
@@ -241,7 +247,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		// before inserted, it would be null
 		Integer id = patient.getPatientId();
 		if(id != null){
-			ret.addDemographic("openmrs_id", Integer.toString(id));
+			ret.addDemographic(LINK_TABLE_KEY_DEMOGRAPHIC, Integer.toString(id));
 		}
 		
 		// first, try to get the "Matching Information" attribute type
