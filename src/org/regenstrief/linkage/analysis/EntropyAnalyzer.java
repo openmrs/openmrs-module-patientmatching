@@ -30,6 +30,7 @@ public class EntropyAnalyzer extends Analyzer {
 			String value = rec.getDemographic(demographic);
 			Hashtable<String,Integer> demographic_token_freq = freq_table.get(demographic);
 			if(demographic_token_freq == null){
+				// never seen this demographic before
 				// need to create this hash table to insert to hashtable with a count of 1
 				Hashtable<String,Integer> bucket = new Hashtable<String,Integer>();
 				bucket.put(value, new Integer(1));
@@ -37,8 +38,14 @@ public class EntropyAnalyzer extends Analyzer {
 			} else {
 				// get the value and increment the number
 				Integer count = demographic_token_freq.get(value);
-				count++;
-				demographic_token_freq.put(value, count);
+				if(count == null){
+					// never seen this value for the demographic before
+					demographic_token_freq.put(value, new Integer(1));
+				} else {
+					count++;
+					demographic_token_freq.put(value, count);
+				}
+				
 			}
 		}
 	}

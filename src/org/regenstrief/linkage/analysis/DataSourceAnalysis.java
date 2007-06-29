@@ -54,6 +54,8 @@ public class DataSourceAnalysis {
 			Record r = data_reader.nextRecord();
 			for(int i = 0; i < analyzers.size(); i++){
 				// pass Record object to analyzer object
+				Analyzer a = analyzers.get(i);
+				a.analyzeRecord(r);
 			}
 		}
 		
