@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Session>
-	<datasource name="table_name" type="DataBase" access="JDBC driver,database URL,user,passwd" n_records="-1">
+	<datasource id="ID" name="table_name" type="DataBase" access="JDBC driver,database URL,user,passwd" n_records="-1">
 		<column include_position="0" column_id="mrn" label="mrn" type="string" n_non_null="-1" n_null="-1"/>
 		<column include_position="1" column_id="ln" label="ln" type="string" n_non_null="-1" n_null="-1"/>
 		<column include_position="2" column_id="lny" label="lny" type="string" n_non_null="-1" n_null="-1"/>
