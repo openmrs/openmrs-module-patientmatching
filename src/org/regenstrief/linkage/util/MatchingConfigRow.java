@@ -1,5 +1,9 @@
 package org.regenstrief.linkage.util;
 
+
+import org.regenstrief.linkage.analysis.DataSourceAnalyzer;
+import org.regenstrief.linkage.analysis.DataSourceAnalyzer.ScaleWeightSetting;
+
 /*
  * Class represents the matching options for one column of the data file.
  * The options are presented in one row in the GUI, where the class gets
@@ -14,7 +18,10 @@ public class MatchingConfigRow {
 	private double agreement;
 	private double non_agreement;
 	private boolean scale_weight;
+	private ScaleWeightSetting sw_settings;
+	private float sw_number;
 	private int algorithm;
+
 	
 	public static final int DEFAULT_BLOCK_ORDER = 0;
 	public static final int DEFAULT_BLOCK_CHARS = 40;
@@ -23,6 +30,10 @@ public class MatchingConfigRow {
 	public static final double DEFAULT_NON_AGREEMENT = 0.1;
 	public static final boolean DEFAULT_SCALE_WEIGHT = false;
 	public static final int DEFAULT_ALGORITHM = MatchingConfig.EXACT_MATCH;
+	// Load all tokens by default
+	public static final Float DEFAULT_SW_NUMBER = new Float(1.0);
+	public static final ScaleWeightSetting DEFAULT_SW_SETTING = ScaleWeightSetting.TopNPercent;
+	                                                   
 	
 	/*
 	 * Requires the name of the row at least.
@@ -37,6 +48,8 @@ public class MatchingConfigRow {
 		non_agreement = DEFAULT_NON_AGREEMENT;
 		scale_weight = DEFAULT_SCALE_WEIGHT;
 		algorithm = DEFAULT_ALGORITHM;
+		sw_settings = DEFAULT_SW_SETTING;
+		sw_number = DEFAULT_SW_NUMBER;
 	}
 	
 	public String getName(){
@@ -131,5 +144,21 @@ public class MatchingConfigRow {
 		String ret = new String();
 		ret += name + "," + block_order + "," + block_chars + "," + include + "," + agreement + "," + non_agreement + "," + scale_weight + "," + algorithm;
 		return ret;
+	}
+
+	public Float getSw_number() {
+		return sw_number;
+	}
+
+	public void setSw_number(float sw_number) {
+		this.sw_number = sw_number;
+	}
+
+	public ScaleWeightSetting getSw_settings() {
+		return sw_settings;
+	}
+
+	public void setSw_settings(ScaleWeightSetting sw_settings) {
+		this.sw_settings = sw_settings;
 	}
 }

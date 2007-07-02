@@ -1,9 +1,15 @@
 package org.regenstrief.linkage.util;
 
-/*
+/**
  * Class created to go from Record Linkage data objects
  * to XML Document nodes and vice versa.
+ * 
+ * TODO: Make config more flexible  (ex: allow capital letters, spaces etc.)
+ * TODO: Add ScaleWeight parameters
+ * - A flag indicating whether to use null tokens when scaling agreement weight based on term frequency (default-no)
+ * - A flag indicating how to establish agreement among fields when one or both fields are null (eg, apply disagreement weight, apply agreement weight, or apply zero weight) (default-apply zero weight)
  */
+
 
 import java.io.*;
 import java.util.*;
@@ -14,6 +20,7 @@ import javax.xml.transform.stream.*;
 import javax.xml.transform.dom.*;
 
 import org.xml.sax.*;
+import org.regenstrief.linkage.analysis.DataSourceAnalyzer.ScaleWeightSetting;
 import org.regenstrief.linkage.db.LinkDBManager;
 import org.w3c.dom.*;
 
@@ -45,18 +52,18 @@ public class XMLTranslator {
 	public static boolean writeXMLDocToFile(Document d, File f){
 		try{
 			TransformerFactory transfac = TransformerFactory.newInstance();
-	        Transformer trans = transfac.newTransformer();
-	        trans.setOutputProperty(OutputKeys.INDENT, "yes");
+			Transformer trans = transfac.newTransformer();
+			trans.setOutputProperty(OutputKeys.INDENT, "yes");
 			
 			StringWriter sw = new StringWriter();
 			StreamResult sr = new StreamResult(sw);
 			DOMSource source = new DOMSource(d);
-	        trans.transform(source, sr);
-	        String xmlString = sw.toString();
-	        FileWriter fw = new FileWriter(f);
-	        fw.write(xmlString);
-	        fw.close();
-	        return true;
+			trans.transform(source, sr);
+			String xmlString = sw.toString();
+			FileWriter fw = new FileWriter(f);
+			fw.write(xmlString);
+			fw.close();
+			return true;
 		}
 		catch(TransformerConfigurationException tce){
 			//System.out.println("transformer config error");
@@ -202,6 +209,8 @@ public class XMLTranslator {
 		} else {
 			scale_weight.setTextContent("false");
 		}
+		scale_weight.setAttribute("lookup", mcr.getSw_settings().toString());
+		scale_weight.setAttribute("N",mcr.getSw_number().toString());
 		ret.appendChild(scale_weight);
 		
 		Element algorithm = doc.createElement("Algorithm");
@@ -237,6 +246,10 @@ public class XMLTranslator {
 				String tokentable = n.getAttributes().getNamedItem("tokentable").getTextContent();
 				String [] access = access_values.split(",");
 				sw_connection = new LinkDBManager(access[0], access[1], tokentable, access[2], access[3]);
+				sw_connection.connect();
+				
+				//	String use_null_tokens = n.getAttributes().getNamedItem("use_null_tokens").getTextContent();
+				//	String null_agreement = n.getAttributes().getNamedItem("null_agreement").getTextContent();
 			}
 		}
 		if(sw_connection == null) {
@@ -245,7 +258,7 @@ public class XMLTranslator {
 		else {
 			return new RecMatchConfig(lds1, lds2, mc_configs,sw_connection);
 		}
-
+		
 	}
 	
 	/*
@@ -271,26 +284,35 @@ public class XMLTranslator {
 	
 	public static DataColumn createDataColumn(Node dc){
 		// get the attributes of the node, create the data column object
-		String column_id = dc.getAttributes().getNamedItem("column_id").getTextContent();
-		String include_pos = dc.getAttributes().getNamedItem("include_position").getTextContent();
+		NamedNodeMap ds_properties = dc.getAttributes();
+		String column_id = ds_properties.getNamedItem("column_id").getTextContent();
+		String include_pos = ds_properties.getNamedItem("include_position").getTextContent();
 		int include_position;
 		if(include_pos.equals("NA")){
 			include_position = DataColumn.INCLUDE_NA;
 		} else {
 			include_position = Integer.parseInt(include_pos);
 		}
-		String name = dc.getAttributes().getNamedItem("label").getTextContent();
+		String name = ds_properties.getNamedItem("label").getTextContent();
 		DataColumn ret = new DataColumn(column_id);
 		ret.setIncludePosition(include_position);
 		ret.setName(name);
 		
-		String type = dc.getAttributes().getNamedItem("type").getTextContent();
+		String type = ds_properties.getNamedItem("type").getTextContent();
 		if(type.equals("number")){
 			ret.setType(DataColumn.NUMERIC_TYPE);
 		} else {
 			ret.setType(DataColumn.STRING_TYPE);
 		}
-		
+		try {
+			int non_null_count = Integer.parseInt(ds_properties.getNamedItem("n_non_null").getTextContent());
+			int null_count = Integer.parseInt(ds_properties.getNamedItem("n_null").getTextContent());
+			ret.setNonNullCont(non_null_count);
+			ret.setNullCount(null_count);
+		} catch(NumberFormatException e) {
+			System.out.println("Error: Wrong number format");
+		}
+			
 		return ret;
 	}
 	
@@ -360,8 +382,30 @@ public class XMLTranslator {
 				ret.setNonAgreement(Double.parseDouble(na));
 			} else if(child_name.equals("ScaleWeight")){
 				String sw = child.getTextContent();
-				if(sw.equals("True")){
+				if(sw.equals("true")){
 					ret.setScaleWeight(true);
+					NamedNodeMap settings = child.getAttributes();
+					if(settings != null) {
+						String lookup = settings.getNamedItem("lookup").getTextContent();
+						ScaleWeightSetting lookup_setting = null;
+						if(lookup.equals(ScaleWeightSetting.AboveN.toString())) {
+							lookup_setting = ScaleWeightSetting.AboveN;
+						} else if(lookup.equals(ScaleWeightSetting.BelowN.toString())) {
+							lookup_setting = ScaleWeightSetting.BelowN;
+						} else if(lookup.equals(ScaleWeightSetting.BottomN.toString())) {
+							lookup_setting = ScaleWeightSetting.BottomN;
+						} else if(lookup.equals(ScaleWeightSetting.BottomNPercent.toString())) {
+							lookup_setting = ScaleWeightSetting.BottomNPercent;
+						} else 	if(lookup.equals(ScaleWeightSetting.TopN.toString())) {
+							lookup_setting = ScaleWeightSetting.TopN;
+						} else 	if(lookup.equals(ScaleWeightSetting.TopNPercent.toString())) {
+							lookup_setting = ScaleWeightSetting.TopNPercent;
+						}
+						
+						Float N = Float.parseFloat(settings.getNamedItem("N").getTextContent());
+						ret.setSw_number(N);
+						ret.setSw_settings(lookup_setting);
+					}
 				}
 			} else if(child_name.equals("Algorithm")){
 				String alg = child.getTextContent();

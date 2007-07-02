@@ -10,78 +10,148 @@ import org.regenstrief.linkage.io.DataSourceReader.Job;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
-
+import java.util.*;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
 /**
- * @author sarpc
- * Used to analyze character delimited files
+ * @author sarpc Used to analyze character delimited files
  * 
- * TODO: Add getNonNullCount, getNullCount
+ * TODO: Test with PostgreSQL
  */
 public class CharDelimFileAnalyzer extends DataSourceAnalyzer {
 	
-	private CharDelimFileReader reader;
-	
-	public CharDelimFileAnalyzer(LinkDataSource lds, MatchingConfig mc, LinkDBManager ldbmanager) {
+	public CharDelimFileAnalyzer(LinkDataSource lds, MatchingConfig mc,
+			LinkDBManager ldbmanager) {
 		super(ldbmanager);
-		reader = new CharDelimFileReader(lds,mc,Job.Analysis);
+		reader = new CharDelimFileReader(lds, mc, Job.Analysis);
+		datasource_id = reader.data_source.getDataSource_ID();
 	}
 	
-	// TODO: Find how to reset a CharDelimFileReader
-	public int getNumberOfRecords() {
+	public void analyzeTokenFrequencies(DataColumn target_column) {
+		long start = System.currentTimeMillis();
+		int loop_count = 0;
+		while (reader.hasNextRecord()) {
+			Record current_record = reader.nextRecord();
+			String column_value = current_record.getDemographic(target_column
+					.getName());
+			if (!column_value.equals("") && column_value != null) {
+				int record_frequency = sw_connection.getTokenFrequency(
+						target_column, datasource_id, column_value);
+				record_frequency++;
+				addOrUpdateToken(target_column, datasource_id, column_value, record_frequency);
+			}
+			loop_count++;
+		}
+		finishAnalysis();
+		long end = System.currentTimeMillis();
+		System.out.println("Time ellapsed: " + (end - start) + " Loop Count: "
+				+ loop_count);
+	}
+	
+	public void analyzeTokenFrequencies(DataColumn target_column, int size) {
+		long start = System.currentTimeMillis();
+		PriorityQueue<AnalysisObject> pq = new PriorityQueue<AnalysisObject>(
+				size,AnalysisObject.FrequencyComparator);
+		Hashtable<String, Integer> ht = new Hashtable<String, Integer>(2 * size);
+		int loop_count = 0;
+		int hash_table = 0;
+		int dirty_read = 0;
+		while (reader.hasNextRecord()) {
+			Record current_record = reader.nextRecord();
+			String column_value = current_record.getDemographic(target_column
+					.getName());
+			if (!column_value.equals("") && column_value != null) {
+				try {
+					int frequency = ht.get(column_value);
+					boolean changed = pq.remove(new AnalysisObject(column_value, frequency));
+					frequency++;
+					ht.remove(column_value);
+					ht.put(column_value, frequency);
+					pq.add(new AnalysisObject(column_value, frequency));
+					hash_table++;
+					
+				} catch (NullPointerException e) {
+					int record_frequency = sw_connection.getTokenFrequency(
+							target_column, datasource_id, column_value) + 1;
+					AnalysisObject ao = new AnalysisObject(column_value,
+							record_frequency);
+					
+					int num_el = ht.size();
+					if (num_el < size) {
+						ht.put(column_value, record_frequency);
+						pq.add(ao);
+						hash_table++;
+					} else {
+						AnalysisObject min_freq = (AnalysisObject) pq.element();
+						dirty_read++;
+						if (record_frequency > min_freq.frequency) {
+							ht.remove(min_freq.token);
+							addOrUpdateToken(target_column, datasource_id, min_freq.token, min_freq.frequency);
+							ht.put(column_value, record_frequency);
+							pq.remove();
+							pq.add(ao);
+						}
+						else {
+							addOrUpdateToken(target_column, datasource_id, column_value, record_frequency);
+						}
+					}
+				}
+			}
+			loop_count++;
+		}
+		
+		for(Enumeration e = ht.keys(); e.hasMoreElements();) {
+			String token = (String) e.nextElement(); 
+			Integer frequency =	ht.get(token);
+			addOrUpdateToken(target_column, datasource_id, token, frequency);
+		}
+		
+		finishAnalysis();
+		long end = System.currentTimeMillis();
+		System.out.println("Time ellapsed: " + (end - start) + " Loop Count: "
+				+ loop_count + "Hash table: " + hash_table);
+	}
+		
+	public int getRecordCount() {
 		int no_records = 0;
-		while(reader.hasNextRecord()) {
+		while (reader.hasNextRecord()) {
 			reader.nextRecord();
 			no_records++;
 		}
-		reader.reset();
+		finishAnalysis();
 		return no_records;
 	}
 	
-	/*
-	 * This method calculates frequencies of the tokens in a given column, and sets
-	 * the number of null and non-null values in the given DataColumn, as well as the
-	 * total record count in the given DataSource
-	 * 
-	 * @return Returned table is indexed by value in the given column,
-	 * and the value in the hashtable is the frequency  
-	 */
-	public Hashtable<String,Integer> getTokenFrequencies(DataColumn target_column){
-		int null_count = 0;
-		int total_count = 0;
-		Hashtable<String,Integer> frequencies = new Hashtable<String,Integer>();
-		while(reader.hasNextRecord()) {
+	public int getNonNullCount(DataColumn target_column) {
+		int non_null_count = 0;
+		while (reader.hasNextRecord()) {
 			Record current_record = reader.nextRecord();
-			String column_value = current_record.getDemographic(target_column.getName());
-			if(column_value.equals("") || column_value == null){
+			String column_value = current_record.getDemographic(target_column
+					.getName());
+			if (!column_value.equals("") && column_value != null) {
+				non_null_count++;
+			}
+		}
+		finishAnalysis();
+		return non_null_count;
+	}
+	
+	public int getNullCount(DataColumn target_column) {
+		int null_count = 0;
+		while (reader.hasNextRecord()) {
+			Record current_record = reader.nextRecord();
+			String column_value = current_record.getDemographic(target_column
+					.getName());
+			if (column_value.equals("") || column_value == null) {
 				null_count++;
-				total_count++;
 			}
-			int record_frequency;
-			try {
-				record_frequency = frequencies.get(column_value);
-			}
-			catch(NullPointerException ex){
-				record_frequency = 0;
-			}
-			record_frequency++;
-			frequencies.put(column_value,record_frequency);
 		}
-		target_column.setNonNullCont(total_count-null_count);
-		target_column.setNullCount(null_count);
-		reader.data_source.setRecordCount(total_count);
-		
-		Enumeration freq_enum = frequencies.keys();
-		// store the frequencies in a relational database
-		while(freq_enum.hasMoreElements()) {
-			String value = (String) freq_enum.nextElement();
-			int frequency = frequencies.get(value);
-			System.out.println(value + ": " + frequency);
-			sw_connection.insertToken(target_column,reader.data_source.getDataSource_ID() ,value,frequency);
-		}
-		
-		return frequencies;
+		finishAnalysis();
+		return null_count;
+	}
+	
+	public void finishAnalysis() {
+		reader.reset();
 	}
 }

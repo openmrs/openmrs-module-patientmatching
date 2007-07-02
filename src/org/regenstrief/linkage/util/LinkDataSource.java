@@ -53,6 +53,20 @@ public class LinkDataSource {
 	}
 	
 	/**
+	 * 
+	 * @param names
+	 * @return
+	 */
+	public boolean[] getScaleWeightOrNotArray(String[] names, int ColumnCount) {
+		boolean[] include = new boolean[ColumnCount];
+		for(int i = 0; i < names.length; i++){
+			int index = getDisplayPositionByName(names[i]);
+			include[index] = true;
+		}
+		return include;
+	}
+	
+	/**
 	 * Returns the column ID values for the given array of
 	 * 
 	 * 
@@ -124,6 +138,17 @@ public class LinkDataSource {
 		this.type = type;
 	}
 
+	public DataColumn getDataColumnByIncludePosition(int column_id) {
+		Iterator<DataColumn> it = column_settings.iterator();
+		while(it.hasNext()){
+			DataColumn dc = it.next();
+			if(dc.getIncludePosition() == column_id){
+				return dc;
+			}
+		}
+		return null;
+	}
+	
 	public DataColumn getDataColumn(int data_position){
 		return column_settings.get(data_position);
 	}

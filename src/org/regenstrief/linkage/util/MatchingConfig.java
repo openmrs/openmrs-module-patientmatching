@@ -1,6 +1,6 @@
 package org.regenstrief.linkage.util;
 /*
- * Code refactored in February 2007.  The MatchingConfig boject
+ * Code refactored in February 2007.  The MatchingConfig object
  * was disentangled from the GUI and other classes added to hold
  * the 
  */
@@ -53,6 +53,17 @@ public class MatchingConfig {
 		}
 		double_format = NumberFormat.getInstance();
 		double_format.setMaximumFractionDigits(DOUBLE_SIG_FIGS);
+	}
+	
+	public MatchingConfigRow getMatchingConfigRowByName(String name) {
+		Iterator<MatchingConfigRow> it = row_options.iterator();
+		while(it.hasNext()) {
+			MatchingConfigRow mcr = it.next();
+			if(mcr.getName().equals(name)) {
+				return mcr;
+			}
+		}
+		return null;
 	}
 	
 	public List<MatchingConfigRow> getMatchingConfigRows(){
@@ -142,17 +153,18 @@ public class MatchingConfig {
 				ret.add(mcr);
 			}
 		}
-		
 		return ret;
 	}
 	
+
 	/**
-	 * Returns the indices of the columns for weight scaling
+	 * Returns the names of the columns for weight scaling (among included ones)
 	 * 
 	 * @return an array of the column names included in weight scaling,
 	 * null if no fields require weight scaling
 	 */
-	public String[] getScaleWeightColumns() {
+	
+	public String[] getScaleWeightColumnNames() {
 		int num_rows = row_options.size();
 		
 		// in the worst case, all columns will have weight scaling
@@ -161,7 +173,7 @@ public class MatchingConfig {
 		// find rows in the config that have specified weight scaling
 		while(it.hasNext()) {
 			MatchingConfigRow mcr = it.next();
-			if(mcr.isScaleWeight()) {
+			if(mcr.isScaleWeight() && mcr.isIncluded()) {
 				scale_weight_columns.add(mcr.getName());
 			}
 		}
@@ -173,7 +185,6 @@ public class MatchingConfig {
 			String [] result  = new String[scale_weight_columns.size()];
 			return scale_weight_columns.toArray(result); 
 		}
-
 	}
 	
 	/**

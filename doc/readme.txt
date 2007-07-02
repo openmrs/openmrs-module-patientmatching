@@ -89,5 +89,7 @@ BlckChars – the number of characters to block on if the field is a blocking fiel
 Include – indicates if the field will be compared between records
 TAgreement – the true agreement value
 NonAgreement – the non agreement value
-ScaleWeight – unused now, inserted to support weight scaling at some point
+ScaleWeight - true for enabling weight scaling, null for disabling
+	lookup - Determines the tokens that will be loaded to the lookup table. Possible values are: TopN, TopNPercent, AboveN, BelowN, BottomNPercent, BottomN
+	N - Defines the size of the lookup table, must be a decimal number, use a number between 0.0 and 1.0 for percentages 
 Algorithm – the comparator to use for this field.  Options are Exact Match, LEV, LCS, and JWC

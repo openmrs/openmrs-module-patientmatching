@@ -28,7 +28,7 @@
 			<Include>false</Include>
 			<TAgreement>0.9</TAgreement>
 			<NonAgreement>0.1</NonAgreement>
-			<ScaleWeight>null</ScaleWeight>
+			<ScaleWeight lookup="TopN" N="10.0">true</ScaleWeight>
 			<Algorithm>Exact Match</Algorithm>
 		</row>
 		<row name="mb">

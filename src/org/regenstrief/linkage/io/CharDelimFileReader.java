@@ -18,9 +18,12 @@ import java.util.Vector;
 
 public class CharDelimFileReader extends DataSourceReader{
 	
-	File sorted_file;
-	BufferedReader file_reader;
-	Record next_record;
+	private File sorted_file;
+	private File switched_file;
+	private BufferedReader file_reader;
+	private Record next_record;
+	private Job functionality;
+	
 	
 	/**
 	 * The constructor sorts the file according to the blocking variables and opens
@@ -32,9 +35,11 @@ public class CharDelimFileReader extends DataSourceReader{
 	 */
 	public CharDelimFileReader(LinkDataSource lds, MatchingConfig mc, Job functionality){
 		super(lds, mc);
+		this.functionality = functionality;
+		
 		File raw_file = new File(lds.getName());
-		File switched_file = switchColumns(raw_file);
-		if(functionality == Job.valueOf("Read"))
+		switched_file = switchColumns(raw_file);
+		if(functionality == Job.Read)
 		{
 			char raw_file_sep = lds.getAccess().charAt(0);
 			sorted_file = sortInputFile(switched_file, raw_file_sep);
@@ -58,26 +63,26 @@ public class CharDelimFileReader extends DataSourceReader{
 				next_record = null;
 			}
 		}
-
+		
 	}
 	
 	/*
-	public CharDelimFileReader(LinkDataSource lds){
-		super(lds);
-		File raw_file = new File(lds.getName());
-	//	char raw_file_sep = lds.getAccess().charAt(0);
-		File switched_file = switchColumns(raw_file);
-	//	sorted_file = sortInputFile(switched_file, raw_file_sep);
-		try{
-			file_reader = new BufferedReader(new FileReader(switched_file));
-			next_record = line2Record(file_reader.readLine());
-		}
-		catch(IOException ioe){
-			file_reader = null;
-			next_record = null;
-		}
-	}
-	*/
+	 public CharDelimFileReader(LinkDataSource lds){
+	 super(lds);
+	 File raw_file = new File(lds.getName());
+	 //	char raw_file_sep = lds.getAccess().charAt(0);
+	  File switched_file = switchColumns(raw_file);
+	  //	sorted_file = sortInputFile(switched_file, raw_file_sep);
+	   try{
+	   file_reader = new BufferedReader(new FileReader(switched_file));
+	   next_record = line2Record(file_reader.readLine());
+	   }
+	   catch(IOException ioe){
+	   file_reader = null;
+	   next_record = null;
+	   }
+	   }
+	   */
 	
 	/*
 	 * Class switches columns
@@ -211,6 +216,21 @@ public class CharDelimFileReader extends DataSourceReader{
 	 * Returns a boolean indicating if the reset of the reader was successful.
 	 */
 	public boolean reset(){
-		return false;
+		try {
+			file_reader.close();
+			if(functionality == Job.Read) {
+				file_reader = new BufferedReader(new FileReader(sorted_file));
+				next_record = line2Record(file_reader.readLine());
+				
+			}
+			else {
+				file_reader = new BufferedReader(new FileReader(switched_file));
+				next_record = line2Record(file_reader.readLine());
+			}
+			return true;
+		} catch (Exception e1) {
+			return false;
+		}
+		
 	}
 }

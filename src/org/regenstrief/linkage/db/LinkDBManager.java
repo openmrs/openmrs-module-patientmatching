@@ -58,7 +58,6 @@ public class LinkDBManager {
 		this.table = table;
 		this.user = user;
 		this.passwd = passwd;
-		connect();
 	}
 	
 	public LinkDBManager(String driver, String url, String table, String user, String passwd, LinkDataSource lds){
@@ -72,6 +71,39 @@ public class LinkDBManager {
 	
 	public boolean insertToken(DataColumn field, String id, String token, int frequency){
 		String query = "INSERT INTO " + table +  " VALUES (" + id + "," + field.getColumnID() + ",'" + token + "'," + frequency + ")"; 
+		return executeUpdate(query);
+	}
+	
+	public int getTokenFrequency(DataColumn field, String id, String token) {
+		String query = "SELECT frequency FROM " + table + " WHERE token = '" + token + "' AND datasource_id = " + id + " AND field_id = " + field.getColumnID();
+		try{
+			Statement stmt = db.createStatement();
+			ResultSet rows = stmt.executeQuery(query);
+			if(rows.next()) {
+				int frequency = rows.getInt(1);
+				// Check if more than one row is returned
+				if(!rows.next()) {
+					// Return frequency if only one row is returned
+					return frequency;
+				}
+				else {
+					// If more than one row is returned, it means that there is something wrong
+					return -1;
+				}
+			}
+			// ResultSet is empty, it means that token is not in the database
+			else {
+				return 0;
+			}
+		}
+		catch (Exception e) {
+			return -1;
+		}
+			
+	}
+	
+	public boolean updateTokenFrequency(DataColumn field, String id, String token, int frequency) {
+		String query = "UPDATE " + table + " SET frequency = " + frequency + " WHERE datasource_id = " + id + " AND field_id = " + field.getColumnID() + " AND token = '" + token + "'";
 		return executeUpdate(query);
 	}
 	
@@ -100,6 +132,28 @@ public class LinkDBManager {
 		}
 	}
 	
+	public ResultSet getResultSet(String query) {
+		try {
+			Statement stmt = db.createStatement();
+			ResultSet rs = stmt.executeQuery(query);
+			return rs;
+		}
+		catch(SQLException sqle) {
+			return null;
+		}
+	}
+	
+	public int executeQuery(String query) {
+		try {
+			Statement stmt = db.createStatement();
+			ResultSet rs = stmt.executeQuery(query);
+			rs.next();
+			return rs.getInt(1);
+		}
+		catch(SQLException sqle) {
+			return -1;
+		}
+	}
 	public boolean executeUpdate(String query) {
 		int updated_rows = 0;
 		try{
@@ -276,17 +330,7 @@ public class LinkDBManager {
 	 */
 	public int getRecordCountFromDB(String demographic, String value){
 		String query = "SELECT COUNT(*) FROM " + table + " WHERE " + demographic + " = '" + value + "'";
-		int count = 0;
-		try{
-			Statement stmt = db.createStatement();
-			ResultSet rows = stmt.executeQuery(query);
-			rows.next();
-			count = rows.getInt(1);
-		}
-		catch(Exception e){
-			return -1;
-		}
-		return count;
+		return executeQuery(query);
 	}
 	
 	/**
