@@ -77,9 +77,9 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 					if(link_db.addRecordToDB(PatientMatchingActivator.patientToRecord(just_added))){
 						if(log.isDebugEnabled()){
 							log.debug("LinkDBManager object successfully added patient");
-						} else {
-							log.warn("Error when using LinkDBManager object to add patient to linkage table");
 						}
+					} else {
+						log.warn("Error when using LinkDBManager object to add patient " + just_added.getPatientId() + " to linkage table");
 					}
 					
 				}
