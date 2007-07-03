@@ -1,7 +1,7 @@
 /**
- * Just to see if I can commit code
- * I will be using this class to test by modifications
- * (Temporarily)
+ * Used to test weight scaling functionality
+ * 
+ * @author sarpc
  */
 
 package org.openmrs.module.testing;
@@ -13,14 +13,15 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.regenstrief.linkage.analysis.*;
+import org.regenstrief.linkage.analysis.DataSourceAnalyzer.ScaleWeightSetting;
 import org.regenstrief.linkage.db.LinkDBManager;
+import org.regenstrief.linkage.io.CharDelimFileReader;
 import org.regenstrief.linkage.io.DataSourceReader;
+import org.regenstrief.linkage.io.DataSourceReader.Job;
 import org.regenstrief.linkage.util.*;
 import org.regenstrief.linkage.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
-
-import sun.awt.image.ImageWatched.Link;
 
 /**
  * @author sarpc
@@ -54,13 +55,15 @@ public class ScaleWeightTest {
 				}
 			}
 			
-			String[] scale_weights = mc_test.getScaleWeightColumns();
+			String[] scale_weights = mc_test.getScaleWeightColumnNames();
 			//System.out.println(scale_weights.toString());
 			
+			LinkDataSource lds1 =  rmc.getLinkDataSource1();
+			LinkDataSource lds2 = rmc.getLinkDataSource2();
 			
-			String ds1_type = rmc.getLinkDataSource1().getType();
-			String ds2_type = rmc.getLinkDataSource2().getType();
-			
+			String ds1_type = lds1.getType();
+			String ds2_type = lds2.getType();
+			CharDelimFileReader cdfr = new CharDelimFileReader(lds2,mc_test,Job.Read);
 			DataSourceAnalyzer analyzer1, analyzer2;
 			if(ds1_type.equals("DataBase")) {
 				analyzer1 = new DataBaseAnalyzer(rmc.getLinkDataSource1(),mc_test, rmc.getSw_connection());
@@ -76,13 +79,22 @@ public class ScaleWeightTest {
 				analyzer2 = new CharDelimFileAnalyzer(rmc.getLinkDataSource2(),mc_test, rmc.getSw_connection());
 			}
 			
-			DataColumn temp = rmc.getLinkDataSource2().getDataColumn(3);
+			DataColumn temp = rmc.getLinkDataSource2().getDataColumn(11);
 			
 			//LinkDataSource lds = new LinkDataSource("patientmatching_token","DataBase","com.mysql.jdbc.Driver,jdbc:mysql://localhost/patientmatching_datasource_analysis,root,, ");
 			
 			DataColumn dcc = rmc.getLinkDataSource1().getDataColumn(11);
-			Hashtable<String,Integer> deneme1 = analyzer1.getTokenFrequencies(dcc);
-			Hashtable<String,Integer> deneme2 = analyzer2.getTokenFrequencies(temp);
+		//	Hashtable<String,Integer> deneme1 = analyzer1.getTokenFrequencies(dcc);
+		//	Hashtable<String,Integer> deneme2 = analyzer2.getTokenFrequencies(temp);
+			CharDelimFileAnalyzer cda = (CharDelimFileAnalyzer) analyzer2;
+			//analyzer2.analyzeTokenFrequencies(temp, 500);
+		//	analyzer2.analyzeTokenFrequencies(temp);
+			//boolean res = analyzer2.deleteAnalysis(temp);
+			//System.out.println(analyzer1.getDistinctRecordCount(dcc) + "");
+			//analyzer1.analyzeTokenFrequencies(dcc, 500);
+			//analyzer1.getTokenFrequencies(dcc, ScaleWeightSetting.BottomNPercent, new Float(0.1) );
+			//lds2.getScaleWeightColumn(scale_weights, mc_test.getMatchingConfigRowCount());
+
 		}
 		
 		catch(ParserConfigurationException pce){
