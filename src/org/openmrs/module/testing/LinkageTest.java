@@ -13,7 +13,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.io.*;
-import org.regenstrief.linkage.io.DataSourceReader.Job;
 import org.regenstrief.linkage.util.*;
 import org.regenstrief.linkage.analysis.*;
 import org.w3c.dom.Document;
@@ -53,8 +52,8 @@ public class LinkageTest {
 			System.out.println(vt);
 			
 			// create readers and a FormPairs object
-			DataSourceReader dsr1 = new CharDelimFileReader(rmc.getLinkDataSource1(), mc_test,Job.Read);
-			DataSourceReader dsr2 = new CharDelimFileReader(rmc.getLinkDataSource2(), mc_test, Job.Read);
+			DataSourceReader dsr1 = new OrderedCharDelimFileReader(rmc.getLinkDataSource1(), mc_test);
+			DataSourceReader dsr2 = new OrderedCharDelimFileReader(rmc.getLinkDataSource2(), mc_test);
 			org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(dsr1, dsr2, mc_test, type_table);
 			
 			// iterate through the Record pairs and print the score

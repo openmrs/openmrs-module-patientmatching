@@ -6,7 +6,6 @@ package org.regenstrief.linkage;
  */
 
 import org.regenstrief.linkage.io.*;
-import org.regenstrief.linkage.io.DataSourceReader.Job;
 import org.regenstrief.linkage.util.*;
 import org.regenstrief.linkage.analysis.*;
 
@@ -23,9 +22,9 @@ public class MatchFinder {
 		this.matching_database = matching_database;
 		this.analytics = analytics;
 		if(matching_database.getType().equals("CharDelimFile")){
-			database_reader = new CharDelimFileReader(matching_database, analytics, Job.Read);
+			database_reader = new OrderedCharDelimFileReader(matching_database, analytics);
 		} else if(matching_database.getType().equals("DataBase")){
-			database_reader = new DataBaseReader(matching_database, analytics, Job.Read);
+			database_reader = new OrderedDataBaseReader(matching_database, analytics);
 		} else if(matching_database.getType().equals("Vector")){
 			database_reader = new VectorReader(matching_database, analytics);
 		}
@@ -38,9 +37,9 @@ public class MatchFinder {
 		this.matching_database = matching_database;
 		this.analytics = analytics;
 		if(matching_database.getType().equals("CharDelimFile")){
-			database_reader = new CharDelimFileReader(matching_database, analytics, Job.Read);
+			database_reader = new OrderedCharDelimFileReader(matching_database, analytics);
 		} else if(matching_database.getType().equals("DataBase")){
-			database_reader = new DataBaseReader(matching_database, analytics, Job.Read);
+			database_reader = new OrderedDataBaseReader(matching_database, analytics);
 		} else if(matching_database.getType().equals("Vector")){
 			database_reader = new VectorReader(matching_database, analytics);
 		}

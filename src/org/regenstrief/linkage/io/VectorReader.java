@@ -24,7 +24,13 @@ public class VectorReader extends DataSourceReader {
 	 * @param mc	the MatchingConfigObject to determine sort order
 	 */
 	public VectorReader(LinkDataSource lds, MatchingConfig mc){
-		super(lds, mc);
+		super(lds);
+		accessed = false;
+		data = buildRecord(lds);
+	}
+	
+	public VectorReader(LinkDataSource lds){
+		super(lds);
 		accessed = false;
 		data = buildRecord(lds);
 	}
@@ -36,7 +42,7 @@ public class VectorReader extends DataSourceReader {
 	 * @param r	the Record to be returned when nextRecord() is called
 	 */
 	public VectorReader(Record r){
-		super(null, null);
+		super(null);
 		accessed = false;
 		data = r;
 	}

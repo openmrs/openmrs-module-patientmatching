@@ -15,13 +15,15 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.regenstrief.linkage.Record;
-import org.regenstrief.linkage.analysis.VectorTable;
-import org.regenstrief.linkage.db.*;
-import org.regenstrief.linkage.io.CharDelimFileReader;
-import org.regenstrief.linkage.io.DataBaseReader;
+import org.regenstrief.linkage.db.LinkDBManager;
 import org.regenstrief.linkage.io.DataSourceReader;
-import org.regenstrief.linkage.io.DataSourceReader.Job;
-import org.regenstrief.linkage.util.*;
+import org.regenstrief.linkage.io.OrderedCharDelimFileReader;
+import org.regenstrief.linkage.io.OrderedDataBaseReader;
+import org.regenstrief.linkage.util.DataColumn;
+import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.RecMatchConfig;
+import org.regenstrief.linkage.util.ScorePair;
+import org.regenstrief.linkage.util.XMLTranslator;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -69,8 +71,8 @@ public class DBTest {
 					type_table.put(d.getName(), new Integer(d.getType()));
 				}
 			}
-			DataSourceReader dsr2 = new CharDelimFileReader(rmc.getLinkDataSource2(), test_mc, Job.Read);
-			DataSourceReader dsr1 = new DataBaseReader(rmc.getLinkDataSource1(), test_mc, Job.Read);
+			DataSourceReader dsr2 = new OrderedCharDelimFileReader(rmc.getLinkDataSource2(), test_mc);
+			DataSourceReader dsr1 = new OrderedDataBaseReader(rmc.getLinkDataSource1(), test_mc);
 			org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(dsr1, dsr2, test_mc, type_table);
 			
 			System.out.println("form pairs created");

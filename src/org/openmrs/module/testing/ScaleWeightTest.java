@@ -5,21 +5,26 @@
  */
 
 package org.openmrs.module.testing;
-import java.io.*;
-
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.regenstrief.linkage.analysis.*;
-import org.regenstrief.linkage.analysis.DataSourceAnalyzer.ScaleWeightSetting;
-import org.regenstrief.linkage.db.LinkDBManager;
+
+import org.regenstrief.linkage.analysis.CharDelimFileAnalyzer;
+import org.regenstrief.linkage.analysis.DataBaseAnalyzer;
+import org.regenstrief.linkage.analysis.DataSourceAnalyzer;
 import org.regenstrief.linkage.io.CharDelimFileReader;
-import org.regenstrief.linkage.io.DataSourceReader;
-import org.regenstrief.linkage.io.DataSourceReader.Job;
-import org.regenstrief.linkage.util.*;
-import org.regenstrief.linkage.*;
+import org.regenstrief.linkage.io.OrderedCharDelimFileReader;
+import org.regenstrief.linkage.util.DataColumn;
+import org.regenstrief.linkage.util.LinkDataSource;
+import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.RecMatchConfig;
+import org.regenstrief.linkage.util.XMLTranslator;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -63,7 +68,7 @@ public class ScaleWeightTest {
 			
 			String ds1_type = lds1.getType();
 			String ds2_type = lds2.getType();
-			CharDelimFileReader cdfr = new CharDelimFileReader(lds2,mc_test,Job.Read);
+			CharDelimFileReader cdfr = new OrderedCharDelimFileReader(lds2,mc_test);
 			DataSourceAnalyzer analyzer1, analyzer2;
 			if(ds1_type.equals("DataBase")) {
 				analyzer1 = new DataBaseAnalyzer(rmc.getLinkDataSource1(),mc_test, rmc.getSw_connection());

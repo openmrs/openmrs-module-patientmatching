@@ -18,11 +18,9 @@ import java.util.Vector;
 
 public class CharDelimFileReader extends DataSourceReader{
 	
-	private File sorted_file;
-	private File switched_file;
-	private BufferedReader file_reader;
-	private Record next_record;
-	private Job functionality;
+	protected File switched_file;
+	protected BufferedReader file_reader;
+	protected Record next_record;
 	
 	
 	/**
@@ -33,56 +31,22 @@ public class CharDelimFileReader extends DataSourceReader{
 	 * @param lds	the LinkDataSource with information of a character delimited file
 	 * @param mc	MatchingConfig object with the blocking variables information
 	 */
-	public CharDelimFileReader(LinkDataSource lds, MatchingConfig mc, Job functionality){
-		super(lds, mc);
-		this.functionality = functionality;
+	public CharDelimFileReader(LinkDataSource lds){
+		super(lds);
 		
 		File raw_file = new File(lds.getName());
 		switched_file = switchColumns(raw_file);
-		if(functionality == Job.Read)
-		{
-			char raw_file_sep = lds.getAccess().charAt(0);
-			sorted_file = sortInputFile(switched_file, raw_file_sep);
-			try{
-				file_reader = new BufferedReader(new FileReader(sorted_file));
-				next_record = line2Record(file_reader.readLine());
-			}
-			catch(IOException ioe){
-				file_reader = null;
-				next_record = null;
-			}
-		}
-		else
-		{
-			try{
-				file_reader = new BufferedReader(new FileReader(switched_file));
-				next_record = line2Record(file_reader.readLine());
-			}
-			catch(IOException ioe){
-				file_reader = null;
-				next_record = null;
-			}
-		}
+		char raw_file_sep = lds.getAccess().charAt(0);
 		
+		try{
+			file_reader = new BufferedReader(new FileReader(switched_file));
+			next_record = line2Record(file_reader.readLine());
+		}
+		catch(IOException ioe){
+			file_reader = null;
+			next_record = null;
+		}
 	}
-	
-	/*
-	 public CharDelimFileReader(LinkDataSource lds){
-	 super(lds);
-	 File raw_file = new File(lds.getName());
-	 //	char raw_file_sep = lds.getAccess().charAt(0);
-	  File switched_file = switchColumns(raw_file);
-	  //	sorted_file = sortInputFile(switched_file, raw_file_sep);
-	   try{
-	   file_reader = new BufferedReader(new FileReader(switched_file));
-	   next_record = line2Record(file_reader.readLine());
-	   }
-	   catch(IOException ioe){
-	   file_reader = null;
-	   next_record = null;
-	   }
-	   }
-	   */
 	
 	/*
 	 * Class switches columns
@@ -105,7 +69,7 @@ public class CharDelimFileReader extends DataSourceReader{
 			}
 		}
 		
-		File switched = new File(mc.getName() + "." + f.getName() + ".switched");
+		File switched = new File(data_source.getName() + "." + f.getName() + ".switched");
 		try{
 			ColumnSwitcher cs = new ColumnSwitcher(f, switched, order1, data_source.getAccess().charAt(0));
 			cs.switchColumns();
@@ -117,49 +81,7 @@ public class CharDelimFileReader extends DataSourceReader{
 		return switched;
 	}
 	
-	private File sortInputFile(File f, char sep){
-		// sort the data files based on their blocking variables
-		// the blocking order determines the sort order
-		// if the data file are different files, need to sort each
-		// using two ColumnSorter objects with the respective seperating characters
-		// method returns true or false depending on success of sorting
-		//int[] column_order = data_source.getIndexesOfColumnNames(mc.getBlockingColumns());
-		
-		// column IDs for character delimited file should hold line array index
-		// of column
-		int[] column_order = data_source.getIncludeIndexesOfColumnNames(mc.getBlockingColumns());
-		
-		
-		int[] column_types = new int[column_order.length];
-		for(int i = 0; i < column_order.length; i++){
-			column_types[i] = data_source.getColumnTypeByName(mc.getRowName(column_order[i]));
-		}
-		
-		// create ColumnSortOption objects for metafile
-		Vector<ColumnSortOption> options = new Vector<ColumnSortOption>();
-		for(int i = 0; i < column_order.length; i++){
-			// column order is zero based, column options needs to be 1 based
-			options.add(new ColumnSortOption(column_order[i] + 1, ColumnSortOption.ASCENDING, column_types[i]));
-		}
-		
-		// create FileOutputStream for the result of the sort
-		File sorted;
-		
-		sorted = new File(f.getName() + ".sorted");
-		try{
-			FileOutputStream data1_fos = new FileOutputStream(sorted);
-			ColumnSorter sort_data1 = new ColumnSorter(data_source.getAccess().charAt(0), options, f, data1_fos);
-			sort_data1.runSort();
-		}
-		catch(FileNotFoundException fnfe){
-			// if can't open the output stream at the stage, return signaling failure
-			// as the later steps make no sense without a file from this step
-			return null;
-		}
-		
-		
-		return sorted;
-	}
+	
 	
 	/**
 	 * Returns whether there are more records to be read from the reader.
@@ -218,15 +140,8 @@ public class CharDelimFileReader extends DataSourceReader{
 	public boolean reset(){
 		try {
 			file_reader.close();
-			if(functionality == Job.Read) {
-				file_reader = new BufferedReader(new FileReader(sorted_file));
-				next_record = line2Record(file_reader.readLine());
-				
-			}
-			else {
-				file_reader = new BufferedReader(new FileReader(switched_file));
-				next_record = line2Record(file_reader.readLine());
-			}
+			file_reader = new BufferedReader(new FileReader(switched_file));
+			next_record = line2Record(file_reader.readLine());			
 			return true;
 		} catch (Exception e1) {
 			return false;

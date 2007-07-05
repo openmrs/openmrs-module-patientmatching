@@ -20,9 +20,10 @@ import java.util.*;
  */
 public class DataBaseReader extends DataSourceReader {
 	
-	String driver, url, user, passwd, query;
-	public Connection db;
-	ResultSet data;
+	protected String driver, url, user, passwd, query;
+	protected Connection db;
+	protected ResultSet data;
+	protected boolean queried;
 	
 	// columns queried from the data base
 	List<DataColumn> incl_cols;
@@ -35,9 +36,10 @@ public class DataBaseReader extends DataSourceReader {
 	 * @param lds	contains the database connection information
 	 * @param mc	contains blocking variable information required in query construction
 	 */
-	public DataBaseReader(LinkDataSource lds, MatchingConfig mc, Job functionality){
-		super(lds, mc);
-
+	public DataBaseReader(LinkDataSource lds){
+		super(lds);
+		queried = false;
+		
 		// parse the string in access variable to get driver and URL info
 		// then create DB connection
 		// decide how to handle different failures later
@@ -50,12 +52,6 @@ public class DataBaseReader extends DataSourceReader {
 			
 			Class.forName(driver);
 			db = DriverManager.getConnection(url, user, passwd);
-			
-			if(functionality == Job.Read) {
-				query = constructQuery();
-				Statement stmt = db.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
-				data = stmt.executeQuery(query);
-			}
 		}
 		catch(ArrayIndexOutOfBoundsException aioobe){
 			db = null;
@@ -68,41 +64,22 @@ public class DataBaseReader extends DataSourceReader {
 		}
 	}
 	
-	public boolean executeUpdate(String query) {
-		int updated_rows = 0;
+	protected void getResultSet(){
+		queried = true;
 		try{
-			Statement stmt = db.createStatement();
-			updated_rows = stmt.executeUpdate(query);
+			query = constructQuery();
+			Statement stmt = db.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
+			data = stmt.executeQuery(query);
 		}
-		catch(SQLException sqle){
-			System.err.println(sqle.getMessage());
-			return false;
+		catch(SQLException se){
+			db = null;
 		}
-		
-		if(updated_rows > 0){
-			return true;
-		}
-		return false;
-	}
-	
-	public int getQueryResult(String query){
-		int count = 0;
-		try{
-			Statement stmt = db.createStatement();
-			ResultSet rows = stmt.executeQuery(query);
-			rows.next();
-			count = rows.getInt(1);
-		}
-		catch(Exception e){
-			return -1;
-		}
-		return count;
 	}
 	
 	/*
 	 * Construct a query based on the table name and blocking variables.
 	 */
-	private String constructQuery(){
+	public String constructQuery(){
 		String query = new String("SELECT ");
 		incl_cols = new ArrayList<DataColumn>();
 		Iterator<DataColumn> it = data_source.getDataColumns().iterator();
@@ -119,12 +96,7 @@ public class DataBaseReader extends DataSourceReader {
 		
 		query += incl_cols.get(incl_cols.size() - 1).getName();
 		query += " FROM " + data_source.getName();
-		query += " ORDER BY ";
-		String[] b_columns = mc.getBlockingColumns();
-		for(int i = 0; i < b_columns.length - 1; i++){
-			query += b_columns[i] + ", ";
-		}
-		query += b_columns[b_columns.length - 1];
+		
 		return query;
 	}
 	
@@ -145,6 +117,9 @@ public class DataBaseReader extends DataSourceReader {
 	}
 	
 	public Record nextRecord() {
+		if(!queried){
+			getResultSet();
+		}
 		try{
 			if(data.next()){
 				Record ret = new Record();
@@ -164,6 +139,9 @@ public class DataBaseReader extends DataSourceReader {
 	}
 	
 	public boolean hasNextRecord() {
+		if(!queried){
+			getResultSet();
+		}
 		try{
 			if(db != null){
 				return !data.isLast();
@@ -177,6 +155,9 @@ public class DataBaseReader extends DataSourceReader {
 	}
 
 	public boolean reset(){
+		if(!queried){
+			getResultSet();
+		}
 		try{
 			return data.first();
 		}

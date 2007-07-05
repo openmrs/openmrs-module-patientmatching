@@ -11,15 +11,10 @@ import java.util.*;
 
 public abstract class DataSourceReader {
 	
-	public enum Job { Analysis, Read}
-	
 	public LinkDataSource data_source;
 	
-	MatchingConfig mc;
-	
-	public DataSourceReader(LinkDataSource lds, MatchingConfig mc){
+	public DataSourceReader(LinkDataSource lds){
 		this.data_source = lds;
-		this.mc = mc;
 	}
 	
 	/**
