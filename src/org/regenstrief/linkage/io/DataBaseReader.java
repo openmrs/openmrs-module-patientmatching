@@ -6,8 +6,7 @@ import java.sql.*;
 import java.util.*;
 
 /**
- * Class opens a connection from a database to read Record objects.  Sorting
- * on the blocking variables is done within the SQL query.  For the LinkDataSource
+ * Class opens a connection from a database to read Record objects.  For the LinkDataSource
  * object, it is assumed that the access variable is a comma delimited string
  * with the parts:
  * 	Driver - the JDBC driver class name
@@ -29,12 +28,10 @@ public class DataBaseReader extends DataSourceReader {
 	List<DataColumn> incl_cols;
 	
 	/**
-	 * Constructor parses information from the LinkDataSource object and MatchingConfig
-	 * object, construct the query, connects to the database, and gets a ResultSet to
-	 * iterate over to create the Record objects.
+	 * Constructor parses information from the LinkDataSource
+	 * object and connects to the database.
 	 * 
 	 * @param lds	contains the database connection information
-	 * @param mc	contains blocking variable information required in query construction
 	 */
 	public DataBaseReader(LinkDataSource lds){
 		super(lds);
@@ -64,6 +61,13 @@ public class DataBaseReader extends DataSourceReader {
 		}
 	}
 	
+	/*
+	 * ResultSet is created when object is first used, not when constructor is called.
+	 * 
+	 * Method separated from cosntructor since the constructQuery() method might need elements only
+	 * in subclasses.  For example, OrderedDataBaseReader uses a MatchingConfig object to make the query,
+	 * and this class's constructur must be called before the object is assigned in the subclass.  
+	 */
 	protected void getResultSet(){
 		queried = true;
 		try{
@@ -79,7 +83,7 @@ public class DataBaseReader extends DataSourceReader {
 	/*
 	 * Construct a query based on the table name and blocking variables.
 	 */
-	public String constructQuery(){
+	protected String constructQuery(){
 		String query = new String("SELECT ");
 		incl_cols = new ArrayList<DataColumn>();
 		Iterator<DataColumn> it = data_source.getDataColumns().iterator();
@@ -98,22 +102,6 @@ public class DataBaseReader extends DataSourceReader {
 		query += " FROM " + data_source.getName();
 		
 		return query;
-	}
-	
-	/*
-	 * Uses a query to get the record size of the data source.
-	 */
-	public int getRecordSize(){
-		String query = "SELECT count(*) from " + data_source.getName();
-		try{
-			Statement stmt = db.createStatement();
-			ResultSet count = stmt.executeQuery(query);
-			return count.getInt(1);
-		}
-		catch(SQLException sqle){
-			return -1;
-		}
-		
 	}
 	
 	public Record nextRecord() {

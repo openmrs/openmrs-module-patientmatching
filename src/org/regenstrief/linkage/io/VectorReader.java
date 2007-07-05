@@ -6,7 +6,17 @@ import java.util.*;
 
 /**
  * This DataSourceReader holds one Record that is explicitly given
- * in the LinkDataSource object.
+ * in the LinkDataSource object.  There are multiple constructors:
+ * 
+ * (LinkDataSource, MatchingConfig) - this constructor does not use the MatchingCofnig
+ * object in any way, but mirrors how an ordered reader would be instantiated.  Since there is
+ * just one Record, there is no other orders in which to return it.  The LinkDataSource is parsed in 
+ * the same way as in the constructor without the MatchingConfig object.
+ * 
+ * (LinkDataSource) - this constructor parses the information to get the field values for
+ * the one Record described.
+ * 
+ * (Record) - this constructor just stores this given Record to be read later.
  *
  */
 

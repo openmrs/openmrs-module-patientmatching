@@ -12,12 +12,28 @@ import org.regenstrief.linkage.util.ColumnSortOption;
 import org.regenstrief.linkage.util.ColumnSorter;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
-
+/**
+ * Class extends CharDelimFileReader by taking a MatchingConfig object in
+ * the constructor.  Information in this object determines the order to sort
+ * the file by looking at the blocking variables.  This is necessary to
+ * provide one-pass Record pair forming.
+ * 
+ * The unix sort command is used to create a new file from the switched file
+ * which is then read.
+ *
+ */
 public class OrderedCharDelimFileReader extends CharDelimFileReader {
 	
 	private MatchingConfig mc;
 	private File sorted_file;
 	
+	/**
+	 * Constructs a reader, but returns the Records in order specified by the
+	 * blocking variables.
+	 * 
+	 * @param lds	the description of the data
+	 * @param mc	information on the record linkage options, containing blocking variable order (sort order)
+	 */
 	public OrderedCharDelimFileReader(LinkDataSource lds, MatchingConfig mc){
 		super(lds);
 		this.mc = mc;
@@ -77,6 +93,12 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader {
 		return sorted;
 	}
 	
+	/*
+	 * Need to override parent class since sorted file needs to be read, not
+	 * switched file.
+	 * 
+	 * @see org.regenstrief.linkage.io.CharDelimFileReader#reset()
+	 */
 	public boolean reset(){
 		try {
 			file_reader.close();

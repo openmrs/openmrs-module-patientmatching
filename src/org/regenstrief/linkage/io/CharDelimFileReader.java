@@ -10,9 +10,11 @@ import java.util.Vector;
 
 /**
  * Class reads lines from a character delimited file until the end of the file is
- * reached.  To fulfill the expectation of returning Records in order sorted on
- * the blocking values, the file is sorted either using UNIX sort command or a
- * Windows port of sort.  The sorted file is created and read from.
+ * reached.  The input file is first re-written to create a file of only the columns
+ * of interest.  This file is then read and Records created using column
+ * information in the LinkDataSource object.
+ * 
+ * As of July, 2007, class is hardwired to just parse pipe delimited files.
  *
  */
 
@@ -29,7 +31,6 @@ public class CharDelimFileReader extends DataSourceReader{
 	 * is set to null.
 	 * 
 	 * @param lds	the LinkDataSource with information of a character delimited file
-	 * @param mc	MatchingConfig object with the blocking variables information
 	 */
 	public CharDelimFileReader(LinkDataSource lds){
 		super(lds);
@@ -49,7 +50,7 @@ public class CharDelimFileReader extends DataSourceReader{
 	}
 	
 	/*
-	 * Class switches columns
+	 * Method switches columns.  Gets information from LinkDataSource object.
 	 * 
 	 * @param f	the file to modify
 	 * @return	the resulting file

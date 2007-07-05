@@ -1,9 +1,5 @@
 package org.regenstrief.linkage.io;
 
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -11,10 +7,25 @@ import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
 
+/**
+ * Class extends DataBaseReader by taking a MatchingConfig object in the 
+ * constructor providng Record order information in its blocking variable
+ * information.  A different result set is obtained by overriding the
+ * constructQuery() method.
+ *
+ */
+
 public class OrderedDataBaseReader extends DataBaseReader {
 	
 	private MatchingConfig mc;
 	
+	/**
+	 * Constructs a reader, but returns the Records in order specified by the
+	 * blocking variables.
+	 * 
+	 * @param lds	the description of the data
+	 * @param mc	information on the record linkage options, containing blocking variable order (sort order)
+	 */
 	public OrderedDataBaseReader(LinkDataSource lds, MatchingConfig mc){
 		super(lds);
 		this.mc = mc;
