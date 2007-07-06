@@ -20,21 +20,14 @@ package org.regenstrief.linkage.db;
  */
 
 import org.regenstrief.linkage.*;
-import org.regenstrief.linkage.analysis.VectorTable;
-import org.regenstrief.linkage.io.*;
 import org.regenstrief.linkage.util.*;
 
 import java.sql.*;
 import java.util.*;
 
-/*
- * TODO: Add Connect to all constructors
- */
-public class LinkDBManager {
-	String driver, url, table, user, passwd;
-	LinkDataSource lds;
-	Connection db;
-	
+public class RecordDBManager extends DBManager {
+
+	private LinkDataSource lds;
 	/**
 	 * Constructor parses the database connection information from the LinkDataSource
 	 * object and uses the given MatchingConfig object's analytical options
@@ -42,9 +35,10 @@ public class LinkDBManager {
 	 * 
 	 * @param lds	contains a description of the connection information for the database
 	 */
-	public LinkDBManager(LinkDataSource lds){
-		this.table = lds.getName();
+	public RecordDBManager(LinkDataSource lds){
+		super();
 		this.lds = lds;
+		table = lds.getName();
 		String[] access = lds.getAccess().split(",");
 		driver = access[0];
 		url = access[1];
@@ -52,15 +46,8 @@ public class LinkDBManager {
 		passwd = access[3];
 	}
 	
-	public LinkDBManager(String driver, String url, String table, String user, String passwd){
-		this.driver = driver;
-		this.url = url;
-		this.table = table;
-		this.user = user;
-		this.passwd = passwd;
-	}
-	
-	public LinkDBManager(String driver, String url, String table, String user, String passwd, LinkDataSource lds){
+	/* DELETED TO SEE WHAT HAPPENS
+	public RecordDBManager(String driver, String url, String table, String user, String passwd, LinkDataSource lds){
 		this.driver = driver;
 		this.url = url;
 		this.table = table;
@@ -68,108 +55,7 @@ public class LinkDBManager {
 		this.passwd = passwd;
 		this.lds = lds;
 	}
-	
-	public boolean insertToken(DataColumn field, String id, String token, int frequency){
-		String query = "INSERT INTO " + table +  " VALUES (" + id + "," + field.getColumnID() + ",'" + token + "'," + frequency + ")"; 
-		return executeUpdate(query);
-	}
-	
-	public int getTokenFrequency(DataColumn field, String id, String token) {
-		String query = "SELECT frequency FROM " + table + " WHERE token = '" + token + "' AND datasource_id = " + id + " AND field_id = " + field.getColumnID();
-		try{
-			Statement stmt = db.createStatement();
-			ResultSet rows = stmt.executeQuery(query);
-			if(rows.next()) {
-				int frequency = rows.getInt(1);
-				// Check if more than one row is returned
-				if(!rows.next()) {
-					// Return frequency if only one row is returned
-					return frequency;
-				}
-				else {
-					// If more than one row is returned, it means that there is something wrong
-					return -1;
-				}
-			}
-			// ResultSet is empty, it means that token is not in the database
-			else {
-				return 0;
-			}
-		}
-		catch (Exception e) {
-			return -1;
-		}
-			
-	}
-	
-	public boolean updateTokenFrequency(DataColumn field, String id, String token, int frequency) {
-		String query = "UPDATE " + table + " SET frequency = " + frequency + " WHERE datasource_id = " + id + " AND field_id = " + field.getColumnID() + " AND token = '" + token + "'";
-		return executeUpdate(query);
-	}
-	
-	public boolean connect(){
-		try{
-			Class.forName(driver);
-			db = DriverManager.getConnection(url, user, passwd);
-		}
-		catch(ClassNotFoundException cnfe){
-			db = null;
-			return false;
-		}
-		catch(SQLException se){
-			db = null;
-			return false;
-		}
-		return true;
-	}
-	
-	public void disconnect(){
-		try{
-			db.close();
-		}
-		catch(SQLException sqle){
-			
-		}
-	}
-	
-	public ResultSet getResultSet(String query) {
-		try {
-			Statement stmt = db.createStatement();
-			ResultSet rs = stmt.executeQuery(query);
-			return rs;
-		}
-		catch(SQLException sqle) {
-			return null;
-		}
-	}
-	
-	public int executeQuery(String query) {
-		try {
-			Statement stmt = db.createStatement();
-			ResultSet rs = stmt.executeQuery(query);
-			rs.next();
-			return rs.getInt(1);
-		}
-		catch(SQLException sqle) {
-			return -1;
-		}
-	}
-	public boolean executeUpdate(String query) {
-		int updated_rows = 0;
-		try{
-			Statement stmt = db.createStatement();
-			updated_rows = stmt.executeUpdate(query);
-		}
-		catch(SQLException sqle){
-			System.err.println(sqle.getMessage());
-			return false;
-		}
-		
-		if(updated_rows > 0){
-			return true;
-		}
-		return false;
-	}
+	*/
 	
 	/**
 	 * Method removes all database row that matches this Record object.  Method
@@ -386,9 +272,5 @@ public class LinkDBManager {
 		}
 		
 		return true;
-	}
-
-	public LinkDataSource getLds() {
-		return lds;
 	}
 }

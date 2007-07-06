@@ -68,8 +68,6 @@ public class LinkDataSource {
 	
 	/**
 	 * Returns the column ID values for the given array of
-	 * 
-	 * 
 	 * @param names
 	 * @return
 	 */
@@ -164,6 +162,22 @@ public class LinkDataSource {
 	
 	public List<DataColumn> getDataColumns(){
 		return column_settings;
+	}
+	
+	/**
+	 * Returns the DataColumns that have an include position
+	 * @return A Hashtable of DataColumns, indexed by column name
+	 */
+	public Hashtable<String, DataColumn> getIncludedDataColumns(){
+		Hashtable<String, DataColumn> columns = new Hashtable<String, DataColumn>(column_settings.size());
+		Iterator<DataColumn> it = column_settings.iterator();
+		while(it.hasNext()){
+			DataColumn dc = it.next();
+			if(dc.getIncludePosition() != DataColumn.INCLUDE_NA) {
+				columns.put(dc.getName(), dc);
+			}
+		}
+		return columns;
 	}
 	
 	/*

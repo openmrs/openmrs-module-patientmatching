@@ -1,8 +1,7 @@
 package org.regenstrief.linkage.util;
 
 
-import org.regenstrief.linkage.analysis.DataSourceAnalyzer;
-import org.regenstrief.linkage.analysis.DataSourceAnalyzer.ScaleWeightSetting;
+import org.regenstrief.linkage.analysis.SWAnalyzer.ScaleWeightSetting;
 
 /*
  * Class represents the matching options for one column of the data file.

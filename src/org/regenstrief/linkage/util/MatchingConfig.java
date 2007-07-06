@@ -17,6 +17,13 @@ public class MatchingConfig {
 	public static final int LCS = 2;
 	public static final int LEV = 3;
 	
+	// Indicates whether one or more rows have weight scaling
+	private boolean is_scale_weight = false;
+	// Stores information about how to connect to database where token frequencies are stored
+	private String sw_db_access;
+	// Name of the table where token frequencies are stored
+	private String sw_token_table;
+	
 	// datatype constants
 	public static final int NUMERIC_TYPE = 0;
 	public static final int STRING_TYPE = 1;
@@ -278,5 +285,29 @@ public class MatchingConfig {
 			ret += mcr + "\n";
 		}
 		return ret;
+	}
+
+	public boolean get_is_scale_weight() {
+		return is_scale_weight;
+	}
+
+	public void make_scale_weight() {
+		this.is_scale_weight = true;
+	}
+	
+	public String getSw_db_access() {
+		return sw_db_access;
+	}
+
+	public String getSw_token_table() {
+		return sw_token_table;
+	}
+
+	public void setSw_db_access(String sw_db_access) {
+		this.sw_db_access = sw_db_access;
+	}
+
+	public void setSw_token_table(String sw_token_table) {
+		this.sw_token_table = sw_token_table;
 	}
 }

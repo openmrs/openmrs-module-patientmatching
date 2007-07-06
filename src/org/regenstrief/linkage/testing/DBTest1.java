@@ -1,4 +1,4 @@
-package org.regenstrief.linkage;
+package org.regenstrief.linkage.testing;
 
 /*
  * Class written to test the linkage database management code.
@@ -11,16 +11,18 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.regenstrief.linkage.MatchFinder;
+import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.analysis.RecordFieldAnalyzer;
 import org.regenstrief.linkage.analysis.UnMatchableRecordException;
-import org.regenstrief.linkage.db.LinkDBManager;
+import org.regenstrief.linkage.db.RecordDBManager;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.RecMatchConfig;
 import org.regenstrief.linkage.util.XMLTranslator;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-public class DBTest {
+public class DBTest1 {
 
 	
 	public static void main(String[] args) {
@@ -40,7 +42,7 @@ public class DBTest {
 			Document doc = builder.parse(config);
 			RecMatchConfig rmc = XMLTranslator.createRecMatchConfig(doc);
 			MatchingConfig test_mc = rmc.getMatchingConfigs().get(0);
-			LinkDBManager ldbm = new LinkDBManager(rmc.getLinkDataSource1());
+			RecordDBManager ldbm = new RecordDBManager(rmc.getLinkDataSource1());
 			
 			MatchFinder mf = new MatchFinder(rmc.getLinkDataSource1(), test_mc, new RecordFieldAnalyzer());
 			Record test_find = new Record();

@@ -12,6 +12,7 @@ public class DataColumn {
 	public final static int INCLUDE_NA = -1;
 	public final static int UNKNOWN_COUNT = -1;
 	
+
 	public DataColumn(String column_id){
 		// Constructor requires a data position field, 
 		// data position is the one field of the object

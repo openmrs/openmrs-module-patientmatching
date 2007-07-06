@@ -1,37 +1,24 @@
 /**
  * Used to test weight scaling functionality
  * 
- * @author sarpc
+ * @author scentel
  */
 
-package org.openmrs.module.testing;
-import java.io.File;
-import java.io.IOException;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
+package org.regenstrief.linkage.testing;
+import java.io.*;
+
+import java.util.*;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
-import org.regenstrief.linkage.analysis.CharDelimFileAnalyzer;
-import org.regenstrief.linkage.analysis.DataBaseAnalyzer;
-import org.regenstrief.linkage.analysis.DataSourceAnalyzer;
+import org.regenstrief.linkage.analysis.*;
 import org.regenstrief.linkage.io.CharDelimFileReader;
-import org.regenstrief.linkage.io.OrderedCharDelimFileReader;
-import org.regenstrief.linkage.util.DataColumn;
-import org.regenstrief.linkage.util.LinkDataSource;
-import org.regenstrief.linkage.util.MatchingConfig;
-import org.regenstrief.linkage.util.RecMatchConfig;
-import org.regenstrief.linkage.util.XMLTranslator;
+import org.regenstrief.linkage.io.DataSourceReader.Job;
+import org.regenstrief.linkage.util.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-/**
- * @author sarpc
- *
- */
 public class ScaleWeightTest {
 	
 	public static void main(String[] args) {
@@ -68,20 +55,22 @@ public class ScaleWeightTest {
 			
 			String ds1_type = lds1.getType();
 			String ds2_type = lds2.getType();
-			CharDelimFileReader cdfr = new OrderedCharDelimFileReader(lds2,mc_test);
-			DataSourceAnalyzer analyzer1, analyzer2;
+			CharDelimFileReader cdfr = new CharDelimFileReader(lds2,mc_test,Job.Read);
+			String sw_access_parameter = mc_test.getSw_db_access();
+			String sw_token_table = mc_test.getSw_token_table();
+			SWAnalyzer analyzer1, analyzer2;
 			if(ds1_type.equals("DataBase")) {
-				analyzer1 = new DataBaseAnalyzer(rmc.getLinkDataSource1(),mc_test, rmc.getSw_connection());
+				analyzer1 = new DataBaseSWAnalyzer(rmc.getLinkDataSource1(),mc_test, sw_access_parameter, sw_token_table);
 
 			} else {
-				analyzer1 = new CharDelimFileAnalyzer(rmc.getLinkDataSource1(),mc_test, rmc.getSw_connection());
+				analyzer1 = new CharDelimFileSWAnalyzer(rmc.getLinkDataSource1(),mc_test, sw_access_parameter, sw_token_table);
 			}
 			
 			if(ds2_type.equals("DataBase")) {
-				analyzer2 = new DataBaseAnalyzer(rmc.getLinkDataSource2(),mc_test, rmc.getSw_connection());
+				analyzer2 = new DataBaseSWAnalyzer(rmc.getLinkDataSource2(),mc_test, sw_access_parameter, sw_token_table);
 
 			} else {
-				analyzer2 = new CharDelimFileAnalyzer(rmc.getLinkDataSource2(),mc_test, rmc.getSw_connection());
+				analyzer2 = new CharDelimFileSWAnalyzer(rmc.getLinkDataSource2(),mc_test, sw_access_parameter, sw_token_table);
 			}
 			
 			DataColumn temp = rmc.getLinkDataSource2().getDataColumn(11);
@@ -91,7 +80,7 @@ public class ScaleWeightTest {
 			DataColumn dcc = rmc.getLinkDataSource1().getDataColumn(11);
 		//	Hashtable<String,Integer> deneme1 = analyzer1.getTokenFrequencies(dcc);
 		//	Hashtable<String,Integer> deneme2 = analyzer2.getTokenFrequencies(temp);
-			CharDelimFileAnalyzer cda = (CharDelimFileAnalyzer) analyzer2;
+			CharDelimFileSWAnalyzer cda = (CharDelimFileSWAnalyzer) analyzer2;
 			//analyzer2.analyzeTokenFrequencies(temp, 500);
 		//	analyzer2.analyzeTokenFrequencies(temp);
 			//boolean res = analyzer2.deleteAnalysis(temp);

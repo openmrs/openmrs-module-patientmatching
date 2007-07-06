@@ -28,7 +28,7 @@ import org.openmrs.module.patientmatching.advice.PatientMatchingAdvice;
 import org.regenstrief.linkage.MatchFinder;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.analysis.RecordFieldAnalyzer;
-import org.regenstrief.linkage.db.LinkDBManager;
+import org.regenstrief.linkage.db.RecordDBManager;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.RecMatchConfig;
 import org.regenstrief.linkage.util.XMLTranslator;
@@ -89,7 +89,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	private Log log = LogFactory.getLog(this.getClass());
 	
 	private MatchFinder matcher;
-	private LinkDBManager link_db;
+	private RecordDBManager link_db;
 	
 	/**
 	 * Method calls the disconnect method in the LinkDBManager object.
@@ -176,7 +176,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 			Document doc = builder.parse(config);
 			RecMatchConfig rmc = XMLTranslator.createRecMatchConfig(doc);
 			MatchingConfig test_mc = rmc.getMatchingConfigs().get(0);
-			link_db = new LinkDBManager(rmc.getLinkDataSource1());
+			link_db = new RecordDBManager(rmc.getLinkDataSource1());
 			matcher = new MatchFinder(rmc.getLinkDataSource1(), test_mc, new RecordFieldAnalyzer());
 			
 		}

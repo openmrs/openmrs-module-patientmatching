@@ -36,8 +36,7 @@ A excerpt of a valid configuration file is:
 		. . .
 		<column include_position="17" column_id="openmrs_id" label="openmrs_id" type="string" n_non_null="-1" n_null="-1"/>
 	</datasource>
-	<scaleweight tokentable="<NameOfTheTableWhereTokensAreStored>" access="<JDBC driver>,<database URL>,<user>,<passwd>"/>
-	<run estimate="true" name="conversion">
+	<run estimate="true" name="conversion" swtokentable="NameOfTheTableWhereTokensAreStored" swaccess= "DBCdriver,databaseURL,user,passwd">
 		<row name="yb">
 			<BlockOrder>1</BlockOrder>
 			<BlckChars>40</BlckChars>
@@ -76,12 +75,12 @@ Datasource – a source of Record objects
 	Type – either is “string” or “numeric” and used in sorting and comparisons
 	N_non_null – number of records in data where the field is not null
 	N_null – number of records in data where the field is null
-Scaleweight - (Optional) Stores location of where token frequencies are stored
-	Tokentable - name of the table where token frequencies will be inserted into
-	Access - How to access the relational database, it’s a String holding connection information 	
+	N_unique - number of distinct tokens where the field is not null 
 Run – a set of link options to use with the datasources
 	Estimate – Whether to use EM to modify values
 	Name – a label for this configuration
+	swtokentable (optional) - name of the table where token frequencies will be inserted into
+	swaccess (optional) - How to access the relational database, it’s a String holding connection information 
 Row – the options for a field in the Record
 	Name – the name of the field, must match the label in the Datasource element
 BlockOrder – if the field is a blocking field, then uniquely number this starting with 1

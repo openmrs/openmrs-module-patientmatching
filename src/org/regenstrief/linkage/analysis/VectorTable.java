@@ -51,9 +51,10 @@ public class VectorTable {
 			// u[i] = Math.log( (1 - match_rate) / (1 - umatch_rate) ) / Math.log(2);
 			double m = Math.log(match_rate / umatch_rate) / Math.log(2);
 			double u = Math.log( (1 - match_rate) / (1 - umatch_rate) ) / Math.log(2);
+			
+
 			m_values.put(mcr.getName(), new Double(m));
 			u_values.put(mcr.getName(), new Double(u));
-			
 		}
 		
 		List<MatchVector> vectors = getPossibleMatchingVectors();
@@ -232,6 +233,26 @@ public class VectorTable {
 			}
 		}
 		return prob;
+	}
+	
+	/**
+	 * Returns scores for each demographic separately for the given MatchVector
+	 * @param mv
+	 * @return A hashtable of scores indexed by demographic
+	 */
+	public Hashtable<String, Double> getScoreVector(MatchVector mv) {
+		Hashtable<String, Double> score_vector = new Hashtable<String, Double>(mv.getSize() * 2);
+		List<String> demographics = mv.getDemographics();
+		Iterator<String> it = demographics.iterator();
+		while(it.hasNext()){
+			String d = it.next();
+			if(mv.matchedOn(d)){
+				score_vector.put(d, m_values.get(d).doubleValue());
+			} else {
+				score_vector.put(d, u_values.get(d).doubleValue());
+			}
+		}
+		return score_vector;
 	}
 	
 	private double getMatchVectorScore(MatchVector mv){

@@ -9,6 +9,10 @@ public class MatchVector {
 		match_table = new Hashtable<String,Boolean>();
 	}
 	
+	public int getSize() {
+		return match_table.size();
+	}
+	
 	/**
 	 * Method sets an entry to store whether the two records matched
 	 * on the given demographic.

@@ -1,20 +1,28 @@
-package org.openmrs.module.testing;
+package org.regenstrief.linkage.testing;
 
 /*
  * Class written to test objects and methods
  */
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.regenstrief.linkage.Record;
-import org.regenstrief.linkage.io.*;
-import org.regenstrief.linkage.util.*;
-import org.regenstrief.linkage.analysis.*;
+import org.regenstrief.linkage.analysis.VectorTable;
+import org.regenstrief.linkage.io.DataSourceReader;
+import org.regenstrief.linkage.io.OrderedCharDelimFileReader;
+import org.regenstrief.linkage.util.DataColumn;
+import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.RecMatchConfig;
+import org.regenstrief.linkage.util.ScorePair;
+import org.regenstrief.linkage.util.XMLTranslator;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 

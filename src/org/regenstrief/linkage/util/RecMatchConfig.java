@@ -6,7 +6,6 @@ import java.io.*;
 import javax.xml.parsers.*;
 
 import org.xml.sax.*;
-import org.regenstrief.linkage.db.LinkDBManager;
 import org.w3c.dom.*;
 
 /**
@@ -16,21 +15,13 @@ import org.w3c.dom.*;
  */
 
 public class RecMatchConfig {
-	private LinkDataSource lds1, lds2;
-	private LinkDBManager sw_connection;
+	private LinkDataSource lds1, lds2;	
 	List<MatchingConfig> mc_configs;
 	
 	public RecMatchConfig(LinkDataSource lds1, LinkDataSource lds2, List<MatchingConfig> mc_configs){
 		this.lds1 = lds1;
 		this.lds2 = lds2;
 		this.mc_configs = mc_configs;
-	}
-	
-	public RecMatchConfig(LinkDataSource lds1, LinkDataSource lds2, List<MatchingConfig> mc_configs, LinkDBManager sw_ds){
-		this.lds1 = lds1;
-		this.lds2 = lds2;
-		this.mc_configs = mc_configs;
-		this.sw_connection = sw_ds;
 	}
 	
 	/**
@@ -105,8 +96,5 @@ public class RecMatchConfig {
 			System.out.println("IO error parsing config file: " + ioe.getMessage());
 		}
 	}
-
-	public LinkDBManager getSw_connection() {
-		return sw_connection;
-	}
+	
 }

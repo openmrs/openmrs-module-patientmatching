@@ -20,8 +20,7 @@ import javax.xml.transform.stream.*;
 import javax.xml.transform.dom.*;
 
 import org.xml.sax.*;
-import org.regenstrief.linkage.analysis.DataSourceAnalyzer.ScaleWeightSetting;
-import org.regenstrief.linkage.db.LinkDBManager;
+import org.regenstrief.linkage.analysis.SWAnalyzer.ScaleWeightSetting;
 import org.w3c.dom.*;
 
 public class XMLTranslator {
@@ -154,6 +153,9 @@ public class XMLTranslator {
 		int n_null = dc.getNullCount();
 		ret.setAttribute("n_null", Integer.toString(n_null));
 		
+		int unique_non_null = dc.getUnique_non_null();
+		ret.setAttribute("n_unique", Integer.toString(unique_non_null));
+		
 		return ret;
 	}
 	
@@ -223,14 +225,15 @@ public class XMLTranslator {
 	public static RecMatchConfig createRecMatchConfig(Document doc){
 		List<MatchingConfig> mc_configs = new ArrayList<MatchingConfig>();
 		LinkDataSource lds1, lds2;
-		LinkDBManager sw_connection;
 		lds1 = null;
 		lds2 = null;
-		sw_connection = null;
 		
 		Element root_node = doc.getDocumentElement();
-		for(int i = 0; i < root_node.getChildNodes().getLength(); i++){
+		
+		// for each matching config
+		for(int i = 0; i < root_node.getChildNodes().getLength(); i++) {
 			Node n = root_node.getChildNodes().item(i);
+			
 			if(n.getNodeName().equals("datasource")){
 				LinkDataSource lds = createDataSource(n);
 				if(lds1 == null){
@@ -241,24 +244,11 @@ public class XMLTranslator {
 			} else if(n.getNodeName().equals("run")){
 				MatchingConfig mc = createMatchingConfig(n);
 				mc_configs.add(mc);
-			} else if(n.getNodeName().equals("scaleweight")) {
-				String access_values = n.getAttributes().getNamedItem("access").getTextContent();
-				String tokentable = n.getAttributes().getNamedItem("tokentable").getTextContent();
-				String [] access = access_values.split(",");
-				sw_connection = new LinkDBManager(access[0], access[1], tokentable, access[2], access[3]);
-				sw_connection.connect();
-				
-				//	String use_null_tokens = n.getAttributes().getNamedItem("use_null_tokens").getTextContent();
-				//	String null_agreement = n.getAttributes().getNamedItem("null_agreement").getTextContent();
 			}
 		}
-		if(sw_connection == null) {
-			return new RecMatchConfig(lds1, lds2, mc_configs);
-		}
-		else {
-			return new RecMatchConfig(lds1, lds2, mc_configs,sw_connection);
-		}
 		
+		return new RecMatchConfig(lds1, lds2, mc_configs);
+
 	}
 	
 	/*
@@ -307,8 +297,10 @@ public class XMLTranslator {
 		try {
 			int non_null_count = Integer.parseInt(ds_properties.getNamedItem("n_non_null").getTextContent());
 			int null_count = Integer.parseInt(ds_properties.getNamedItem("n_null").getTextContent());
+			int unique_non_null = Integer.parseInt(ds_properties.getNamedItem("n_unique").getTextContent());
 			ret.setNonNullCont(non_null_count);
 			ret.setNullCount(null_count);
+			ret.setUnique_non_null(unique_non_null);
 		} catch(NumberFormatException e) {
 			System.out.println("Error: Wrong number format");
 		}
@@ -321,12 +313,33 @@ public class XMLTranslator {
 	 * <run> XML DOM sub-tree
 	 */
 	public static MatchingConfig createMatchingConfig(Node mc){
-		String est = mc.getAttributes().getNamedItem("estimate").getTextContent();
+		NamedNodeMap attributes = mc.getAttributes();
+		String est = attributes.getNamedItem("estimate").getTextContent();
 		boolean estimate = false;
-		String mc_name = mc.getAttributes().getNamedItem("name").getTextContent();
+		String mc_name = attributes.getNamedItem("name").getTextContent();
 		if(est.equals("true")){
 			estimate = true;
 		}
+		// For weight scaling
+		Node access_node = attributes.getNamedItem("swaccess");
+		Node token_table_node = attributes.getNamedItem("swtokentable");
+		boolean is_scaleweight = false;
+		String access_value = null;
+		String token_table_value = null;
+		// Check if weight scaling nodes exist
+		if(access_node != null && token_table_node != null) {
+			access_value = access_node.getTextContent();
+			token_table_value = token_table_node.getTextContent();
+			// They may be present, but should not be empty
+			if(!token_table_value.equals("") && !access_value.equals("")) {
+				is_scaleweight = true;
+			}
+		}
+		
+		// For future work:
+		//	String use_null_tokens = n.getAttributes().getNamedItem("use_null_tokens").getTextContent();
+		//	String null_agreement = n.getAttributes().getNamedItem("null_agreement").getTextContent();
+		
 		// iterate over the children nodes and create the MatchingConfigRow objects
 		ArrayList<MatchingConfigRow> mcrs = new ArrayList<MatchingConfigRow>();
 		for(int i = 0; i < mc.getChildNodes().getLength(); i++){
@@ -344,6 +357,14 @@ public class XMLTranslator {
 		
 		MatchingConfig ret = new MatchingConfig(mc_name, mcr_array);
 		ret.setEstimate(estimate);
+		
+		// Reflect the settings to the MatchingConfig
+		if(is_scaleweight) {
+		ret.make_scale_weight();
+		ret.setSw_db_access(access_value);
+		ret.setSw_token_table(token_table_value);
+		}
+		
 		return ret;
 	}
 	

@@ -10,7 +10,7 @@ import org.openmrs.module.patientmatching.PatientMatchingActivator;
 import org.regenstrief.linkage.MatchFinder;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;
-import org.regenstrief.linkage.db.LinkDBManager;
+import org.regenstrief.linkage.db.RecordDBManager;
 
 /**
  * Class provides AOP advice for the OpenMRS PatientService methods
@@ -31,9 +31,9 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 	
 	private Log log = LogFactory.getLog(this.getClass());
 	private MatchFinder matcher;
-	private LinkDBManager link_db;
+	private RecordDBManager link_db;
 	
-	public PatientMatchingAdvice(MatchFinder matcher, LinkDBManager link_db){
+	public PatientMatchingAdvice(MatchFinder matcher, RecordDBManager link_db){
 		this.matcher = matcher;
 		this.link_db = link_db;
 	}

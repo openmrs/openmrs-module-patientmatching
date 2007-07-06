@@ -1,26 +1,26 @@
 package org.regenstrief.linkage.analysis;
-import org.regenstrief.linkage.db.LinkDBManager;
-import org.regenstrief.linkage.io.DataBaseReader;
-import org.regenstrief.linkage.io.OrderedDataBaseReader;
+
+import java.sql.*;
+import org.regenstrief.linkage.io.*;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
 
 /**
- * @author sarpc
+ * @author scentel
  * Used to analyze databases
  * 
  * TODO: Test with PostgreSQL
  */
 
-public class DataBaseAnalyzer extends DataSourceAnalyzer {
+public class DataBaseSWAnalyzer extends SWAnalyzer {
 	
 	private DataBaseReader db_reader;
 	private String data_table;
 	
-	public DataBaseAnalyzer(LinkDataSource lds, MatchingConfig mc, LinkDBManager ldbm) {
-		super(ldbm);
-		reader = new OrderedDataBaseReader(lds,mc);
+	public DataBaseSWAnalyzer(LinkDataSource lds, String access, String token_table) {
+		super(access, token_table);
+		reader = new DataBaseReader(lds);
 		datasource_id = reader.data_source.getDataSource_ID();
 		db_reader = (DataBaseReader) reader;
 		data_table = lds.getName();
@@ -56,19 +56,20 @@ public class DataBaseAnalyzer extends DataSourceAnalyzer {
 		for(int offset=0; offset < upper_limit ; offset = offset + record_limit ) {
 			// Use here a StringBuilder instead?
 			String query = "SELECT DISTINCT " + column_name + " AS token, COUNT(" + column_name + ") AS frequency FROM " + data_table + " GROUP BY " + column_name + " LIMIT " + offset + "," + record_limit;
-			/*try{
+			
+			/* try{
 				Statement stmt = db_reader.db.createStatement();
 				ResultSet rows = stmt.executeQuery(query);
 				while(rows.next()){
 					String token = rows.getString(1);
 					Integer frequency = rows.getInt(2);
-					addOrUpdateToken(target_column, datasource_id, token, frequency);
+					sw_connection.addOrUpdateToken(target_column, datasource_id, token, frequency);
 				}
-				
 			}
 			catch(SQLException sqle){
 				System.out.println("Error: " + sqle.getStackTrace());
-			}*/
+			}
+			*/
 		}
 	}
 }
