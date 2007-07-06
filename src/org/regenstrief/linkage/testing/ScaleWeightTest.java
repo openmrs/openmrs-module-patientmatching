@@ -14,7 +14,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.regenstrief.linkage.analysis.*;
 import org.regenstrief.linkage.io.CharDelimFileReader;
-import org.regenstrief.linkage.io.DataSourceReader.Job;
+import org.regenstrief.linkage.io.OrderedCharDelimFileReader;
 import org.regenstrief.linkage.util.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -55,19 +55,19 @@ public class ScaleWeightTest {
 			
 			String ds1_type = lds1.getType();
 			String ds2_type = lds2.getType();
-			CharDelimFileReader cdfr = new CharDelimFileReader(lds2,mc_test,Job.Read);
+			CharDelimFileReader cdfr = new OrderedCharDelimFileReader(lds2,mc_test);
 			String sw_access_parameter = mc_test.getSw_db_access();
 			String sw_token_table = mc_test.getSw_token_table();
 			SWAnalyzer analyzer1, analyzer2;
 			if(ds1_type.equals("DataBase")) {
-				analyzer1 = new DataBaseSWAnalyzer(rmc.getLinkDataSource1(),mc_test, sw_access_parameter, sw_token_table);
+				analyzer1 = new DataBaseSWAnalyzer(rmc.getLinkDataSource1(),sw_access_parameter, sw_token_table);
 
 			} else {
 				analyzer1 = new CharDelimFileSWAnalyzer(rmc.getLinkDataSource1(),mc_test, sw_access_parameter, sw_token_table);
 			}
 			
 			if(ds2_type.equals("DataBase")) {
-				analyzer2 = new DataBaseSWAnalyzer(rmc.getLinkDataSource2(),mc_test, sw_access_parameter, sw_token_table);
+				analyzer2 = new DataBaseSWAnalyzer(rmc.getLinkDataSource2(),sw_access_parameter, sw_token_table);
 
 			} else {
 				analyzer2 = new CharDelimFileSWAnalyzer(rmc.getLinkDataSource2(),mc_test, sw_access_parameter, sw_token_table);
