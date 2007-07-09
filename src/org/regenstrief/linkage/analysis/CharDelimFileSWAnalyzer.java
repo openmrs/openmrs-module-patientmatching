@@ -21,7 +21,7 @@ public class CharDelimFileSWAnalyzer extends SWAnalyzer {
 	public CharDelimFileSWAnalyzer(LinkDataSource lds, MatchingConfig mc, String access, String token_table) {
 		super(access, token_table);
 		reader = new OrderedCharDelimFileReader(lds, mc);
-		datasource_id = reader.data_source.getDataSource_ID();
+		datasource_id = "" + reader.data_source.getDataSource_ID();
 	}
 	
 	public void analyzeTokenFrequencies(DataColumn target_column) {
@@ -31,7 +31,7 @@ public class CharDelimFileSWAnalyzer extends SWAnalyzer {
 			Record current_record = reader.nextRecord();
 			String column_value = current_record.getDemographic(target_column
 					.getName());
-			if (!column_value.equals("") && column_value != null) {
+			if (column_value != null && !column_value.equals("")) {
 				int record_frequency = sw_connection.getTokenFrequencyFromDB(
 						target_column, datasource_id, column_value);
 				record_frequency++;

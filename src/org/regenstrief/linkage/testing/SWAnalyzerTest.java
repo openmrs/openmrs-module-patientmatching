@@ -1,5 +1,6 @@
 /**
- * Used to test weight scaling functionality
+ * Tests weight scaling functionality
+ * Old scheme (B)
  * 
  * @author scentel
  */
@@ -19,7 +20,7 @@ import org.regenstrief.linkage.util.*;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-public class ScaleWeightTest {
+public class SWAnalyzerTest {
 	
 	public static void main(String[] args) {
 		File config = new File(args[0]);
@@ -47,7 +48,7 @@ public class ScaleWeightTest {
 				}
 			}
 			
-			String[] scale_weights = mc_test.getScaleWeightColumnNames();
+			//String[] scale_weights = mc_test.getScaleWeightColumnNames();
 			//System.out.println(scale_weights.toString());
 			
 			LinkDataSource lds1 =  rmc.getLinkDataSource1();

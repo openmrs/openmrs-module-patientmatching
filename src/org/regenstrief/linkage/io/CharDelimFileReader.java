@@ -70,7 +70,7 @@ public class CharDelimFileReader extends DataSourceReader{
 			}
 		}
 		
-		File switched = new File(data_source.getName() + "." + f.getName() + ".switched");
+		File switched = new File(data_source.getName() + ".switched");
 		try{
 			ColumnSwitcher cs = new ColumnSwitcher(f, switched, order1, data_source.getAccess().charAt(0));
 			cs.switchColumns();

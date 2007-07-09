@@ -39,7 +39,7 @@ public abstract class SWAnalyzer {
 	public abstract int getNullCount(DataColumn target_column);
 		
 	public void setNonNullCount(DataColumn target_column) {
-		target_column.setNonNullCont(getNonNullCount(target_column));
+		target_column.setNonNullCount(getNonNullCount(target_column));
 	}
 	
 	public void setNullCount(DataColumn target_column) {

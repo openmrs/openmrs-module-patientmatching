@@ -42,7 +42,7 @@ public class DataColumn {
 		return n_non_null;
 	}
 	
-	public void setNonNullCont(int count){
+	public void setNonNullCount(int count){
 		n_non_null = count;
 	}
 	

@@ -149,7 +149,7 @@ public class FormPairs {
 	private int compareRecords(Record rec1, Record rec2){
 		String[] block_cols = mc.getBlockingColumns();
 		int ret = EQUAL;
-		for(int i = 0; i < block_cols.length; i++){
+		for(int i = 0; block_cols != null && i < block_cols.length; i++){
 			String comp = block_cols[i];
 			String str1 = rec1.getDemographic(comp);
 			String str2 = rec2.getDemographic(comp);

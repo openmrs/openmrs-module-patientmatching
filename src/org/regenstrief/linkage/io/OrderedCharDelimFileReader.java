@@ -2,6 +2,7 @@ package org.regenstrief.linkage.io;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -59,38 +60,59 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader {
 		
 		// column IDs for character delimited file should hold line array index
 		// of column
-		int[] column_order = data_source.getIncludeIndexesOfColumnNames(mc.getBlockingColumns());
-		
-		
-		int[] column_types = new int[column_order.length];
-		for(int i = 0; i < column_order.length; i++){
-			column_types[i] = data_source.getColumnTypeByName(mc.getRowName(column_order[i]));
+		String [] blocking_columns = mc.getBlockingColumns();
+		File sorted = new File(f.getPath() + ".sorted");
+		// if there are blocking columns
+		if(blocking_columns != null) {
+			int[] column_order = data_source.getIncludeIndexesOfColumnNames(blocking_columns);
+			
+			int[] column_types = new int[column_order.length];
+			for(int i = 0; i < column_order.length; i++){
+				column_types[i] = data_source.getColumnTypeByName(mc.getRowName(column_order[i]));
+			}
+			
+			// create ColumnSortOption objects for metafile
+			Vector<ColumnSortOption> options = new Vector<ColumnSortOption>();
+			for(int i = 0; i < column_order.length; i++){
+				// column order is zero based, column options needs to be 1 based
+				options.add(new ColumnSortOption(column_order[i] + 1, ColumnSortOption.ASCENDING, column_types[i]));
+			}
+			// create FileOutputStream for the result of the sort
+
+			try{
+				FileOutputStream data1_fos = new FileOutputStream(sorted);
+				ColumnSorter sort_data1 = new ColumnSorter(data_source.getAccess().charAt(0), options, f, data1_fos);
+				sort_data1.runSort();
+				data1_fos.close();
+			}
+			catch(FileNotFoundException fnfe){
+				// if can't open the output stream at the stage, return signaling failure
+				// as the later steps make no sense without a file from this step
+				return null;
+			} catch (IOException e) {
+				e.printStackTrace();
+				return null;
+			}
+			return sorted;
 		}
-		
-		// create ColumnSortOption objects for metafile
-		Vector<ColumnSortOption> options = new Vector<ColumnSortOption>();
-		for(int i = 0; i < column_order.length; i++){
-			// column order is zero based, column options needs to be 1 based
-			options.add(new ColumnSortOption(column_order[i] + 1, ColumnSortOption.ASCENDING, column_types[i]));
+		// When there are no blocking columns, write the file as it is
+		else {
+			try {
+				FileInputStream fis = new FileInputStream(f);
+				FileOutputStream fos = new FileOutputStream(sorted);
+			    byte[] buf = new byte[1024];
+			    int i = 0;
+			    while((i=fis.read(buf))!=-1) {
+			      fos.write(buf, 0, i);
+			    }
+			    fis.close();
+			    fos.close();
+			    return sorted;
+			} catch (Exception e) {
+				e.printStackTrace();
+				return null;
+			}
 		}
-		
-		// create FileOutputStream for the result of the sort
-		File sorted;
-		
-		sorted = new File(f.getName() + ".sorted");
-		try{
-			FileOutputStream data1_fos = new FileOutputStream(sorted);
-			ColumnSorter sort_data1 = new ColumnSorter(data_source.getAccess().charAt(0), options, f, data1_fos);
-			sort_data1.runSort();
-		}
-		catch(FileNotFoundException fnfe){
-			// if can't open the output stream at the stage, return signaling failure
-			// as the later steps make no sense without a file from this step
-			return null;
-		}
-		
-		
-		return sorted;
 	}
 	
 	/*

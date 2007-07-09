@@ -14,9 +14,9 @@ import org.w3c.dom.*;
  * MatchingConfig objects.
  */
 
-public class RecMatchConfig {
+public class RecMatchConfig implements Iterable<MatchingConfig> {
 	private LinkDataSource lds1, lds2;	
-	List<MatchingConfig> mc_configs;
+	private List<MatchingConfig> mc_configs;
 	
 	public RecMatchConfig(LinkDataSource lds1, LinkDataSource lds2, List<MatchingConfig> mc_configs){
 		this.lds1 = lds1;
@@ -24,6 +24,10 @@ public class RecMatchConfig {
 		this.mc_configs = mc_configs;
 	}
 	
+	public Iterator<MatchingConfig> iterator() {
+		return mc_configs.iterator();
+	}
+		
 	/**
 	 * 
 	 * @return	the first LinkDataSource
@@ -96,5 +100,6 @@ public class RecMatchConfig {
 			System.out.println("IO error parsing config file: " + ioe.getMessage());
 		}
 	}
-	
+
+
 }

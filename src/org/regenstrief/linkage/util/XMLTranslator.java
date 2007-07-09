@@ -115,7 +115,7 @@ public class XMLTranslator {
 		ret.setAttribute("type", lds.getType());
 		ret.setAttribute("access", lds.getAccess());
 		ret.setAttribute("n_records", Integer.toString(lds.getRecordCount()));
-		ret.setAttribute("id", lds.getDataSource_ID());
+		ret.setAttribute("id", "" + lds.getDataSource_ID());
 		// add the nodes for the data column objects
 		Iterator<DataColumn> it = lds.getDataColumns().iterator();
 		while(it.hasNext()){
@@ -259,17 +259,21 @@ public class XMLTranslator {
 		String type = lds.getAttributes().getNamedItem("type").getTextContent();
 		String access = lds.getAttributes().getNamedItem("access").getTextContent();
 		String rec_count = lds.getAttributes().getNamedItem("n_records").getTextContent();
-		String ds_id = lds.getAttributes().getNamedItem("id").getTextContent();
-		
-		LinkDataSource ret = new LinkDataSource(name, type, access, ds_id, Integer.parseInt(rec_count));
-		for(int i = 0; i < lds.getChildNodes().getLength(); i++){
-			Node child = lds.getChildNodes().item(i);
-			if(child.getNodeName().equals("column")){
-				DataColumn dc = createDataColumn(child);
-				ret.addDataColumn(dc);
+		try {
+			int ds_id = Integer.parseInt(lds.getAttributes().getNamedItem("id").getTextContent());
+			LinkDataSource ret = new LinkDataSource(name, type, access, ds_id, Integer.parseInt(rec_count));
+			for(int i = 0; i < lds.getChildNodes().getLength(); i++){
+				Node child = lds.getChildNodes().item(i);
+				if(child.getNodeName().equals("column")){
+					DataColumn dc = createDataColumn(child);
+					ret.addDataColumn(dc);
+				}
 			}
+			return ret;
+		} catch(IllegalFormatException e) {
+			System.out.println("Datasource id must be an integer");
+			return null;
 		}
-		return ret;
 	}
 	
 	public static DataColumn createDataColumn(Node dc){
@@ -298,7 +302,7 @@ public class XMLTranslator {
 			int non_null_count = Integer.parseInt(ds_properties.getNamedItem("n_non_null").getTextContent());
 			int null_count = Integer.parseInt(ds_properties.getNamedItem("n_null").getTextContent());
 			int unique_non_null = Integer.parseInt(ds_properties.getNamedItem("n_unique").getTextContent());
-			ret.setNonNullCont(non_null_count);
+			ret.setNonNullCount(non_null_count);
 			ret.setNullCount(null_count);
 			ret.setUnique_non_null(unique_non_null);
 		} catch(NumberFormatException e) {
@@ -385,7 +389,7 @@ public class XMLTranslator {
 				if(!bo.equals("null")){
 					ret.setBlockOrder(Integer.parseInt(bo));
 				}
-			} else if(child_name.equals("BlockChars")){
+			} else if(child_name.equals("BlckChars")){
 				String bc = child.getTextContent();
 				ret.setBlockChars(Integer.parseInt(bc));
 			} else if(child_name.equals("Include")){

@@ -13,14 +13,14 @@ public class LinkDataSource {
 	private String type;
 	private String access;
 	private int n_records;
-	private String ds_id;
+	private int ds_id;
 	
 	public static final int UNKNOWN_REC_COUNT = -1;
 	public static final int UNKNOWN_DS_ID = -1;
 	
 	private List<DataColumn> column_settings;
 	
-	public LinkDataSource(String name, String type, String access, String id){
+	public LinkDataSource(String name, String type, String access, int id){
 		this.source_name = name;
 		this.type = type;
 		this.access = access;
@@ -29,7 +29,7 @@ public class LinkDataSource {
 		ds_id = id;
 	}
 	
-	public LinkDataSource(String name, String type, String access, String id, int n_records){
+	public LinkDataSource(String name, String type, String access, int id, int n_records){
 		this.source_name = name;
 		this.type = type;
 		this.access = access;
@@ -51,34 +51,7 @@ public class LinkDataSource {
 		}
 		return ret;
 	}
-	
-	/**
-	 * 
-	 * @param names
-	 * @return
-	 */
-	public boolean[] getScaleWeightOrNotArray(String[] names, int ColumnCount) {
-		boolean[] include = new boolean[ColumnCount];
-		for(int i = 0; i < names.length; i++){
-			int index = getDisplayPositionByName(names[i]);
-			include[index] = true;
-		}
-		return include;
-	}
-	
-	/**
-	 * Returns the column ID values for the given array of
-	 * @param names
-	 * @return
-	 */
-	public String[] getColumnIDsofColumnNames(String[] names){
-		String[] ret = new String[names.length];
-		for(int i = 0; i < names.length; i++){
-			ret[i] = getColumnIDByName(names[i]);
-		}
-		return ret;
-	}
-	
+			
 	public void setSourceName(String name){
 		source_name = name;
 	}
@@ -180,6 +153,26 @@ public class LinkDataSource {
 		return columns;
 	}
 	
+	/**
+	 * Table of only included DataColumns that have weight scaling
+	 * @param mc
+	 * @return A table indexed by column names
+	 */
+	public Hashtable<String, DataColumn> getScaleWeightDataColumns(MatchingConfig mc) {
+		Hashtable<String, DataColumn> columns = new Hashtable<String, DataColumn>(column_settings.size());
+		Iterator<DataColumn> it = column_settings.iterator();
+		Hashtable<String, Boolean> is_scaleweight = mc.getScaleWeightorNotTable(); 
+		while(it.hasNext()){
+			DataColumn dc = it.next();
+			String col_name = dc.getName();
+			// if it is a scale weight column
+			if(dc.getIncludePosition() != DataColumn.INCLUDE_NA && is_scaleweight.get(col_name)) {
+				columns.put(col_name, dc);
+			}
+		}
+		return columns;
+	}
+	
 	/*
 	 * returns the number of columns that are displayed and re-written
 	 * to the new file for linkage
@@ -204,6 +197,10 @@ public class LinkDataSource {
 		return n_records;
 	}
 	
+	/**
+	 * Generates a link between name of the DataColumn and its type (String, Numeric etc.)
+	 * @return
+	 */
 	public Hashtable<String, Integer> getTypeTable(){
 		Hashtable<String, Integer> type_table = new Hashtable<String, Integer>();
 		List<DataColumn> dc = getDataColumns();
@@ -217,11 +214,11 @@ public class LinkDataSource {
 		return type_table;
 	}
 
-	public String getDataSource_ID() {
+	public int getDataSource_ID() {
 		return ds_id;
 	}
 
-	public void setDataSource_ID(String ds_id) {
+	public void setDataSource_ID(int ds_id) {
 		this.ds_id = ds_id;
 	}
 }

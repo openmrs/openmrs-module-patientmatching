@@ -54,7 +54,7 @@ public class ScaleWeightDBManager extends DBManager {
 	 * @return The number of unique tokens in a DataColumn
 	 */
 	public int getDistinctRecordCount(DataColumn target_column, String datasource_id) {
-		String query = "SELECT COUNT(token) FROM " + token_table + " WHERE datasource_id = " + datasource_id + " AND field_id = " + target_column.getColumnID();
+		String query = "SELECT COUNT(token) FROM " + token_table + " WHERE datasource_id = " + datasource_id + " AND field_id = " + "'" + target_column.getColumnID() +"'";
 		return executeQuery(query);
 	}
 
@@ -79,7 +79,7 @@ public class ScaleWeightDBManager extends DBManager {
 	 * @return Whether the insert was successful or not
 	 */
 	public boolean insertToken(DataColumn field, String datasource_id, String token, int frequency){
-		String query = "INSERT INTO " + token_table +  " VALUES (" + datasource_id + "," + field.getColumnID() + ",'" + token + "'," + frequency + ")"; 
+		String query = "INSERT INTO " + token_table +  " VALUES (" + datasource_id + "," + "'" + field.getColumnID() + "'" + ",'" + token + "'," + frequency + ")"; 
 		return executeUpdate(query);
 	}
 	
@@ -94,7 +94,7 @@ public class ScaleWeightDBManager extends DBManager {
 	 * @return A hashtable containing frequencies, indexed by token
 	 */
 	public Hashtable<String,Integer> getTokenFrequenciesFromDB(DataColumn target_column, String datasource_id, ScaleWeightSetting topbottom, Float limit) {
-		StringBuilder query = new StringBuilder("SELECT token, frequency FROM " + token_table);
+		StringBuilder query = new StringBuilder("SELECT token, frequency FROM " + token_table + " WHERE datasource_id = " + datasource_id + " AND field_id = '" + target_column.getColumnID() +"'");
 		Integer N = Math.round(limit);
 		switch (topbottom) {
 		case BottomN:
@@ -125,10 +125,10 @@ public class ScaleWeightDBManager extends DBManager {
 			}
 			break;
 		case AboveN:
-			query.append(" WHERE frequency > " + N);
+			query.append(" AND frequency > " + N);
 			break;
 		case BelowN:
-			query.append(" WHERE frequency < " + N);
+			query.append(" AND frequency < " + N);
 			break;
 		}
 		
@@ -155,7 +155,7 @@ public class ScaleWeightDBManager extends DBManager {
 	 * @return
 	 */
 	public int getTokenFrequencyFromDB(DataColumn field, String id, String token) {
-		String query = "SELECT frequency FROM " + token_table + " WHERE token = '" + token + "' AND datasource_id = " + id + " AND field_id = " + field.getColumnID();
+		String query = "SELECT frequency FROM " + token_table + " WHERE token = '" + token + "' AND datasource_id = " + id + " AND field_id = " + "'" + field.getColumnID() +"'";
 		try{
 			Statement stmt = db.createStatement();
 			ResultSet rows = stmt.executeQuery(query);
@@ -168,6 +168,7 @@ public class ScaleWeightDBManager extends DBManager {
 				}
 				else {
 					// If more than one row is returned, it means that there is something wrong
+					rows.close();
 					return -1;
 				}
 			}
@@ -193,7 +194,7 @@ public class ScaleWeightDBManager extends DBManager {
 	 */
 	
 	public boolean updateTokenFrequency(DataColumn field, String id, String token, int frequency) {
-		String query = "UPDATE " + token_table + " SET frequency = " + frequency + " WHERE datasource_id = " + id + " AND field_id = " + field.getColumnID() + " AND token = '" + token + "'";
+		String query = "UPDATE " + token_table + " SET frequency = " + frequency + " WHERE datasource_id = " + id + " AND field_id = '" + field.getColumnID() + "' AND token = '" + token + "'";
 		return executeUpdate(query);
 	}
 }

@@ -64,6 +64,8 @@ public class DataSourceAnalysis {
 		for(int i = 0; i < analyzers.size(); i++){
 			analyzers.get(i).finishAnalysis();
 		}
+		
+		data_reader.reset();
 	}
 	
 }

@@ -95,10 +95,10 @@ public class DataBaseReader extends DataSourceReader {
 		}
 		
 		for(int i = 0; i < incl_cols.size() - 1; i++){
-			query += incl_cols.get(i).getName() + ", ";
+			query += incl_cols.get(i).getColumnID() + ", ";
 		}
 		
-		query += incl_cols.get(incl_cols.size() - 1).getName();
+		query += incl_cols.get(incl_cols.size() - 1).getColumnID();
 		query += " FROM " + data_source.getName();
 		
 		return query;
