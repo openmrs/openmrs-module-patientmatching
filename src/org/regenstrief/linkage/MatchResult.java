@@ -102,6 +102,10 @@ public class MatchResult implements Comparable{
 		return specificity;
 	}
 	
+	public void setScore(double score){
+		this.score = score;
+	}
+	
 	public int compareTo(Object o) throws ClassCastException{
 		MatchResult mr = (MatchResult) o;
 		return new Double(score).compareTo(new Double(mr.getScore()));

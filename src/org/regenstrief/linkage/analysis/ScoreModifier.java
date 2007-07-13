@@ -92,10 +92,25 @@ public class ScoreModifier {
 		return matches;
 	}
 	
-	private List<Record> getPatternRecord(Record rec){
+	private boolean matchesPattern(Record pattern, Record rec1, Record rec2, MatchVector mv){
+		boolean matches = true;
+		for(String demographic : pattern.getDemographics().keySet()){
+			String regex = pattern.getDemographic(demographic);
+			String test_value1 = rec1.getDemographic(demographic);
+			String test_value2 = rec2.getDemographic(demographic);
+			
+			matches = matches && (test_value1.matches(regex) || test_value2.matches(regex)) && mv.matchedOn(demographic);
+		}
+		return matches;
+	}
+	
+	private List<Record> getPatternRecord(Record rec1, Record rec2, MatchVector mv){
 		List<Record> ret = new ArrayList<Record>();
 		for(Record pattern : pattern_records.keySet()){
-			if(matchesPattern(pattern, rec)){
+			boolean matches_rec1 = matchesPattern(pattern, rec1) && pattern_scope.get(pattern) == Matches.REC1;
+			boolean matches_rec2 = matchesPattern(pattern, rec2) && pattern_scope.get(pattern) == Matches.REC2;
+			boolean matches_both = pattern_scope.get(pattern) == Matches.BOTH && matchesPattern(pattern, rec1, rec2, mv);
+			if(matches_rec1 || matches_rec2 || matches_both){
 				ret.add(pattern);
 			}
 		}
@@ -103,7 +118,7 @@ public class ScoreModifier {
 	}
 	
 	/**
-	 * Method modifies a MatchResult object according to the guidelines of this object.
+	 * Method modifies a MatchResult object's score according to the guidelines of this object.
 	 * 
 	 * @param mr	the MatchResult object to modify according to this object's rules
 	 */
@@ -113,8 +128,14 @@ public class ScoreModifier {
 		Record r2 = mr.getRecord2();
 		MatchVector mv = mr.getMatchVector();
 		
+		for(Record pattern : getPatternRecord(r1, r2, mv)){
+			Double scale = pattern_records.get(pattern);
+			if(scale != null){
+				score *= pattern_records.get(pattern);
+			}
+		}
 		
-		
+		mr.setScore(score);
 	}
 	
 }
