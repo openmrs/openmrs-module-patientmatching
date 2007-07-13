@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.regenstrief.linkage.MatchResult;
+import org.regenstrief.linkage.MatchVector;
 import org.regenstrief.linkage.Record;
 
 /**
@@ -35,9 +37,12 @@ import org.regenstrief.linkage.Record;
 public class ScoreModifier {
 	
 	HashMap<Record, Double> pattern_records;
+	HashMap<Record, Matches> pattern_scope;
+	public enum Matches { REC1, REC2, BOTH };
 	
 	public ScoreModifier(){
 		pattern_records = new HashMap<Record, Double>();
+		pattern_scope = new HashMap<Record, Matches>();
 	}
 	
 	/**
@@ -46,8 +51,9 @@ public class ScoreModifier {
 	 * @param pattern	a Record object containing regular expressions for demographics
 	 * @param scale		the amount to scale the score when a Record matches pattern
 	 */
-	public void addPatternRecord(Record pattern, double scale){
+	public void addPatternRecord(Record pattern, double scale, Matches which){
 		pattern_records.put(pattern, new Double(scale));
+		pattern_scope.put(pattern, which);
 	}
 	
 	/**
@@ -57,8 +63,8 @@ public class ScoreModifier {
 	 * @param demographic	the column/demographic that is to be modified
 	 * @param scale		the amount to scale the score Records
 	 */
-	public void addColumnModifier(String demographic, double scale){
-		addColumnValueModifier(demographic, "*", scale);
+	public void addColumnModifier(String demographic, double scale, Matches which){
+		addColumnValueModifier(demographic, "*", scale, which);
 	}
 	
 	/**
@@ -69,10 +75,10 @@ public class ScoreModifier {
 	 * @param regexp	the regular expression that the value in the Record needs to amtch
 	 * @param scale		the amount to scale the score Records
 	 */
-	public void addColumnValueModifier(String demographic, String regexp, double scale){
+	public void addColumnValueModifier(String demographic, String regexp, double scale, Matches which){
 		Record pattern = new Record();
 		pattern.addDemographic(demographic, regexp);
-		addPatternRecord(pattern, scale);
+		addPatternRecord(pattern, scale, which);
 	}
 	
 	private boolean matchesPattern(Record pattern, Record rec){
@@ -97,25 +103,18 @@ public class ScoreModifier {
 	}
 	
 	/**
-	 * Method returns the scaling to be applied to
+	 * Method modifies a MatchResult object according to the guidelines of this object.
 	 * 
-	 * @param rec
-	 * @return
+	 * @param mr	the MatchResult object to modify according to this object's rules
 	 */
-	public double getScale(Record rec){
-		List<Record> patterns = getPatternRecord(rec);
-		double scaling = 1;
-		if(patterns != null && patterns.size() > 0){
-			for(Record pattern : patterns){
-				Double pattern_scaling = pattern_records.get(pattern);
-				if(pattern_scaling != null){
-					scaling *= pattern_scaling;
-				}
-			}
-		}
+	public void modifyMatchResult(MatchResult mr){
+		double score = mr.getScore();
+		Record r1 = mr.getRecord1();
+		Record r2 = mr.getRecord2();
+		MatchVector mv = mr.getMatchVector();
 		
-		return scaling;
+		
+		
 	}
-	
 	
 }
