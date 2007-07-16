@@ -11,7 +11,7 @@ import org.regenstrief.linkage.*;
 import org.regenstrief.linkage.analysis.*;
 import org.regenstrief.linkage.db.ScaleWeightDBManager;
 
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
+//import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 import java.util.*;
 
