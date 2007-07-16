@@ -121,7 +121,7 @@ public class ScorePair {
 		// If there is at least one column that requires weight scaling
 		if(mc.get_is_scale_weight()) {
 			// Get individual scores for each column (table indexed by demographic)
-			Hashtable<String, Double> score_vector = vt.getScoreVector(mv);
+			Hashtable<String, Double> score_vector = vt.getScoreVector(mv).getScoreTable();
 			// Collect all the information to calculate scaling factors
 			Hashtable<String, SWAdjustScore> adjust1 = adjustScore(rec1, lds1_inc_cols, lds1_frequencies, lds1_id);
 			Hashtable<String, SWAdjustScore> adjust2 = adjustScore(rec2, lds2_inc_cols, lds2_frequencies, lds2_id);
@@ -143,10 +143,10 @@ public class ScorePair {
 					total_score += score_vector.get(cur_demographic);
 				}
 			}
-			mr = new MatchResult(total_score,vt.getMatchVectorTrueProbability(mv),vt.getMatchVectorFalseProbability(mv),vt.getSensitivity(mv),vt.getSpecificity(mv),mv,rec1,rec2);
+			mr = new MatchResult(total_score,vt.getMatchVectorTrueProbability(mv),vt.getMatchVectorFalseProbability(mv),vt.getSensitivity(mv),vt.getSpecificity(mv),mv,vt.getScoreVector(mv),rec1,rec2);
 		}
 		else {
-			mr = new MatchResult(vt.getScore(mv),vt.getMatchVectorTrueProbability(mv),vt.getMatchVectorFalseProbability(mv),vt.getSensitivity(mv),vt.getSpecificity(mv),mv,rec1,rec2);
+			mr = new MatchResult(vt.getScore(mv),vt.getMatchVectorTrueProbability(mv),vt.getMatchVectorFalseProbability(mv),vt.getSensitivity(mv),vt.getSpecificity(mv),mv,vt.getScoreVector(mv),rec1,rec2);
 		}
 
 		return mr;

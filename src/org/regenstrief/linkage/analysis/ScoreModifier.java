@@ -7,6 +7,7 @@ import java.util.List;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.MatchVector;
 import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.ScoreVector;
 
 /**
  * Class is used by ScorePair to modify the score used when comparing two Records.
@@ -127,15 +128,32 @@ public class ScoreModifier {
 		Record r1 = mr.getRecord1();
 		Record r2 = mr.getRecord2();
 		MatchVector mv = mr.getMatchVector();
+		ScoreVector new_score_vector = new ScoreVector();
 		
+		// copy score components to a new ScoreVector to not overwrite object pointed to by VectorTable
+		for(String demographic : mr.getScoreVector().getScoreTable().keySet()){
+			new_score_vector.setScore(demographic, mr.getScoreVector().getScore(demographic));
+		}
+		
+		// will overwrite the column scores in new_score_vector as they're reached
 		for(Record pattern : getPatternRecord(r1, r2, mv)){
 			Double scale = pattern_records.get(pattern);
 			if(scale != null){
-				score *= pattern_records.get(pattern);
+				String pattern_demographic = pattern.getDemographics().keys().nextElement();
+				double new_component_score = scale * mr.getScoreVector().getScore(pattern_demographic);
+				new_score_vector.setScore(pattern_demographic, new_component_score);
 			}
 		}
 		
-		mr.setScore(score);
+		// calculate the new score given the new component values
+		double new_score = 0;
+		for(String demographic : new_score_vector.getDemographics()){
+			new_score += new_score_vector.getScore(demographic);
+		}
+		
+		// update the MatchResult object with the new score and ScoreVector
+		mr.setScore(new_score);
+		mr.setScoreVector(new_score_vector);
 	}
 	
 }

@@ -15,6 +15,7 @@ public class VectorTable {
 	
 	MatchingConfig mc;
 	Hashtable<MatchVector,Double> match_scores;
+	Hashtable<MatchVector,ScoreVector> match_score_vectors;
 	Hashtable<MatchVector,Double> match_specificities;
 	Hashtable<MatchVector,Double> match_sensitivities;
 	Hashtable<String,Double> u_values, m_values;
@@ -25,6 +26,7 @@ public class VectorTable {
 	public VectorTable(MatchingConfig mc){
 		this.mc = mc;
 		match_scores = new Hashtable<MatchVector,Double>();
+		match_score_vectors = new Hashtable<MatchVector,ScoreVector>();
 		match_sensitivities = new Hashtable<MatchVector,Double>();
 		match_specificities = new Hashtable<MatchVector,Double>();
 		
@@ -65,6 +67,7 @@ public class VectorTable {
 			insertMatchVector(mv, sorted_vectors);
 			double score = getMatchVectorScore(mv);
 			match_scores.put(mv, new Double(score));
+			match_score_vectors.put(mv, getMatchVectorScoreVector(mv));
 		}
 		
 		// get running
@@ -240,6 +243,7 @@ public class VectorTable {
 	 * @param mv
 	 * @return A hashtable of scores indexed by demographic
 	 */
+	/*
 	public Hashtable<String, Double> getScoreVector(MatchVector mv) {
 		Hashtable<String, Double> score_vector = new Hashtable<String, Double>(mv.getSize() * 2);
 		List<String> demographics = mv.getDemographics();
@@ -253,6 +257,10 @@ public class VectorTable {
 			}
 		}
 		return score_vector;
+	}*/
+	
+	public ScoreVector getScoreVector(MatchVector mv) {
+		return match_score_vectors.get(mv);
 	}
 	
 	private double getMatchVectorScore(MatchVector mv){
@@ -270,6 +278,22 @@ public class VectorTable {
 		}
 		
 		return score;
+	}
+	
+	private ScoreVector getMatchVectorScoreVector(MatchVector mv){
+		ScoreVector sv = new ScoreVector();
+		List<String> demographics = mv.getDemographics();
+		Iterator<String> it = demographics.iterator();
+		while(it.hasNext()){
+			String d = it.next();
+			//MatchingConfigRow mcr = mc.getMatchingConfigRows().get(mc.getRowIndexforName(d));
+			if(mv.matchedOn(d)){
+				sv.setScore(d, m_values.get(d).doubleValue());
+			} else {
+				sv.setScore(d, u_values.get(d).doubleValue());
+			}
+		}
+		return sv;
 	}
 	
 	public String toString(){
