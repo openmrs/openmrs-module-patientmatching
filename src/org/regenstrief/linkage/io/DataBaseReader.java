@@ -143,9 +143,7 @@ public class DataBaseReader extends DataSourceReader {
 	}
 
 	public boolean reset(){
-		if(!queried){
-			getResultSet();
-		}
+		getResultSet();
 		try{
 			return data.first();
 		}
