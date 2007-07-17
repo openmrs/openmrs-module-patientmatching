@@ -65,7 +65,7 @@ public class ScoreModifier {
 	 * @param scale		the amount to scale the score Records
 	 */
 	public void addColumnModifier(String demographic, double scale, Matches which){
-		addColumnValueModifier(demographic, "*", scale, which);
+		addColumnValueModifier(demographic, ".*", scale, which);
 	}
 	
 	/**
