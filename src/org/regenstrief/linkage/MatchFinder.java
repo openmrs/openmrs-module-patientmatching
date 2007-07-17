@@ -76,7 +76,10 @@ public class MatchFinder {
 		}
 		
 		// reset database reader
-		if(!database_reader.reset()){
+		// need to reinitialize if it's a database reader, since writes might have been performed
+		if(matching_database.getType().equals("DataBase")){
+			database_reader = new OrderedDataBaseReader(matching_database, analytics);
+		} else if(!database_reader.reset()){
 			System.err.println("unable to reset database reader after matching");
 		}
 		
