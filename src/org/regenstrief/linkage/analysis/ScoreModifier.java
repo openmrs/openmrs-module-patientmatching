@@ -10,6 +10,9 @@ import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.ScoreVector;
 
 /**
+ * As of July 18th, class no longer being used; instad moving to each analyzer
+ * implementing a modifier interface
+ * 
  * Class is used by ScorePair to modify the score used when comparing two Records.
  * 
  * It contains a list of Record objects that store regular expressions
@@ -122,9 +125,9 @@ public class ScoreModifier {
 	 * Method modifies a MatchResult object's score according to the guidelines of this object.
 	 * 
 	 * @param mr	the MatchResult object to modify according to this object's rules
+	 * @param demographics	the list of demographics to modify
 	 */
-	public void modifyMatchResult(MatchResult mr){
-		double score = mr.getScore();
+	public void modifyMatchResult(MatchResult mr, List<String> demographics){
 		Record r1 = mr.getRecord1();
 		Record r2 = mr.getRecord2();
 		MatchVector mv = mr.getMatchVector();
