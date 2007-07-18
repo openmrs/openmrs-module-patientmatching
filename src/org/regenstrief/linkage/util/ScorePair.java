@@ -18,7 +18,7 @@ import java.util.*;
 public class ScorePair {
 	private VectorTable vt;
 	private MatchingConfig mc;
-	private List<ScoreModifier> modifiers;
+	private List<Modifier> modifiers;
 	
 	// Tables of <token, frequency> stored in a table indexed by demographic (column label)
 	private Hashtable<String, Hashtable<String, Integer>> lds1_frequencies;
@@ -45,10 +45,10 @@ public class ScorePair {
 	public ScorePair(MatchingConfig mc){
 		this.mc = mc;
 		vt = new VectorTable(mc);
-		modifiers = new ArrayList<ScoreModifier>();
+		modifiers = new ArrayList<Modifier>();
 	}
 	
-	public void addScoreModifier(ScoreModifier sm){
+	public void addScoreModifier(Modifier sm){
 		modifiers.add(sm);
 	}
 	
@@ -153,7 +153,9 @@ public class ScorePair {
 		}
 		else {
 			mr = new MatchResult(vt.getScore(mv),vt.getMatchVectorTrueProbability(mv),vt.getMatchVectorFalseProbability(mv),vt.getSensitivity(mv),vt.getSpecificity(mv),mv,vt.getScoreVector(mv),rec1,rec2);
-			
+			for(Modifier m : modifiers){
+				m.modifyMatchResult(mr, mc);
+			}
 		}
 
 		return mr;
