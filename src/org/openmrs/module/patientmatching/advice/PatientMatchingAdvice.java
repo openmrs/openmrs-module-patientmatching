@@ -75,6 +75,10 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 				if(o instanceof Patient){
 					Patient just_added = (Patient)o;
 					if(link_db.addRecordToDB(PatientMatchingActivator.patientToRecord(just_added))){
+						// need to reset the reader so data base update is found
+						if(!matcher.resetReader()){
+							log.warn("LinkDBManager object successfully added patient, but database reader not reset; next read might not find latest update");
+						}
 						if(log.isDebugEnabled()){
 							log.debug("LinkDBManager object successfully added patient");
 						}

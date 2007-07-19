@@ -156,4 +156,14 @@ public class MatchFinder {
 		}
 		return matches;
 	}
+	
+	/**
+	 * Method resets the reader the match finder uses to scan for records.  This would be needed if
+	 * the data source has been modified.
+	 * 
+	 * @return	true if the reader's reset() method succeeded, false if it failed
+	 */
+	public boolean resetReader(){
+		return database_reader.reset();
+	}
 }
