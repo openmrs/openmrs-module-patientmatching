@@ -116,6 +116,7 @@ public class DBManager {
 		try{
 			Statement stmt = db.createStatement();
 			updated_rows = stmt.executeUpdate(query);
+			stmt.close();
 		}
 		catch(SQLException sqle){
 			System.err.println(sqle.getMessage());

@@ -143,8 +143,9 @@ public class DataBaseReader extends DataSourceReader {
 	}
 
 	public boolean reset(){
-		getResultSet();
 		try{
+			data.close();
+			getResultSet();
 			return data.first();
 		}
 		catch(SQLException sqle){
