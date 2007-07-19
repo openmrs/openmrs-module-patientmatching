@@ -146,7 +146,7 @@ public class DataBaseReader extends DataSourceReader {
 		try{
 			data.close();
 			getResultSet();
-			return data.first();
+			return db != null;
 		}
 		catch(SQLException sqle){
 			return false;
