@@ -159,7 +159,7 @@ public class LinkDataSource {
 	 * @return A table indexed by column names
 	 */
 	public Hashtable<String, DataColumn> getScaleWeightDataColumns(MatchingConfig mc) {
-		Hashtable<String, DataColumn> columns = new Hashtable<String, DataColumn>(column_settings.size());
+		Hashtable<String, DataColumn> columns = new Hashtable<String, DataColumn>();
 		Iterator<DataColumn> it = column_settings.iterator();
 		Hashtable<String, Boolean> is_scaleweight = mc.getScaleWeightorNotTable(); 
 		while(it.hasNext()){
@@ -208,7 +208,7 @@ public class LinkDataSource {
 		while(it.hasNext()){
 			DataColumn d = it.next();
 			if(d.getIncludePosition() != DataColumn.INCLUDE_NA){
-				type_table.put(d.getName(), new Integer(d.getType()));
+				type_table.put(d.getName(), Integer.valueOf(d.getType()));
 			}
 		}
 		return type_table;

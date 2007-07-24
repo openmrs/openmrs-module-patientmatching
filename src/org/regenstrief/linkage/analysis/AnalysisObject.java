@@ -26,8 +26,12 @@ public class AnalysisObject implements Comparable {
 		AnalysisObject other = (AnalysisObject) o;
 		return other.frequency - frequency;
 	}
+	
+	public int hashCode(){
+		return token.hashCode();
+	}
 
-	public static Comparator<AnalysisObject> FrequencyComparator = new Comparator<AnalysisObject>() {
+	public static final Comparator<AnalysisObject> frequencyComparator = new Comparator<AnalysisObject>() {
 		public int compare(AnalysisObject o1, AnalysisObject o2) {
 			return o1.frequency - o2.frequency;
 		}

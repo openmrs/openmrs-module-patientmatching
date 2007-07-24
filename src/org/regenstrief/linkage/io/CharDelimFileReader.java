@@ -144,7 +144,7 @@ public class CharDelimFileReader extends DataSourceReader{
 			file_reader = new BufferedReader(new FileReader(switched_file));
 			next_record = line2Record(file_reader.readLine());			
 			return true;
-		} catch (Exception e1) {
+		} catch (IOException e1) {
 			return false;
 		}
 		

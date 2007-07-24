@@ -48,7 +48,7 @@ public class CharDelimFileSWAnalyzer extends SWAnalyzer {
 	public void analyzeTokenFrequencies(DataColumn target_column, int size) {
 		long start = System.currentTimeMillis();
 		PriorityQueue<AnalysisObject> pq = new PriorityQueue<AnalysisObject>(
-				size,AnalysisObject.FrequencyComparator);
+				size,AnalysisObject.frequencyComparator);
 		Hashtable<String, Integer> ht = new Hashtable<String, Integer>(2 * size);
 		int loop_count = 0;
 		int hash_table = 0;
@@ -57,7 +57,7 @@ public class CharDelimFileSWAnalyzer extends SWAnalyzer {
 			Record current_record = reader.nextRecord();
 			String column_value = current_record.getDemographic(target_column
 					.getName());
-			if (!column_value.equals("") && column_value != null) {
+			if (column_value != null && !column_value.equals("")) {
 				try {
 					int frequency = ht.get(column_value);
 					boolean changed = pq.remove(new AnalysisObject(column_value, frequency));
@@ -125,7 +125,7 @@ public class CharDelimFileSWAnalyzer extends SWAnalyzer {
 			Record current_record = reader.nextRecord();
 			String column_value = current_record.getDemographic(target_column
 					.getName());
-			if (!column_value.equals("") && column_value != null) {
+			if (column_value != null && !column_value.equals("")) {
 				non_null_count++;
 			}
 		}
@@ -139,7 +139,7 @@ public class CharDelimFileSWAnalyzer extends SWAnalyzer {
 			Record current_record = reader.nextRecord();
 			String column_value = current_record.getDemographic(target_column
 					.getName());
-			if (column_value.equals("") || column_value == null) {
+			if (column_value == null || column_value.equals("")) {
 				null_count++;
 			}
 		}

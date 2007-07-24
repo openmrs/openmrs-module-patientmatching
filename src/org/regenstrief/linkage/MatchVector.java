@@ -21,7 +21,7 @@ public class MatchVector {
 	 * @param matched	whether this demographic was a match
 	 */
 	public void setMatch(String demographic, boolean matched){
-		match_table.put(demographic, new Boolean(matched));
+		match_table.put(demographic, Boolean.valueOf(matched));
 	}
 	
 	/**

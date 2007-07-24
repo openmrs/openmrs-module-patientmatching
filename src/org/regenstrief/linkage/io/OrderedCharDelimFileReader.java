@@ -127,7 +127,7 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader {
 			file_reader = new BufferedReader(new FileReader(sorted_file));
 			next_record = line2Record(file_reader.readLine());			
 			return true;
-		} catch (Exception e1) {
+		} catch (IOException e1) {
 			return false;
 		}
 		
