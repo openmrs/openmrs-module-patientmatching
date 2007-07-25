@@ -1,4 +1,4 @@
-package org.regenstrief.linkage.util;
+package org.regenstrief.linkage.depreciated;
 /*
  * Implements the EM algorithm.
  * 
@@ -7,6 +7,10 @@ package org.regenstrief.linkage.util;
 
 import java.io.*;
 import java.util.*;
+
+import org.regenstrief.linkage.util.LinkDataSource;
+import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.StringMatch;
 
 public class EM {
 	

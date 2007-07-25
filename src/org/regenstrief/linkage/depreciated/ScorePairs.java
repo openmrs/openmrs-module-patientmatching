@@ -1,6 +1,10 @@
-package org.regenstrief.linkage.util;
+package org.regenstrief.linkage.depreciated;
 import java.io.*;
 import java.text.*;
+
+import org.regenstrief.linkage.util.LinkDataSource;
+import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.StringMatch;
 
 /*
  * Class implements the score pairs functionality of the 

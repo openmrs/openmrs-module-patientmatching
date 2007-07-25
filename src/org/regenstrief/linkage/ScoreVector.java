@@ -1,6 +1,7 @@
 package org.regenstrief.linkage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -16,10 +17,10 @@ import java.util.List;
  */
 
 public class ScoreVector {
-	private Hashtable<String,Double> score_table;
+	private HashMap<String,Double> score_table;
 	
 	public ScoreVector(){
-		score_table = new Hashtable<String,Double>();
+		score_table = new HashMap<String,Double>();
 	}
 	
 	public int getSize() {
@@ -34,7 +35,7 @@ public class ScoreVector {
 	 * @param score	the score value the demographic contributes to the final score
 	 */
 	public void setScore(String demographic, double score){
-		score_table.put(demographic, new Double(score));
+		score_table.put(demographic, Double.valueOf(score));
 	}
 	
 	/**
@@ -67,11 +68,19 @@ public class ScoreVector {
 		}
 	}
 	
+	public double getTotalScore() {
+		double score = 0;
+		for(double indv_score : score_table.values()) {
+			score += indv_score;
+		}
+		return score;
+	}
+	
 	/**
 	 * 
 	 * @return returns the matches for the comparison
 	 */
-	public Hashtable<String,Double> getScoreTable(){
+	public HashMap<String,Double> getScoreTable(){
 		return score_table;
 	}
 	

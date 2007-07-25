@@ -5,6 +5,7 @@ import java.util.Hashtable;
 import java.util.PriorityQueue;
 
 import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.analysis.SWAnalyzer.ScaleWeightSetting;
 import org.regenstrief.linkage.db.ScaleWeightDBManager;
 import org.regenstrief.linkage.util.*;
 
@@ -19,7 +20,7 @@ import org.regenstrief.linkage.util.*;
  */
 
 public class ScaleWeightAnalyzer extends Analyzer {
-
+	
 	private MatchingConfig config;
 	private LinkDataSource lds;
 	private static ScaleWeightDBManager sw_connection;
@@ -36,7 +37,7 @@ public class ScaleWeightAnalyzer extends Analyzer {
 	private Hashtable <String, PriorityQueue<AnalysisObject>> min_priority_queues;
 
 	private static final int DEFAULT_SIZE = 500;
-
+	
 	public ScaleWeightAnalyzer(LinkDataSource lds, MatchingConfig mc){
 		this.config = mc;
 		this.lds = lds;
@@ -56,13 +57,13 @@ public class ScaleWeightAnalyzer extends Analyzer {
 		frequencies = new Hashtable<String, Hashtable<String,Integer>>(2*column_count);
 		min_priority_queues = new Hashtable<String, PriorityQueue<AnalysisObject>>(2*column_count);
 	}
-
-	public void incrementHashtableValue(Hashtable<String,Integer> table, String demographic) {
+	
+	private void incrementHashtableValue(Hashtable<String,Integer> table, String demographic) {
 		// Learn what the frequency was before
 		Integer col_frequency = table.get(demographic);
 		// this is the first null we see
 		if(col_frequency == null) {
-			table.put(demographic, new Integer(1));
+			table.put(demographic, Integer.valueOf(1));
 		}
 		// just increment it
 		else {
@@ -99,7 +100,7 @@ public class ScaleWeightAnalyzer extends Analyzer {
 				min_pq = min_priority_queues.get(current_demographic);
 				// Create it if it does not exist
 				if(min_pq == null) {
-					min_pq = new PriorityQueue<AnalysisObject>(DEFAULT_SIZE, AnalysisObject.FrequencyComparator);
+					min_pq = new PriorityQueue<AnalysisObject>(DEFAULT_SIZE, AnalysisObject.frequencyComparator);
 					min_priority_queues.put(current_demographic, min_pq);
 				}
 				DataColumn current_column = sw_columns.get(current_demographic);
@@ -185,8 +186,22 @@ public class ScaleWeightAnalyzer extends Analyzer {
 		}
 	}
 
-	public ScaleWeightDBManager getSw_connection() {
-		return sw_connection;
+	public LinkDataSource getLinkDataSource() {
+		return lds;
 	}
-
+	
+	public MatchingConfig getMatchingConfig() {
+		return config;
+	}
+	
+	Hashtable<String, Integer> getTokenFrequenciesFromDB(DataColumn target_column, String datasource_id, ScaleWeightSetting topbottom, Float limit) {
+		return sw_connection.getTokenFrequenciesFromDB(target_column, datasource_id, topbottom, limit);
+	}
+	
+	public int getTokenFrequencyFromDB(DataColumn field, String id, String token) {
+		return sw_connection.getTokenFrequencyFromDB(field, id, token);
+	}
+	
 }
+	
+

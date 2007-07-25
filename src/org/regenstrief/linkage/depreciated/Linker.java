@@ -1,4 +1,7 @@
-package org.regenstrief.linkage.util;
+package org.regenstrief.linkage.depreciated;
+
+import org.regenstrief.linkage.util.LinkDataSource;
+import org.regenstrief.linkage.util.MatchingConfig;
 
 /*
  * The Linker class outlines the basic RecordLinkage process

@@ -1,5 +1,6 @@
 package org.regenstrief.linkage.testing;
 
+import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.util.Hashtable;
@@ -11,6 +12,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.analysis.DataSourceAnalysis;
 import org.regenstrief.linkage.analysis.ScaleWeightAnalyzer;
+import org.regenstrief.linkage.analysis.ScaleWeightModifier;
 import org.regenstrief.linkage.io.DataBaseReader;
 import org.regenstrief.linkage.io.DataSourceReader;
 import org.regenstrief.linkage.io.OrderedCharDelimFileReader;
@@ -62,8 +64,9 @@ public class ScaleWeightAnalyzerTest {
 				} else {
 					dsr2 = new OrderedCharDelimFileReader(rmc.getLinkDataSource2(), mc_test);;
 				}
-				
-				ScorePair sp;
+								
+				ScorePair sp = new ScorePair(mc_test);
+					
 				if(mc_test.get_is_scale_weight()) {
 					DataSourceAnalysis dsa1 = new DataSourceAnalysis(dsr1);
 					DataSourceAnalysis dsa2 = new DataSourceAnalysis(dsr2);
@@ -76,10 +79,9 @@ public class ScaleWeightAnalyzerTest {
 					dsa1.analyzeData();
 					dsa2.analyzeData();
 					
-					sp = new ScorePair(mc_test, rmc, swa1.getSw_connection());
-				}	else {
-					sp = new ScorePair(mc_test);
-				}
+					ScaleWeightModifier swm = new ScaleWeightModifier(swa1, swa2);
+					sp.addScoreModifier(swm);
+				}	
 
 				// Form pairs should come after analysis, because it modifies next_record of the readers
 				org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(dsr1, dsr2, mc_test, type_table);

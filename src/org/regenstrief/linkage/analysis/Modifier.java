@@ -9,6 +9,10 @@ import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.util.MatchingConfig;
 
 public interface Modifier {
+	
+	
+	public void initializeModifier();
+	
 	/**
 	 * Method must be implemented for a class to be used by ScorePair to modify a
 	 * score.

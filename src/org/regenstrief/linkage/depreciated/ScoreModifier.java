@@ -1,4 +1,4 @@
-package org.regenstrief.linkage.analysis;
+package org.regenstrief.linkage.depreciated;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -155,7 +155,7 @@ public class ScoreModifier {
 		}
 		
 		// update the MatchResult object with the new score and ScoreVector
-		mr.setScore(new_score);
+		//mr.setScore(new_score);
 		mr.setScoreVector(new_score_vector);
 	}
 	

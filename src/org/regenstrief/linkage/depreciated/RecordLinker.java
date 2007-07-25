@@ -1,4 +1,4 @@
-package org.regenstrief.linkage.util;
+package org.regenstrief.linkage.depreciated;
 /* 
  * *************************************************************
  * This class was first a class that called the C binaries, then it was
@@ -45,6 +45,15 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.regenstrief.linkage.util.ColumnSortOption;
+import org.regenstrief.linkage.util.ColumnSorter;
+import org.regenstrief.linkage.util.ColumnSwitcher;
+import org.regenstrief.linkage.util.DataColumn;
+import org.regenstrief.linkage.util.FormPairs;
+import org.regenstrief.linkage.util.LinkDataSource;
+import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.RecMatchConfig;
+import org.regenstrief.linkage.util.XMLTranslator;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 

@@ -9,6 +9,8 @@ import java.util.*;
  * stores boolean values for the given demographic indicating
  * whether for the given demographic the two records were a
  * match. 
+ * 
+ * TODO: Implement hashCode()
  */
 
 public class MatchResult implements Comparable{
@@ -76,6 +78,7 @@ public class MatchResult implements Comparable{
 	
 	public void setScoreVector(ScoreVector score_vct){
 		this.score_vct = score_vct;
+		this.score = score_vct.getTotalScore();
 	}
 	
 	/**
@@ -115,9 +118,14 @@ public class MatchResult implements Comparable{
 	public double getSpecificity(){
 		return specificity;
 	}
-	
-	public void setScore(double score){
-		this.score = score;
+		
+	public boolean equals(Object o) throws ClassCastException {
+		if(o == null) {
+			return false;
+		}
+		
+		MatchResult mr = (MatchResult) o;
+		return mr.getScore() == score;
 	}
 	
 	public int compareTo(Object o) throws ClassCastException{
@@ -125,6 +133,11 @@ public class MatchResult implements Comparable{
 		return new Double(score).compareTo(new Double(mr.getScore()));
 	}
 	
+	public int hashCode() {
+		  assert false : "hashCode not designed";
+		  return 42; // any arbitrary constant will do 
+	}
+
 	public String toString(){
 		return Double.toString(score);
 	}
