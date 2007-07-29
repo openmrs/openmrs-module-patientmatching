@@ -1,4 +1,4 @@
-package org.regenstrief.linkage.util;
+package org.regenstrief.linkage.depreciated;
 
 /**
  * Class created to go from Record Linkage data objects
