@@ -1,4 +1,4 @@
-package org.regenstrief.linkage.depreciated;
+package org.regenstrief.linkage.util;
 
 /**
  * Class created to go from Record Linkage data objects
@@ -21,11 +21,6 @@ import javax.xml.transform.dom.*;
 
 import org.xml.sax.*;
 import org.regenstrief.linkage.analysis.SWAnalyzer.ScaleWeightSetting;
-import org.regenstrief.linkage.util.DataColumn;
-import org.regenstrief.linkage.util.LinkDataSource;
-import org.regenstrief.linkage.util.MatchingConfig;
-import org.regenstrief.linkage.util.MatchingConfigRow;
-import org.regenstrief.linkage.util.RecMatchConfig;
 import org.w3c.dom.*;
 
 public class XMLTranslator {
