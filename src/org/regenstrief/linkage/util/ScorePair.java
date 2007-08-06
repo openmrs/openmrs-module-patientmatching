@@ -5,6 +5,9 @@ package org.regenstrief.linkage.util;
  * given MatchingConfig object
  * 
  * TODO: Add size parameter to lds1_frequencies & lds2_frequencies
+ * TODO: Implement functionality for these two parameters: 
+ * - A flag indicating whether to use null tokens when scaling agreement weight based on term frequency (default-no)
+ * - A flag indicating how to establish agreement among fields when one or both fields are null (eg, apply disagreement weight, apply agreement weight, or apply ze
  */
 
 import org.regenstrief.linkage.*;

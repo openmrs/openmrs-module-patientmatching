@@ -20,7 +20,7 @@ import javax.xml.transform.stream.*;
 import javax.xml.transform.dom.*;
 
 import org.xml.sax.*;
-import org.regenstrief.linkage.analysis.SWAnalyzer.ScaleWeightSetting;
+import org.regenstrief.linkage.util.MatchingConfigRow.ScaleWeightSetting;
 import org.w3c.dom.*;
 
 public class XMLTranslator {
@@ -114,7 +114,6 @@ public class XMLTranslator {
 		ret.setAttribute("name", lds.getName());
 		ret.setAttribute("type", lds.getType());
 		ret.setAttribute("access", lds.getAccess());
-		ret.setAttribute("n_records", Integer.toString(lds.getRecordCount()));
 		ret.setAttribute("id", "" + lds.getDataSource_ID());
 		// add the nodes for the data column objects
 		Iterator<DataColumn> it = lds.getDataColumns().iterator();
@@ -146,16 +145,7 @@ public class XMLTranslator {
 		} else {
 			ret.setAttribute("type", "string");
 		}
-		
-		int non_null = dc.getNonNullCount();
-		ret.setAttribute("n_non_null", Integer.toString(non_null));
-		
-		int n_null = dc.getNullCount();
-		ret.setAttribute("n_null", Integer.toString(n_null));
-		
-		int unique_non_null = dc.getUnique_non_null();
-		ret.setAttribute("n_unique", Integer.toString(unique_non_null));
-		
+				
 		return ret;
 	}
 	
@@ -233,17 +223,21 @@ public class XMLTranslator {
 		// for each matching config
 		for(int i = 0; i < root_node.getChildNodes().getLength(); i++) {
 			Node n = root_node.getChildNodes().item(i);
+			String node_name = n.getNodeName();
 			
-			if(n.getNodeName().equals("datasource")){
+			if(node_name.equals("datasource")){
 				LinkDataSource lds = createDataSource(n);
 				if(lds1 == null){
 					lds1 = lds;
 				} else {
 					lds2 = lds;
 				}
-			} else if(n.getNodeName().equals("run")){
+			} else if(node_name.equals("run")){
 				MatchingConfig mc = createMatchingConfig(n);
 				mc_configs.add(mc);
+			} else if(node_name.equals("analysis")) {
+				
+				// TODO: STUB
 			}
 		}
 		
@@ -258,10 +252,9 @@ public class XMLTranslator {
 		String name = lds.getAttributes().getNamedItem("name").getTextContent();
 		String type = lds.getAttributes().getNamedItem("type").getTextContent();
 		String access = lds.getAttributes().getNamedItem("access").getTextContent();
-		String rec_count = lds.getAttributes().getNamedItem("n_records").getTextContent();
 		try {
 			int ds_id = Integer.parseInt(lds.getAttributes().getNamedItem("id").getTextContent());
-			LinkDataSource ret = new LinkDataSource(name, type, access, ds_id, Integer.parseInt(rec_count));
+			LinkDataSource ret = new LinkDataSource(name, type, access, ds_id);
 			for(int i = 0; i < lds.getChildNodes().getLength(); i++){
 				Node child = lds.getChildNodes().item(i);
 				if(child.getNodeName().equals("column")){
@@ -298,17 +291,7 @@ public class XMLTranslator {
 		} else {
 			ret.setType(DataColumn.STRING_TYPE);
 		}
-		try {
-			int non_null_count = Integer.parseInt(ds_properties.getNamedItem("n_non_null").getTextContent());
-			int null_count = Integer.parseInt(ds_properties.getNamedItem("n_null").getTextContent());
-			int unique_non_null = Integer.parseInt(ds_properties.getNamedItem("n_unique").getTextContent());
-			ret.setNonNullCount(non_null_count);
-			ret.setNullCount(null_count);
-			ret.setUnique_non_null(unique_non_null);
-		} catch(NumberFormatException e) {
-			System.out.println("Error: Wrong number format");
-		}
-			
+		
 		return ret;
 	}
 	
@@ -326,16 +309,14 @@ public class XMLTranslator {
 		}
 		// For weight scaling
 		Node access_node = attributes.getNamedItem("swaccess");
-		Node token_table_node = attributes.getNamedItem("swtokentable");
+
 		boolean is_scaleweight = false;
 		String access_value = null;
-		String token_table_value = null;
 		// Check if weight scaling nodes exist
-		if(access_node != null && token_table_node != null) {
+		if(access_node != null) {
 			access_value = access_node.getTextContent();
-			token_table_value = token_table_node.getTextContent();
 			// They may be present, but should not be empty
-			if(!token_table_value.equals("") && !access_value.equals("")) {
+			if(!access_value.equals("")) {
 				is_scaleweight = true;
 			}
 		}
@@ -366,7 +347,6 @@ public class XMLTranslator {
 		if(is_scaleweight) {
 		ret.make_scale_weight();
 		ret.setSw_db_access(access_value);
-		ret.setSw_token_table(token_table_value);
 		}
 		
 		return ret;

@@ -1,12 +1,14 @@
 package org.regenstrief.linkage.analysis;
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.PriorityQueue;
 
 import org.regenstrief.linkage.Record;
-import org.regenstrief.linkage.analysis.SWAnalyzer.ScaleWeightSetting;
 import org.regenstrief.linkage.db.ScaleWeightDBManager;
+import org.regenstrief.linkage.db.ScaleWeightDBManager.CountType;
 import org.regenstrief.linkage.util.*;
 
 /**
@@ -15,8 +17,6 @@ import org.regenstrief.linkage.util.*;
  *
  *@author scentel
  *
- *TODO: Write getScaleWeightColumns()
- *TODO: Add parameters to config to use a different size for each column instead of DEFAULT_SIZE
  */
 
 public class ScaleWeightAnalyzer extends Analyzer {
@@ -29,23 +29,25 @@ public class ScaleWeightAnalyzer extends Analyzer {
 
 	// Scale weight columns indexed by column label
 	private Hashtable <String, DataColumn> sw_columns;
+	private List<MatchingConfigRow> sw_rows;
 
 	// Indexed by column label
 	private Hashtable <String, Integer> null_counter;
 	private Hashtable <String, Integer> non_null_counter;
 	private Hashtable <String, Hashtable<String, Integer>> frequencies;
 	private Hashtable <String, PriorityQueue<AnalysisObject>> min_priority_queues;
-
-	private static final int DEFAULT_SIZE = 500;
 	
 	public ScaleWeightAnalyzer(LinkDataSource lds, MatchingConfig mc){
 		this.config = mc;
 		this.lds = lds;
 		this.datasource_id = "" + lds.getDataSource_ID();
+		
+		sw_rows = mc.getScaleWeightColumns();
+		
 		// Set up database connection
 		String [] access = mc.getSw_db_access().split(",");
 		if(sw_connection == null) {
-			sw_connection = new ScaleWeightDBManager(access[0], access[1], mc.getSw_token_table(), access[2], access[3]);
+			sw_connection = new ScaleWeightDBManager(access[0], access[1], access[2], access[3]);
 			sw_connection.connect();
 		}
 
@@ -73,11 +75,11 @@ public class ScaleWeightAnalyzer extends Analyzer {
 	}
 
 	public void analyzeRecord(Record rec){
-		Enumeration<String> demographics = sw_columns.keys();
-		// for all scale weight columns
-		while(demographics.hasMoreElements()) {
-			String current_demographic = demographics.nextElement();
+		for(MatchingConfigRow mcr : sw_rows) {
+			String current_demographic = mcr.getName();
 			String dem_value = rec.getDemographic(current_demographic);
+			int buffer_size = mcr.getBuffer_size();
+			
 			// Null value 
 			if(dem_value == null || dem_value.equals("")) {
 				incrementHashtableValue(null_counter, current_demographic);
@@ -92,7 +94,7 @@ public class ScaleWeightAnalyzer extends Analyzer {
 				frequency_table = frequencies.get(current_demographic);
 				// Create it if it does not exist
 				if(frequency_table == null) {
-					frequency_table = new Hashtable<String, Integer>(2*DEFAULT_SIZE);
+					frequency_table = new Hashtable<String, Integer>(2*buffer_size);
 					frequencies.put(current_demographic, frequency_table);
 				}
 
@@ -100,7 +102,7 @@ public class ScaleWeightAnalyzer extends Analyzer {
 				min_pq = min_priority_queues.get(current_demographic);
 				// Create it if it does not exist
 				if(min_pq == null) {
-					min_pq = new PriorityQueue<AnalysisObject>(DEFAULT_SIZE, AnalysisObject.frequencyComparator);
+					min_pq = new PriorityQueue<AnalysisObject>(buffer_size, AnalysisObject.frequencyComparator);
 					min_priority_queues.put(current_demographic, min_pq);
 				}
 				DataColumn current_column = sw_columns.get(current_demographic);
@@ -120,7 +122,7 @@ public class ScaleWeightAnalyzer extends Analyzer {
 					AnalysisObject ao = new AnalysisObject(dem_value, new_frequency);
 					// If hashtable is not full, we better store this frequency in memory
 					int num_el = frequency_table.size();
-					if (num_el < DEFAULT_SIZE) {
+					if (num_el < buffer_size) {
 						frequency_table.put(dem_value, new_frequency);
 						min_pq.add(ao);
 					} else {
@@ -142,7 +144,7 @@ public class ScaleWeightAnalyzer extends Analyzer {
 					}
 				}
 
-			}	
+			}
 		}
 	}
 
@@ -171,8 +173,8 @@ public class ScaleWeightAnalyzer extends Analyzer {
 			}
 
 			// set null and non-null counts
-			current_column.setNullCount(n_null);
-			current_column.setNonNullCount(n_non_null);
+			sw_connection.setCount(CountType.Null, current_column, datasource_id, n_null);
+			sw_connection.setCount(CountType.NonNull, current_column, datasource_id, n_non_null);
 
 			Hashtable<String, Integer> ht = frequencies.get(current_demographic);
 			// transfer frequencies stored in memory to the database
@@ -182,7 +184,7 @@ public class ScaleWeightAnalyzer extends Analyzer {
 				sw_connection.addOrUpdateToken(current_column, datasource_id, token, frequency);
 			}
 
-			current_column.setUnique_non_null(sw_connection.getDistinctRecordCount(current_column, datasource_id));
+			sw_connection.setCount(CountType.Unique, current_column, datasource_id, sw_connection.getDistinctRecordCount(current_column, datasource_id));
 		}
 	}
 
@@ -193,13 +195,9 @@ public class ScaleWeightAnalyzer extends Analyzer {
 	public MatchingConfig getMatchingConfig() {
 		return config;
 	}
-	
-	Hashtable<String, Integer> getTokenFrequenciesFromDB(DataColumn target_column, String datasource_id, ScaleWeightSetting topbottom, Float limit) {
-		return sw_connection.getTokenFrequenciesFromDB(target_column, datasource_id, topbottom, limit);
-	}
-	
-	public int getTokenFrequencyFromDB(DataColumn field, String id, String token) {
-		return sw_connection.getTokenFrequencyFromDB(field, id, token);
+
+	public static ScaleWeightDBManager getSw_connection() {
+		return sw_connection;
 	}
 	
 }

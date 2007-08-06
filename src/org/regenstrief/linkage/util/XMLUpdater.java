@@ -1,17 +1,8 @@
-package org.regenstrief.linkage.depreciated;
-
-/**
- * Class created to go from Record Linkage data objects
- * to XML Document nodes and vice versa.
- * 
- * TODO: Make config more flexible  (ex: allow capital letters, spaces etc.)
- * TODO: Add ScaleWeight parameters
- * - A flag indicating whether to use null tokens when scaling agreement weight based on term frequency (default-no)
- * - A flag indicating how to establish agreement among fields when one or both fields are null (eg, apply disagreement weight, apply agreement weight, or apply zero weight) (default-apply zero weight)
- */
-
-
+package org.regenstrief.linkage.util;
 import java.io.*;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
 import java.util.*;
 
 import javax.xml.parsers.*;
@@ -20,15 +11,66 @@ import javax.xml.transform.stream.*;
 import javax.xml.transform.dom.*;
 
 import org.xml.sax.*;
-import org.regenstrief.linkage.analysis.SWAnalyzer.ScaleWeightSetting;
-import org.regenstrief.linkage.util.DataColumn;
-import org.regenstrief.linkage.util.LinkDataSource;
-import org.regenstrief.linkage.util.MatchingConfig;
-import org.regenstrief.linkage.util.MatchingConfigRow;
-import org.regenstrief.linkage.util.RecMatchConfig;
 import org.w3c.dom.*;
 
-public class XMLTranslator {
+import sun.io.Converters;
+/**
+ * Designed to transform old XML config files to the new format
+ *
+ * 
+ * @author scentel
+ *
+ */
+public class XMLUpdater {
+
+	/**
+	 * Converts all XML files in subdirectories to new format
+	 * 
+	 * @param args Parent directory
+	 */
+	public static void main(String [] args) {
+		
+		File arg = new File(args[0]);
+		if(!arg.exists()){
+			System.out.println("directory does not exist, exiting");
+		} else {
+			File [] dirs = arg.listFiles();
+			// for all subdirectories
+			for(File directory : dirs) {
+				if(directory.isDirectory()) {
+					File [] dir_files = directory.listFiles();
+					// for all XML files in it
+					for(File myfile : dir_files) {
+						if(myfile.isFile() && myfile.getName().endsWith(".xml")) {
+							convertToNewFormat(myfile);
+						}
+					}
+				} else {
+					if(directory.isFile() && directory.getName().endsWith(".xml")) {
+						convertToNewFormat(directory);
+					}
+				}
+			}
+		}
+	}
+	
+	public static void convertToNewFormat(File old_file) {
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder builder;
+		try {
+			builder = factory.newDocumentBuilder();
+			Document doc = builder.parse(old_file);
+			RecMatchConfig rmc = createRecMatchConfig(doc);
+			String fname = old_file.getAbsolutePath();
+			fname = fname.substring(0, fname.length()-3);
+			File newconfig = new File(fname + "new.xml");
+			Document d = toXML(rmc, true);
+			writeXMLDocToFile(d, newconfig);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	public static Document getXMLDocFromFile(File f){
 		if(!f.exists()){
 			return null;
@@ -52,13 +94,13 @@ public class XMLTranslator {
 			return null;
 		}
 	}
-	
+
 	public static boolean writeXMLDocToFile(Document d, File f){
 		try{
 			TransformerFactory transfac = TransformerFactory.newInstance();
 			Transformer trans = transfac.newTransformer();
 			trans.setOutputProperty(OutputKeys.INDENT, "yes");
-			
+
 			StringWriter sw = new StringWriter();
 			StreamResult sr = new StreamResult(sw);
 			DOMSource source = new DOMSource(d);
@@ -81,11 +123,11 @@ public class XMLTranslator {
 			//System.out.println("IO error");
 			return false;
 		}
-		
-		
+
+
 	}
-	
-	public static Document toXML(RecMatchConfig rmc){
+
+	public static Document toXML(RecMatchConfig rmc, boolean scale_weight){
 		Document ret = null;
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		try{
@@ -93,12 +135,23 @@ public class XMLTranslator {
 			ret = builder.newDocument();
 			Element root = ret.createElement("Session");
 			ret.appendChild(root);
-			
+
 			Element lds1_node = toDOMNode(rmc.getLinkDataSource1(), ret);
 			root.appendChild(lds1_node);
 			Node lds2_node = toDOMNode(rmc.getLinkDataSource2(), ret);
 			root.appendChild(lds2_node);
 			
+			if(scale_weight) {
+				Element analysis = ret.createElement("analysis");
+				analysis.setAttribute("type", "scaleweight");
+				
+				Element init = ret.createElement("init");
+				init.setTextContent(" ");
+				
+				analysis.appendChild(init);
+				root.appendChild(analysis);
+			}
+
 			Iterator<MatchingConfig> it = rmc.getMatchingConfigs().iterator();
 			while(it.hasNext()){
 				MatchingConfig mc = it.next();
@@ -110,7 +163,7 @@ public class XMLTranslator {
 			//System.out.println("error making XML parser: " + pce.getMessage());
 			return null;
 		}
-		
+
 		return ret;
 	}
 	
@@ -119,8 +172,7 @@ public class XMLTranslator {
 		ret.setAttribute("name", lds.getName());
 		ret.setAttribute("type", lds.getType());
 		ret.setAttribute("access", lds.getAccess());
-		ret.setAttribute("n_records", Integer.toString(lds.getRecordCount()));
-		ret.setAttribute("id", "" + lds.getDataSource_ID());
+
 		// add the nodes for the data column objects
 		Iterator<DataColumn> it = lds.getDataColumns().iterator();
 		while(it.hasNext()){
@@ -128,10 +180,10 @@ public class XMLTranslator {
 			Node child = toDOMNode(dc, doc);
 			ret.appendChild(child);
 		}
-		
+
 		return ret;
 	}
-	
+
 	public static Element toDOMNode(DataColumn dc, Document doc){
 		Element ret = doc.createElement("column");
 		int include_position = dc.getIncludePosition();
@@ -140,30 +192,21 @@ public class XMLTranslator {
 		} else {
 			ret.setAttribute("include_position", Integer.toString(include_position));
 		}
-		
+
 		String column_id = dc.getColumnID();
 		ret.setAttribute("column_id", column_id);
-		
+
 		ret.setAttribute("label", dc.getName());
-		
+
 		if(dc.getType() == DataColumn.NUMERIC_TYPE){
 			ret.setAttribute("type", "number");
 		} else {
 			ret.setAttribute("type", "string");
 		}
-		
-		int non_null = dc.getNonNullCount();
-		ret.setAttribute("n_non_null", Integer.toString(non_null));
-		
-		int n_null = dc.getNullCount();
-		ret.setAttribute("n_null", Integer.toString(n_null));
-		
-		int unique_non_null = dc.getUnique_non_null();
-		ret.setAttribute("n_unique", Integer.toString(unique_non_null));
-		
+
 		return ret;
 	}
-	
+
 	public static Element toDOMNode(MatchingConfig mc, Document doc){
 		Element ret = doc.createElement("run");
 		if(mc.isEstimated()){
@@ -172,28 +215,35 @@ public class XMLTranslator {
 			ret.setAttribute("estimate", "false");
 		}
 		
+		ret.setAttribute("name", mc.getName());
+
 		Iterator<MatchingConfigRow> it = mc.getMatchingConfigRows().iterator();
 		while(it.hasNext()){
 			MatchingConfigRow mcr = it.next();
 			Element child_node = toDOMNode(mcr, doc);
 			ret.appendChild(child_node);
 		}
-		
+
 		return ret;
 	}
-	
+
 	public static Element toDOMNode(MatchingConfigRow mcr, Document doc){
 		Element ret = doc.createElement("row");
 		ret.setAttribute("name", mcr.getName());
-		
+
 		Element block_order = doc.createElement("BlockOrder");
-		block_order.setTextContent(Integer.toString(mcr.getBlockOrder()));
+		if(mcr.DEFAULT_BLOCK_ORDER == mcr.getBlockOrder()) {
+			block_order.setTextContent("null");
+		} else {
+			block_order.setTextContent(Integer.toString(mcr.getBlockOrder()));
+		}
+
 		ret.appendChild(block_order);
-		
+
 		Element blck_chars = doc.createElement("BlckChars");
 		blck_chars.setTextContent(Integer.toString(mcr.getBlockChars()));
 		ret.appendChild(blck_chars);
-		
+
 		Element include = doc.createElement("Include");
 		if(mcr.isIncluded()){
 			include.setTextContent("true");
@@ -201,44 +251,46 @@ public class XMLTranslator {
 			include.setTextContent("false");
 		}
 		ret.appendChild(include);
-		
+
 		Element t_agreement = doc.createElement("TAgreement");
-		t_agreement.setTextContent(Double.toString(mcr.getAgreement()));
-		ret.appendChild(t_agreement);
+
+		Locale locale = Locale.US;
 		
+		DecimalFormat df = new DecimalFormat("0.#####");
+		df.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(locale));
+			
+		t_agreement.setTextContent(df.format(mcr.getAgreement()));
+		ret.appendChild(t_agreement);
+
 		Element n_agreement = doc.createElement("NonAgreement");
-		n_agreement.setTextContent(Double.toString(mcr.getNonAgreement()));
+		n_agreement.setTextContent(df.format(mcr.getNonAgreement()));
 		ret.appendChild(n_agreement);
 		
-		Element scale_weight = doc.createElement("ScaleWeight");
-		if(mcr.isScaleWeight()){
-			scale_weight.setTextContent("true");
-		} else {
-			scale_weight.setTextContent("false");
-		}
-		scale_weight.setAttribute("lookup", mcr.getSw_settings().toString());
-		scale_weight.setAttribute("N",mcr.getSw_number().toString());
-		ret.appendChild(scale_weight);
-		
+		Element scale_weight = doc.createElement("ScaleWeight"); 
+		if(mcr.isScaleWeight()){ 
+		   scale_weight.setTextContent("true"); 
+		} else { 
+		  scale_weight.setTextContent("null"); 
+		} 
+		ret.appendChild(scale_weight); 
+
+
 		Element algorithm = doc.createElement("Algorithm");
 		algorithm.setTextContent(MatchingConfig.ALGORITHMS[mcr.getAlgorithm()]);
 		ret.appendChild(algorithm);
-		
+
 		return ret;
 	}
-	
+
 	public static RecMatchConfig createRecMatchConfig(Document doc){
 		List<MatchingConfig> mc_configs = new ArrayList<MatchingConfig>();
 		LinkDataSource lds1, lds2;
 		lds1 = null;
 		lds2 = null;
-		
+
 		Element root_node = doc.getDocumentElement();
-		
-		// for each matching config
-		for(int i = 0; i < root_node.getChildNodes().getLength(); i++) {
+		for(int i = 0; i < root_node.getChildNodes().getLength(); i++){
 			Node n = root_node.getChildNodes().item(i);
-			
 			if(n.getNodeName().equals("datasource")){
 				LinkDataSource lds = createDataSource(n);
 				if(lds1 == null){
@@ -251,11 +303,10 @@ public class XMLTranslator {
 				mc_configs.add(mc);
 			}
 		}
-		
-		return new RecMatchConfig(lds1, lds2, mc_configs);
 
+		return new RecMatchConfig(lds1, lds2, mc_configs);
 	}
-	
+
 	/*
 	 * Method takes a XML DOM node and returns a LinkDataSource object
 	 */
@@ -263,92 +314,56 @@ public class XMLTranslator {
 		String name = lds.getAttributes().getNamedItem("name").getTextContent();
 		String type = lds.getAttributes().getNamedItem("type").getTextContent();
 		String access = lds.getAttributes().getNamedItem("access").getTextContent();
-		String rec_count = lds.getAttributes().getNamedItem("n_records").getTextContent();
-		try {
-			int ds_id = Integer.parseInt(lds.getAttributes().getNamedItem("id").getTextContent());
-			LinkDataSource ret = new LinkDataSource(name, type, access, ds_id, Integer.parseInt(rec_count));
-			for(int i = 0; i < lds.getChildNodes().getLength(); i++){
-				Node child = lds.getChildNodes().item(i);
-				if(child.getNodeName().equals("column")){
-					DataColumn dc = createDataColumn(child);
-					ret.addDataColumn(dc);
-				}
+		Random r = new Random();
+
+
+		LinkDataSource ret = new LinkDataSource(name, type, access,	r.nextInt(50) + 1);
+		for(int i = 0; i < lds.getChildNodes().getLength(); i++){
+			Node child = lds.getChildNodes().item(i);
+			if(child.getNodeName().equals("column")){
+				DataColumn dc = createDataColumn(child);
+				ret.addDataColumn(dc);
 			}
-			return ret;
-		} catch(IllegalFormatException e) {
-			System.out.println("Datasource id must be an integer");
-			return null;
 		}
+		return ret;
 	}
-	
+
 	public static DataColumn createDataColumn(Node dc){
 		// get the attributes of the node, create the data column object
-		NamedNodeMap ds_properties = dc.getAttributes();
-		String column_id = ds_properties.getNamedItem("column_id").getTextContent();
-		String include_pos = ds_properties.getNamedItem("include_position").getTextContent();
+		String column_id = dc.getAttributes().getNamedItem("column_id").getTextContent();
+		String include_pos = dc.getAttributes().getNamedItem("include_position").getTextContent();
 		int include_position;
 		if(include_pos.equals("NA")){
 			include_position = DataColumn.INCLUDE_NA;
 		} else {
 			include_position = Integer.parseInt(include_pos);
 		}
-		String name = ds_properties.getNamedItem("label").getTextContent();
+		String name = dc.getAttributes().getNamedItem("label").getTextContent();
 		DataColumn ret = new DataColumn(column_id);
 		ret.setIncludePosition(include_position);
 		ret.setName(name);
-		
-		String type = ds_properties.getNamedItem("type").getTextContent();
+
+		String type = dc.getAttributes().getNamedItem("type").getTextContent();
 		if(type.equals("number")){
 			ret.setType(DataColumn.NUMERIC_TYPE);
 		} else {
 			ret.setType(DataColumn.STRING_TYPE);
 		}
-		try {
-			int non_null_count = Integer.parseInt(ds_properties.getNamedItem("n_non_null").getTextContent());
-			int null_count = Integer.parseInt(ds_properties.getNamedItem("n_null").getTextContent());
-			int unique_non_null = Integer.parseInt(ds_properties.getNamedItem("n_unique").getTextContent());
-			ret.setNonNullCount(non_null_count);
-			ret.setNullCount(null_count);
-			ret.setUnique_non_null(unique_non_null);
-		} catch(NumberFormatException e) {
-			System.out.println("Error: Wrong number format");
-		}
-			
+
 		return ret;
 	}
-	
+
 	/*
 	 * Method returns a MatchingConfig object from a 
 	 * <run> XML DOM sub-tree
 	 */
 	public static MatchingConfig createMatchingConfig(Node mc){
-		NamedNodeMap attributes = mc.getAttributes();
-		String est = attributes.getNamedItem("estimate").getTextContent();
+		String est = mc.getAttributes().getNamedItem("estimate").getTextContent();
 		boolean estimate = false;
-		String mc_name = attributes.getNamedItem("name").getTextContent();
+		String mc_name = mc.getAttributes().getNamedItem("name").getTextContent();
 		if(est.equals("true")){
 			estimate = true;
 		}
-		// For weight scaling
-		Node access_node = attributes.getNamedItem("swaccess");
-		Node token_table_node = attributes.getNamedItem("swtokentable");
-		boolean is_scaleweight = false;
-		String access_value = null;
-		String token_table_value = null;
-		// Check if weight scaling nodes exist
-		if(access_node != null && token_table_node != null) {
-			access_value = access_node.getTextContent();
-			token_table_value = token_table_node.getTextContent();
-			// They may be present, but should not be empty
-			if(!token_table_value.equals("") && !access_value.equals("")) {
-				is_scaleweight = true;
-			}
-		}
-		
-		// For future work:
-		//	String use_null_tokens = n.getAttributes().getNamedItem("use_null_tokens").getTextContent();
-		//	String null_agreement = n.getAttributes().getNamedItem("null_agreement").getTextContent();
-		
 		// iterate over the children nodes and create the MatchingConfigRow objects
 		ArrayList<MatchingConfigRow> mcrs = new ArrayList<MatchingConfigRow>();
 		for(int i = 0; i < mc.getChildNodes().getLength(); i++){
@@ -358,32 +373,24 @@ public class XMLTranslator {
 				mcrs.add(mcr);
 			}
 		}
-		
+
 		MatchingConfigRow[] mcr_array = new MatchingConfigRow[mcrs.size()];
 		for(int i = 0; i < mcrs.size(); i++){
 			mcr_array[i] = mcrs.get(i);
 		}
-		
+
 		MatchingConfig ret = new MatchingConfig(mc_name, mcr_array);
 		ret.setEstimate(estimate);
-		
-		// Reflect the settings to the MatchingConfig
-		if(is_scaleweight) {
-		ret.make_scale_weight();
-		ret.setSw_db_access(access_value);
-		ret.setSw_token_table(token_table_value);
-		}
-		
 		return ret;
 	}
-	
+
 	/*
 	 * Method takes a <row> XML DOM sub-tree
 	 */
 	public static MatchingConfigRow createMatchingConfigRow(Node n){
 		String row_name = n.getAttributes().getNamedItem("name").getTextContent();
 		MatchingConfigRow ret = new MatchingConfigRow(row_name);
-		
+
 		// iterate over the children nodes to get the block order, block chars, etc.
 		for(int i = 0; i < n.getChildNodes().getLength(); i++){
 			Node child = n.getChildNodes().item(i);
@@ -394,7 +401,7 @@ public class XMLTranslator {
 				if(!bo.equals("null")){
 					ret.setBlockOrder(Integer.parseInt(bo));
 				}
-			} else if(child_name.equals("BlckChars")){
+			} else if(child_name.equals("BlockChars")){
 				String bc = child.getTextContent();
 				ret.setBlockChars(Integer.parseInt(bc));
 			} else if(child_name.equals("Include")){
@@ -412,30 +419,8 @@ public class XMLTranslator {
 				ret.setNonAgreement(Double.parseDouble(na));
 			} else if(child_name.equals("ScaleWeight")){
 				String sw = child.getTextContent();
-				if(sw.equals("true")){
+				if(sw.equals("True")){
 					ret.setScaleWeight(true);
-					NamedNodeMap settings = child.getAttributes();
-					if(settings != null) {
-						String lookup = settings.getNamedItem("lookup").getTextContent();
-						ScaleWeightSetting lookup_setting = null;
-						if(lookup.equals(ScaleWeightSetting.AboveN.toString())) {
-							lookup_setting = ScaleWeightSetting.AboveN;
-						} else if(lookup.equals(ScaleWeightSetting.BelowN.toString())) {
-							lookup_setting = ScaleWeightSetting.BelowN;
-						} else if(lookup.equals(ScaleWeightSetting.BottomN.toString())) {
-							lookup_setting = ScaleWeightSetting.BottomN;
-						} else if(lookup.equals(ScaleWeightSetting.BottomNPercent.toString())) {
-							lookup_setting = ScaleWeightSetting.BottomNPercent;
-						} else 	if(lookup.equals(ScaleWeightSetting.TopN.toString())) {
-							lookup_setting = ScaleWeightSetting.TopN;
-						} else 	if(lookup.equals(ScaleWeightSetting.TopNPercent.toString())) {
-							lookup_setting = ScaleWeightSetting.TopNPercent;
-						}
-						
-						Float N = Float.parseFloat(settings.getNamedItem("N").getTextContent());
-						ret.setSw_number(N);
-						ret.setSw_settings(lookup_setting);
-					}
 				}
 			} else if(child_name.equals("Algorithm")){
 				String alg = child.getTextContent();
@@ -450,7 +435,7 @@ public class XMLTranslator {
 				}
 			}
 		}
-		
+
 		return ret;
 	}
 }

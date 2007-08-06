@@ -28,6 +28,7 @@ import java.util.*;
 public class RecordDBManager extends DBManager {
 
 	private LinkDataSource lds;
+	private String table;
 	/**
 	 * Constructor parses the database connection information from the LinkDataSource
 	 * object and uses the given MatchingConfig object's analytical options

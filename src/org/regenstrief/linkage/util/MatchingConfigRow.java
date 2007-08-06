@@ -1,7 +1,7 @@
 package org.regenstrief.linkage.util;
 
 
-import org.regenstrief.linkage.analysis.SWAnalyzer.ScaleWeightSetting;
+
 
 /*
  * Class represents the matching options for one column of the data file.
@@ -10,6 +10,9 @@ import org.regenstrief.linkage.analysis.SWAnalyzer.ScaleWeightSetting;
  */
 
 public class MatchingConfigRow {
+	// Determines if bottom/top N frequencies will be loaded
+	public enum ScaleWeightSetting { TopN, BottomN, TopNPercent, BottomNPercent, AboveN, BelowN}
+
 	private String name;
 	private int block_order;
 	private int block_chars;
@@ -18,11 +21,12 @@ public class MatchingConfigRow {
 	private double non_agreement;
 	private boolean scale_weight;
 	private ScaleWeightSetting sw_settings;
+	private int buffer_size;
 	private float sw_number;
 	private int algorithm;
 
 	
-	public static final int DEFAULT_BLOCK_ORDER = 0;
+	public static final int DEFAULT_BLOCK_ORDER = -1;
 	public static final int DEFAULT_BLOCK_CHARS = 40;
 	public static final boolean DEFAULT_INCLUDE = false;
 	public static final double DEFAULT_AGREEMENT = 0.9;
@@ -32,7 +36,7 @@ public class MatchingConfigRow {
 	// Load all tokens by default
 	public static final Float DEFAULT_SW_NUMBER = new Float(1.0);
 	public static final ScaleWeightSetting DEFAULT_SW_SETTING = ScaleWeightSetting.TopNPercent;
-	                                                   
+	public static final int DEFAULT_BUFFER_SIZE = 500;                                                   
 	
 	/*
 	 * Requires the name of the row at least.
@@ -49,6 +53,7 @@ public class MatchingConfigRow {
 		algorithm = DEFAULT_ALGORITHM;
 		sw_settings = DEFAULT_SW_SETTING;
 		sw_number = DEFAULT_SW_NUMBER;
+		buffer_size = DEFAULT_BUFFER_SIZE;
 	}
 	
 	public String getName(){
@@ -159,5 +164,13 @@ public class MatchingConfigRow {
 
 	public void setSw_settings(ScaleWeightSetting sw_settings) {
 		this.sw_settings = sw_settings;
+	}
+
+	public int getBuffer_size() {
+		return buffer_size;
+	}
+
+	public void setBuffer_size(int buffer_size) {
+		this.buffer_size = buffer_size;
 	}
 }

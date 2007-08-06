@@ -21,8 +21,6 @@ public class MatchingConfig {
 	private boolean is_scale_weight = false;
 	// Stores information about how to connect to database where token frequencies are stored
 	private String sw_db_access;
-	// Name of the table where token frequencies are stored
-	private String sw_token_table;
 	
 	// datatype constants
 	public static final int NUMERIC_TYPE = 0;
@@ -157,6 +155,16 @@ public class MatchingConfig {
 		while(it.hasNext()){
 			MatchingConfigRow mcr = it.next();
 			if(mcr.isIncluded()){
+				ret.add(mcr);
+			}
+		}
+		return ret;
+	}
+	
+	public List<MatchingConfigRow> getScaleWeightColumns() {
+		ArrayList<MatchingConfigRow> ret = new ArrayList<MatchingConfigRow>();
+		for(MatchingConfigRow mcr : row_options) {
+			if(mcr.isIncluded() && mcr.isScaleWeight()) {
 				ret.add(mcr);
 			}
 		}
@@ -298,15 +306,7 @@ public class MatchingConfig {
 		return sw_db_access;
 	}
 
-	public String getSw_token_table() {
-		return sw_token_table;
-	}
-
 	public void setSw_db_access(String sw_db_access) {
 		this.sw_db_access = sw_db_access;
-	}
-
-	public void setSw_token_table(String sw_token_table) {
-		this.sw_token_table = sw_token_table;
 	}
 }

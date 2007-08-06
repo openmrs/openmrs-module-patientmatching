@@ -15,7 +15,7 @@ import java.sql.Statement;
 
 public class DBManager {
 	
-	protected String driver, url, table, user, passwd;
+	protected String driver, url, user, passwd;
 	protected Connection db;
 	
 	/**
@@ -31,10 +31,9 @@ public class DBManager {
 	 * @param user Database username
 	 * @param passwd Database password
 	 */
-	public DBManager(String driver, String url, String table, String user, String passwd){
+	public DBManager(String driver, String url, String user, String passwd){
 		this.driver = driver;
 		this.url = url;
-		this.table = table;
 		this.user = user;
 		this.passwd = passwd;
 	}

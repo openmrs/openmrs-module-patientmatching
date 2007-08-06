@@ -7,10 +7,20 @@ import java.util.Iterator;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.ScoreVector;
+import org.regenstrief.linkage.db.ScaleWeightDBManager;
+import org.regenstrief.linkage.db.ScaleWeightDBManager.CountType;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
+
+/**
+ * Changes scores of a MatchResult according to weight scaling formula
+ * 
+ * @author scentel
+ * 
+ * TODO: Test
+ */
 
 public class ScaleWeightModifier implements Modifier {
 
@@ -30,6 +40,9 @@ public class ScaleWeightModifier implements Modifier {
 	// DataSource IDs of where records come from
 	private String lds1_id;
 	private String lds2_id;
+	
+	// Connection to database where tokens are stored
+	private static ScaleWeightDBManager sw_connection;
 
 	public ScaleWeightModifier(ScaleWeightAnalyzer swa1, ScaleWeightAnalyzer swa2) {
 		this.swa1 = swa1;
@@ -54,6 +67,8 @@ public class ScaleWeightModifier implements Modifier {
 		Iterator<MatchingConfigRow> it = mc.getIncludedColumns().iterator();
 		lds1_inc_cols = lds1.getIncludedDataColumns();
 		lds2_inc_cols = lds2.getIncludedDataColumns();
+		
+		sw_connection = swa1.getSw_connection();
 
 		// In the worst case, all included row are scale weight
 		sw_rows = new ArrayList<MatchingConfigRow>(lds1_inc_cols.size());
@@ -64,8 +79,8 @@ public class ScaleWeightModifier implements Modifier {
 				sw_rows.add(mcr);
 				String col_label = mcr.getName();
 				// Retrieve previous token frequency analysis results
-				Hashtable<String, Integer> table1 = swa1.getTokenFrequenciesFromDB(lds1_inc_cols.get(col_label), lds1_id, mcr.getSw_settings(), mcr.getSw_number());
-				Hashtable<String, Integer> table2 = swa2.getTokenFrequenciesFromDB(lds2_inc_cols.get(col_label), lds2_id, mcr.getSw_settings(), mcr.getSw_number());
+				Hashtable<String, Integer> table1 = sw_connection.getTokenFrequenciesFromDB(lds1_inc_cols.get(col_label), lds1_id, mcr.getSw_settings(), mcr.getSw_number());
+				Hashtable<String, Integer> table2 = sw_connection.getTokenFrequenciesFromDB(lds2_inc_cols.get(col_label), lds2_id, mcr.getSw_settings(), mcr.getSw_number());
 				// Store them in hash tables indexed by demographic
 				lds1_frequencies.put(col_label, table1);
 				lds2_frequencies.put(col_label, table2);
@@ -99,11 +114,11 @@ public class ScaleWeightModifier implements Modifier {
 				frequency = token_frequencies.get(token).intValue();
 			} catch(NullPointerException e) {
 				// It is not in the lookup table, have to check the database
-				frequency = swa.getTokenFrequencyFromDB(cur_data_col,datasource_id, token);
+				frequency = sw_connection.getTokenFrequencyFromDB(cur_data_col,datasource_id, token);
 			}
 			// other information needed for weight scaling
-			int total_tokens = cur_data_col.getNonNullCount();
-			int unique_tokens = cur_data_col.getUnique_non_null();
+			int total_tokens = sw_connection.getCount(CountType.NonNull, cur_data_col, datasource_id);
+			int unique_tokens = sw_connection.getCount(CountType.Unique, cur_data_col, datasource_id);
 			SWAdjustScore adjust = new SWAdjustScore(total_tokens, unique_tokens, frequency);
 			// we need this for all columns, so store it in a hashtable indexed by column name
 			result.put(comparison_demographic, adjust);

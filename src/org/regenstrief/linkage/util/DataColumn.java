@@ -2,9 +2,11 @@ package org.regenstrief.linkage.util;
 
 public class DataColumn {
 	private int include_position;
+	// Original column name in a database, or its order in a CharDelimFile
 	private String column_id;
+	// Column label
 	private String name;
-	private int type, n_non_null, n_null, unique_non_null;
+	private int type;
 	
 	public final static int STRING_TYPE = MatchingConfig.STRING_TYPE;
 	public final static int NUMERIC_TYPE = MatchingConfig.NUMERIC_TYPE;
@@ -18,34 +20,8 @@ public class DataColumn {
 		// data position is the one field of the object
 		// that should not change
 		this.column_id = column_id;
-		n_non_null = UNKNOWN_COUNT;
-		n_null = UNKNOWN_COUNT;
-		unique_non_null = UNKNOWN_COUNT;
 	}
-	
-	/** 
-	 * @return Returns the number of null records in the data column
-	 */
-	public int getNullCount(){
-		return n_null;
-	}
-	
-	public void setNullCount(int count){
-		n_null = count;
-	}
-	
-	/**
-	 * 
-	 * @return Returns the number of non-null records in the data column
-	 */
-	public int getNonNullCount(){
-		return n_non_null;
-	}
-	
-	public void setNonNullCount(int count){
-		n_non_null = count;
-	}
-	
+		
 	public int getIncludePosition() {
 		return include_position;
 	}
@@ -73,18 +49,5 @@ public class DataColumn {
 	public String getColumnID() {
 		return column_id;
 	}
-
-	/**
-	 * 
-	 * @return Returns the number of unique non-null tokens in the data column
-	 */
-	public int getUnique_non_null() {
-		return unique_non_null;
-	}
-
-	public void setUnique_non_null(int unique_non_null) {
-		this.unique_non_null = unique_non_null;
-	}
-	
-	
+		
 }

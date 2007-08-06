@@ -58,20 +58,20 @@ public class SWAnalyzerTest {
 			String ds2_type = lds2.getType();
 			CharDelimFileReader cdfr = new OrderedCharDelimFileReader(lds2,mc_test);
 			String sw_access_parameter = mc_test.getSw_db_access();
-			String sw_token_table = mc_test.getSw_token_table();
+//			String sw_token_table = mc_test.getSw_token_table();
 			SWAnalyzer analyzer1, analyzer2;
 			if(ds1_type.equals("DataBase")) {
-				analyzer1 = new DataBaseSWAnalyzer(rmc.getLinkDataSource1(),sw_access_parameter, sw_token_table);
+				analyzer1 = new DataBaseSWAnalyzer(rmc.getLinkDataSource1(),sw_access_parameter);
 
 			} else {
-				analyzer1 = new CharDelimFileSWAnalyzer(rmc.getLinkDataSource1(),mc_test, sw_access_parameter, sw_token_table);
+				analyzer1 = new CharDelimFileSWAnalyzer(rmc.getLinkDataSource1(),mc_test, sw_access_parameter);
 			}
 			
 			if(ds2_type.equals("DataBase")) {
-				analyzer2 = new DataBaseSWAnalyzer(rmc.getLinkDataSource2(),sw_access_parameter, sw_token_table);
+				analyzer2 = new DataBaseSWAnalyzer(rmc.getLinkDataSource2(),sw_access_parameter);
 
 			} else {
-				analyzer2 = new CharDelimFileSWAnalyzer(rmc.getLinkDataSource2(),mc_test, sw_access_parameter, sw_token_table);
+				analyzer2 = new CharDelimFileSWAnalyzer(rmc.getLinkDataSource2(),mc_test, sw_access_parameter);
 			}
 			
 			DataColumn temp = rmc.getLinkDataSource2().getDataColumn(11);
@@ -82,11 +82,12 @@ public class SWAnalyzerTest {
 		//	Hashtable<String,Integer> deneme1 = analyzer1.getTokenFrequencies(dcc);
 		//	Hashtable<String,Integer> deneme2 = analyzer2.getTokenFrequencies(temp);
 			CharDelimFileSWAnalyzer cda = (CharDelimFileSWAnalyzer) analyzer2;
-			//analyzer2.analyzeTokenFrequencies(temp, 500);
-		//	analyzer2.analyzeTokenFrequencies(temp);
+			//analyzer2.analyzeTokenFrequencies(temp, 250);
+			//cda.analyzeTokenFrequencies(temp);
+			cda.analyzeTokenFrequencies(temp,250);
 			//boolean res = analyzer2.deleteAnalysis(temp);
 			//System.out.println(analyzer1.getDistinctRecordCount(dcc) + "");
-			//analyzer1.analyzeTokenFrequencies(dcc, 500);
+			//analyzer1.analyzeTokenFrequencies(dcc, 250);
 			//analyzer1.getTokenFrequencies(dcc, ScaleWeightSetting.BottomNPercent, new Float(0.1) );
 			//lds2.getScaleWeightColumn(scale_weights, mc_test.getMatchingConfigRowCount());
 

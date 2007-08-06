@@ -12,7 +12,6 @@ public class LinkDataSource {
 	private String source_name;
 	private String type;
 	private String access;
-	private int n_records;
 	private int ds_id;
 	
 	public static final int UNKNOWN_REC_COUNT = -1;
@@ -25,19 +24,9 @@ public class LinkDataSource {
 		this.type = type;
 		this.access = access;
 		column_settings = new ArrayList<DataColumn>();
-		n_records = UNKNOWN_REC_COUNT;
 		ds_id = id;
 	}
-	
-	public LinkDataSource(String name, String type, String access, int id, int n_records){
-		this.source_name = name;
-		this.type = type;
-		this.access = access;
-		column_settings = new ArrayList<DataColumn>();
-		this.n_records = n_records;
-		this.ds_id = id;
-	}
-	
+		
 	/*
 	 * Method added to conveniently go from a list of columns by name,
 	 * such as would be returned from a matching config object, and
@@ -187,14 +176,6 @@ public class LinkDataSource {
 			}
 		}
 		return total;
-	}
-	
-	public void setRecordCount(int count){
-		n_records = count;
-	}
-	
-	public int getRecordCount(){
-		return n_records;
 	}
 	
 	/**

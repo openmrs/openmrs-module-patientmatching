@@ -15,16 +15,12 @@ public abstract class SWAnalyzer {
 	
 	// Connection to the database where token frequencies will be stored
 	protected ScaleWeightDBManager  sw_connection;
-	// Determines if bottom/top N frequencies will be loaded
-	public enum ScaleWeightSetting { TopN, BottomN, TopNPercent, BottomNPercent, AboveN, BelowN}
 	protected DataSourceReader reader;
-	protected String token_table;
 	protected String datasource_id;
 	
-	public SWAnalyzer(String access_parameter, String token_table) {
-		this.token_table = token_table;
+	public SWAnalyzer(String access_parameter) {
 		String [] access = access_parameter.split(",");
-		sw_connection = new ScaleWeightDBManager(access[0], access[1], token_table, access[2], access[3]);
+		sw_connection = new ScaleWeightDBManager(access[0], access[1], access[2], access[3]);
 		sw_connection.connect();
 	}
 	
@@ -37,20 +33,22 @@ public abstract class SWAnalyzer {
 	public abstract int getRecordCount();
 	public abstract int getNonNullCount(DataColumn target_column);
 	public abstract int getNullCount(DataColumn target_column);
-		
+	
+	/*
 	public void setNonNullCount(DataColumn target_column) {
-		target_column.setNonNullCount(getNonNullCount(target_column));
+		sw_connection.setNonNullCount(target_column, datasource_id, getNonNullCount(target_column));
 	}
 	
 	public void setNullCount(DataColumn target_column) {
-		target_column.setNullCount(getNullCount(target_column));
+		sw_connection.setNullCount(target_column, datasource_id, getNullCount(target_column));
 	}
 	
 	public void setRecordCount() {
-		reader.data_source.setRecordCount(getRecordCount());
+		sw_connection.setRecordCount(datasource_id, getRecordCount());
 	}
 	
 	public void setUniqueNonNullCount(DataColumn target_column) {
-		target_column.setUnique_non_null(sw_connection.getDistinctRecordCount(target_column, datasource_id));
+		sw_connection.setUnique_non_null(target_column, datasource_id, sw_connection.getDistinctRecordCount(target_column, datasource_id));
 	}
+	*/
 }
