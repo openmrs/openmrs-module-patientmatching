@@ -172,6 +172,7 @@ public class XMLUpdater {
 		ret.setAttribute("name", lds.getName());
 		ret.setAttribute("type", lds.getType());
 		ret.setAttribute("access", lds.getAccess());
+		ret.setAttribute("id", lds.getDataSource_ID() + "");
 
 		// add the nodes for the data column objects
 		Iterator<DataColumn> it = lds.getDataColumns().iterator();
@@ -315,8 +316,7 @@ public class XMLUpdater {
 		String type = lds.getAttributes().getNamedItem("type").getTextContent();
 		String access = lds.getAttributes().getNamedItem("access").getTextContent();
 		Random r = new Random();
-
-
+	
 		LinkDataSource ret = new LinkDataSource(name, type, access,	r.nextInt(50) + 1);
 		for(int i = 0; i < lds.getChildNodes().getLength(); i++){
 			Node child = lds.getChildNodes().item(i);

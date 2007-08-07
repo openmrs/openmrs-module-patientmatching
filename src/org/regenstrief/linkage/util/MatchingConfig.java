@@ -19,8 +19,6 @@ public class MatchingConfig {
 	
 	// Indicates whether one or more rows have weight scaling
 	private boolean is_scale_weight = false;
-	// Stores information about how to connect to database where token frequencies are stored
-	private String sw_db_access;
 	
 	// datatype constants
 	public static final int NUMERIC_TYPE = 0;
@@ -300,13 +298,5 @@ public class MatchingConfig {
 
 	public void make_scale_weight() {
 		this.is_scale_weight = true;
-	}
-	
-	public String getSw_db_access() {
-		return sw_db_access;
-	}
-
-	public void setSw_db_access(String sw_db_access) {
-		this.sw_db_access = sw_db_access;
 	}
 }

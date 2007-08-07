@@ -8,10 +8,13 @@ package org.regenstrief.linkage.util;
  * TODO: Add ScaleWeight parameters
  * - A flag indicating whether to use null tokens when scaling agreement weight based on term frequency (default-no)
  * - A flag indicating how to establish agreement among fields when one or both fields are null (eg, apply disagreement weight, apply agreement weight, or apply zero weight) (default-apply zero weight)
+ * TODO: Analyze all columns if no matching runs are present
  */
 
 
 import java.io.*;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.*;
 
 import javax.xml.parsers.*;
@@ -89,11 +92,22 @@ public class XMLTranslator {
 			Element root = ret.createElement("Session");
 			ret.appendChild(root);
 			
+			// DataSources
 			Element lds1_node = toDOMNode(rmc.getLinkDataSource1(), ret);
 			root.appendChild(lds1_node);
 			Node lds2_node = toDOMNode(rmc.getLinkDataSource2(), ret);
 			root.appendChild(lds2_node);
 			
+			// Analysis part
+			AnalysisConfig ac = rmc.getAnalysis_configs();
+			HashMap<String, String> config_table = ac.getSettings();
+			for(String type : config_table.keySet()) {
+				String init = config_table.get(type);
+				Element analysis = toDOMNode(type, init, ret);
+				root.appendChild(analysis);
+			}
+			
+			// MatchingConfigRows
 			Iterator<MatchingConfig> it = rmc.getMatchingConfigs().iterator();
 			while(it.hasNext()){
 				MatchingConfig mc = it.next();
@@ -106,6 +120,15 @@ public class XMLTranslator {
 			return null;
 		}
 		
+		return ret;
+	}
+	
+	public static Element toDOMNode(String analyzer_type, String analyzer_init, Document doc) {
+		Element ret = doc.createElement("analysis");
+		ret.setAttribute("type", analyzer_type);
+		Element child = doc.createElement("init");
+		child.setTextContent(analyzer_init);
+		ret.appendChild(child);
 		return ret;
 	}
 	
@@ -157,6 +180,8 @@ public class XMLTranslator {
 			ret.setAttribute("estimate", "false");
 		}
 		
+		ret.setAttribute("name", mc.getName());
+		
 		Iterator<MatchingConfigRow> it = mc.getMatchingConfigRows().iterator();
 		while(it.hasNext()){
 			MatchingConfigRow mcr = it.next();
@@ -172,7 +197,12 @@ public class XMLTranslator {
 		ret.setAttribute("name", mcr.getName());
 		
 		Element block_order = doc.createElement("BlockOrder");
-		block_order.setTextContent(Integer.toString(mcr.getBlockOrder()));
+		if(mcr.getBlockOrder() == mcr.DEFAULT_BLOCK_ORDER) {
+			block_order.setTextContent("null");
+		} else {
+			block_order.setTextContent(Integer.toString(mcr.getBlockOrder()));
+		}
+
 		ret.appendChild(block_order);
 		
 		Element blck_chars = doc.createElement("BlckChars");
@@ -187,24 +217,29 @@ public class XMLTranslator {
 		}
 		ret.appendChild(include);
 		
+		Locale new_locale = Locale.US;
+		DecimalFormat df = new DecimalFormat("0.#####");
+		df.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(new_locale));
+			
 		Element t_agreement = doc.createElement("TAgreement");
-		t_agreement.setTextContent(Double.toString(mcr.getAgreement()));
+		t_agreement.setTextContent(df.format(mcr.getAgreement()));
 		ret.appendChild(t_agreement);
 		
 		Element n_agreement = doc.createElement("NonAgreement");
-		n_agreement.setTextContent(Double.toString(mcr.getNonAgreement()));
+		n_agreement.setTextContent(df.format(mcr.getNonAgreement()));
 		ret.appendChild(n_agreement);
 		
 		Element scale_weight = doc.createElement("ScaleWeight");
 		if(mcr.isScaleWeight()){
 			scale_weight.setTextContent("true");
+			scale_weight.setAttribute("lookup", mcr.getSw_settings().toString());
+			scale_weight.setAttribute("N",mcr.getSw_number().toString());
+			scale_weight.setAttribute("buffer", "" + mcr.getBuffer_size());
 		} else {
-			scale_weight.setTextContent("false");
+			scale_weight.setTextContent("null");
 		}
-		scale_weight.setAttribute("lookup", mcr.getSw_settings().toString());
-		scale_weight.setAttribute("N",mcr.getSw_number().toString());
+
 		ret.appendChild(scale_weight);
-		
 		Element algorithm = doc.createElement("Algorithm");
 		algorithm.setTextContent(MatchingConfig.ALGORITHMS[mcr.getAlgorithm()]);
 		ret.appendChild(algorithm);
@@ -217,6 +252,7 @@ public class XMLTranslator {
 		LinkDataSource lds1, lds2;
 		lds1 = null;
 		lds2 = null;
+		AnalysisConfig analysis_config = new AnalysisConfig();
 		
 		Element root_node = doc.getDocumentElement();
 		
@@ -234,15 +270,28 @@ public class XMLTranslator {
 				}
 			} else if(node_name.equals("run")){
 				MatchingConfig mc = createMatchingConfig(n);
+				boolean is_scale_weight = false;
+				Iterator<MatchingConfigRow> mcit = mc.getMatchingConfigRows().iterator();
+				while(mcit.hasNext() && !is_scale_weight) {
+					MatchingConfigRow current = mcit.next();
+					if(current.isScaleWeight()) {
+						is_scale_weight = true;
+						mc.make_scale_weight();
+					}
+				}
 				mc_configs.add(mc);
 			} else if(node_name.equals("analysis")) {
-				
-				// TODO: STUB
+				String type = n.getAttributes().getNamedItem("type").getTextContent();
+				NodeList settings = n.getChildNodes();
+				String init = "";
+				if(settings != null) {
+					init = settings.item(1).getTextContent();
+				}
+				analysis_config.addInitString(type, init);
 			}
 		}
-		
-		return new RecMatchConfig(lds1, lds2, mc_configs);
 
+		return new RecMatchConfig(lds1, lds2, mc_configs, analysis_config);
 	}
 	
 	/*
@@ -307,23 +356,6 @@ public class XMLTranslator {
 		if(est.equals("true")){
 			estimate = true;
 		}
-		// For weight scaling
-		Node access_node = attributes.getNamedItem("swaccess");
-
-		boolean is_scaleweight = false;
-		String access_value = null;
-		// Check if weight scaling nodes exist
-		if(access_node != null) {
-			access_value = access_node.getTextContent();
-			// They may be present, but should not be empty
-			if(!access_value.equals("")) {
-				is_scaleweight = true;
-			}
-		}
-		
-		// For future work:
-		//	String use_null_tokens = n.getAttributes().getNamedItem("use_null_tokens").getTextContent();
-		//	String null_agreement = n.getAttributes().getNamedItem("null_agreement").getTextContent();
 		
 		// iterate over the children nodes and create the MatchingConfigRow objects
 		ArrayList<MatchingConfigRow> mcrs = new ArrayList<MatchingConfigRow>();
@@ -342,13 +374,7 @@ public class XMLTranslator {
 		
 		MatchingConfig ret = new MatchingConfig(mc_name, mcr_array);
 		ret.setEstimate(estimate);
-		
-		// Reflect the settings to the MatchingConfig
-		if(is_scaleweight) {
-		ret.make_scale_weight();
-		ret.setSw_db_access(access_value);
-		}
-		
+				
 		return ret;
 	}
 	

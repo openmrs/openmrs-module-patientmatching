@@ -16,12 +16,20 @@ import org.w3c.dom.*;
 
 public class RecMatchConfig implements Iterable<MatchingConfig> {
 	private LinkDataSource lds1, lds2;	
+	private AnalysisConfig analysis_configs;
 	private List<MatchingConfig> mc_configs;
 	
 	public RecMatchConfig(LinkDataSource lds1, LinkDataSource lds2, List<MatchingConfig> mc_configs){
 		this.lds1 = lds1;
 		this.lds2 = lds2;
 		this.mc_configs = mc_configs;
+	}
+	
+	public RecMatchConfig(LinkDataSource lds1, LinkDataSource lds2, List<MatchingConfig> mc_configs, AnalysisConfig analysis_settings){
+		this.lds1 = lds1;
+		this.lds2 = lds2;
+		this.mc_configs = mc_configs;
+		this.analysis_configs = analysis_settings;
 	}
 	
 	public Iterator<MatchingConfig> iterator() {
@@ -99,6 +107,10 @@ public class RecMatchConfig implements Iterable<MatchingConfig> {
 		catch(IOException ioe){
 			System.out.println("IO error parsing config file: " + ioe.getMessage());
 		}
+	}
+
+	public AnalysisConfig getAnalysis_configs() {
+		return analysis_configs;
 	}
 
 

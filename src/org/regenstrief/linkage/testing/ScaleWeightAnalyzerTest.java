@@ -70,8 +70,9 @@ public class ScaleWeightAnalyzerTest {
 				if(mc_test.get_is_scale_weight()) {
 					DataSourceAnalysis dsa1 = new DataSourceAnalysis(dsr1);
 					DataSourceAnalysis dsa2 = new DataSourceAnalysis(dsr2);
-					ScaleWeightAnalyzer swa1 = new ScaleWeightAnalyzer(lds1, mc_test);
-					ScaleWeightAnalyzer swa2 = new ScaleWeightAnalyzer(lds2, mc_test);
+					String db_access = rmc.getAnalysis_configs().getInitString("scaleweight");
+					ScaleWeightAnalyzer swa1 = new ScaleWeightAnalyzer(lds1, mc_test, db_access);
+					ScaleWeightAnalyzer swa2 = new ScaleWeightAnalyzer(lds2, mc_test, db_access);
 
 					dsa1.addAnalyzer(swa1);
 					dsa2.addAnalyzer(swa2);

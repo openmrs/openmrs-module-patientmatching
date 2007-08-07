@@ -37,7 +37,7 @@ public class ScaleWeightAnalyzer extends Analyzer {
 	private Hashtable <String, Hashtable<String, Integer>> frequencies;
 	private Hashtable <String, PriorityQueue<AnalysisObject>> min_priority_queues;
 	
-	public ScaleWeightAnalyzer(LinkDataSource lds, MatchingConfig mc){
+	public ScaleWeightAnalyzer(LinkDataSource lds, MatchingConfig mc, String db_access){
 		this.config = mc;
 		this.lds = lds;
 		this.datasource_id = "" + lds.getDataSource_ID();
@@ -45,7 +45,7 @@ public class ScaleWeightAnalyzer extends Analyzer {
 		sw_rows = mc.getScaleWeightColumns();
 		
 		// Set up database connection
-		String [] access = mc.getSw_db_access().split(",");
+		String [] access = db_access.split(",");
 		if(sw_connection == null) {
 			sw_connection = new ScaleWeightDBManager(access[0], access[1], access[2], access[3]);
 			sw_connection.connect();

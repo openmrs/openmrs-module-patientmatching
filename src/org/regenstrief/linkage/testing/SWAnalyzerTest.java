@@ -57,7 +57,7 @@ public class SWAnalyzerTest {
 			String ds1_type = lds1.getType();
 			String ds2_type = lds2.getType();
 			CharDelimFileReader cdfr = new OrderedCharDelimFileReader(lds2,mc_test);
-			String sw_access_parameter = mc_test.getSw_db_access();
+			String sw_access_parameter = rmc.getAnalysis_configs().getInitString("scaleweight");
 //			String sw_token_table = mc_test.getSw_token_table();
 			SWAnalyzer analyzer1, analyzer2;
 			if(ds1_type.equals("DataBase")) {
@@ -81,10 +81,10 @@ public class SWAnalyzerTest {
 			DataColumn dcc = rmc.getLinkDataSource1().getDataColumn(11);
 		//	Hashtable<String,Integer> deneme1 = analyzer1.getTokenFrequencies(dcc);
 		//	Hashtable<String,Integer> deneme2 = analyzer2.getTokenFrequencies(temp);
-			CharDelimFileSWAnalyzer cda = (CharDelimFileSWAnalyzer) analyzer2;
+			//CharDelimFileSWAnalyzer cda = (CharDelimFileSWAnalyzer) analyzer2;
 			//analyzer2.analyzeTokenFrequencies(temp, 250);
 			//cda.analyzeTokenFrequencies(temp);
-			cda.analyzeTokenFrequencies(temp,250);
+			//cda.analyzeTokenFrequencies(temp,250);
 			//boolean res = analyzer2.deleteAnalysis(temp);
 			//System.out.println(analyzer1.getDistinctRecordCount(dcc) + "");
 			//analyzer1.analyzeTokenFrequencies(dcc, 250);
