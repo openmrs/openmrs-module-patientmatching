@@ -1,10 +1,17 @@
 package org.regenstrief.linkage.analysis;
 
-import org.regenstrief.linkage.*;
-import org.regenstrief.linkage.io.*;
-import org.regenstrief.linkage.util.*;
-import java.util.*;
-import java.io.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+
+import org.regenstrief.linkage.MatchResult;
+import org.regenstrief.linkage.MatchVector;
+import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.MatchingConfigRow;
+import org.regenstrief.linkage.util.ScorePair;
 
 /**
  * Class was originally extending Analyzer, but EM analyzes
@@ -27,7 +34,6 @@ public class EMAnalyzer { //extends Analyzer {
 	
 	final static int ITERATIONS = 3;
 	
-	private int record_size;
 	//private Hashtable<MatchVector,Integer> vector_count;
 	private List<MatchVector> vector_list;
 	
@@ -39,16 +45,39 @@ public class EMAnalyzer { //extends Analyzer {
 	public EMAnalyzer(){
 		//vector_count = new Hashtable<MatchVector,Integer>();
 		vector_list = new ArrayList<MatchVector>();
-		record_size = 0;
 		
 	}
 	
 	/**
-	 * Method analyzes pairs of records and keeps a count of the
-	 * number of different matching vectors
+	 * Analyzes the record pairs according to the given MatchingConfig object and returns
+	 * a hash map of the column names to new values.  This method uses the default
+	 * number of iterations.
+	 * 
+	 * Like the version that also has an iterations argument, the MatchingConfig object
+	 * passed will be modified
+	 * 
+	 * @param fp	provides the stream of Record pairs to be analyzed
+	 * @param mc	stores the information on how to compare the Records.  This will have
+	 * 				its m and u values modified for columns included in the matching
+	 * @throws IOException
+	 */
+	public void analyzeRecordPairs(org.regenstrief.linkage.io.FormPairs fp, MatchingConfig mc) throws IOException{
+		analyzeRecordPairs(fp, mc, ITERATIONS);
+	}
+	
+	/**
+	 * Analyzes the record pairs according to the given MatchingConfig object and returns
+	 * a hash map of the column names to new values
+	 * 
+	 * @param fp	provides the stream of Record pairs to be analyzed
+	 * @param mc	stores the information on how to compare the Records.  This will have
+	 * 				its m and u values modified for columns included in the matching
+	 * @param iterations	the number of iterations to perform when calculating optimized
+	 * 				m and u values
+	 * @throws IOException
 	 */
 	
-	public Map<String,Double> analyzeRecordPairs(org.regenstrief.linkage.io.FormPairs fp, MatchingConfig mc) throws IOException{
+	public void analyzeRecordPairs(org.regenstrief.linkage.io.FormPairs fp, MatchingConfig mc, int iterations) throws IOException{
 		ScorePair sp = new ScorePair(mc);
 		Record[] pair;
 		while((pair = fp.getNextRecordPair()) != null){
@@ -66,23 +95,11 @@ public class EMAnalyzer { //extends Analyzer {
 			}
 			*/
 		}
-		Map<String,Double> values = finishAnalysis(new VectorTable(mc), mc.getIncludedColumnsNames(), mc);
-		//Map<String,Double> values = finishAnalysis2(mc);
-		return values;
+		finishAnalysis(new VectorTable(mc), mc.getIncludedColumnsNames(), mc, iterations);
+		
 	}
 	
-	/**
-	 * The number of different MatchingVectors are known, so method
-	 * can loop through the MatchingVector objects for ITERATIONS times
-	 * updating the match and umatch values.  Values are calculated here and
-	 * MatchingConfig object is modified at the end.
-	 * 
-	 * Currently a String array of demographics is passed in and used to
-	 * initialize the hashtable with default values.  This can be removed if
-	 * the VectorTable is modified to keep track of what Strings the table
-	 * is matched on.
-	 */
-	public Map<String,Double> finishAnalysis(VectorTable vt, String[] demographics, MatchingConfig mc)  throws IOException{
+	private void finishAnalysis(VectorTable vt, String[] demographics, MatchingConfig mc, int iterations)  throws IOException{
 		
 		// values to store index by demographic name
 		Hashtable<String,Double> msum = new Hashtable<String,Double>();
@@ -107,7 +124,7 @@ public class EMAnalyzer { //extends Analyzer {
 		//gMtemp = 0;
 		//gUtemp = 0;
 		
-		for(int i = 0; i < ITERATIONS; i++){
+		for(int i = 0; i < iterations; i++){
 			gMsum = 0;
 			gUsum = 0;
 			gMtemp = 0;
@@ -175,8 +192,8 @@ public class EMAnalyzer { //extends Analyzer {
 			
 			// update p_est
 			p = gMsum / vct_count;
-			System.out.println("Iteration " + (i + 1));
-			System.out.println("P: " + p);
+			//System.out.println("Iteration " + (i + 1));
+			//System.out.println("P: " + p);
 			
 			// update the mest and uest values after each iteration
 			for(int j = 0; j < demographics.length; j++){
@@ -186,12 +203,12 @@ public class EMAnalyzer { //extends Analyzer {
 				mest.put(demographic, mest_val);
 				uest.put(demographic, uest_val);
 			}
-			System.out.println("gMsum: " + gMsum + " gUsum: " + gUsum);
+			
+			/*
 			for(int j = 0; j < demographics.length; j++){
 				String demographic = demographics[j];
 				System.out.println(demographic + ":   mest: " + mest.get(demographic) + "   uest: " + uest.get(demographic));
-			}
-			System.out.println();
+			}*/
 			
 		}
 		
@@ -202,7 +219,6 @@ public class EMAnalyzer { //extends Analyzer {
 			mcr.setNonAgreement(uest.get(demographic));
 		}
 		
-		return null;
 	}
 	
 }
