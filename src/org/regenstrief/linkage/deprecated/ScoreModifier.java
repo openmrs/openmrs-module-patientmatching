@@ -1,4 +1,4 @@
-package org.regenstrief.linkage.depreciated;
+package org.regenstrief.linkage.deprecated;
 
 import java.util.ArrayList;
 import java.util.HashMap;

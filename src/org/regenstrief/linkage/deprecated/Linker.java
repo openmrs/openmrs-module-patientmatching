@@ -1,4 +1,4 @@
-package org.regenstrief.linkage.depreciated;
+package org.regenstrief.linkage.deprecated;
 
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;

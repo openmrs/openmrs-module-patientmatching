@@ -1,4 +1,4 @@
-package org.regenstrief.linkage.depreciated;
+package org.regenstrief.linkage.deprecated;
 /* 
  * *************************************************************
  * This class was first a class that called the C binaries, then it was
