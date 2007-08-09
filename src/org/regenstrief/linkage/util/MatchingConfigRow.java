@@ -26,7 +26,7 @@ public class MatchingConfigRow {
 	private int algorithm;
 
 	
-	public static final int DEFAULT_BLOCK_ORDER = -1;
+	public static final int DEFAULT_BLOCK_ORDER = 0;
 	public static final int DEFAULT_BLOCK_CHARS = 40;
 	public static final boolean DEFAULT_INCLUDE = false;
 	public static final double DEFAULT_AGREEMENT = 0.9;
