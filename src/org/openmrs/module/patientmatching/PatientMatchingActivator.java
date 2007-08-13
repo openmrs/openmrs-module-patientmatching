@@ -1,6 +1,5 @@
 package org.openmrs.module.patientmatching;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -84,7 +83,8 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	
 	// to fix the automatic startup issue, need to get this privilege
 	// it's either "View Patients" or "View Cohorts"
-	public final static String PRIVILEGE = "View Patients"; 
+	public final static String PRIVILEGE = "View Patients";
+	public final static String PRIVILEGE2 = "View Patient Cohorts";
 	
 	private Log log = LogFactory.getLog(this.getClass());
 	
@@ -98,6 +98,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		log.info("Shutting down Patient Matching Module");
 		link_db.disconnect();
 		Context.removeProxyPrivilege(PRIVILEGE);
+		Context.removeProxyPrivilege(PRIVILEGE2);
 	}
 	
 	/**
@@ -107,6 +108,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	public void startup() {
 		// to fix automatic startup, get privilege
 		Context.addProxyPrivilege(PRIVILEGE);
+		Context.addProxyPrivilege(PRIVILEGE2);
 		
 		log.info("Starting Patient Matching Module");
 		boolean ready = parseConfig(new File(CONFIG_FILE));
