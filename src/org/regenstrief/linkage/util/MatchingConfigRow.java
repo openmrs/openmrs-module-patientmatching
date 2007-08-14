@@ -146,10 +146,29 @@ public class MatchingConfigRow {
 
 	public String toString(){
 		String ret = new String();
+		ret += name + ":\n";
+		ret += "block order: " + block_order + "\n";
+		ret += "blocking charcters: " + block_chars + "\n";
+		ret += "include in scoring: " + include + "\n";
+		ret += "agreement weight: " + agreement + "\n";
+		ret += "non-agreement weight: " + non_agreement + "\n";
+		ret += "scale weight: " + scale_weight + "\n";
+		ret += "algorithm: " + MatchingConfig.ALGORITHMS[algorithm] + "\n";
+		return ret;
+	}
+	
+	/**
+	 * Returns a string representing the old C program meta file format.  This was used as
+	 * the toString() method before being updated to something that is read more easily
+	 * 
+	 * @return	a String with the options in a .meta file format
+	 */
+	public String getMetaString(){
+		String ret = new String();
 		ret += name + "," + block_order + "," + block_chars + "," + include + "," + agreement + "," + non_agreement + "," + scale_weight + "," + algorithm;
 		return ret;
 	}
-
+	
 	public Float getSw_number() {
 		return sw_number;
 	}
