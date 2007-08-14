@@ -215,8 +215,24 @@ public class EMAnalyzer { //extends Analyzer {
 		for(int i = 0; i < demographics.length; i++){
 			String demographic = demographics[i];
 			MatchingConfigRow mcr = mc.getMatchingConfigRows().get(mc.getRowIndexforName(demographic));
-			mcr.setAgreement(mest.get(demographic));
-			mcr.setNonAgreement(uest.get(demographic));
+			double mest_val = mest.get(demographic);
+			double uest_val = uest.get(demographic);
+			
+			if(mest_val > EM_ONE){
+				mest_val = EM_ONE;
+			}
+			if(mest_val < EM_ZERO){
+				mest_val = EM_ZERO;
+			}
+			if(uest_val > EM_ONE){
+				uest_val = EM_ONE;
+			}
+			if(uest_val < EM_ZERO){
+				uest_val = EM_ZERO;
+			}
+			
+			mcr.setAgreement(mest_val);
+			mcr.setNonAgreement(uest_val);
 		}
 		
 	}
