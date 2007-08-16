@@ -49,7 +49,7 @@ public class ScaleWeightDBManager extends DBManager {
 	 * @param token
 	 * @param frequency
 	 */
-	public void addOrUpdateToken(DataColumn target_column, String datasource_id, String token, Integer frequency) {
+	public void addOrUpdateToken(DataColumn target_column, int datasource_id, String token, Integer frequency) {
 		int db_frequency = getTokenFrequencyFromDB(target_column,datasource_id, token);
 		// Database and memory are at the same state, we don't need to do anything
 		if(db_frequency != frequency) {
@@ -69,7 +69,7 @@ public class ScaleWeightDBManager extends DBManager {
 	 * @param datasource_id
 	 * @return The number of unique tokens in a DataColumn
 	 */
-	public int getDistinctRecordCount(DataColumn target_column, String datasource_id) {
+	public int getDistinctRecordCount(DataColumn target_column, int datasource_id) {
 		String query = "SELECT COUNT(token) FROM " + token_table + " WHERE datasource_id = " + datasource_id + " AND column_id = " + "'" + target_column.getColumnID() +"'";
 		return executeQuery(query);
 	}
@@ -80,7 +80,7 @@ public class ScaleWeightDBManager extends DBManager {
 	 * @param datasource_id
 	 * @return
 	 */
-	public boolean deleteAnalysis(DataColumn target_column, String datasource_id) {
+	public boolean deleteAnalysis(DataColumn target_column, int datasource_id) {
 		String query = "DELETE FROM " + token_table + " WHERE datasource_id = " + datasource_id;
 		return executeUpdate(query);
 	}
@@ -94,7 +94,7 @@ public class ScaleWeightDBManager extends DBManager {
 	 * @param frequency
 	 * @return Whether the insert was successful or not
 	 */
-	public boolean insertToken(DataColumn field, String datasource_id, String token, int frequency){
+	public boolean insertToken(DataColumn field, int datasource_id, String token, int frequency){
 		String query = "INSERT INTO " + token_table +  " VALUES (" + datasource_id + "," + "'" + field.getColumnID() + "'" + ",'" + token + "'," + frequency + ")"; 
 		return executeUpdate(query);
 	}
@@ -109,7 +109,7 @@ public class ScaleWeightDBManager extends DBManager {
 	 * @param limit The parameter N, should be between 0.0 and 1.0 for percentages
 	 * @return A hashtable containing frequencies, indexed by token
 	 */
-	public Hashtable<String,Integer> getTokenFrequenciesFromDB(DataColumn target_column, String datasource_id, ScaleWeightSetting topbottom, Float limit) {
+	public Hashtable<String,Integer> getTokenFrequenciesFromDB(DataColumn target_column, int datasource_id, ScaleWeightSetting topbottom, Float limit) {
 		StringBuilder query = new StringBuilder("SELECT token, frequency FROM " + token_table + " WHERE datasource_id = " + datasource_id + " AND column_id = '" + target_column.getColumnID() +"'");
 		Integer N = Math.round(limit);
 		switch (topbottom) {
@@ -170,7 +170,7 @@ public class ScaleWeightDBManager extends DBManager {
 	 * @param token
 	 * @return
 	 */
-	public int getTokenFrequencyFromDB(DataColumn field, String id, String token) {
+	public int getTokenFrequencyFromDB(DataColumn field, int id, String token) {
 		String query = "SELECT frequency FROM " + token_table + " WHERE token = '" + token + "' AND datasource_id = " + id + " AND column_id = " + "'" + field.getColumnID() +"'";
 		try{
 			Statement stmt = db.createStatement();
@@ -209,7 +209,7 @@ public class ScaleWeightDBManager extends DBManager {
 	 * @return If the update was successful or not
 	 */
 
-	public boolean updateTokenFrequency(DataColumn field, String id, String token, int frequency) {
+	public boolean updateTokenFrequency(DataColumn field, int id, String token, int frequency) {
 		String query = "UPDATE " + token_table + " SET frequency = " + frequency + " WHERE datasource_id = " + id + " AND column_id = '" + field.getColumnID() + "' AND token = '" + token + "'";
 		return executeUpdate(query);
 	}
@@ -222,13 +222,13 @@ public class ScaleWeightDBManager extends DBManager {
 	 * @param count
 	 * @return
 	 */
-	public boolean insertCount(CountType type, DataColumn target_col, String ds_id, int count) {
+	public boolean insertCount(CountType type, DataColumn target_col, int ds_id, int count) {
 		Date now = new Date(System.currentTimeMillis());
 		PreparedStatement pstmt;
 		try {
 			pstmt = db.prepareStatement("INSERT INTO " + fields_table + "(column_id, datasource_id, label, unique_count, null_count, entropy, date_changed, non_null_count) VALUES(?,?,?,?,?,?,?,?)");
 			pstmt.setString(1, target_col.getColumnID());
-			pstmt.setString(2, ds_id);
+			pstmt.setInt(2, ds_id);
 			pstmt.setString(3, target_col.getName());
 			pstmt.setNull(4, Types.INTEGER);
 			pstmt.setNull(5, Types.INTEGER);
@@ -260,7 +260,7 @@ public class ScaleWeightDBManager extends DBManager {
 	 * @param count
 	 * @return
 	 */
-	public boolean setCount(CountType type, DataColumn target_col, String ds_id, int count) {
+	public boolean setCount(CountType type, DataColumn target_col, int ds_id, int count) {
 		PreparedStatement pstmt;
 		int previous_count = getCount(type, target_col, ds_id);
 		
@@ -281,7 +281,7 @@ public class ScaleWeightDBManager extends DBManager {
 	 * @param count
 	 * @return
 	 */
-	private boolean updateCount(CountType type, DataColumn target_col, String ds_id, int count) {
+	private boolean updateCount(CountType type, DataColumn target_col, int ds_id, int count) {
 		PreparedStatement pstmt;
 		try {
 			if(type == CountType.NonNull) {
@@ -293,7 +293,7 @@ public class ScaleWeightDBManager extends DBManager {
 			}
 
 			pstmt.setInt(1, count);
-			pstmt.setString(2, ds_id);
+			pstmt.setInt(2, ds_id);
 			pstmt.setString(3, target_col.getColumnID());
 			return pstmt.executeUpdate() == 1;
 		} catch (SQLException e) {
@@ -309,7 +309,7 @@ public class ScaleWeightDBManager extends DBManager {
 	 * @param ds_id
 	 * @return
 	 */
-	public int getCount(CountType type, DataColumn target_col, String ds_id) {
+	public int getCount(CountType type, DataColumn target_col, int ds_id) {
 		PreparedStatement pstmt;
 		try {
 			if(type == CountType.NonNull) {
@@ -320,7 +320,7 @@ public class ScaleWeightDBManager extends DBManager {
 				pstmt = db.prepareStatement("SELECT null_count FROM " + fields_table + " WHERE datasource_id = ? AND column_id = ?");
 			}
 
-			pstmt.setString(1, ds_id);
+			pstmt.setInt(1, ds_id);
 			pstmt.setString(2, target_col.getColumnID());
 			ResultSet rs = pstmt.executeQuery();
 			if(rs.next()) {
@@ -341,11 +341,11 @@ public class ScaleWeightDBManager extends DBManager {
 	 * @param ds_id
 	 * @return
 	 */
-	public int getRecordCount(String ds_id) {
+	public int getRecordCount(int ds_id) {
 		PreparedStatement pstmt;
 		try {
 			pstmt = db.prepareStatement("SELECT record_count FROM " + analyses_table + " WHERE datasource_id = ?");
-			pstmt.setString(1, ds_id);
+			pstmt.setInt(1, ds_id);
 			ResultSet rs = pstmt.executeQuery();
 			if(rs.next()) {
 				return rs.getInt(1);
@@ -367,11 +367,11 @@ public class ScaleWeightDBManager extends DBManager {
 	 * @param count
 	 * @return
 	 */
-	private boolean insertRecordCount(String ds_id, String name, int count) {
+	private boolean insertRecordCount(int ds_id, String name, int count) {
 		PreparedStatement pstmt;
 		try {
 			pstmt = db.prepareStatement("INSERT INTO " + analyses_table + "(datasource_id, name, record_count) VALUES (?,?,?)");
-			pstmt.setString(1, ds_id);
+			pstmt.setInt(1, ds_id);
 			pstmt.setString(2, name);
 			pstmt.setInt(3, count);
 			return pstmt.executeUpdate() == 1;
@@ -387,12 +387,12 @@ public class ScaleWeightDBManager extends DBManager {
 	 * @param count
 	 * @return Returns true if one row was affected
 	 */
-	private boolean updateRecordCount(String ds_id, int count) {
+	private boolean updateRecordCount(int ds_id, int count) {
 		PreparedStatement pstmt;
 		try {
 			pstmt = db.prepareStatement("UPDATE " + analyses_table + " SET record_count = ? WHERE datasource_id = ?");
 			pstmt.setInt(1, count);
-			pstmt.setString(2, ds_id);
+			pstmt.setInt(2, ds_id);
 			return pstmt.executeUpdate() == 1;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -407,7 +407,7 @@ public class ScaleWeightDBManager extends DBManager {
 	 * @param ds_name
 	 * @return
 	 */
-	public boolean setRecordCount(String ds_id, int count, String ds_name) {
+	public boolean setRecordCount(int ds_id, int count, String ds_name) {
 		int previous_count = getRecordCount(ds_id);
 		// does not exists
 		if(previous_count == -1) {

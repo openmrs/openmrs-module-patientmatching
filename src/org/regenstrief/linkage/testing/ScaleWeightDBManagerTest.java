@@ -11,7 +11,7 @@ public class ScaleWeightDBManagerTest {
 		boolean connected = dbm.connect();
 		DataColumn target_col = new DataColumn("isim");
 		target_col.setName("name");
-		String ds_id = "5";
+		int ds_id = 5;
 		
 		System.out.println(dbm.getCount(CountType.NonNull, target_col, ds_id));
 		System.out.println(dbm.getCount(CountType.Null, target_col, ds_id));

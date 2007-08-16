@@ -38,8 +38,8 @@ public class ScaleWeightModifier implements Modifier {
 	private Hashtable<String, DataColumn> lds2_inc_cols;
 
 	// DataSource IDs of where records come from
-	private String lds1_id;
-	private String lds2_id;
+	private int lds1_id;
+	private int lds2_id;
 	
 	// Connection to database where tokens are stored
 	private static ScaleWeightDBManager sw_connection;
@@ -56,8 +56,8 @@ public class ScaleWeightModifier implements Modifier {
 		LinkDataSource lds1 = swa1.getLinkDataSource();
 		LinkDataSource lds2 = swa2.getLinkDataSource();
 
-		this.lds1_id = lds1.getDataSource_ID() + ""; 
-		this.lds2_id = lds2.getDataSource_ID() + "";
+		this.lds1_id = lds1.getDataSource_ID(); 
+		this.lds2_id = lds2.getDataSource_ID();
 
 		lds1_frequencies = new Hashtable<String, Hashtable<String,Integer>>();
 		lds2_frequencies = new Hashtable<String, Hashtable<String,Integer>>();
@@ -97,7 +97,7 @@ public class ScaleWeightModifier implements Modifier {
 	 * @param datasource_id
 	 * @return A hashtable indexed by demographic
 	 */
-	private Hashtable<String,SWAdjustScore> adjustScore(Record rec, Hashtable<String, DataColumn> inc_cols, Hashtable<String, Hashtable<String, Integer>> frequencies, String datasource_id, ScaleWeightAnalyzer swa) {
+	private Hashtable<String,SWAdjustScore> adjustScore(Record rec, Hashtable<String, DataColumn> inc_cols, Hashtable<String, Hashtable<String, Integer>> frequencies, int datasource_id, ScaleWeightAnalyzer swa) {
 		Hashtable<String, SWAdjustScore> result = new Hashtable<String, SWAdjustScore>(2 * sw_rows.size());
 		// For each weight scaling column
 		Iterator<MatchingConfigRow> sw_it = sw_rows.iterator();

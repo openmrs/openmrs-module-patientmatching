@@ -25,7 +25,7 @@ public class ScaleWeightAnalyzer extends Analyzer {
 	private LinkDataSource lds;
 	private static ScaleWeightDBManager sw_connection;
 
-	private String datasource_id;
+	private int datasource_id;
 
 	// Scale weight columns indexed by column label
 	private Hashtable <String, DataColumn> sw_columns;
@@ -40,7 +40,7 @@ public class ScaleWeightAnalyzer extends Analyzer {
 	public ScaleWeightAnalyzer(LinkDataSource lds, MatchingConfig mc, String db_access){
 		this.config = mc;
 		this.lds = lds;
-		this.datasource_id = "" + lds.getDataSource_ID();
+		this.datasource_id = lds.getDataSource_ID();
 		
 		sw_rows = mc.getScaleWeightColumns();
 		

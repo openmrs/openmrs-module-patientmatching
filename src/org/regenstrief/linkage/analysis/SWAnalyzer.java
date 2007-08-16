@@ -16,7 +16,7 @@ public abstract class SWAnalyzer {
 	// Connection to the database where token frequencies will be stored
 	protected ScaleWeightDBManager  sw_connection;
 	protected DataSourceReader reader;
-	protected String datasource_id;
+	protected int datasource_id;
 	
 	public SWAnalyzer(String access_parameter) {
 		String [] access = access_parameter.split(",");

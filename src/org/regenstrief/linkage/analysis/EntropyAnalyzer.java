@@ -3,7 +3,9 @@ package org.regenstrief.linkage.analysis;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.util.MatchingConfig;
 
 /**
  * Class calculates the entropy of the fields of the given Records.  It initializes
@@ -12,7 +14,7 @@ import org.regenstrief.linkage.Record;
  *
  */
 
-public class EntropyAnalyzer extends Analyzer {
+public class EntropyAnalyzer extends Analyzer implements Modifier {
 	// of the format table{demographic} -> table{token} -> count
 	private Hashtable<String,Hashtable<String,Integer>> freq_table;
 	private int total_records;
@@ -77,5 +79,12 @@ public class EntropyAnalyzer extends Analyzer {
 		
 		// return some sort of analysis result object
 	}
-
+	
+	public void initializeModifier(){
+		
+	}
+	
+	public void modifyMatchResult(MatchResult mr, MatchingConfig mc){
+		
+	}
 }
