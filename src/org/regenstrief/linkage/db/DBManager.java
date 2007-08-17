@@ -2,6 +2,7 @@ package org.regenstrief.linkage.db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -126,5 +127,26 @@ public class DBManager {
 			return true;
 		}
 		return false;
+	}
+	
+	/**
+	 * Method executes a general, prepared statement as an
+	 * update.
+	 * 
+	 * @param ps	the prepared statement to execute
+	 * @return	true if no exceptions occurred and execution indicates
+	 * rows changed
+	 */
+	protected boolean executeUpdate(PreparedStatement ps){
+		try{
+			if(ps.executeUpdate() == 1){
+				return true;
+			} else {
+				return false;
+			}
+		}
+		catch(SQLException sqle){
+			return false;
+		}
 	}
 }

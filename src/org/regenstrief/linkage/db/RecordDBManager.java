@@ -19,11 +19,18 @@ package org.regenstrief.linkage.db;
  *
  */
 
-import org.regenstrief.linkage.*;
-import org.regenstrief.linkage.util.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
-import java.sql.*;
-import java.util.*;
+import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.util.DataColumn;
+import org.regenstrief.linkage.util.LinkDataSource;
 
 public class RecordDBManager extends DBManager {
 
@@ -146,25 +153,39 @@ public class RecordDBManager extends DBManager {
 	public boolean addRecordToDB(Record r){
 		String query = new String();
 		String columns = new String("(");
-		String values = new String("('");
-		int update = 0;
+		String values = new String("(");
 		
 		query += "INSERT INTO " + table + " ";
 		Iterator<String> it = r.getDemographics().keySet().iterator();
+		int count = 0;
+		ArrayList<String> vals = new ArrayList<String>();
 		while(it.hasNext()){
 			String demographic = it.next();
 			String value = r.getDemographic(demographic);
+			vals.add(value);
+			count++;
 			if(it.hasNext()){
 				columns += demographic + ",";
-				values += value + "','";
+				values += "?" + ",";
 			} else {
 				columns += demographic + ")";
-				values += value + "')";
+				values += "?" + ")";
 			}
 		}
+		query += columns + " VALUES" + values;
 		
-		query += columns + " VALUES " + values;
-		return executeUpdate(query);
+		try{
+			PreparedStatement ps = db.prepareStatement(query);
+			for(int i = 1; i <= count; i++){
+				String value = vals.get(i-1);
+				ps.setString(i, value);
+			}
+			return executeUpdate(ps);
+		}
+		catch(SQLException sqle){
+			return false;
+		}
+		
 	}
 	
 	/**

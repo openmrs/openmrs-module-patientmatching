@@ -57,36 +57,16 @@ public class DBTest {
 			}
 			System.out.println("created a config of:\n" + test_mc);
 			
+			Record test_insert = new Record();
+			test_insert.addDemographic("fn", "test");
+			test_insert.addDemographic("ln", "o'brien");
 			
-			// test linkage
-			//VectorTable vt = new VectorTable(test_mc);
-			//System.out.println(vt);
-			
-			Hashtable<String, Integer> type_table = new Hashtable<String, Integer>();
-			List<DataColumn> dc = rmc.getLinkDataSource1().getDataColumns();
-			Iterator<DataColumn> it = dc.iterator();
-			while(it.hasNext()){
-				DataColumn d = it.next();
-				if(d.getIncludePosition() != DataColumn.INCLUDE_NA){
-					type_table.put(d.getName(), new Integer(d.getType()));
-				}
+			if(ldbm.addRecordToDB(test_insert)){
+				System.out.println("adding test record succeeded");
+			} else {
+				System.out.println("adding test record failed");
 			}
-			DataSourceReader dsr2 = new OrderedCharDelimFileReader(rmc.getLinkDataSource2(), test_mc);
-			DataSourceReader dsr1 = new OrderedDataBaseReader(rmc.getLinkDataSource1(), test_mc);
-			org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(dsr1, dsr2, test_mc, type_table);
 			
-			System.out.println("form pairs created");
-			Record[] pair;
-			ScorePair sp = new ScorePair(test_mc);
-			int i = 0;
-			while((pair = fp.getNextRecordPair()) != null){
-				Record r1 = pair[0];
-				Record r2 = pair[1];
-				double score = sp.scorePair(r1, r2).getScore();
-				
-				i++;
-			}
-			System.out.println("found " + i + " record pairs");
 			
 		}
 		catch(ParserConfigurationException pce){
