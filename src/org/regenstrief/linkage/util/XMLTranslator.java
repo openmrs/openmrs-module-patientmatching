@@ -219,8 +219,8 @@ public class XMLTranslator {
 		
 		Locale new_locale = Locale.US;
 		DecimalFormat df = new DecimalFormat("0.#####");
-		df.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(new_locale));
-			
+		//df.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(new_locale));
+		
 		Element t_agreement = doc.createElement("TAgreement");
 		t_agreement.setTextContent(df.format(mcr.getAgreement()));
 		ret.appendChild(t_agreement);
@@ -290,10 +290,39 @@ public class XMLTranslator {
 				analysis_config.addInitString(type, init);
 			}
 		}
+		
+		if(mc_configs.size() == 0) {
+			mc_configs = analyzeAllColumns(lds1);
+		}
 
 		return new RecMatchConfig(lds1, lds2, mc_configs, analysis_config);
 	}
-	
+	/**
+	 * Method used when there are no matching configurations specified
+	 * Default behavior is to analyze all rows
+	 * @param lds
+	 * @return
+	 */
+	private static List<MatchingConfig> analyzeAllColumns(LinkDataSource lds) {
+		List<MatchingConfig> mcs = new ArrayList<MatchingConfig>();
+		
+		ArrayList<MatchingConfigRow> rows = new ArrayList<MatchingConfigRow>();
+		for(DataColumn dc : lds.getDataColumns()) {
+			MatchingConfigRow mcr = new MatchingConfigRow(dc.getName());
+			mcr.setInclude(true);
+			mcr.setScaleWeight(true);
+			rows.add(mcr);
+		}
+		
+		Object[] objectArray = rows.toArray();    
+		MatchingConfigRow [] mcr_array = (MatchingConfigRow []) rows.toArray(new MatchingConfigRow[objectArray.length]);
+		
+		MatchingConfig mc = new MatchingConfig("default",mcr_array);
+		mc.make_scale_weight();
+		mcs.add(mc);
+		return mcs;
+	}
+
 	/*
 	 * Method takes a XML DOM node and returns a LinkDataSource object
 	 */

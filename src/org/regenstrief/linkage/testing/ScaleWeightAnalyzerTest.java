@@ -1,6 +1,5 @@
 package org.regenstrief.linkage.testing;
 
-import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.util.Hashtable;
@@ -84,21 +83,23 @@ public class ScaleWeightAnalyzerTest {
 					sp.addScoreModifier(swm);
 				}	
 
-				// Form pairs should come after analysis, because it modifies next_record of the readers
-				org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(dsr1, dsr2, mc_test, type_table);
+				if(!mc_test.getName().equals("default")) {
+					// Form pairs should come after analysis, because it modifies next_record of the readers
+					org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(dsr1, dsr2, mc_test, type_table);
 
-				// iterate through the Record pairs and print the score
-				Record[] pair;
-				int i = 0;
-				while((pair = fp.getNextRecordPair()) != null) {
-					Record r1 = pair[0];
-					Record r2 = pair[1];
-					double score = sp.scorePair(r1, r2).getScore();
-					System.out.println("score: " + score);
-					i++;
+					// iterate through the Record pairs and print the score
+					Record[] pair;
+					int i = 0;
+					while((pair = fp.getNextRecordPair()) != null) {
+						Record r1 = pair[0];
+						Record r2 = pair[1];
+						double score = sp.scorePair(r1, r2).getScore();
+						System.out.println("score: " + score);
+						i++;
+					}
+
+					System.out.println("found " + i + " records that matched on the blocking field");
 				}
-
-				System.out.println("found " + i + " records that matched on the blocking field");
 			}
 
 		}
