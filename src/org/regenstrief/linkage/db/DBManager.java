@@ -139,7 +139,7 @@ public class DBManager {
 	 */
 	protected boolean executeUpdate(PreparedStatement ps){
 		try{
-			if(ps.executeUpdate() == 1){
+			if(ps.executeUpdate() > 0){
 				return true;
 			} else {
 				return false;

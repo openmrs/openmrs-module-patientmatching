@@ -54,17 +54,6 @@ public class RecordDBManager extends DBManager {
 		passwd = access[3];
 	}
 	
-	/* DELETED TO SEE WHAT HAPPENS
-	public RecordDBManager(String driver, String url, String table, String user, String passwd, LinkDataSource lds){
-		this.driver = driver;
-		this.url = url;
-		this.table = table;
-		this.user = user;
-		this.passwd = passwd;
-		this.lds = lds;
-	}
-	*/
-	
 	/**
 	 * Method removes all database row that matches this Record object.  Method
 	 * checks for multiple rows that contain the Record's information.  The
@@ -75,23 +64,21 @@ public class RecordDBManager extends DBManager {
 	 * @param key_demographic the demographic in the Record that uniquely identifies the object
 	 * @return	the number of rows deleted from the database
 	 */
-	public int deleteRecord(Record r, String key_demographic){
+	public boolean deleteRecord(Record r, String key_demographic){
 		String query = new String();
-		query += "DELETE FROM " + table + " where " + key_demographic + " = ";
-		int deleted;
+		query += "DELETE FROM " + table + " where " + key_demographic + " = ?";
 		String value = r.getDemographic(key_demographic);
-		query += "'" + value + "'";
 		
 		try{
-			Statement stmt = db.createStatement();
-			deleted = stmt.executeUpdate(query);
+			PreparedStatement ps = db.prepareStatement(query);
+			ps.setString(1, value);
+			return executeUpdate(ps);
 		}
 		catch(SQLException sqle){
-			System.err.println(sqle.getMessage());
-			return 0;
+			return false;
 		}
 		
-		return deleted;
+		
 	}
 	
 	/**
@@ -114,19 +101,40 @@ public class RecordDBManager extends DBManager {
 		
 		query += "UPDATE " + table + " SET ";
 		Iterator<String> it = r.getDemographics().keySet().iterator();
+		int count = 0;
+		ArrayList<String> vals = new ArrayList<String>();
 		while(it.hasNext()){
 			String demographic = it.next();
 			String value = r.getDemographic(demographic);
-			if(it.hasNext()){
-				query += demographic + " = '" + value + "',";
-			} else {
-				query += demographic + " = '" + value + "'";
+			count++;
+			
+			if(!demographic.equals(key_demographic)){
+				vals.add(value);
+				if(it.hasNext()){
+					query += demographic + " = ?,";
+				} else {
+					query += demographic + " = ? ";
+				}
 			}
+			
+			
 		}
-		String conditional = key_demographic + " = '" + r.getDemographic(key_demographic) + "'";
-		query += " WHERE " + conditional;
 		
-		return executeUpdate(query);
+		String conditional = key_demographic + " = ?";
+		query += " WHERE " + conditional;
+		vals.add(r.getDemographic(key_demographic));
+		
+		try{
+			PreparedStatement ps = db.prepareStatement(query);
+			for(int i = 1; i <= count; i++){
+				String value = vals.get(i-1);
+				ps.setString(i, value);
+			}
+			return executeUpdate(ps);
+		}
+		catch(SQLException sqle){
+			return false;
+		}
 	}
 	
 	/**

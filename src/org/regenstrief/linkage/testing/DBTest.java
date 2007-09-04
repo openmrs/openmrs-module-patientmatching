@@ -67,6 +67,18 @@ public class DBTest {
 				System.out.println("adding test record failed");
 			}
 			
+			test_insert.addDemographic("ln", "o'leary");
+			if(ldbm.updateRecord(test_insert, "fn")){
+				System.out.println("update of test record succeeded");
+			} else {
+				System.out.println("updating test record failed");
+			}
+			
+			if(ldbm.deleteRecord(test_insert, "fn")){
+				System.out.println("delete of test record succeeded");
+			} else {
+				System.out.println("deleting test record failed");
+			}
 			
 		}
 		catch(ParserConfigurationException pce){
