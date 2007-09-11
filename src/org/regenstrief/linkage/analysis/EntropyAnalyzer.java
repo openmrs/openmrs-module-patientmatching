@@ -5,7 +5,9 @@ import java.util.Iterator;
 
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.MatchingConfigRow;
 
 /**
  * Class calculates the entropy of the fields of the given Records.  It initializes
@@ -19,9 +21,14 @@ public class EntropyAnalyzer extends Analyzer implements Modifier {
 	private Hashtable<String,Hashtable<String,Integer>> freq_table;
 	private int total_records;
 	
-	public EntropyAnalyzer(){
+	public EntropyAnalyzer(LinkDataSource lds, MatchingConfig mc){
+		super(lds, mc);
 		freq_table = new Hashtable<String,Hashtable<String,Integer>>();
 		total_records = 0;
+	}
+	
+	public boolean isAnalyzedDemographic(MatchingConfigRow mcr){
+		return false;
 	}
 	
 	public void analyzeRecord(Record rec){

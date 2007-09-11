@@ -1,15 +1,17 @@
 package org.regenstrief.linkage.analysis;
 
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.List;
+import java.util.Iterator;
 import java.util.PriorityQueue;
 
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.db.ScaleWeightDBManager;
 import org.regenstrief.linkage.db.ScaleWeightDBManager.CountType;
-import org.regenstrief.linkage.util.*;
+import org.regenstrief.linkage.util.DataColumn;
+import org.regenstrief.linkage.util.LinkDataSource;
+import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.MatchingConfigRow;
 
 /**
  * Class implements a scale-weight algorithm to analyze
@@ -21,15 +23,13 @@ import org.regenstrief.linkage.util.*;
 
 public class ScaleWeightAnalyzer extends Analyzer {
 	
-	private MatchingConfig config;
-	private LinkDataSource lds;
 	private static ScaleWeightDBManager sw_connection;
 
 	private int datasource_id;
 
 	// Scale weight columns indexed by column label
 	private Hashtable <String, DataColumn> sw_columns;
-	private List<MatchingConfigRow> sw_rows;
+	//private List<MatchingConfigRow> sw_rows;
 
 	// Indexed by column label
 	private Hashtable <String, Integer> null_counter;
@@ -38,11 +38,11 @@ public class ScaleWeightAnalyzer extends Analyzer {
 	private Hashtable <String, PriorityQueue<AnalysisObject>> min_priority_queues;
 	
 	public ScaleWeightAnalyzer(LinkDataSource lds, MatchingConfig mc, String db_access){
-		this.config = mc;
-		this.lds = lds;
+		super(lds, mc);
+		
 		this.datasource_id = lds.getDataSource_ID();
 		
-		sw_rows = mc.getScaleWeightColumns();
+		//sw_rows = mc.getScaleWeightColumns();
 		
 		// Set up database connection
 		String [] access = db_access.split(",");
@@ -50,14 +50,35 @@ public class ScaleWeightAnalyzer extends Analyzer {
 			sw_connection = new ScaleWeightDBManager(access[0], access[1], access[2], access[3]);
 			sw_connection.connect();
 		}
-
+		
+		Hashtable <String, DataColumn> sw_columns = new Hashtable<String,DataColumn>();
+		Iterator<DataColumn> it = lds.getDataColumns().iterator();
+		Hashtable<String, Boolean> is_scaleweight = mc.getScaleWeightorNotTable();
+		while(it.hasNext()){
+			DataColumn dc = it.next();
+			String col_name = dc.getName();
+			// if it is a scale weight column
+			if(dc.getIncludePosition() != DataColumn.INCLUDE_NA && is_scaleweight.get(col_name)) {
+				sw_columns.put(col_name, dc);
+			}
+		}
+		
 		// Initialize hash tables
-		sw_columns = lds.getScaleWeightDataColumns(mc);
-		int column_count = sw_columns.size();
+		int column_count = 0;
+		for(String demographic : analyzed_demographics.keySet()){
+			if(analyzed_demographics.get(demographic)){
+				column_count++;
+			}
+		}
+		
 		null_counter = new Hashtable<String, Integer>(2*column_count);
 		non_null_counter = new Hashtable<String, Integer>(2*column_count);
 		frequencies = new Hashtable<String, Hashtable<String,Integer>>(2*column_count);
 		min_priority_queues = new Hashtable<String, PriorityQueue<AnalysisObject>>(2*column_count);
+	}
+	
+	public boolean isAnalyzedDemographic(MatchingConfigRow mcr){
+		return mcr.isScaleWeight();
 	}
 	
 	private void incrementHashtableValue(Hashtable<String,Integer> table, String demographic) {
@@ -75,9 +96,9 @@ public class ScaleWeightAnalyzer extends Analyzer {
 	}
 
 	public void analyzeRecord(Record rec){
-		for(MatchingConfigRow mcr : sw_rows) {
-			String current_demographic = mcr.getName();
+		for(String current_demographic : rec.getDemographics().keySet()){
 			String dem_value = rec.getDemographic(current_demographic);
+			MatchingConfigRow mcr = config.getMatchingConfigRowByName(current_demographic);
 			int buffer_size = mcr.getBuffer_size();
 			
 			// Null value 
@@ -143,48 +164,45 @@ public class ScaleWeightAnalyzer extends Analyzer {
 						}
 					}
 				}
-
 			}
 		}
+		
 	}
 
 	public void finishAnalysis() {
-		Enumeration<String> demographics = sw_columns.keys();
-		// for all scale weight columns
-		while(demographics.hasMoreElements()) {
-			// column label
-			String current_demographic = demographics.nextElement();
-			DataColumn current_column = sw_columns.get(current_demographic);
+		for(String current_demographic : analyzed_demographics.keySet()){
+			if(analyzed_demographics.get(current_demographic)){
+				int n_non_null, n_null;
+				DataColumn current_column = sw_columns.get(current_demographic);
+				
+				try {
+					n_non_null  = non_null_counter.get(current_demographic);
+					// It will give an exception if there is no entry for this column
+				} catch(NullPointerException e) {
+					n_non_null = 0;
+				}
 
-			int n_non_null, n_null;
-			
-			try {
-				n_non_null  = non_null_counter.get(current_demographic);
-				// It will give an exception if there is no entry for this column
-			} catch(NullPointerException e) {
-				n_non_null = 0;
+				try {
+					n_null = null_counter.get(current_demographic);
+					// It will give an exception if there is no entry for this column
+				} catch(NullPointerException e) {
+					n_null = 0;
+				}
+
+				// set null and non-null counts
+				sw_connection.setCount(CountType.Null, current_column, datasource_id, n_null);
+				sw_connection.setCount(CountType.NonNull, current_column, datasource_id, n_non_null);
+
+				Hashtable<String, Integer> ht = frequencies.get(current_demographic);
+				// transfer frequencies stored in memory to the database
+				for(Enumeration<String> e = ht.keys(); e.hasMoreElements();) {
+					String token = e.nextElement(); 
+					Integer frequency =	ht.get(token);
+					sw_connection.addOrUpdateToken(current_column, datasource_id, token, frequency);
+				}
+
+				sw_connection.setCount(CountType.Unique, current_column, datasource_id, sw_connection.getDistinctRecordCount(current_column, datasource_id));
 			}
-
-			try {
-				n_null = null_counter.get(current_demographic);
-				// It will give an exception if there is no entry for this column
-			} catch(NullPointerException e) {
-				n_null = 0;
-			}
-
-			// set null and non-null counts
-			sw_connection.setCount(CountType.Null, current_column, datasource_id, n_null);
-			sw_connection.setCount(CountType.NonNull, current_column, datasource_id, n_non_null);
-
-			Hashtable<String, Integer> ht = frequencies.get(current_demographic);
-			// transfer frequencies stored in memory to the database
-			for(Enumeration<String> e = ht.keys(); e.hasMoreElements();) {
-				String token = e.nextElement(); 
-				Integer frequency =	ht.get(token);
-				sw_connection.addOrUpdateToken(current_column, datasource_id, token, frequency);
-			}
-
-			sw_connection.setCount(CountType.Unique, current_column, datasource_id, sw_connection.getDistinctRecordCount(current_column, datasource_id));
 		}
 	}
 

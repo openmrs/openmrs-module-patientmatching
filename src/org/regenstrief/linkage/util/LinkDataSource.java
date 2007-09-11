@@ -142,11 +142,11 @@ public class LinkDataSource {
 		return columns;
 	}
 	
-	/**
+	/*
 	 * Table of only included DataColumns that have weight scaling
 	 * @param mc
 	 * @return A table indexed by column names
-	 */
+	 
 	public Hashtable<String, DataColumn> getScaleWeightDataColumns(MatchingConfig mc) {
 		Hashtable<String, DataColumn> columns = new Hashtable<String, DataColumn>();
 		Iterator<DataColumn> it = column_settings.iterator();
@@ -161,7 +161,7 @@ public class LinkDataSource {
 		}
 		return columns;
 	}
-	
+	*/
 	/*
 	 * returns the number of columns that are displayed and re-written
 	 * to the new file for linkage
