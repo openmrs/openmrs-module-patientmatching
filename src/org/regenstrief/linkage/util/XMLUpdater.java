@@ -1,19 +1,31 @@
 package org.regenstrief.linkage.util;
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Random;
 
-import javax.xml.parsers.*;
-import javax.xml.transform.*;
-import javax.xml.transform.stream.*;
-import javax.xml.transform.dom.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
-import org.xml.sax.*;
-import org.w3c.dom.*;
-
-import sun.io.Converters;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 /**
  * Designed to transform old XML config files to the new format
  *
@@ -255,16 +267,16 @@ public class XMLUpdater {
 
 		Element t_agreement = doc.createElement("TAgreement");
 
-		Locale locale = Locale.US;
+		//Locale locale = Locale.US;
 		
-		DecimalFormat df = new DecimalFormat("0.#####");
-		df.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(locale));
+		//DecimalFormat df = new DecimalFormat("0.#####");
+		//df.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(locale));
 			
-		t_agreement.setTextContent(df.format(mcr.getAgreement()));
+		t_agreement.setTextContent(Double.toString(mcr.getAgreement()));
 		ret.appendChild(t_agreement);
 
 		Element n_agreement = doc.createElement("NonAgreement");
-		n_agreement.setTextContent(df.format(mcr.getNonAgreement()));
+		n_agreement.setTextContent(Double.toString(mcr.getNonAgreement()));
 		ret.appendChild(n_agreement);
 		
 		Element scale_weight = doc.createElement("ScaleWeight"); 
