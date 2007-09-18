@@ -34,8 +34,8 @@ public class EMAnalyzer { //extends Analyzer {
 	
 	final static int ITERATIONS = 3;
 	
-	//private Hashtable<MatchVector,Integer> vector_count;
-	private List<MatchVector> vector_list;
+	private Hashtable<MatchVector,Integer> vector_count;
+	//private List<MatchVector> vector_list;
 	
 	/**
 	 * Constructor needs a name to use when created the temporary
@@ -43,8 +43,8 @@ public class EMAnalyzer { //extends Analyzer {
 	 * 
 	 */
 	public EMAnalyzer(){
-		//vector_count = new Hashtable<MatchVector,Integer>();
-		vector_list = new ArrayList<MatchVector>();
+		vector_count = new Hashtable<MatchVector,Integer>();
+		//vector_list = new ArrayList<MatchVector>();
 		
 	}
 	
@@ -85,15 +85,15 @@ public class EMAnalyzer { //extends Analyzer {
 			Record r2 = pair[1];
 			MatchResult mr = sp.scorePair(r1, r2);
 			MatchVector mr_vect = mr.getMatchVector();
-			vector_list.add(mr_vect);
-			/*
+			//vector_list.add(mr_vect);
+			
 			Integer mv_count = vector_count.get(mr_vect);
 			if(mv_count == null){
 				vector_count.put(mr_vect, new Integer(1));
 			} else {
 				vector_count.put(mr_vect, new Integer(mv_count.intValue() + 1));
 			}
-			*/
+			
 		}
 		finishAnalysis(new VectorTable(mc), mc.getIncludedColumnsNames(), mc, iterations);
 		
@@ -137,14 +137,14 @@ public class EMAnalyzer { //extends Analyzer {
 				usum.put(demographics[k], new Double(0));
 			}
 			
-			//Iterator<MatchVector> mv_it = vector_count.keySet().iterator();
-			Iterator<MatchVector> mv_it = vector_list.iterator();
+			Iterator<MatchVector> mv_it = vector_count.keySet().iterator();
+			//Iterator<MatchVector> mv_it = vector_list.iterator();
 			while(mv_it.hasNext()){
 				MatchVector mv = mv_it.next();
-				//int mv_count = vector_count.get(mv).intValue();
-				//vct_count += mv_count;
+				int mv_count = vector_count.get(mv).intValue();
+				vct_count += mv_count;
 				vct_count++;
-				//for(int j = 0; j < mv_count; j++){
+				for(int j = 0; j < mv_count; j++){
 					// begin the EM calculation loop for the current record pair
 					termM = 1;
 					termU = 1;
@@ -186,7 +186,7 @@ public class EMAnalyzer { //extends Analyzer {
 					gMsum = gMsum + gMtemp;
 					gUsum = gUsum + gUtemp;
 					
-				//}
+				}
 				
 			}
 			
