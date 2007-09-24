@@ -2,7 +2,7 @@ package org.regenstrief.linkage;
 
 import java.util.*;
 
-public class MatchVector {
+public class MatchVector implements Comparable{
 	private Hashtable<String,Boolean> match_table;
 	
 	public MatchVector(){
@@ -71,6 +71,11 @@ public class MatchVector {
 		}
 		
 		//return true;
+	}
+	
+	public int compareTo(Object o) throws ClassCastException{
+		MatchVector mv = (MatchVector) o;
+		return 0;
 	}
 	
 	public int hashCode(){

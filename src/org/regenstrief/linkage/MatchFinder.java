@@ -5,53 +5,85 @@ package org.regenstrief.linkage;
  *
  */
 
-import org.regenstrief.linkage.io.*;
-import org.regenstrief.linkage.util.*;
-import org.regenstrief.linkage.analysis.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
 
-import java.util.*;
+import org.regenstrief.linkage.analysis.RecordFieldAnalyzer;
+import org.regenstrief.linkage.analysis.UnMatchableRecordException;
+import org.regenstrief.linkage.io.DataSourceReader;
+import org.regenstrief.linkage.io.OrderedCharDelimFileReader;
+import org.regenstrief.linkage.io.OrderedDataBaseReader;
+import org.regenstrief.linkage.io.VectorReader;
+import org.regenstrief.linkage.util.LinkDataSource;
+import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.ScorePair;
 
 public class MatchFinder {
 	LinkDataSource matching_database;
-	DataSourceReader database_reader;
-	MatchingConfig analytics;
+	List<DataSourceReader> database_readers;
+	Hashtable<DataSourceReader,MatchingConfig> analytics_associations;
+	List<MatchingConfig> analytics;
 	Hashtable<String, Integer> type_table;
 	RecordFieldAnalyzer record_analyzer;
+	Scoring scoring;
 	
-	public MatchFinder(LinkDataSource matching_database, MatchingConfig analytics, RecordFieldAnalyzer record_analyzer){
+	public enum Scoring {BLOCKING_EXCLUSIVE, BLOCKING_INCLUSIVE};
+	
+	public MatchFinder(LinkDataSource matching_database, List<MatchingConfig> analytics, RecordFieldAnalyzer record_analyzer, Scoring scoring){
 		this.matching_database = matching_database;
 		this.analytics = analytics;
-		if(matching_database.getType().equals("CharDelimFile")){
-			database_reader = new OrderedCharDelimFileReader(matching_database, analytics);
-		} else if(matching_database.getType().equals("DataBase")){
-			database_reader = new OrderedDataBaseReader(matching_database, analytics);
-		} else if(matching_database.getType().equals("Vector")){
-			database_reader = new VectorReader(matching_database, analytics);
-		}
+		
+		initReaders(analytics);
+		
 		type_table = matching_database.getTypeTable();
 		this.record_analyzer = record_analyzer;
+		this.scoring = scoring;
 		
 	}
 	
-	public MatchFinder(LinkDataSource matching_database, MatchingConfig analytics){
+	public MatchFinder(LinkDataSource matching_database,List<MatchingConfig> analytics, Scoring scoring){
 		this.matching_database = matching_database;
 		this.analytics = analytics;
-		if(matching_database.getType().equals("CharDelimFile")){
-			database_reader = new OrderedCharDelimFileReader(matching_database, analytics);
-		} else if(matching_database.getType().equals("DataBase")){
-			database_reader = new OrderedDataBaseReader(matching_database, analytics);
-		} else if(matching_database.getType().equals("Vector")){
-			database_reader = new VectorReader(matching_database, analytics);
-		}
+		
+		initReaders(analytics);
+		
 		type_table = matching_database.getTypeTable();
 		record_analyzer = null;
+		this.scoring = scoring;
+	}
+	
+	private void initReaders(List<MatchingConfig> analytics){
+		analytics_associations = new Hashtable<DataSourceReader,MatchingConfig>();
+		database_readers = new ArrayList<DataSourceReader>();
+		Iterator<MatchingConfig> it = analytics.iterator();
+		while(it.hasNext()){
+			MatchingConfig mc = it.next();
+			DataSourceReader new_datasource_reader;
+			if(matching_database.getType().equals("CharDelimFile")){
+				new_datasource_reader = new OrderedCharDelimFileReader(matching_database, mc);
+				database_readers.add(new_datasource_reader);
+				analytics_associations.put(new_datasource_reader, mc);
+			} else if(matching_database.getType().equals("DataBase")){
+				new_datasource_reader = new OrderedDataBaseReader(matching_database, mc);
+				database_readers.add(new_datasource_reader);
+				analytics_associations.put(new_datasource_reader, mc);
+			} else if(matching_database.getType().equals("Vector")){
+				new_datasource_reader = new VectorReader(matching_database, mc);
+				database_readers.add(new_datasource_reader);
+				analytics_associations.put(new_datasource_reader, mc);
+			}
+		}
 	}
 	
 	/**
 	 * Method takes a Record object and tries to find a closest match
 	 * in the Matching database.
 	 * 
-	 * @param test	the Record object to evaulate matches against
+	 * @param test	the Record object to evaluate matches against
 	 * @return	a list of records from the matching database that are similar to test
 	 */
 	public List<MatchResult> findMatch(Record test) throws UnMatchableRecordException {
@@ -65,35 +97,57 @@ public class MatchFinder {
 		
 		VectorReader test_reader = new VectorReader(test);
 		ArrayList<MatchResult> ret = new ArrayList<MatchResult>();
-		org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(test_reader, database_reader, analytics, type_table);
+		
+		// iterate through the database_readers and get possible matches
+		Iterator<DataSourceReader> it = database_readers.iterator();
+		while(it.hasNext()){
+			DataSourceReader reader = it.next();
+			MatchingConfig mc = analytics_associations.get(reader);
+			MatchResult mr = getBestMatch(test_reader, reader, mc, type_table);
+			
+			if(mr != null){
+				ret.add(mr);
+			}
+			
+			// reset database reader
+			reader.reset();
+			test_reader.reset();
+		}
+		
+		return ret;
+	}
+	
+	private MatchResult getBestMatch(VectorReader test, DataSourceReader database_reader, MatchingConfig analytics, Hashtable<String, Integer> type_table){
+		org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(test, database_reader, analytics, type_table);
+		List<MatchResult> candidates = new ArrayList<MatchResult>();
 		
 		Record[] pair;
 		ScorePair sp = new ScorePair(analytics);
 		while((pair = fp.getNextRecordPair()) != null){
 			Record r1 = pair[0];
 			Record r2 = pair[1];
-			ret.add(sp.scorePair(r1, r2));
+			candidates.add(sp.scorePair(r1, r2));
 		}
 		
-		// reset database reader
-		if(!database_reader.reset()){
-			System.err.println("unable to reset database reader after matching");
+		if(candidates.size() > 0){
+			sortMatchResultList(candidates);
+			return candidates.get(0);
+		} else {
+			return null;
 		}
-		
-		return ret;
 	}
 	
 	/**
 	 * Method returns a match with the highest score.  If multiple records
 	 * were found with the same top score, just one is chosen without preference.
 	 * 
-	 * @param test	the Record object to evaulate matches against
+	 * @param test	the Record object to evaluate matches against
 	 * @return	one Record object that has the highest score of similarity
 	 */
 	public MatchResult findBestMatch(Record test) throws UnMatchableRecordException{
 		List<MatchResult> matches = findMatch(test);
 		if(matches != null && matches.size() > 0){
-			Collections.sort(matches, Collections.reverseOrder());
+			sortMatchResultList(matches);
 			return matches.get(0);
 		}
 		
@@ -112,11 +166,30 @@ public class MatchFinder {
 	public List<MatchResult> findMatch(Record test, int limit) throws UnMatchableRecordException{
 		List<MatchResult> matches = findMatch(test);
 		if(matches.size() > limit){
-			Collections.sort(matches, Collections.reverseOrder());
+			sortMatchResultList(matches);
 			matches.subList(limit, matches.size()).clear();
 		}
 		
 		return matches;
+	}
+	
+	/*
+	 * Method sorts the List<MatchResult> so that the highest scores
+	 * are listed first.  For scoring not including blocking fields,
+	 * this requires Reverse order.  Scoring including blocking fields
+	 * lists mr2 as the first argument to the Double.compare method to achieve this 
+	 */
+	private void sortMatchResultList(List<MatchResult> matches){
+		if(scoring == Scoring.BLOCKING_EXCLUSIVE){
+			Collections.sort(matches, Collections.reverseOrder());
+		}
+		if(scoring == Scoring.BLOCKING_INCLUSIVE){
+			Collections.sort(matches, new Comparator<MatchResult>(){
+				public int compare(MatchResult mr1, MatchResult mr2){
+					return Double.compare(mr2.getInclusiveScore(), mr1.getInclusiveScore());
+				}
+			});
+		}
 	}
 	
 	/**
@@ -132,7 +205,9 @@ public class MatchFinder {
 		Iterator<MatchResult> it = matches.iterator();
 		while(it.hasNext()){
 			MatchResult mr = it.next();
-			if(mr.getScore() < threshold_limit){
+			if(scoring == Scoring.BLOCKING_EXCLUSIVE && mr.getScore() < threshold_limit){
+				it.remove();
+			} else if(scoring == Scoring.BLOCKING_INCLUSIVE && mr.getInclusiveScore() < threshold_limit){
 				it.remove();
 			}
 		}
@@ -164,6 +239,11 @@ public class MatchFinder {
 	 * @return	true if the reader's reset() method succeeded, false if it failed
 	 */
 	public boolean resetReader(){
-		return database_reader.reset();
+		Iterator<DataSourceReader> it = database_readers.iterator();
+		boolean ret = true;
+		while(it.hasNext()){
+			ret = it.next().reset() && ret;
+		}
+		return ret;
 	}
 }

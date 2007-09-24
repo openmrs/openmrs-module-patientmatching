@@ -70,15 +70,15 @@ public class VectorTable {
 				if(mr1.getScore() == mr2.getScore()){
 					if(mr1.getTrueProbability() == mr2.getTrueProbability()){
 						if(mr1.getFalseProbability() == mr2.getFalseProbability()){
-							return Double.compare(Double.parseDouble(mr1.getMatchVector().toString()), Double.parseDouble(mr2.getMatchVector().toString()));
+							return Double.compare(Double.parseDouble(mr2.getMatchVector().toString()), Double.parseDouble(mr1.getMatchVector().toString()));
 						} else {
-							return Double.compare(mr1.getFalseProbability(), mr2.getFalseProbability());
+							return Double.compare(mr2.getFalseProbability(), mr1.getFalseProbability());
 						}
 					} else {
-						return Double.compare(mr1.getTrueProbability(), mr2.getTrueProbability());
+						return Double.compare(mr2.getTrueProbability(), mr1.getTrueProbability());
 					}
 				} else {
-					return Double.compare(mr1.getScore(), mr2.getScore());
+					return Double.compare(mr2.getScore(), mr1.getScore());
 				}
 			}
 		});

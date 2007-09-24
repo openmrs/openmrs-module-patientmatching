@@ -7,10 +7,14 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import org.regenstrief.linkage.util.ColumnSortOption;
 import org.regenstrief.linkage.util.ColumnSorter;
+import org.regenstrief.linkage.util.ColumnSwitcher;
+import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
 /**
@@ -38,6 +42,7 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader {
 	public OrderedCharDelimFileReader(LinkDataSource lds, MatchingConfig mc){
 		super(lds);
 		this.mc = mc;
+		this.switched_file = switchColumns(new File(lds.getName()), mc);
 		char raw_file_sep = lds.getAccess().charAt(0);
 		sorted_file = sortInputFile(switched_file, raw_file_sep);
 		try{
@@ -48,6 +53,33 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader {
 			file_reader = null;
 			next_record = null;
 		}
+	}
+	
+	protected File switchColumns(File f, MatchingConfig mc){
+		List<DataColumn> dcs1 = data_source.getDataColumns();
+		int[] order1 = new int[data_source.getIncludeCount()];
+		
+		// iterate over the  DataColumn list and store the data position value
+		// in order arrays at the index given by display_position, as long as
+		// display position is not NA
+		Iterator<DataColumn> it1 = dcs1.iterator();
+		while(it1.hasNext()){
+			DataColumn dc = it1.next();
+			if(dc.getIncludePosition() != DataColumn.INCLUDE_NA){
+				order1[dc.getIncludePosition()] = Integer.parseInt(dc.getColumnID());
+			}
+		}
+		
+		File switched = new File(data_source.getName() + this.mc.getName() + ".switched");
+		try{
+			ColumnSwitcher cs = new ColumnSwitcher(f, switched, order1, data_source.getAccess().charAt(0));
+			cs.switchColumns();
+		}
+		catch(IOException ioe){
+			return null;
+		}
+		
+		return switched;
 	}
 	
 	private File sortInputFile(File f, char sep){

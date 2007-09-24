@@ -14,7 +14,7 @@ import java.util.*;
  */
 
 public class MatchResult implements Comparable{
-	private double score, true_prob, false_prob, sensitivity, specificity;
+	private double score, incl_score, true_prob, false_prob, sensitivity, specificity;
 	private MatchVector match_vct;
 	private ScoreVector score_vct;
 	private Record r1, r2;
@@ -23,8 +23,9 @@ public class MatchResult implements Comparable{
 	 * Constructor initializes the Hashtable match_table
 	 *
 	 */
-	public MatchResult(double score, double true_prob, double false_prob, double sensitivity, double specificity, MatchVector match_vct, ScoreVector score_vct, Record r1, Record r2){
+	public MatchResult(double score, double incl_score, double true_prob, double false_prob, double sensitivity, double specificity, MatchVector match_vct, ScoreVector score_vct, Record r1, Record r2){
 		this.score = score;
+		this.incl_score = incl_score;
 		this.true_prob = true_prob;
 		this.false_prob = false_prob;
 		this.sensitivity = sensitivity;
@@ -42,6 +43,10 @@ public class MatchResult implements Comparable{
 	 */
 	public double getScore(){
 		return score;
+	}
+	
+	public double getInclusiveScore(){
+		return incl_score;
 	}
 	
 	public double getTrueProbability(){

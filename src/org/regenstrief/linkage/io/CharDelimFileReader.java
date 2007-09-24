@@ -55,7 +55,7 @@ public class CharDelimFileReader extends DataSourceReader{
 	 * @param f	the file to modify
 	 * @return	the resulting file
 	 */
-	private File switchColumns(File f){
+	protected File switchColumns(File f){
 		List<DataColumn> dcs1 = data_source.getDataColumns();
 		int[] order1 = new int[data_source.getIncludeCount()];
 		

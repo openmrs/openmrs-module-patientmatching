@@ -64,7 +64,7 @@ public class ScorePair {
 			mv.setMatch(comparison_demographic, match);
 		}
 
-		MatchResult mr = new MatchResult(vt.getScore(mv),vt.getMatchVectorTrueProbability(mv),vt.getMatchVectorFalseProbability(mv),vt.getSensitivity(mv),vt.getSpecificity(mv),mv,vt.getScoreVector(mv),rec1,rec2);
+		MatchResult mr = new MatchResult(vt.getScore(mv),vt.getInclusiveScore(mv),vt.getMatchVectorTrueProbability(mv),vt.getMatchVectorFalseProbability(mv),vt.getSensitivity(mv),vt.getSpecificity(mv),mv,vt.getScoreVector(mv),rec1,rec2);
 		for(Modifier m : modifiers){
 			m.modifyMatchResult(mr, mc);
 		}
