@@ -2,6 +2,7 @@ package org.regenstrief.linkage.analysis;
 
 import org.regenstrief.linkage.util.*;
 import org.regenstrief.linkage.*;
+
 import java.util.*;
 
 /**
@@ -15,6 +16,7 @@ public class VectorTable {
 	
 	MatchingConfig mc;
 	Hashtable<MatchVector,Double> match_scores;
+	Hashtable<MatchVector,Double> inclusive_match_scores;
 	Hashtable<MatchVector,ScoreVector> match_score_vectors;
 	Hashtable<MatchVector,Double> match_specificities;
 	Hashtable<MatchVector,Double> match_sensitivities;
@@ -26,6 +28,7 @@ public class VectorTable {
 	public VectorTable(MatchingConfig mc){
 		this.mc = mc;
 		match_scores = new Hashtable<MatchVector,Double>();
+		inclusive_match_scores = new Hashtable<MatchVector,Double>();
 		match_score_vectors = new Hashtable<MatchVector,ScoreVector>();
 		match_sensitivities = new Hashtable<MatchVector,Double>();
 		match_specificities = new Hashtable<MatchVector,Double>();
@@ -59,24 +62,35 @@ public class VectorTable {
 			u_values.put(mcr.getName(), new Double(u));
 		}
 		
-		List<MatchVector> vectors = getPossibleMatchingVectors();
-		Iterator<MatchVector> it2 = vectors.iterator();
-		LinkedList<MatchVector> sorted_vectors = new LinkedList<MatchVector>(); 
-		while(it2.hasNext()){
-			MatchVector mv = it2.next();
-			insertMatchVector(mv, sorted_vectors);
-			double score = getMatchVectorScore(mv);
-			match_scores.put(mv, new Double(score));
-			match_score_vectors.put(mv, getMatchVectorScoreVector(mv));
-		}
+		List<MatchResult> vectors = getPossibleMatchingResults();
+		// sort the vectors to calculate sens and spec
+		//LinkedList<MatchVector> sorted_vectors = new LinkedList<MatchVector>();
+		Collections.sort(vectors, new Comparator<MatchResult>(){
+			public int compare(MatchResult mr1, MatchResult mr2){
+				if(mr1.getScore() == mr2.getScore()){
+					if(mr1.getTrueProbability() == mr2.getTrueProbability()){
+						if(mr1.getFalseProbability() == mr2.getFalseProbability()){
+							return Double.compare(Double.parseDouble(mr1.getMatchVector().toString()), Double.parseDouble(mr2.getMatchVector().toString()));
+						} else {
+							return Double.compare(mr1.getFalseProbability(), mr2.getFalseProbability());
+						}
+					} else {
+						return Double.compare(mr1.getTrueProbability(), mr2.getTrueProbability());
+					}
+				} else {
+					return Double.compare(mr1.getScore(), mr2.getScore());
+				}
+			}
+		});
+		
 		
 		// get running
 		// total of true and false probabilities to create sensitivity and
 		// specificity
-		Iterator<MatchVector> vector_it = sorted_vectors.iterator();
+		Iterator<MatchResult> vector_it = vectors.iterator();
 		double sens = 0;
 		while(vector_it.hasNext()){
-			MatchVector mv = vector_it.next();
+			MatchVector mv = vector_it.next().getMatchVector();
 			sens = sens + getMatchVectorTrueProbability(mv);
 			match_sensitivities.put(mv, sens);
 			//System.out.println(mv + "," + getMatchVectorScore(mv) + "," + getMatchVectorTrueProbability(mv) + "," + getMatchVectorFalseProbability(mv));
@@ -84,9 +98,9 @@ public class VectorTable {
 		
 		// calculate specificity, need to start at end of list
 		double spec = 0;
-		ListIterator<MatchVector> vector_it2 = sorted_vectors.listIterator(sorted_vectors.size());
+		ListIterator<MatchResult> vector_it2 = vectors.listIterator(vectors.size());
 		while(vector_it2.hasPrevious()){
-			MatchVector mv = vector_it2.previous();
+			MatchVector mv = vector_it2.previous().getMatchVector();
 			match_specificities.put(mv, spec);
 			spec = spec + getMatchVectorFalseProbability(mv);
 		}
@@ -96,6 +110,10 @@ public class VectorTable {
 	public double getScore(MatchVector mv){
 		//return match_scores.get(getEquivalentMatchVector(mv)).doubleValue();
 		return match_scores.get(mv).doubleValue();
+	}
+	
+	public double getInclusiveScore(MatchVector mv){
+		return inclusive_match_scores.get(mv).doubleValue();
 	}
 	
 	public double getSensitivity(MatchVector mv){
@@ -173,8 +191,8 @@ public class VectorTable {
 	 * possible combinations of matching/non-match between 
 	 * demographics.
 	 */
-	private List<MatchVector> getPossibleMatchingVectors(){
-		ArrayList<MatchVector> mvs = new ArrayList<MatchVector>();
+	private List<MatchResult> getPossibleMatchingResults(){
+		ArrayList<MatchResult> mvs = new ArrayList<MatchResult>();
 		//String[] demographics = mc.getLinkComparisonColumns();
 		String[] demographics = mc.getIncludedColumnsNames();
 		for(int i = 0; i < Math.pow(2,demographics.length); i++){
@@ -195,8 +213,17 @@ public class VectorTable {
 					mv.setMatch(demographics[j], false);
 				}
 			}
-			mvs.add(mv);
+			
+			double score = getMatchVectorScore(mv);
+			match_scores.put(mv, new Double(score));
+			double incl_score = getMatchVectorInclusiveScore(mv);
+			inclusive_match_scores.put(mv, new Double(incl_score));
+			match_score_vectors.put(mv, getMatchVectorScoreVector(mv));
+			
+			//MatchResult(double score, double incl_score, double true_prob, double false_prob, double sensitivity, double specificity, MatchVector match_vct, ScoreVector score_vct, Record r1, Record r2){
+			mvs.add(new MatchResult(score, incl_score, getMatchVectorTrueProbability(mv), getMatchVectorFalseProbability(mv), 0, 0, mv, null, null, null));
 		}
+		
 		
 		return mvs;
 	}
@@ -277,6 +304,15 @@ public class VectorTable {
 			}
 		}
 		
+		return score;
+	}
+	
+	private double getMatchVectorInclusiveScore(MatchVector mv){
+		double score = getMatchVectorScore(mv);
+		String[] blocking_columns = mc.getBlockingColumns();
+		for(int i = 0; i < blocking_columns.length; i++){
+			score += mc.getMatchingConfigRowByName(blocking_columns[i]).getAgreement();
+		}
 		return score;
 	}
 	
