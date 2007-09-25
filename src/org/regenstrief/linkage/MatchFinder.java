@@ -1,7 +1,12 @@
 package org.regenstrief.linkage;
 
 /**
- * Class is main way of using the record likage code.
+ * Class is main way of using the record linkage code for module
+ * 
+ * It takes one LinkDataSource as a main source of Records to search,
+ * and a list of MatchingConfigs to use.  It then takes one Record and
+ * finds matches against the LinkDataSource.  It is slower than matching
+ * 
  *
  */
 
@@ -26,6 +31,7 @@ public class MatchFinder {
 	LinkDataSource matching_database;
 	List<DataSourceReader> database_readers;
 	Hashtable<DataSourceReader,MatchingConfig> analytics_associations;
+	Hashtable<MatchingConfig,ScorePair> analytics_scoring;
 	List<MatchingConfig> analytics;
 	Hashtable<String, Integer> type_table;
 	RecordFieldAnalyzer record_analyzer;
@@ -37,7 +43,7 @@ public class MatchFinder {
 		this.matching_database = matching_database;
 		this.analytics = analytics;
 		
-		initReaders(analytics);
+		initAnalytics(analytics);
 		
 		type_table = matching_database.getTypeTable();
 		this.record_analyzer = record_analyzer;
@@ -49,19 +55,26 @@ public class MatchFinder {
 		this.matching_database = matching_database;
 		this.analytics = analytics;
 		
-		initReaders(analytics);
+		initAnalytics(analytics);
 		
 		type_table = matching_database.getTypeTable();
 		record_analyzer = null;
 		this.scoring = scoring;
 	}
 	
-	private void initReaders(List<MatchingConfig> analytics){
+	/*
+	 * Method initializes data structures holding information derived
+	 * from the MatchingConfig objects, such as the ordered readers 
+	 * and ScorePair hashtable
+	 */
+	private void initAnalytics(List<MatchingConfig> analytics){
 		analytics_associations = new Hashtable<DataSourceReader,MatchingConfig>();
+		analytics_scoring = new Hashtable<MatchingConfig,ScorePair>();
 		database_readers = new ArrayList<DataSourceReader>();
 		Iterator<MatchingConfig> it = analytics.iterator();
 		while(it.hasNext()){
 			MatchingConfig mc = it.next();
+			analytics_scoring.put(mc, new ScorePair(mc));
 			DataSourceReader new_datasource_reader;
 			if(matching_database.getType().equals("CharDelimFile")){
 				new_datasource_reader = new OrderedCharDelimFileReader(matching_database, mc);
@@ -122,7 +135,11 @@ public class MatchFinder {
 		List<MatchResult> candidates = new ArrayList<MatchResult>();
 		
 		Record[] pair;
-		ScorePair sp = new ScorePair(analytics);
+		ScorePair sp = analytics_scoring.get(analytics);
+		if(sp == null){
+			sp = new ScorePair(analytics);
+			analytics_scoring.put(analytics, sp);
+		}
 		while((pair = fp.getNextRecordPair()) != null){
 			Record r1 = pair[0];
 			Record r2 = pair[1];
