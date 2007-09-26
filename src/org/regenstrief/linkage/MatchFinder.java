@@ -116,10 +116,10 @@ public class MatchFinder {
 		while(it.hasNext()){
 			DataSourceReader reader = it.next();
 			MatchingConfig mc = analytics_associations.get(reader);
-			MatchResult mr = getBestMatch(test_reader, reader, mc, type_table);
+			List<MatchResult> mrs = getMatches(test_reader, reader, mc, type_table);
 			
-			if(mr != null){
-				ret.add(mr);
+			if(mrs != null){
+				ret.addAll(mrs);
 			}
 			
 			// reset database reader
@@ -130,7 +130,10 @@ public class MatchFinder {
 		return ret;
 	}
 	
-	private MatchResult getBestMatch(VectorReader test, DataSourceReader database_reader, MatchingConfig analytics, Hashtable<String, Integer> type_table){
+	/*
+	 * Method returns a list of Matches that meet the given MatchingConfig score_threshold
+	 */
+	private List<MatchResult> getMatches(VectorReader test, DataSourceReader database_reader, MatchingConfig analytics, Hashtable<String, Integer> type_table){
 		org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(test, database_reader, analytics, type_table);
 		List<MatchResult> candidates = new ArrayList<MatchResult>();
 		
@@ -143,12 +146,15 @@ public class MatchFinder {
 		while((pair = fp.getNextRecordPair()) != null){
 			Record r1 = pair[0];
 			Record r2 = pair[1];
-			candidates.add(sp.scorePair(r1, r2));
+			MatchResult mr = sp.scorePair(r1, r2);
+			if(mr.getScore() > analytics.getScoreThreshold()){
+				candidates.add(sp.scorePair(r1, r2));
+			}
 		}
 		
 		if(candidates.size() > 0){
 			sortMatchResultList(candidates);
-			return candidates.get(0);
+			return candidates;
 		} else {
 			return null;
 		}

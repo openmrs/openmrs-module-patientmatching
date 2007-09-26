@@ -17,6 +17,11 @@ public class MatchingConfig {
 	public static final int LCS = 2;
 	public static final int LEV = 3;
 	
+	// threshold that a pair of records, compared using this schema,
+	// have to be considered a true positive
+	public static final double DEFAULT_SCORE_THRESHOLD = 0;
+	private double score_threshold;
+	
 	// Indicates whether one or more rows have weight scaling
 	private boolean is_scale_weight = false;
 	
@@ -45,6 +50,7 @@ public class MatchingConfig {
 		estimate = false;
 		double_format = NumberFormat.getInstance();
 		double_format.setMaximumFractionDigits(DOUBLE_SIG_FIGS);
+		score_threshold = DEFAULT_SCORE_THRESHOLD;
 	}
 	
 	public MatchingConfig(String name, MatchingConfigRow[] mcrs){
@@ -56,6 +62,7 @@ public class MatchingConfig {
 		}
 		double_format = NumberFormat.getInstance();
 		double_format.setMaximumFractionDigits(DOUBLE_SIG_FIGS);
+		score_threshold = DEFAULT_SCORE_THRESHOLD;
 	}
 	
 	public MatchingConfigRow getMatchingConfigRowByName(String name) {
@@ -79,6 +86,14 @@ public class MatchingConfig {
 	
 	public boolean isEstimated(){
 		return estimate;
+	}
+	
+	public double getScoreThreshold(){
+		return score_threshold;
+	}
+	
+	public void setScoreThreshold(double score_threshold){
+		this.score_threshold = score_threshold;
 	}
 	
 	public String[] getRowNames(){
