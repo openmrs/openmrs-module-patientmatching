@@ -100,7 +100,8 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader {
 			
 			int[] column_types = new int[column_order.length];
 			for(int i = 0; i < column_order.length; i++){
-				column_types[i] = data_source.getColumnTypeByName(mc.getRowName(column_order[i]));
+				//column_types[i] = data_source.getColumnTypeByName(mc.getRowName(column_order[i]));
+				column_types[i] = data_source.getDataColumn(column_order[i]).getType();
 			}
 			
 			// create ColumnSortOption objects for metafile
