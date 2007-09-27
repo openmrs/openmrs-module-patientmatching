@@ -183,7 +183,11 @@ public class FormPairs {
 		int ret;
 		double d1, d2;
 		
-		if(type == MatchingConfig.NUMERIC_TYPE){
+		if(str1.equals("") && str2.equals("")){
+			// setting two null values as unequal prevents forming pairs of records
+			// on empty blocking columns
+			ret = LESS_THAN;
+		} else if(type == MatchingConfig.NUMERIC_TYPE){
 			try{
 				d1 = Double.parseDouble(str1);
 			}
