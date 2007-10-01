@@ -182,6 +182,10 @@ public class XMLTranslator {
 		
 		ret.setAttribute("name", mc.getName());
 		
+		if(mc.getScoreThreshold() != MatchingConfig.DEFAULT_SCORE_THRESHOLD){
+			ret.setAttribute("threshold", Double.toString(mc.getScoreThreshold()));
+		}
+		
 		Iterator<MatchingConfigRow> it = mc.getMatchingConfigRows().iterator();
 		while(it.hasNext()){
 			MatchingConfigRow mcr = it.next();
@@ -385,6 +389,7 @@ public class XMLTranslator {
 		if(est.equals("true")){
 			estimate = true;
 		}
+		Node score_threshold = attributes.getNamedItem("threshold");
 		
 		// iterate over the children nodes and create the MatchingConfigRow objects
 		ArrayList<MatchingConfigRow> mcrs = new ArrayList<MatchingConfigRow>();
@@ -403,7 +408,16 @@ public class XMLTranslator {
 		
 		MatchingConfig ret = new MatchingConfig(mc_name, mcr_array);
 		ret.setEstimate(estimate);
-				
+		if(score_threshold != null){
+			try{
+				double threshold = Double.parseDouble(score_threshold.getTextContent());
+				ret.setScoreThreshold(threshold);
+			}
+			catch(NumberFormatException nfe){
+				// bad value for score threshold, default value will be used
+			}
+		}
+		
 		return ret;
 	}
 	

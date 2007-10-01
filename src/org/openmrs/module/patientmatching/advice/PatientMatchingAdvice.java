@@ -91,7 +91,7 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 				try{
 					Record r = PatientMatchingActivator.patientToRecord(to_match);
 					MatchResult mr = matcher.findBestMatch(r);
-					if(mr != null && mr.getScore() > PatientMatchingActivator.DEFAULT_THRESHOLD){
+					if(mr != null){
 						Record rec_match = mr.getRecord2();
 						log.info("Found a best match - score: " + mr.getScore() + "\tTprob: " + mr.getTrueProbability() + "\tFprob: " + mr.getFalseProbability() + "\tSens: " + mr.getSensitivity() + "\tSpec: " + mr.getSpecificity());
 						Patient patient_match = Context.getPatientService().getPatient(new Integer(rec_match.getDemographic(PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC)));
