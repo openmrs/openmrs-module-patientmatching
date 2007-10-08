@@ -126,22 +126,23 @@ public class MatchFinder {
 			reader.reset();
 			test_reader.reset();
 		}
-		
+		test_reader = null;
 		return ret;
 	}
 	
 	/*
 	 * Method returns a list of Matches that meet the given MatchingConfig score_threshold
 	 */
-	private List<MatchResult> getMatches(VectorReader test, DataSourceReader database_reader, MatchingConfig analytics, Hashtable<String, Integer> type_table){
+	private synchronized List<MatchResult> getMatches(VectorReader test, DataSourceReader database_reader, MatchingConfig analytics, Hashtable<String, Integer> type_table){
 		org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(test, database_reader, analytics, type_table);
 		List<MatchResult> candidates = new ArrayList<MatchResult>();
 		
 		Record[] pair;
 		ScorePair sp = analytics_scoring.get(analytics);
 		if(sp == null){
-			sp = new ScorePair(analytics);
-			analytics_scoring.put(analytics, sp);
+			//sp = new ScorePair(analytics);
+			//analytics_scoring.put(analytics, sp);
+			return null;
 		}
 		while((pair = fp.getNextRecordPair()) != null){
 			Record r1 = pair[0];

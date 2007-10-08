@@ -4,6 +4,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.patientmatching.PatientMatchingActivator;
@@ -32,6 +33,7 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 	private Log log = LogFactory.getLog(this.getClass());
 	private MatchFinder matcher;
 	private RecordDBManager link_db;
+	private Logger file_log = Logger.getLogger(PatientMatchingActivator.FILE_LOG);
 	
 	public PatientMatchingAdvice(MatchFinder matcher, RecordDBManager link_db){
 		this.matcher = matcher;
@@ -72,18 +74,22 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 			
 			if(method_name.equals(PatientMatchingActivator.CREATE_METHOD)){
 				log.debug("Trying to add patient to link table");
+				file_log.info("Trying to add patient to link table");
 				if(o instanceof Patient){
 					Patient just_added = (Patient)o;
 					if(link_db.addRecordToDB(PatientMatchingActivator.patientToRecord(just_added))){
 						// need to reset the reader so data base update is found
 						if(!matcher.resetReader()){
 							log.warn("LinkDBManager object successfully added patient, but database reader not reset; next read might not find latest update");
+							file_log.warn("LinkDBManager object successfully added patient, but database reader not reset; next read might not find latest update");
 						}
 						if(log.isDebugEnabled()){
 							log.debug("LinkDBManager object successfully added patient");
+							file_log.info("LinkDBManager object successfully added patient");
 						}
 					} else {
 						log.warn("Error when using LinkDBManager object to add patient " + just_added.getPatientId() + " to linkage table");
+						file_log.warn("Error when using LinkDBManager object to add patient " + just_added.getPatientId() + " to linkage table");
 					}
 					
 				}
@@ -94,6 +100,7 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 					if(mr != null){
 						Record rec_match = mr.getRecord2();
 						log.info("Found a best match - score: " + mr.getScore() + "\tTprob: " + mr.getTrueProbability() + "\tFprob: " + mr.getFalseProbability() + "\tSens: " + mr.getSensitivity() + "\tSpec: " + mr.getSpecificity());
+						file_log.info("Found a best match - score: " + mr.getScore() + "\tTprob: " + mr.getTrueProbability() + "\tFprob: " + mr.getFalseProbability() + "\tSens: " + mr.getSensitivity() + "\tSpec: " + mr.getSpecificity());
 						Patient patient_match = Context.getPatientService().getPatient(new Integer(rec_match.getDemographic(PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC)));
 						return patient_match;
 					} else {
@@ -102,20 +109,24 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 				}
 				catch(Exception e){
 					log.warn("Exception when trying to match against link table: " + e.getMessage() + ", returning null");
+					file_log.warn("Exception when trying to match against link table: " + e.getMessage() + ", returning null");
 					return o;
 				}
 				
 				
 			} else if(method_name.equals(PatientMatchingActivator.UPDATE_METHOD)){
 				log.debug("Updating patient");
+				file_log.info("Updating patient");
 				if(o instanceof Patient){
 					Patient just_updated = (Patient)o;
 					
 					Record ju = PatientMatchingActivator.patientToRecord(just_updated);
 					if(link_db.updateRecord(ju, PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC)){
 						log.debug("Record for patient " + just_updated.getPatientId() + " updated in database");
+						file_log.info("Record for patient " + just_updated.getPatientId() + " updated in database");
 					} else {
 						log.warn("Update of Patient " + just_updated.getPatientId() + " to link db failed");
+						file_log.warn("Update of Patient " + just_updated.getPatientId() + " to link db failed");
 					}
 					
 					

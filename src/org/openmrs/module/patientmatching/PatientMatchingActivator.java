@@ -16,6 +16,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.aopalliance.aop.Advice;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Logger;
+import org.apache.log4j.SimpleLayout;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.PersonAttribute;
@@ -86,6 +90,9 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	public final static String PRIVILEGE2 = "View Patient Cohorts";
 	
 	private Log log = LogFactory.getLog(this.getClass());
+	public static String FILE_LOG = "patient_matching_file_log";
+	public static String LOG_FILE_NAME = "link_module.log";
+	private Logger file_log = Logger.getLogger(FILE_LOG);
 	
 	private MatchFinder matcher;
 	private RecordDBManager link_db;
@@ -109,16 +116,30 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		Context.addProxyPrivilege(PRIVILEGE);
 		Context.addProxyPrivilege(PRIVILEGE2);
 		
+		// configure file logging
+		file_log.setAdditivity(false);
+		
+		try{
+			file_log.addAppender(new FileAppender(new SimpleLayout(), LOG_FILE_NAME));
+		}
+		catch(IOException ioe){
+			file_log.addAppender(new ConsoleAppender());
+		}
+		
 		log.info("Starting Patient Matching Module");
+		file_log.info("Starting Patient Matching Module");
 		boolean ready = parseConfig(new File(CONFIG_FILE));
 		log.info("Starting to populate matching table");
+		file_log.info("Starting to populate matching table");
 		if(ready){
 			populateMatchingTable();
 			log.info("Matching table populated");
+			file_log.info("Matching table populated");
 		}
 		
 		if(!ready){
 			log.warn("Error parsing config file and creating linkage objects");
+			file_log.warn("Error parsing config file and creating linkage objects");
 		}
 	}
 	
@@ -146,9 +167,11 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 				if(link_db.addRecordToDB(patientToRecord(p))){
 					if(log.isDebugEnabled()){
 						log.debug("Adding patient " + p.getPatientId() + " to link DB succeeded");
+						file_log.debug("Adding patient " + p.getPatientId() + " to link DB succeeded");
 					}
 				} else {
 					log.warn("Adding patient " + p.getPatientId() + " to link DB failed");
+					file_log.warn("Adding patient " + p.getPatientId() + " to link DB failed");
 				}
 			}
 		}
@@ -167,8 +190,10 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	private boolean parseConfig(File config){
 		try{
 			log.debug("parsing config file " + config);
+			file_log.debug("parsing config file " + config);
 			if(!config.exists()){
 				log.warn("cannot find config file in " + config.getPath());
+				file_log.warn("cannot find config file in " + config.getPath());
 				return false;
 			}
 			// Load the XML configuration file
@@ -183,14 +208,17 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		}
 		catch(ParserConfigurationException pce){
 			log.warn("XML parser error with config file: " + pce.getMessage());
+			file_log.warn("XML parser error with config file: " + pce.getMessage());
 			return false;
 		}
 		catch(SAXException spe){
 			log.warn("XML parser error with config file: " + spe.getMessage());
+			file_log.warn("XML parser error with config file: " + spe.getMessage());
 			return false;
 		}
 		catch(IOException ioe){
 			log.warn("IOException with config file: " + ioe.getMessage());
+			file_log.warn("IOException with config file: " + ioe.getMessage());
 			return false;
 		}
 		log.debug("file parsed");
@@ -214,7 +242,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		log.debug("Returning new advice object from " + this);
 		if(link_db == null && !parseConfig(new File(CONFIG_FILE))){
 			log.warn("Error parsing config file and creating linkage objects");
-			
+			file_log.warn("Error parsing config file and creating linkage objects");
 		}
 		return new PatientMatchingAdvice(matcher, link_db);
 	}
