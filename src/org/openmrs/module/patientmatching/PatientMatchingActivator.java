@@ -18,6 +18,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.FileAppender;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.SimpleLayout;
 import org.openmrs.Patient;
@@ -118,7 +119,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		
 		// configure file logging
 		file_log.setAdditivity(false);
-		
+		file_log.setLevel((Level)Level.INFO);
 		try{
 			file_log.addAppender(new FileAppender(new SimpleLayout(), LOG_FILE_NAME));
 		}
