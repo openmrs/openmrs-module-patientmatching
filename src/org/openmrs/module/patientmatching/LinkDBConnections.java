@@ -9,8 +9,8 @@ import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.RecMatchConfig;
 
 public class LinkDBConnections {
-	private static Hashtable<RecMatchConfig,MatchFinder> finders;
-	private static Hashtable<LinkDataSource,RecordDBManager> link_dbs;
+	private static Hashtable<RecMatchConfig,MatchFinder> finders = new Hashtable<RecMatchConfig,MatchFinder>();
+	private static Hashtable<LinkDataSource,RecordDBManager> link_dbs = new Hashtable<LinkDataSource,RecordDBManager>();
 	
 	private LinkDBConnections(){};
 	
