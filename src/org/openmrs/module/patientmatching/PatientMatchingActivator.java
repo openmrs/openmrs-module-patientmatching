@@ -246,10 +246,6 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		return new PatientMatchingAdvice(matcher, link_db);
 	}
 	
-	public boolean isPerInstance(){
-		return false;
-	}
-	
 	/**
 	 * Method gets the demographic information used in the record linkage from
 	 * the Patient object and creates a Record object with all the fields.
