@@ -202,10 +202,8 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.parse(config);
 			RecMatchConfig rmc = XMLTranslator.createRecMatchConfig(doc);
-			MatchingConfig test_mc = rmc.getMatchingConfigs().get(0);
-			link_db = new RecordDBManager(rmc.getLinkDataSource1());
-			matcher = new MatchFinder(rmc.getLinkDataSource1(), rmc.getMatchingConfigs(), new RecordFieldAnalyzer(),MatchFinder.Scoring.BLOCKING_INCLUSIVE);
-			
+			link_db = LinkDBConnections.getLinkDBManager(rmc.getLinkDataSource1());
+			matcher = LinkDBConnections.getFinder(rmc);
 		}
 		catch(ParserConfigurationException pce){
 			log.warn("XML parser error with config file: " + pce.getMessage());
