@@ -95,14 +95,14 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	public static String LOG_FILE_NAME = "link_module.log";
 	private Logger file_log = Logger.getLogger(FILE_LOG);
 	
-	private MatchFinder matcher;
-	private RecordDBManager link_db;
 	
 	/**
 	 * Method calls the disconnect method in the LinkDBManager object.
 	 */
 	public void shutdown() {
 		log.info("Shutting down Patient Matching Module");
+		LinkDBConnections ldb_con = LinkDBConnections.getInstance();
+		RecordDBManager link_db = ldb_con.getRecDBManager();
 		link_db.disconnect();
 		Context.removeProxyPrivilege(PRIVILEGE);
 		Context.removeProxyPrivilege(PRIVILEGE2);
@@ -113,6 +113,9 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	 * record linkage table is populated with the existing patients in OpenMRS.
 	 */
 	public void startup() {
+		log.info("Starting Patient Matching Module");
+		file_log.info("Starting Patient Matching Module");
+		
 		// to fix automatic startup, get privilege
 		Context.addProxyPrivilege(PRIVILEGE);
 		Context.addProxyPrivilege(PRIVILEGE2);
@@ -127,18 +130,13 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 			file_log.addAppender(new ConsoleAppender());
 		}
 		
-		log.info("Starting Patient Matching Module");
-		file_log.info("Starting Patient Matching Module");
-		boolean ready = parseConfig(new File(CONFIG_FILE));
 		log.info("Starting to populate matching table");
 		file_log.info("Starting to populate matching table");
-		if(ready){
+		if(LinkDBConnections.getInstance().getRecDBManager() != null){
 			populateMatchingTable();
 			log.info("Matching table populated");
 			file_log.info("Matching table populated");
-		}
-		
-		if(!ready){
+		} else {
 			log.warn("Error parsing config file and creating linkage objects");
 			file_log.warn("Error parsing config file and creating linkage objects");
 		}
@@ -154,6 +152,9 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		
 		// get the list of patient objects
 		//link_db.createTable();
+		LinkDBConnections ldb_con = LinkDBConnections.getInstance();
+		MatchFinder matcher = ldb_con.getFinder();
+		RecordDBManager link_db = ldb_con.getRecDBManager();
 		
 		// iterate through them, and if linkage tables does not contain 
 		// a record with openmrs_id equal to patient.getID, then add
@@ -187,7 +188,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	 * @param config	the configuration file with connection and linkage information
 	 * @return	true if there were no errors while parsing the file, false if there was an 
 	 * exception
-	 */
+	 *//*
 	private boolean parseConfig(File config){
 		try{
 			log.debug("parsing config file " + config);
@@ -202,8 +203,8 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.parse(config);
 			RecMatchConfig rmc = XMLTranslator.createRecMatchConfig(doc);
-			link_db = LinkDBConnections.getLinkDBManager(rmc.getLinkDataSource1());
-			matcher = LinkDBConnections.getFinder(rmc);
+			LinkDBConnections.setDBManager(rmc.getLinkDataSource1());
+			LinkDBConnections.setFinder(rmc);
 		}
 		catch(ParserConfigurationException pce){
 			log.warn("XML parser error with config file: " + pce.getMessage());
@@ -221,8 +222,8 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 			return false;
 		}
 		log.debug("file parsed");
-		return link_db.connect();
-	}
+		return LinkDBConnections.getDBManager().connect();
+	}*/
 	
 	public boolean matches(Method method, Class targetClass) {
 		String method_name = method.getName();
@@ -239,10 +240,9 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	@Override
 	public Advice getAdvice(){
 		log.debug("Returning new advice object from " + this);
-		if(link_db == null && !parseConfig(new File(CONFIG_FILE))){
-			log.warn("Error parsing config file and creating linkage objects");
-			file_log.warn("Error parsing config file and creating linkage objects");
-		}
+		LinkDBConnections ldb_con = LinkDBConnections.getInstance();
+		MatchFinder matcher = ldb_con.getFinder();
+		RecordDBManager link_db = ldb_con.getRecDBManager();
 		return new PatientMatchingAdvice(matcher, link_db);
 	}
 	

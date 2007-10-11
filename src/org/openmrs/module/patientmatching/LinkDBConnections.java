@@ -1,34 +1,79 @@
 package org.openmrs.module.patientmatching;
 
-import java.util.Hashtable;
+import java.io.File;
+import java.io.IOException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.regenstrief.linkage.MatchFinder;
 import org.regenstrief.linkage.analysis.RecordFieldAnalyzer;
 import org.regenstrief.linkage.db.RecordDBManager;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.RecMatchConfig;
+import org.regenstrief.linkage.util.XMLTranslator;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 public class LinkDBConnections {
-	private static Hashtable<RecMatchConfig,MatchFinder> finders = new Hashtable<RecMatchConfig,MatchFinder>();
-	private static Hashtable<LinkDataSource,RecordDBManager> link_dbs = new Hashtable<LinkDataSource,RecordDBManager>();
+	private MatchFinder finder;
+	private RecordDBManager link_db;
 	
-	private LinkDBConnections(){};
+	private final static LinkDBConnections INSTANCE = new LinkDBConnections();
 	
-	public static synchronized MatchFinder getFinder(RecMatchConfig rmc){
-		MatchFinder ret;
-		if((ret = finders.get(rmc)) == null){
-			ret = new MatchFinder(rmc.getLinkDataSource1(), rmc.getMatchingConfigs(), new RecordFieldAnalyzer(),MatchFinder.Scoring.BLOCKING_INCLUSIVE);
-			finders.put(rmc, ret);
+	private LinkDBConnections(){
+		if(!parseConfig(new File(PatientMatchingActivator.CONFIG_FILE))){
+			finder = null;
+			link_db = null;
 		}
-		return ret;
+	};
+	
+	public static LinkDBConnections getInstance(){
+		return INSTANCE;
 	}
 	
-	public static synchronized RecordDBManager getLinkDBManager(LinkDataSource lds){
-		RecordDBManager ret;
-		if((ret = link_dbs.get(lds)) == null){
-			ret = new RecordDBManager(lds);
-			link_dbs.put(lds, ret);
+	public MatchFinder getFinder(){
+		return finder;
+	}
+	
+	public RecordDBManager getRecDBManager(){
+		return link_db;
+	}
+	
+	private boolean parseConfig(File config){
+		try{
+			//log.debug("parsing config file " + config);
+			//file_log.debug("parsing config file " + config);
+			if(!config.exists()){
+				//log.warn("cannot find config file in " + config.getPath());
+				//file_log.warn("cannot find config file in " + config.getPath());
+				return false;
+			}
+			// Load the XML configuration file
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			Document doc = builder.parse(config);
+			RecMatchConfig rmc = XMLTranslator.createRecMatchConfig(doc);
+			finder = new MatchFinder(rmc.getLinkDataSource1(), rmc.getMatchingConfigs(), new RecordFieldAnalyzer(),MatchFinder.Scoring.BLOCKING_INCLUSIVE);
+			link_db = new RecordDBManager(rmc.getLinkDataSource1());
 		}
-		return ret;
+		catch(ParserConfigurationException pce){
+			//log.warn("XML parser error with config file: " + pce.getMessage());
+			//file_log.warn("XML parser error with config file: " + pce.getMessage());
+			return false;
+		}
+		catch(SAXException spe){
+			//log.warn("XML parser error with config file: " + spe.getMessage());
+			//file_log.warn("XML parser error with config file: " + spe.getMessage());
+			return false;
+		}
+		catch(IOException ioe){
+			//log.warn("IOException with config file: " + ioe.getMessage());
+			//file_log.warn("IOException with config file: " + ioe.getMessage());
+			return false;
+		}
+		//log.debug("file parsed");
+		return link_db.connect();
 	}
 }
