@@ -240,10 +240,10 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	@Override
 	public Advice getAdvice(){
 		log.debug("Returning new advice object from " + this);
-		LinkDBConnections ldb_con = LinkDBConnections.getInstance();
-		MatchFinder matcher = ldb_con.getFinder();
-		RecordDBManager link_db = ldb_con.getRecDBManager();
-		return new PatientMatchingAdvice(matcher, link_db);
+		//LinkDBConnections ldb_con = LinkDBConnections.getInstance();
+		//MatchFinder matcher = ldb_con.getFinder();
+		//RecordDBManager link_db = ldb_con.getRecDBManager();
+		return new PatientMatchingAdvice();
 	}
 	
 	/**

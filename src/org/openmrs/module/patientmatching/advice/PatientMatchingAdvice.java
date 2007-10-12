@@ -7,6 +7,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
 import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.patientmatching.LinkDBConnections;
 import org.openmrs.module.patientmatching.PatientMatchingActivator;
 import org.regenstrief.linkage.MatchFinder;
 import org.regenstrief.linkage.MatchResult;
@@ -31,13 +32,13 @@ import org.regenstrief.linkage.db.RecordDBManager;
 public class PatientMatchingAdvice implements MethodInterceptor {
 	
 	private Log log = LogFactory.getLog(this.getClass());
-	private MatchFinder matcher;
-	private RecordDBManager link_db;
+	//private MatchFinder matcher;
+	//private RecordDBManager link_db;
 	private Logger file_log = Logger.getLogger(PatientMatchingActivator.FILE_LOG);
 	
-	public PatientMatchingAdvice(MatchFinder matcher, RecordDBManager link_db){
-		this.matcher = matcher;
-		this.link_db = link_db;
+	public PatientMatchingAdvice(){
+		//this.matcher = matcher;
+		//this.link_db = link_db;
 	}
 	
 	/**
@@ -59,6 +60,10 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 	public Object invoke(MethodInvocation invocation) throws Throwable {
 		log.debug("Advice intercepting " + invocation.getMethod().getName());
 		Object[] args = invocation.getArguments();
+		
+		LinkDBConnections ldb_con = LinkDBConnections.getInstance();
+		MatchFinder matcher = ldb_con.getFinder();
+		RecordDBManager link_db = ldb_con.getRecDBManager();
 		
 		// for two of the methods, need to let invocation proceed, so go ahead and let it
 		Object o = invocation.proceed();
