@@ -1,6 +1,8 @@
 package org.openmrs.module.patientmatching;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Calendar;
@@ -8,10 +10,6 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.aopalliance.aop.Advice;
 import org.apache.commons.logging.Log;
@@ -31,15 +29,9 @@ import org.openmrs.module.Activator;
 import org.openmrs.module.patientmatching.advice.PatientMatchingAdvice;
 import org.regenstrief.linkage.MatchFinder;
 import org.regenstrief.linkage.Record;
-import org.regenstrief.linkage.analysis.RecordFieldAnalyzer;
 import org.regenstrief.linkage.db.RecordDBManager;
-import org.regenstrief.linkage.util.MatchingConfig;
-import org.regenstrief.linkage.util.RecMatchConfig;
-import org.regenstrief.linkage.util.XMLTranslator;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.support.StaticMethodMatcherPointcutAdvisor;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
 /**
  * Class implements the startup and initial methods for the module.  When
@@ -114,7 +106,6 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	 */
 	public void startup() {
 		log.info("Starting Patient Matching Module");
-		file_log.info("Starting Patient Matching Module");
 		
 		// to fix automatic startup, get privilege
 		Context.addProxyPrivilege(PRIVILEGE);
@@ -131,14 +122,11 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		}
 		
 		log.info("Starting to populate matching table");
-		file_log.info("Starting to populate matching table");
 		if(LinkDBConnections.getInstance().getRecDBManager() != null){
 			populateMatchingTable();
 			log.info("Matching table populated");
-			file_log.info("Matching table populated");
 		} else {
 			log.warn("Error parsing config file and creating linkage objects");
-			file_log.warn("Error parsing config file and creating linkage objects");
 		}
 	}
 	
@@ -169,61 +157,13 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 				if(link_db.addRecordToDB(patientToRecord(p))){
 					if(log.isDebugEnabled()){
 						log.debug("Adding patient " + p.getPatientId() + " to link DB succeeded");
-						file_log.debug("Adding patient " + p.getPatientId() + " to link DB succeeded");
 					}
 				} else {
 					log.warn("Adding patient " + p.getPatientId() + " to link DB failed");
-					file_log.warn("Adding patient " + p.getPatientId() + " to link DB failed");
 				}
 			}
 		}
 	}
-	
-	/**
-	 * Method parses a configuration file.  Program assumes that the information under
-	 * the first datasource tag in the file is the connection information for the 
-	 * record linkage table.  The columns to be used for matching and the string comparators
-	 * are also listed in this file.
-	 * 
-	 * @param config	the configuration file with connection and linkage information
-	 * @return	true if there were no errors while parsing the file, false if there was an 
-	 * exception
-	 *//*
-	private boolean parseConfig(File config){
-		try{
-			log.debug("parsing config file " + config);
-			file_log.debug("parsing config file " + config);
-			if(!config.exists()){
-				log.warn("cannot find config file in " + config.getPath());
-				file_log.warn("cannot find config file in " + config.getPath());
-				return false;
-			}
-			// Load the XML configuration file
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document doc = builder.parse(config);
-			RecMatchConfig rmc = XMLTranslator.createRecMatchConfig(doc);
-			LinkDBConnections.setDBManager(rmc.getLinkDataSource1());
-			LinkDBConnections.setFinder(rmc);
-		}
-		catch(ParserConfigurationException pce){
-			log.warn("XML parser error with config file: " + pce.getMessage());
-			file_log.warn("XML parser error with config file: " + pce.getMessage());
-			return false;
-		}
-		catch(SAXException spe){
-			log.warn("XML parser error with config file: " + spe.getMessage());
-			file_log.warn("XML parser error with config file: " + spe.getMessage());
-			return false;
-		}
-		catch(IOException ioe){
-			log.warn("IOException with config file: " + ioe.getMessage());
-			file_log.warn("IOException with config file: " + ioe.getMessage());
-			return false;
-		}
-		log.debug("file parsed");
-		return LinkDBConnections.getDBManager().connect();
-	}*/
 	
 	public boolean matches(Method method, Class targetClass) {
 		String method_name = method.getName();
@@ -277,6 +217,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		// first, try to get the "Matching Information" attribute type
 		PersonAttributeType matching_attr_type = Context.getPersonService().getPersonAttributeType(MATCHING_ATTRIBUTE);
 		if(matching_attr_type != null){
+			try{
 			// expected attribute with information is present, so use all the information from there
 			PersonAttribute matching_attr = patient.getAttribute(matching_attr_type.getPersonAttributeTypeId());
 			String matching_string = matching_attr.getValue();
@@ -287,7 +228,10 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 				String[] pair = demographic_value.split(":", -1);
 				ret.addDemographic(pair[0], pair[1]);
 			}
-			
+			}
+			catch(NullPointerException npe){
+				return ret;
+			}
 		} else {
 			// parse the Patient fields as best we can to get the information
 			// "mrn" - medical record number

@@ -144,7 +144,9 @@ public class DataBaseReader extends DataSourceReader {
 
 	public boolean reset(){
 		try{
-			data.close();
+			if(data != null){
+				data.close();
+			}
 			getResultSet();
 			return db != null;
 		}

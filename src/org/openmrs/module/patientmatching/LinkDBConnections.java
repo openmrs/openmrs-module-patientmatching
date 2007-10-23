@@ -10,11 +10,18 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.regenstrief.linkage.MatchFinder;
 import org.regenstrief.linkage.analysis.RecordFieldAnalyzer;
 import org.regenstrief.linkage.db.RecordDBManager;
-import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.RecMatchConfig;
 import org.regenstrief.linkage.util.XMLTranslator;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+
+/**
+ * Class provides a singleton for database access to where the
+ * link table.
+ * 
+ * @author jegg
+ *
+ */
 
 public class LinkDBConnections {
 	private MatchFinder finder;
@@ -29,18 +36,44 @@ public class LinkDBConnections {
 		}
 	};
 	
+	/**
+	 * Method returns an object holding a MatchFinder object and
+	 * a RecordDBManager object.  The first is used to find matches, 
+	 * the second is used to add, update, or delete the records
+	 * used for matching.
+	 * 
+	 * @return	an instance of the class with database connections
+	 */
 	public static LinkDBConnections getInstance(){
 		return INSTANCE;
 	}
 	
+	/**
+	 * 
+	 * @return	the object used to find patients in the database
+	 */
 	public MatchFinder getFinder(){
 		return finder;
 	}
 	
+	/**
+	 * 
+	 * @return	the object used to add, update, or delete records used in matching
+	 */
 	public RecordDBManager getRecDBManager(){
 		return link_db;
 	}
 	
+	/**
+	 * Method parses a configuration file.  Program assumes that the information under
+	 * the first datasource tag in the file is the connection information for the 
+	 * record linkage table.  The columns to be used for matching and the string comparators
+	 * are also listed in this file.
+	 * 
+	 * @param config	the configuration file with connection and linkage information
+	 * @return	true if there were no errors while parsing the file, false if there was an 
+	 * exception
+	 */
 	private boolean parseConfig(File config){
 		try{
 			//log.debug("parsing config file " + config);
