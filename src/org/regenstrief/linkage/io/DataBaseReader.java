@@ -49,6 +49,7 @@ public class DataBaseReader extends DataSourceReader {
 			
 			Class.forName(driver);
 			db = DriverManager.getConnection(url, user, passwd);
+			db.setReadOnly(true);
 		}
 		catch(ArrayIndexOutOfBoundsException aioobe){
 			db = null;
@@ -153,5 +154,26 @@ public class DataBaseReader extends DataSourceReader {
 		catch(SQLException sqle){
 			return false;
 		}
+	}
+	
+	public boolean connect(){
+		try{
+			db = DriverManager.getConnection(url, user, passwd);
+			return true;
+		}
+		catch(SQLException sqle){
+			return false;
+		}
+	}
+	
+	public boolean disconnect(){
+		try{
+			db.close();
+			return true;
+		}
+		catch(SQLException sqle){
+			return false;
+		}
+		
 	}
 }

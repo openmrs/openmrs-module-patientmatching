@@ -96,6 +96,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		LinkDBConnections ldb_con = LinkDBConnections.getInstance();
 		RecordDBManager link_db = ldb_con.getRecDBManager();
 		link_db.disconnect();
+		ldb_con.getFinder().closeReaders();
 		Context.removeProxyPrivilege(PRIVILEGE);
 		Context.removeProxyPrivilege(PRIVILEGE2);
 	}
@@ -128,6 +129,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		} else {
 			log.warn("Error parsing config file and creating linkage objects");
 		}
+		//LinkDBConnections.getInstance().getFinder().closeReaders();
 	}
 	
 	/**
@@ -141,8 +143,11 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		// get the list of patient objects
 		//link_db.createTable();
 		LinkDBConnections ldb_con = LinkDBConnections.getInstance();
-		MatchFinder matcher = ldb_con.getFinder();
 		RecordDBManager link_db = ldb_con.getRecDBManager();
+		if(!link_db.connect()){
+			log.warn("Error connecting to link db when populating database");
+			return;
+		}
 		
 		// iterate through them, and if linkage tables does not contain 
 		// a record with openmrs_id equal to patient.getID, then add
@@ -163,6 +168,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 				}
 			}
 		}
+		link_db.disconnect();
 	}
 	
 	public boolean matches(Method method, Class targetClass) {

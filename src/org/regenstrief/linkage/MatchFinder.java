@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.regenstrief.linkage.analysis.RecordFieldAnalyzer;
 import org.regenstrief.linkage.analysis.UnMatchableRecordException;
+import org.regenstrief.linkage.io.DataBaseReader;
 import org.regenstrief.linkage.io.DataSourceReader;
 import org.regenstrief.linkage.io.OrderedCharDelimFileReader;
 import org.regenstrief.linkage.io.OrderedDataBaseReader;
@@ -267,6 +268,32 @@ public class MatchFinder {
 		boolean ret = true;
 		while(it.hasNext()){
 			ret = it.next().reset() && ret;
+		}
+		return ret;
+	}
+	
+	public boolean closeReaders(){
+		Iterator<DataSourceReader> it = database_readers.iterator();
+		boolean ret = true;
+		while(it.hasNext()){
+			DataSourceReader dsr = it.next();
+			if(dsr instanceof DataBaseReader){
+				DataBaseReader dbr = (DataBaseReader)dsr;
+				ret = dbr.disconnect() && ret;
+			}
+		}
+		return ret;
+	}
+	
+	public boolean connectReaders(){
+		Iterator<DataSourceReader> it = database_readers.iterator();
+		boolean ret = true;
+		while(it.hasNext()){
+			DataSourceReader dsr = it.next();
+			if(dsr instanceof DataBaseReader){
+				DataBaseReader dbr = (DataBaseReader)dsr;
+				ret = dbr.connect() && ret;
+			}
 		}
 		return ret;
 	}

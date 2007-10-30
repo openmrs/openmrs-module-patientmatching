@@ -77,6 +77,12 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 			Patient to_match = (Patient)args[0];
 			String method_name = invocation.getMethod().getName();
 			
+			// check to see if connectiong to link_db needs to be made
+			if(method_name.equals(PatientMatchingActivator.CREATE_METHOD) ||
+					method_name.equals(PatientMatchingActivator.UPDATE_METHOD)){
+				link_db.connect();
+			}
+			
 			if(method_name.equals(PatientMatchingActivator.CREATE_METHOD)){
 				log.debug("Trying to add patient to link table");
 				if(o instanceof Patient){
@@ -96,8 +102,10 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 				}
 			} else if(method_name.equals(PatientMatchingActivator.FIND_METHOD)){
 				try{
+					//matcher.connectReaders();
 					Record r = PatientMatchingActivator.patientToRecord(to_match);
 					MatchResult mr = matcher.findBestMatch(r);
+					//matcher.closeReaders();
 					if(mr != null){
 						Record rec_match = mr.getRecord2();
 						log.info("Found a best match - score: " + mr.getScore() + "\tTprob: " + mr.getTrueProbability() + "\tFprob: " + mr.getFalseProbability() + "\tSens: " + mr.getSensitivity() + "\tSpec: " + mr.getSpecificity());
@@ -136,6 +144,7 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 				
 				
 			}
+			link_db.disconnect();
 		}
 		
 		return o;
