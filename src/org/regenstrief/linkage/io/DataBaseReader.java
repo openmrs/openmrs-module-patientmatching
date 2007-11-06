@@ -22,7 +22,10 @@ public class DataBaseReader extends DataSourceReader {
 	protected String driver, url, user, passwd, query;
 	protected Connection db;
 	protected ResultSet data;
-	protected boolean queried;
+	protected PreparedStatement pstmt;
+	protected boolean ready;
+	protected boolean read_record;
+	protected Record next_record;
 	
 	// columns queried from the data base
 	List<DataColumn> incl_cols;
@@ -35,7 +38,7 @@ public class DataBaseReader extends DataSourceReader {
 	 */
 	public DataBaseReader(LinkDataSource lds){
 		super(lds);
-		queried = false;
+		ready = false;
 		
 		// parse the string in access variable to get driver and URL info
 		// then create DB connection
@@ -70,11 +73,21 @@ public class DataBaseReader extends DataSourceReader {
 	 * and this class's constructur must be called before the object is assigned in the subclass.  
 	 */
 	protected void getResultSet(){
-		queried = true;
+		
 		try{
-			query = constructQuery();
-			Statement stmt = db.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
-			data = stmt.executeQuery(query);
+			if(!ready){
+				ready = true;
+				query = constructQuery();
+				pstmt = db.prepareStatement(query,ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
+			}
+			
+			data = pstmt.executeQuery();
+			if(data.next()){
+				parseDataBaseRow();
+			} else {
+				next_record = null;
+			}
+			
 		}
 		catch(SQLException se){
 			db = null;
@@ -106,44 +119,75 @@ public class DataBaseReader extends DataSourceReader {
 	}
 	
 	public Record nextRecord() {
-		if(!queried){
+		if(!ready){
 			getResultSet();
 		}
-		try{
-			if(data.next()){
-				Record ret = new Record();
-				for(int i = 0; i < incl_cols.size(); i++){
-					String demographic = data.getString(i+1);
-					ret.addDemographic(incl_cols.get(i).getName(), demographic);
+		if(!read_record){
+			read_record = true;
+			return next_record;
+		} else {
+			try{
+				if(data.next()){
+					parseDataBaseRow();
+					read_record = true;
+					return next_record;
+				} else {
+					return null;
 				}
-				return ret;
-			} else {
+			}
+			catch(SQLException sqle){
 				return null;
+			}
+			
+		}
+		
+	}
+	
+	protected void parseDataBaseRow(){
+		try{
+			next_record = new Record();
+			for(int i = 0; i < incl_cols.size(); i++){
+				String demographic = data.getString(i+1);
+				next_record.addDemographic(incl_cols.get(i).getName(), demographic);
 			}
 		}
 		catch(SQLException sqle){
-			return null;
+			next_record = null;
 		}
 		
 	}
 	
 	public boolean hasNextRecord() {
-		if(!queried){
+		if(!ready){
 			getResultSet();
 		}
+		
 		try{
 			if(db != null){
-				return !data.isLast();
-			} else {
-				return false;
+				if(read_record){
+					boolean has_next = data.next();
+					if(has_next){
+						parseDataBaseRow();
+						read_record = false;
+						return true;
+					}
+				} else {
+					return next_record != null;
+				}
+				
 			}
+			return false;
 		}
 		catch(SQLException sqle){
 			return false;
 		}
+		
+		
 	}
 
 	public boolean reset(){
+		next_record = null;
+		read_record = false;
 		try{
 			if(data != null){
 				data.close();
@@ -159,6 +203,8 @@ public class DataBaseReader extends DataSourceReader {
 	public boolean connect(){
 		try{
 			db = DriverManager.getConnection(url, user, passwd);
+			db.setReadOnly(true);
+			ready = false;
 			return true;
 		}
 		catch(SQLException sqle){

@@ -129,7 +129,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		} else {
 			log.warn("Error parsing config file and creating linkage objects");
 		}
-		//LinkDBConnections.getInstance().getFinder().closeReaders();
+		
 	}
 	
 	/**
@@ -168,7 +168,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 				}
 			}
 		}
-		link_db.disconnect();
+		
 	}
 	
 	public boolean matches(Method method, Class targetClass) {
@@ -186,9 +186,6 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	@Override
 	public Advice getAdvice(){
 		log.debug("Returning new advice object from " + this);
-		//LinkDBConnections ldb_con = LinkDBConnections.getInstance();
-		//MatchFinder matcher = ldb_con.getFinder();
-		//RecordDBManager link_db = ldb_con.getRecDBManager();
 		return new PatientMatchingAdvice();
 	}
 	

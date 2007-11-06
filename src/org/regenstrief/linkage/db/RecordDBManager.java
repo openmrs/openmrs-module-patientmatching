@@ -72,7 +72,9 @@ public class RecordDBManager extends DBManager {
 		try{
 			PreparedStatement ps = db.prepareStatement(query);
 			ps.setString(1, value);
-			return executeUpdate(ps);
+			boolean ret = executeUpdate(ps);
+			ps.close();
+			return ret;
 		}
 		catch(SQLException sqle){
 			return false;
@@ -130,7 +132,9 @@ public class RecordDBManager extends DBManager {
 				String value = vals.get(i-1);
 				ps.setString(i, value);
 			}
-			return executeUpdate(ps);
+			boolean ret = executeUpdate(ps);
+			ps.close();
+			return ret;
 		}
 		catch(SQLException sqle){
 			return false;
@@ -188,7 +192,9 @@ public class RecordDBManager extends DBManager {
 				String value = vals.get(i-1);
 				ps.setString(i, value);
 			}
-			return executeUpdate(ps);
+			boolean ret = executeUpdate(ps);
+			ps.close();
+			return ret;
 		}
 		catch(SQLException sqle){
 			return false;

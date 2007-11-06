@@ -107,7 +107,7 @@ public class LinkDBConnections {
 			return false;
 		}
 		//log.debug("file parsed");
-		//return link_db.connect();
-		return true;
+		return link_db.connect();
+		
 	}
 }
