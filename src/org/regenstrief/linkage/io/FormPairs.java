@@ -7,6 +7,9 @@ package org.regenstrief.linkage.io;
  */
 
 import java.util.*;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.regenstrief.linkage.util.*;
 import org.regenstrief.linkage.*;
 
@@ -31,7 +34,6 @@ public class FormPairs {
 	private static final int GREATER_THAN = 1;
 	private static final int EQUAL = 0;
 	private static final int LESS_THAN = -1;
-	
 	
 	/**
 	 * 
@@ -83,7 +85,13 @@ public class FormPairs {
 			//dsr1_rec = dsr1.nextRecord();
 			//System.out.println(c1++);
 		}
-		Record dsr2_rec = dsr2_buffer.get(buffer_read_index++);
+		
+		Record dsr2_rec;
+		if(dsr2_buffer.size() == 0){
+			dsr2_rec = null;
+		} else {
+			dsr2_rec = dsr2_buffer.get(buffer_read_index++);
+		}
 		
 		if(dsr1_rec == null || dsr2_rec == null){
 			return null;

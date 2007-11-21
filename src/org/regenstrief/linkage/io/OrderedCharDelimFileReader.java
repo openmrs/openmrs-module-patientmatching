@@ -27,7 +27,7 @@ import org.regenstrief.linkage.util.MatchingConfig;
  * which is then read.
  *
  */
-public class OrderedCharDelimFileReader extends CharDelimFileReader {
+public class OrderedCharDelimFileReader extends CharDelimFileReader implements OrderedDataSourceReader{
 	
 	private MatchingConfig mc;
 	private File sorted_file;

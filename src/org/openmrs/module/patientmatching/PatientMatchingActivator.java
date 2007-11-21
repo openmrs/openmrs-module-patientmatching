@@ -84,7 +84,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	
 	private Log log = LogFactory.getLog(this.getClass());
 	public static String FILE_LOG = "patient_matching_file_log";
-	public static String LOG_FILE_NAME = "link_module.log";
+	public static String LOG_FILE_NAME = "log/link_module.log";
 	private Logger file_log = Logger.getLogger(FILE_LOG);
 	
 	
@@ -96,7 +96,6 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		LinkDBConnections ldb_con = LinkDBConnections.getInstance();
 		RecordDBManager link_db = ldb_con.getRecDBManager();
 		link_db.disconnect();
-		ldb_con.getFinder().closeReaders();
 		Context.removeProxyPrivilege(PRIVILEGE);
 		Context.removeProxyPrivilege(PRIVILEGE2);
 	}

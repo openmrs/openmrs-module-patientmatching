@@ -79,10 +79,6 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 				if(o instanceof Patient){
 					Patient just_added = (Patient)o;
 					if(link_db.addRecordToDB(PatientMatchingActivator.patientToRecord(just_added))){
-						// need to reset the reader so data base update is found
-						if(!matcher.resetReader()){
-							log.warn("LinkDBManager object successfully added patient, but database reader not reset; next read might not find latest update");
-						}
 						if(log.isDebugEnabled()){
 							log.debug("LinkDBManager object successfully added patient");
 						}
@@ -93,7 +89,6 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 				}
 			} else if(method_name.equals(PatientMatchingActivator.FIND_METHOD)){
 				try{
-					matcher.resetReader();
 					Record r = PatientMatchingActivator.patientToRecord(to_match);
 					MatchResult mr = matcher.findBestMatch(r);
 					if(mr != null){
@@ -119,9 +114,6 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 					
 					Record ju = PatientMatchingActivator.patientToRecord(just_updated);
 					if(link_db.updateRecord(ju, PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC)){
-						if(!matcher.resetReader()){
-							log.warn("LinkDBManager object successfully updated patient, but database reader not reset; next read might not find latest update");
-						}
 						if(log.isDebugEnabled()){
 							log.debug("Record for patient " + just_updated.getPatientId() + " updated in database");
 						}

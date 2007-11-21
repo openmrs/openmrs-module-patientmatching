@@ -16,6 +16,7 @@ import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.analysis.RecordFieldAnalyzer;
 import org.regenstrief.linkage.analysis.UnMatchableRecordException;
 import org.regenstrief.linkage.db.RecordDBManager;
+import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.RecMatchConfig;
 import org.regenstrief.linkage.util.XMLTranslator;
@@ -44,7 +45,7 @@ public class DBTest1 {
 			MatchingConfig test_mc = rmc.getMatchingConfigs().get(0);
 			RecordDBManager ldbm = new RecordDBManager(rmc.getLinkDataSource1());
 			
-			MatchFinder mf = new MatchFinder(rmc.getLinkDataSource1(), rmc.getMatchingConfigs(), new RecordFieldAnalyzer(),MatchFinder.Scoring.BLOCKING_EXCLUSIVE);
+			MatchFinder mf = new MatchFinder(rmc.getLinkDataSource1(), new ReaderProvider(), rmc.getMatchingConfigs(), new RecordFieldAnalyzer(),MatchFinder.Scoring.BLOCKING_EXCLUSIVE);
 			Record test_find = new Record();
 			test_find.addDemographic("fn", "test");
 			test_find.addDemographic("ln", "patient");

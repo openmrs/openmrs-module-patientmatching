@@ -20,7 +20,7 @@ import java.util.*;
  *
  */
 
-public class VectorReader extends DataSourceReader {
+public class VectorReader extends DataSourceReader implements OrderedDataSourceReader{
 	
 	private boolean accessed;
 	private Record data;
@@ -101,6 +101,11 @@ public class VectorReader extends DataSourceReader {
 	
 	public boolean reset() {
 		accessed = false;
+		return true;
+	}
+	
+	public boolean close(){
+		data = null;
 		return true;
 	}
 

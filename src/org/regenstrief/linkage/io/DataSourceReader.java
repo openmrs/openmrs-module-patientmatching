@@ -55,5 +55,14 @@ public abstract class DataSourceReader {
 	 * @return	true if the reset was successful, false if otherwise
 	 */
 	public abstract boolean reset();
+	
+	/**
+	 * Method releases resources held by the reader, such as
+	 * file handles or database connections.  As written, once closed
+	 * a DataSourceReader cannot be reopened.
+	 * 
+	 * @return
+	 */
+	public abstract boolean close();
 
 }

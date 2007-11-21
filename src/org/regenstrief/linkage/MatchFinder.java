@@ -19,10 +19,9 @@ import java.util.List;
 
 import org.regenstrief.linkage.analysis.RecordFieldAnalyzer;
 import org.regenstrief.linkage.analysis.UnMatchableRecordException;
-import org.regenstrief.linkage.io.DataBaseReader;
 import org.regenstrief.linkage.io.DataSourceReader;
-import org.regenstrief.linkage.io.OrderedCharDelimFileReader;
-import org.regenstrief.linkage.io.OrderedDataBaseReader;
+import org.regenstrief.linkage.io.FormPairs;
+import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.io.VectorReader;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
@@ -30,19 +29,22 @@ import org.regenstrief.linkage.util.ScorePair;
 
 public class MatchFinder {
 	LinkDataSource matching_database;
-	List<DataSourceReader> database_readers;
-	Hashtable<DataSourceReader,MatchingConfig> analytics_associations;
+	ReaderProvider rp;
+	//List<DataSourceReader> database_readers;
+	//Hashtable<DataSourceReader,MatchingConfig> analytics_associations;
 	Hashtable<MatchingConfig,ScorePair> analytics_scoring;
 	List<MatchingConfig> analytics;
 	Hashtable<String, Integer> type_table;
 	RecordFieldAnalyzer record_analyzer;
 	Scoring scoring;
 	
+	
 	public enum Scoring {BLOCKING_EXCLUSIVE, BLOCKING_INCLUSIVE};
 	
-	public MatchFinder(LinkDataSource matching_database, List<MatchingConfig> analytics, RecordFieldAnalyzer record_analyzer, Scoring scoring){
+	public MatchFinder(LinkDataSource matching_database, ReaderProvider rp, List<MatchingConfig> analytics, RecordFieldAnalyzer record_analyzer, Scoring scoring){
 		this.matching_database = matching_database;
 		this.analytics = analytics;
+		this.rp = rp;
 		
 		initAnalytics(analytics);
 		
@@ -52,9 +54,10 @@ public class MatchFinder {
 		
 	}
 	
-	public MatchFinder(LinkDataSource matching_database,List<MatchingConfig> analytics, Scoring scoring){
+	public MatchFinder(LinkDataSource matching_database, ReaderProvider rp, List<MatchingConfig> analytics, Scoring scoring){
 		this.matching_database = matching_database;
 		this.analytics = analytics;
+		this.rp = rp;
 		
 		initAnalytics(analytics);
 		
@@ -66,30 +69,15 @@ public class MatchFinder {
 	/*
 	 * Method initializes data structures holding information derived
 	 * from the MatchingConfig objects, such as the ordered readers 
-	 * and ScorePair hashtable
+	 * and ScorePair Hash table
 	 */
 	private void initAnalytics(List<MatchingConfig> analytics){
-		analytics_associations = new Hashtable<DataSourceReader,MatchingConfig>();
 		analytics_scoring = new Hashtable<MatchingConfig,ScorePair>();
-		database_readers = new ArrayList<DataSourceReader>();
+		//database_readers = new ArrayList<DataSourceReader>();
 		Iterator<MatchingConfig> it = analytics.iterator();
 		while(it.hasNext()){
 			MatchingConfig mc = it.next();
 			analytics_scoring.put(mc, new ScorePair(mc));
-			DataSourceReader new_datasource_reader;
-			if(matching_database.getType().equals("CharDelimFile")){
-				new_datasource_reader = new OrderedCharDelimFileReader(matching_database, mc);
-				database_readers.add(new_datasource_reader);
-				analytics_associations.put(new_datasource_reader, mc);
-			} else if(matching_database.getType().equals("DataBase")){
-				new_datasource_reader = new OrderedDataBaseReader(matching_database, mc);
-				database_readers.add(new_datasource_reader);
-				analytics_associations.put(new_datasource_reader, mc);
-			} else if(matching_database.getType().equals("Vector")){
-				new_datasource_reader = new VectorReader(matching_database, mc);
-				database_readers.add(new_datasource_reader);
-				analytics_associations.put(new_datasource_reader, mc);
-			}
 		}
 	}
 	
@@ -113,18 +101,23 @@ public class MatchFinder {
 		ArrayList<MatchResult> ret = new ArrayList<MatchResult>();
 		
 		// iterate through the database_readers and get possible matches
-		Iterator<DataSourceReader> it = database_readers.iterator();
+		Iterator<MatchingConfig> it = analytics.iterator();
+		
 		while(it.hasNext()){
-			DataSourceReader reader = it.next();
-			MatchingConfig mc = analytics_associations.get(reader);
+			MatchingConfig mc = it.next();
+			
+			// get the reader to use with this matching config
+			DataSourceReader reader = (DataSourceReader)rp.getReader(matching_database, mc, test);
+			//DataSourceReader reader = (DataSourceReader)rp.getReader(matching_database, mc);
+			
 			List<MatchResult> mrs = getMatches(test_reader, reader, mc, type_table);
 			
 			if(mrs != null){
 				ret.addAll(mrs);
 			}
 			
-			// reset database reader
-			reader.reset();
+			// reset or close database reader
+			reader.close();
 			test_reader.reset();
 		}
 		test_reader = null;
@@ -134,8 +127,8 @@ public class MatchFinder {
 	/*
 	 * Method returns a list of Matches that meet the given MatchingConfig score_threshold
 	 */
-	private synchronized List<MatchResult> getMatches(VectorReader test, DataSourceReader database_reader, MatchingConfig analytics, Hashtable<String, Integer> type_table){
-		org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(test, database_reader, analytics, type_table);
+	protected synchronized List<MatchResult> getMatches(VectorReader test, DataSourceReader database_reader, MatchingConfig analytics, Hashtable<String, Integer> type_table){
+		FormPairs fp = new FormPairs(test, database_reader, analytics, type_table);
 		List<MatchResult> candidates = new ArrayList<MatchResult>();
 		
 		Record[] pair;
@@ -145,7 +138,10 @@ public class MatchFinder {
 			//analytics_scoring.put(analytics, sp);
 			return null;
 		}
+		int pair_count = 0;
 		while((pair = fp.getNextRecordPair()) != null){
+			pair_count++;
+			
 			Record r1 = pair[0];
 			Record r2 = pair[1];
 			MatchResult mr = sp.scorePair(r1, r2);
@@ -153,6 +149,7 @@ public class MatchFinder {
 				candidates.add(sp.scorePair(r1, r2));
 			}
 		}
+		
 		
 		if(candidates.size() > 0){
 			sortMatchResultList(candidates);
@@ -204,7 +201,7 @@ public class MatchFinder {
 	 * this requires Reverse order.  Scoring including blocking fields
 	 * lists mr2 as the first argument to the Double.compare method to achieve this 
 	 */
-	private void sortMatchResultList(List<MatchResult> matches){
+	protected void sortMatchResultList(List<MatchResult> matches){
 		if(scoring == Scoring.BLOCKING_EXCLUSIVE){
 			Collections.sort(matches, Collections.reverseOrder());
 		}
@@ -255,46 +252,5 @@ public class MatchFinder {
 			matches.subList(limit, matches.size()).clear();
 		}
 		return matches;
-	}
-	
-	/**
-	 * Method resets the reader the match finder uses to scan for records.  This would be needed if
-	 * the data source has been modified.
-	 * 
-	 * @return	true if the reader's reset() method succeeded, false if it failed
-	 */
-	public boolean resetReader(){
-		Iterator<DataSourceReader> it = database_readers.iterator();
-		boolean ret = true;
-		while(it.hasNext()){
-			ret = it.next().reset() && ret;
-		}
-		return ret;
-	}
-	
-	public boolean closeReaders(){
-		Iterator<DataSourceReader> it = database_readers.iterator();
-		boolean ret = true;
-		while(it.hasNext()){
-			DataSourceReader dsr = it.next();
-			if(dsr instanceof DataBaseReader){
-				DataBaseReader dbr = (DataBaseReader)dsr;
-				ret = dbr.disconnect() && ret;
-			}
-		}
-		return ret;
-	}
-	
-	public boolean connectReaders(){
-		Iterator<DataSourceReader> it = database_readers.iterator();
-		boolean ret = true;
-		while(it.hasNext()){
-			DataSourceReader dsr = it.next();
-			if(dsr instanceof DataBaseReader){
-				DataBaseReader dbr = (DataBaseReader)dsr;
-				ret = dbr.connect() && ret;
-			}
-		}
-		return ret;
 	}
 }

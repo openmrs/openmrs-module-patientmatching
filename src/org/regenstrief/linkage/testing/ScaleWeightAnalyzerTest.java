@@ -15,6 +15,7 @@ import org.regenstrief.linkage.analysis.ScaleWeightModifier;
 import org.regenstrief.linkage.io.DataBaseReader;
 import org.regenstrief.linkage.io.DataSourceReader;
 import org.regenstrief.linkage.io.OrderedCharDelimFileReader;
+import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.RecMatchConfig;
@@ -45,6 +46,7 @@ public class ScaleWeightAnalyzerTest {
 			// Retrieve data sources for easier access
 			LinkDataSource lds1 = rmc.getLinkDataSource1();
 			LinkDataSource lds2 = rmc.getLinkDataSource2();
+			ReaderProvider rp = new ReaderProvider();
 
 			for(MatchingConfig mc_test : rmc) {
 
@@ -53,13 +55,13 @@ public class ScaleWeightAnalyzerTest {
 				DataSourceReader dsr1, dsr2;				
 				// create readers and a FormPairs object
 				if(lds1.getType().equals("DataBase")) {
-					dsr1 = new DataBaseReader(lds1);
+					dsr1 = (DataSourceReader)rp.getReader(lds1);
 				} else {
 					dsr1 = new OrderedCharDelimFileReader(lds1, mc_test);
 				}
 
 				if(lds2.getType().equals("DataBase")) {
-					dsr2 = new DataBaseReader(lds2);
+					dsr2 = (DataSourceReader)rp.getReader(lds2);
 				} else {
 					dsr2 = new OrderedCharDelimFileReader(rmc.getLinkDataSource2(), mc_test);;
 				}

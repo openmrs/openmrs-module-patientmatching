@@ -36,33 +36,10 @@ public class DataBaseReader extends DataSourceReader {
 	 * 
 	 * @param lds	contains the database connection information
 	 */
-	public DataBaseReader(LinkDataSource lds){
+	public DataBaseReader(LinkDataSource lds, Connection db){
 		super(lds);
+		this.db = db;
 		ready = false;
-		
-		// parse the string in access variable to get driver and URL info
-		// then create DB connection
-		// decide how to handle different failures later
-		try{
-			String[] access = lds.getAccess().split(",");
-			driver = access[0];
-			url = access[1];
-			user = access[2];
-			passwd = access[3];
-			
-			Class.forName(driver);
-			db = DriverManager.getConnection(url, user, passwd);
-			db.setReadOnly(true);
-		}
-		catch(ArrayIndexOutOfBoundsException aioobe){
-			db = null;
-		}
-		catch(ClassNotFoundException cnfe){
-			db = null;
-		}
-		catch(SQLException se){
-			db = null;
-		}
 	}
 	
 	/*
@@ -200,26 +177,20 @@ public class DataBaseReader extends DataSourceReader {
 		}
 	}
 	
-	public boolean connect(){
+	public boolean close(){
 		try{
-			db = DriverManager.getConnection(url, user, passwd);
-			db.setReadOnly(true);
-			ready = false;
+			if(pstmt != null){
+				pstmt.clearParameters();
+				pstmt.close();
+			}
+			
+			if(db != null){
+				db.close();
+			}
 			return true;
 		}
 		catch(SQLException sqle){
 			return false;
 		}
-	}
-	
-	public boolean disconnect(){
-		try{
-			db.close();
-			return true;
-		}
-		catch(SQLException sqle){
-			return false;
-		}
-		
 	}
 }

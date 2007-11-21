@@ -149,4 +149,8 @@ public class CharDelimFileReader extends DataSourceReader{
 		}
 		
 	}
+	
+	public boolean close(){
+		return true;
+	}
 }

@@ -21,7 +21,7 @@ public class DataBaseSWAnalyzer extends SWAnalyzer {
 	
 	public DataBaseSWAnalyzer(LinkDataSource lds, String access) {
 		super(access);
-		reader = new DataBaseReader(lds);
+		reader = new DataBaseReader(lds, null);
 		datasource_id = reader.data_source.getDataSource_ID();
 		db_reader = (DataBaseReader) reader;
 		data_table = lds.getName();

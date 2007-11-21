@@ -10,6 +10,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.regenstrief.linkage.MatchFinder;
 import org.regenstrief.linkage.analysis.RecordFieldAnalyzer;
 import org.regenstrief.linkage.db.RecordDBManager;
+import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.RecMatchConfig;
 import org.regenstrief.linkage.util.XMLTranslator;
 import org.w3c.dom.Document;
@@ -26,6 +27,7 @@ import org.xml.sax.SAXException;
 public class LinkDBConnections {
 	private MatchFinder finder;
 	private RecordDBManager link_db;
+	private ReaderProvider rp;
 	
 	private final static LinkDBConnections INSTANCE = new LinkDBConnections();
 	
@@ -33,6 +35,7 @@ public class LinkDBConnections {
 		if(!parseConfig(new File(PatientMatchingActivator.CONFIG_FILE))){
 			finder = null;
 			link_db = null;
+			rp = null;
 		}
 	};
 	
@@ -65,6 +68,14 @@ public class LinkDBConnections {
 	}
 	
 	/**
+	 * 
+	 * @return	the object used to get DataSourceReader objects for a LinkDataSource
+	 */
+	public ReaderProvider getReaderProvider(){
+		return rp;
+	}
+	
+	/**
 	 * Method parses a configuration file.  Program assumes that the information under
 	 * the first datasource tag in the file is the connection information for the 
 	 * record linkage table.  The columns to be used for matching and the string comparators
@@ -88,7 +99,8 @@ public class LinkDBConnections {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.parse(config);
 			RecMatchConfig rmc = XMLTranslator.createRecMatchConfig(doc);
-			finder = new MatchFinder(rmc.getLinkDataSource1(), rmc.getMatchingConfigs(), new RecordFieldAnalyzer(),MatchFinder.Scoring.BLOCKING_INCLUSIVE);
+			rp = new ReaderProvider();
+			finder = new MatchFinder(rmc.getLinkDataSource1(), rp, rmc.getMatchingConfigs(), new RecordFieldAnalyzer(),MatchFinder.Scoring.BLOCKING_INCLUSIVE);
 			link_db = new RecordDBManager(rmc.getLinkDataSource1());
 		}
 		catch(ParserConfigurationException pce){

@@ -1,5 +1,6 @@
 package org.regenstrief.linkage.io;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -15,9 +16,9 @@ import org.regenstrief.linkage.util.MatchingConfig;
  *
  */
 
-public class OrderedDataBaseReader extends DataBaseReader {
+public class OrderedDataBaseReader extends DataBaseReader  implements OrderedDataSourceReader{
 	
-	private MatchingConfig mc;
+	protected MatchingConfig mc;
 	
 	/**
 	 * Constructs a reader, but returns the Records in order specified by the
@@ -26,11 +27,15 @@ public class OrderedDataBaseReader extends DataBaseReader {
 	 * @param lds	the description of the data
 	 * @param mc	information on the record linkage options, containing blocking variable order (sort order)
 	 */
-	public OrderedDataBaseReader(LinkDataSource lds, MatchingConfig mc){
-		super(lds);
+	public OrderedDataBaseReader(LinkDataSource lds, Connection db, MatchingConfig mc){
+		super(lds, db);
 		this.mc = mc;
 	}
 	
+	/**
+	 * Overridden method adds an "ORDER BY" clause to the SQL to return the
+	 * records ordered by blocking column.
+	 */
 	public String constructQuery(){
 		String query = new String("SELECT ");
 		incl_cols = new ArrayList<DataColumn>();
