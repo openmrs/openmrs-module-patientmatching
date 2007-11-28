@@ -18,6 +18,7 @@ import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.analysis.VectorTable;
 import org.regenstrief.linkage.io.DataSourceReader;
 import org.regenstrief.linkage.io.OrderedCharDelimFileReader;
+import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.RecMatchConfig;
@@ -60,8 +61,16 @@ public class LinkageTest {
 			System.out.println(vt);
 			
 			// create readers and a FormPairs object
+			/* old way of making readers, should still be valid
 			DataSourceReader dsr1 = new OrderedCharDelimFileReader(rmc.getLinkDataSource1(), mc_test);
 			DataSourceReader dsr2 = new OrderedCharDelimFileReader(rmc.getLinkDataSource2(), mc_test);
+			*/
+			
+			// new way of making readers
+			ReaderProvider rp = new ReaderProvider();
+			// ugly casting needed until io package object/interface hierarchy is improved or updated
+			DataSourceReader dsr1 = (DataSourceReader)rp.getReader(rmc.getLinkDataSource1(), mc_test);
+			DataSourceReader dsr2 = (DataSourceReader)rp.getReader(rmc.getLinkDataSource1(), mc_test);
 			org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(dsr1, dsr2, mc_test, type_table);
 			
 			// iterate through the Record pairs and print the score
