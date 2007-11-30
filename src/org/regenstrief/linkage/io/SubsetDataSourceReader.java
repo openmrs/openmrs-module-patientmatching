@@ -8,6 +8,6 @@ package org.regenstrief.linkage.io;
  *
  */
 
-public interface SubsetDataSourceReader{
+public interface SubsetDataSourceReader extends OrderedDataSourceReader{
 	
 }

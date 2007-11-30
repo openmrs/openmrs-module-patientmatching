@@ -87,7 +87,7 @@ public class ScaleWeightAnalyzerTest {
 
 				if(!mc_test.getName().equals("default")) {
 					// Form pairs should come after analysis, because it modifies next_record of the readers
-					org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(dsr1, dsr2, mc_test, type_table);
+					org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(rp.getReader(rmc.getLinkDataSource1(), mc_test), rp.getReader(rmc.getLinkDataSource2(), mc_test), mc_test, type_table);
 
 					// iterate through the Record pairs and print the score
 					Record[] pair;

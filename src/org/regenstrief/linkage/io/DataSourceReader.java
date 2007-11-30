@@ -5,36 +5,17 @@ package org.regenstrief.linkage.io;
  * on blocking columns defined in the MatchingConfig
  */
 
-import org.regenstrief.linkage.util.*;
-import org.regenstrief.linkage.*;
-import java.util.*;
+import org.regenstrief.linkage.Record;
 
-public abstract class DataSourceReader {
+public interface DataSourceReader {
 	
-	public LinkDataSource data_source;
-	
-	public DataSourceReader(LinkDataSource lds){
-		this.data_source = lds;
-	}
 	
 	/**
 	 * 
 	 * @return	the number of fields in the Record that is included in this record linking
 	 */
-	public int getRecordSize(){
-		int ret = 0;
-		List<DataColumn> columns = data_source.getDataColumns();
-		Iterator<DataColumn> it = columns.iterator();
-		while(it.hasNext()){
-			DataColumn dc = it.next();
-			if(!dc.getName().equals(DataColumn.INCLUDE_NA)){
-				ret++;
-			}
-		}
-		return ret;
-	}
+	public int getRecordSize();
 	
-
 	
 	/**
 	 * 

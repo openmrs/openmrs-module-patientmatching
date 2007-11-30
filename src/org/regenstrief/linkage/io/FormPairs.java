@@ -6,12 +6,13 @@ package org.regenstrief.linkage.io;
  * give records sorted according to blocking order.
  */
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.regenstrief.linkage.util.*;
-import org.regenstrief.linkage.*;
+import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.util.ComparisonException;
+import org.regenstrief.linkage.util.MatchingConfig;
 
 /**
  * Class makes pairs between two DataSourceReaders.  The expectation
@@ -22,8 +23,8 @@ import org.regenstrief.linkage.*;
  *
  */
 public class FormPairs {
-	private DataSourceReader dsr1;
-	private DataSourceReader dsr2;
+	private OrderedDataSourceReader dsr1;
+	private OrderedDataSourceReader dsr2;
 	private MatchingConfig mc;
 	private Hashtable<String,Integer> type_table;
 	
@@ -43,7 +44,7 @@ public class FormPairs {
 	 * @param mc	stores information on blocking variables
 	 * @param type_table	indexes Record field names and holds what type (String or numeric) of data they are
 	 */
-	public FormPairs(DataSourceReader dsr1, DataSourceReader dsr2, MatchingConfig mc, Hashtable<String,Integer> type_table){
+	public FormPairs(OrderedDataSourceReader dsr1, OrderedDataSourceReader dsr2, MatchingConfig mc, Hashtable<String,Integer> type_table){
 		this.dsr1 = dsr1;
 		this.dsr2 = dsr2;
 		this.type_table = type_table;

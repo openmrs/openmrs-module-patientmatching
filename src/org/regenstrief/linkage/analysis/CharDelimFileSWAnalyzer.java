@@ -21,7 +21,7 @@ public class CharDelimFileSWAnalyzer extends SWAnalyzer {
 	public CharDelimFileSWAnalyzer(LinkDataSource lds, MatchingConfig mc, String access) {
 		super(access);
 		reader = new OrderedCharDelimFileReader(lds, mc);
-		datasource_id = reader.data_source.getDataSource_ID();
+		datasource_id = lds.getDataSource_ID();
 	}
 	
 	public void analyzeTokenFrequencies(DataColumn target_column) {

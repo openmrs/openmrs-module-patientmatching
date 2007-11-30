@@ -8,6 +8,6 @@ package org.regenstrief.linkage.io;
  *
  */
 
-public interface OrderedDataSourceReader{
+public interface OrderedDataSourceReader extends DataSourceReader{
 
 }

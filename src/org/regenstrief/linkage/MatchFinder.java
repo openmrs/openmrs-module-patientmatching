@@ -21,6 +21,7 @@ import org.regenstrief.linkage.analysis.RecordFieldAnalyzer;
 import org.regenstrief.linkage.analysis.UnMatchableRecordException;
 import org.regenstrief.linkage.io.DataSourceReader;
 import org.regenstrief.linkage.io.FormPairs;
+import org.regenstrief.linkage.io.OrderedDataSourceReader;
 import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.io.VectorReader;
 import org.regenstrief.linkage.util.LinkDataSource;
@@ -107,7 +108,7 @@ public class MatchFinder {
 			MatchingConfig mc = it.next();
 			
 			// get the reader to use with this matching config
-			DataSourceReader reader = (DataSourceReader)rp.getReader(matching_database, mc, test);
+			OrderedDataSourceReader reader = rp.getReader(matching_database, mc, test);
 			//DataSourceReader reader = (DataSourceReader)rp.getReader(matching_database, mc);
 			
 			List<MatchResult> mrs = getMatches(test_reader, reader, mc, type_table);
@@ -127,7 +128,7 @@ public class MatchFinder {
 	/*
 	 * Method returns a list of Matches that meet the given MatchingConfig score_threshold
 	 */
-	protected synchronized List<MatchResult> getMatches(VectorReader test, DataSourceReader database_reader, MatchingConfig analytics, Hashtable<String, Integer> type_table){
+	protected synchronized List<MatchResult> getMatches(VectorReader test, OrderedDataSourceReader database_reader, MatchingConfig analytics, Hashtable<String, Integer> type_table){
 		FormPairs fp = new FormPairs(test, database_reader, analytics, type_table);
 		List<MatchResult> candidates = new ArrayList<MatchResult>();
 		

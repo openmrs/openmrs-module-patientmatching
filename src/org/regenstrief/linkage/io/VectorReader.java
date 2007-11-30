@@ -20,7 +20,8 @@ import java.util.*;
  *
  */
 
-public class VectorReader extends DataSourceReader implements OrderedDataSourceReader{
+public class VectorReader implements DataSourceReader, OrderedDataSourceReader{
+	private LinkDataSource data_source;
 	
 	private boolean accessed;
 	private Record data;
@@ -34,13 +35,13 @@ public class VectorReader extends DataSourceReader implements OrderedDataSourceR
 	 * @param mc	the MatchingConfigObject to determine sort order
 	 */
 	public VectorReader(LinkDataSource lds, MatchingConfig mc){
-		super(lds);
+		data_source = lds;
 		accessed = false;
 		data = buildRecord(lds);
 	}
 	
 	public VectorReader(LinkDataSource lds){
-		super(lds);
+		data_source = lds;
 		accessed = false;
 		data = buildRecord(lds);
 	}
@@ -52,7 +53,7 @@ public class VectorReader extends DataSourceReader implements OrderedDataSourceR
 	 * @param r	the Record to be returned when nextRecord() is called
 	 */
 	public VectorReader(Record r){
-		super(null);
+		data_source = null;
 		accessed = false;
 		data = r;
 	}

@@ -17,7 +17,8 @@ import java.util.*;
  * The driver class needs to be in the classpath when the program is run.
  *
  */
-public class DataBaseReader extends DataSourceReader {
+public class DataBaseReader implements DataSourceReader {
+	protected LinkDataSource data_source;
 	
 	protected String driver, url, user, passwd, query;
 	protected Connection db;
@@ -37,9 +38,13 @@ public class DataBaseReader extends DataSourceReader {
 	 * @param lds	contains the database connection information
 	 */
 	public DataBaseReader(LinkDataSource lds, Connection db){
-		super(lds);
+		data_source = lds;
 		this.db = db;
 		ready = false;
+	}
+	
+	public int getRecordSize(){
+		return data_source.getIncludeCount();
 	}
 	
 	/*

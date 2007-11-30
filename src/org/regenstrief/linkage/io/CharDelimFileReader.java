@@ -1,12 +1,16 @@
 package org.regenstrief.linkage.io;
 
-import org.regenstrief.linkage.*;
-import org.regenstrief.linkage.util.*;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
+
+import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.util.ColumnSwitcher;
+import org.regenstrief.linkage.util.DataColumn;
+import org.regenstrief.linkage.util.LinkDataSource;
 
 /**
  * Class reads lines from a character delimited file until the end of the file is
@@ -18,7 +22,8 @@ import java.util.Vector;
  *
  */
 
-public class CharDelimFileReader extends DataSourceReader{
+public class CharDelimFileReader implements DataSourceReader{
+	protected LinkDataSource data_source;
 	
 	protected File switched_file;
 	protected BufferedReader file_reader;
@@ -33,7 +38,7 @@ public class CharDelimFileReader extends DataSourceReader{
 	 * @param lds	the LinkDataSource with information of a character delimited file
 	 */
 	public CharDelimFileReader(LinkDataSource lds){
-		super(lds);
+		data_source = lds;
 		
 		File raw_file = new File(lds.getName());
 		switched_file = switchColumns(raw_file);
@@ -47,6 +52,10 @@ public class CharDelimFileReader extends DataSourceReader{
 			file_reader = null;
 			next_record = null;
 		}
+	}
+	
+	public int getRecordSize(){
+		return data_source.getIncludeCount();
 	}
 	
 	/*
