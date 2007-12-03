@@ -1,8 +1,5 @@
 package org.openmrs.module.patientmatching;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Calendar;
@@ -18,7 +15,7 @@ import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.SimpleLayout;
+import org.apache.log4j.PatternLayout;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.PersonAttribute;
@@ -27,7 +24,6 @@ import org.openmrs.api.PatientSetService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.Activator;
 import org.openmrs.module.patientmatching.advice.PatientMatchingAdvice;
-import org.regenstrief.linkage.MatchFinder;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.db.RecordDBManager;
 import org.springframework.aop.Advisor;
@@ -115,7 +111,8 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		file_log.setAdditivity(false);
 		file_log.setLevel((Level)Level.INFO);
 		try{
-			file_log.addAppender(new FileAppender(new SimpleLayout(), LOG_FILE_NAME));
+			file_log.addAppender(new FileAppender(new PatternLayout("[%d{yyyy-MM-dd HH:mm:ss}]%m%n"), LOG_FILE_NAME));
+			
 		}
 		catch(IOException ioe){
 			file_log.addAppender(new ConsoleAppender());

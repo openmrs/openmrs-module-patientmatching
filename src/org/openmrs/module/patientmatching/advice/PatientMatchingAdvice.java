@@ -93,8 +93,9 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 					MatchResult mr = matcher.findBestMatch(r);
 					if(mr != null){
 						Record rec_match = mr.getRecord2();
-						log.info("Found a best match - score: " + mr.getScore() + "\tTprob: " + mr.getTrueProbability() + "\tFprob: " + mr.getFalseProbability() + "\tSens: " + mr.getSensitivity() + "\tSpec: " + mr.getSpecificity());
-						file_log.info("Found a best match - score: " + mr.getScore() + "\tTprob: " + mr.getTrueProbability() + "\tFprob: " + mr.getFalseProbability() + "\tSens: " + mr.getSensitivity() + "\tSpec: " + mr.getSpecificity());
+						String key_demographic = rec_match.getDemographic(PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC);
+						log.info("Match - score: " + mr.getScore() + "\tTprob: " + mr.getTrueProbability() + "\tFprob: " + mr.getFalseProbability() + "\tSens: " + mr.getSensitivity() + "\tSpec: " + mr.getSpecificity());
+						file_log.info("Match with patient " + key_demographic + " - score: " + mr.getScore() + "\tTprob: " + mr.getTrueProbability() + "\tFprob: " + mr.getFalseProbability() + "\tSens: " + mr.getSensitivity() + "\tSpec: " + mr.getSpecificity());
 						Patient patient_match = Context.getPatientService().getPatient(new Integer(rec_match.getDemographic(PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC)));
 						return patient_match;
 					} else {
@@ -102,7 +103,7 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 					}
 				}
 				catch(Exception e){
-					log.warn("Exception when trying to match against link table: " + e.getMessage() + ", returning null");
+					log.warn(e.getClass().toString() + " exception when trying to match against link table: " + e.getMessage() + ", returning null");
 					return o;
 				}
 				
