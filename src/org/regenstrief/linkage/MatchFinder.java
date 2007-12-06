@@ -146,7 +146,7 @@ public class MatchFinder {
 			Record r1 = pair[0];
 			Record r2 = pair[1];
 			MatchResult mr = sp.scorePair(r1, r2);
-			if(mr.getScore() > analytics.getScoreThreshold()){
+			if(mr.getScore() >= analytics.getScoreThreshold()){
 				candidates.add(sp.scorePair(r1, r2));
 			}
 		}
