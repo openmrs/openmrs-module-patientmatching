@@ -100,7 +100,7 @@ public class LinkDBConnections {
 			Document doc = builder.parse(config);
 			RecMatchConfig rmc = XMLTranslator.createRecMatchConfig(doc);
 			rp = new ReaderProvider();
-			finder = new MatchFinder(rmc.getLinkDataSource1(), rp, rmc.getMatchingConfigs(), new RecordFieldAnalyzer(),MatchFinder.Scoring.BLOCKING_INCLUSIVE);
+			finder = new MatchFinder(rmc.getLinkDataSource1(), rp, rmc.getMatchingConfigs(), new RecordFieldAnalyzer(),MatchFinder.Scoring.BLOCKING_EXCLUSIVE);
 			link_db = new RecordDBManager(rmc.getLinkDataSource1());
 		}
 		catch(ParserConfigurationException pce){

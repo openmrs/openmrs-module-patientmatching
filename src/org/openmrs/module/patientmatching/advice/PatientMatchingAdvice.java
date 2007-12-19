@@ -12,6 +12,7 @@ import org.openmrs.module.patientmatching.PatientMatchingActivator;
 import org.regenstrief.linkage.MatchFinder;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.analysis.UnMatchableRecordException;
 import org.regenstrief.linkage.db.RecordDBManager;
 
 /**
@@ -93,17 +94,26 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 					MatchResult mr = matcher.findBestMatch(r);
 					if(mr != null){
 						Record rec_match = mr.getRecord2();
+						String which_mc = matcher.getBlockingRunName();
 						String key_demographic = rec_match.getDemographic(PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC);
 						log.info("Match - score: " + mr.getScore() + "\tTprob: " + mr.getTrueProbability() + "\tFprob: " + mr.getFalseProbability() + "\tSens: " + mr.getSensitivity() + "\tSpec: " + mr.getSpecificity());
-						file_log.info("Match with patient " + key_demographic + " - score: " + mr.getScore() + "\tTprob: " + mr.getTrueProbability() + "\tFprob: " + mr.getFalseProbability() + "\tSens: " + mr.getSensitivity() + "\tSpec: " + mr.getSpecificity());
+						file_log.info("Match with patient " + key_demographic + " - score: " + mr.getScore() + "\tTprob: " + mr.getTrueProbability() + "\tFprob: " + mr.getFalseProbability() + "\tSens: " + mr.getSensitivity() + "\tSpec: " + mr.getSpecificity() + "\tBlock: " + which_mc);
+						
+						
 						Patient patient_match = Context.getPatientService().getPatient(new Integer(rec_match.getDemographic(PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC)));
 						return patient_match;
 					} else {
+						file_log.info("No match found within module, returning OpenMRS's findPatient result of " + o);
 						return o;
 					}
 				}
+				catch(UnMatchableRecordException umre){
+					Record failed = umre.getRecord();
+					file_log.info("Patient " + failed + " not matchable due to value(s) in demographics");
+					return null;
+				}
 				catch(Exception e){
-					log.warn(e.getClass().toString() + " exception when trying to match against link table: " + e.getMessage() + ", returning null");
+					log.warn(e.getClass().toString() + " exception when trying to match against link table: " + e.getMessage() + ", returning default invocation result");
 					return o;
 				}
 				

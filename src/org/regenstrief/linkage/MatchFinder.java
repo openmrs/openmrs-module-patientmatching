@@ -19,7 +19,6 @@ import java.util.List;
 
 import org.regenstrief.linkage.analysis.RecordFieldAnalyzer;
 import org.regenstrief.linkage.analysis.UnMatchableRecordException;
-import org.regenstrief.linkage.io.DataSourceReader;
 import org.regenstrief.linkage.io.FormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceReader;
 import org.regenstrief.linkage.io.ReaderProvider;
@@ -39,6 +38,8 @@ public class MatchFinder {
 	RecordFieldAnalyzer record_analyzer;
 	Scoring scoring;
 	
+	String last_used_blocking;
+	Hashtable<MatchResult, MatchingConfig> which_mc;
 	
 	public enum Scoring {BLOCKING_EXCLUSIVE, BLOCKING_INCLUSIVE};
 	
@@ -53,6 +54,8 @@ public class MatchFinder {
 		this.record_analyzer = record_analyzer;
 		this.scoring = scoring;
 		
+		last_used_blocking = null;
+		which_mc = new Hashtable<MatchResult, MatchingConfig>();
 	}
 	
 	public MatchFinder(LinkDataSource matching_database, ReaderProvider rp, List<MatchingConfig> analytics, Scoring scoring){
@@ -65,6 +68,9 @@ public class MatchFinder {
 		type_table = matching_database.getTypeTable();
 		record_analyzer = null;
 		this.scoring = scoring;
+		
+		last_used_blocking = null;
+		which_mc = new Hashtable<MatchResult, MatchingConfig>();
 	}
 	
 	/*
@@ -103,6 +109,7 @@ public class MatchFinder {
 		
 		// iterate through the database_readers and get possible matches
 		Iterator<MatchingConfig> it = analytics.iterator();
+		which_mc.clear();
 		
 		while(it.hasNext()){
 			MatchingConfig mc = it.next();
@@ -115,6 +122,13 @@ public class MatchFinder {
 			
 			if(mrs != null){
 				ret.addAll(mrs);
+				
+				// save which MatchResult goes for which MatchConfig
+				Iterator<MatchResult> mr_it = mrs.iterator();
+				while(mr_it.hasNext()){
+					MatchResult mr = mr_it.next();
+					which_mc.put(mr, mc);
+				}
 			}
 			
 			// reset or close database reader
@@ -171,7 +185,9 @@ public class MatchFinder {
 		List<MatchResult> matches = findMatch(test);
 		if(matches != null && matches.size() > 0){
 			sortMatchResultList(matches);
-			return matches.get(0);
+			MatchResult ret = matches.get(0);
+			last_used_blocking = which_mc.get(ret).getName();
+			return ret;
 		}
 		
 		return null;
@@ -253,5 +269,14 @@ public class MatchFinder {
 			matches.subList(limit, matches.size()).clear();
 		}
 		return matches;
+	}
+	
+	/**
+	 * Method added to determine which blocking run was used to determine the match
+	 * 
+	 * @return	the name of the blocking run that was used to return the latest match
+	 */
+	public String getBlockingRunName(){
+		return this.last_used_blocking;
 	}
 }
