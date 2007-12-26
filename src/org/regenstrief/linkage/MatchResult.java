@@ -1,6 +1,8 @@
 package org.regenstrief.linkage;
 
-import java.util.*;
+import java.util.List;
+
+import org.regenstrief.linkage.util.MatchingConfig;
 
 /**
  * Class represents the results of matching two Record objects.
@@ -18,12 +20,13 @@ public class MatchResult implements Comparable{
 	private MatchVector match_vct;
 	private ScoreVector score_vct;
 	private Record r1, r2;
+	private MatchingConfig mc;
 	
 	/**
 	 * Constructor initializes the Hashtable match_table
 	 *
 	 */
-	public MatchResult(double score, double incl_score, double true_prob, double false_prob, double sensitivity, double specificity, MatchVector match_vct, ScoreVector score_vct, Record r1, Record r2){
+	public MatchResult(double score, double incl_score, double true_prob, double false_prob, double sensitivity, double specificity, MatchVector match_vct, ScoreVector score_vct, Record r1, Record r2, MatchingConfig mc){
 		this.score = score;
 		this.incl_score = incl_score;
 		this.true_prob = true_prob;
@@ -32,6 +35,7 @@ public class MatchResult implements Comparable{
 		this.specificity = specificity;
 		this.match_vct = match_vct;
 		this.score_vct = score_vct;
+		this.mc = mc;
 		this.r1 = r1;
 		this.r2 = r2;
 	}
@@ -123,7 +127,16 @@ public class MatchResult implements Comparable{
 	public double getSpecificity(){
 		return specificity;
 	}
-		
+	
+	/**
+	 * Method returns the MatchingConfig that the comparisons were performed with
+	 * 
+	 * @return	the MatchingConfig object used to create the match result
+	 */
+	public MatchingConfig getMatchingConfig(){
+		return mc;
+	}
+	
 	public boolean equals(Object o) throws ClassCastException {
 		if(o == null) {
 			return false;

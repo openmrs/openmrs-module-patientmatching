@@ -87,4 +87,19 @@ public class ScoreVector {
 	public int hashCode(){
 		return Integer.parseInt(this.toString(), 2);
 	}
+	
+	public String toString(){
+		String ret = new String();
+		Iterator<String> it = score_table.keySet().iterator();
+		while(it.hasNext()){
+			String demographic = it.next();
+			double score = score_table.get(demographic);
+			ret += demographic + ": " + score;
+			if(it.hasNext()){
+				ret += "\t";
+			}
+		}
+		
+		return ret;
+	}
 }

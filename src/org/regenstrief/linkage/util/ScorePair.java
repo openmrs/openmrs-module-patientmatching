@@ -10,13 +10,15 @@ package org.regenstrief.linkage.util;
  * - A flag indicating how to establish agreement among fields when one or both fields are null (eg, apply disagreement weight, apply agreement weight, or apply ze
  */
 
-import org.regenstrief.linkage.*;
-import org.regenstrief.linkage.analysis.*;
-import org.regenstrief.linkage.db.ScaleWeightDBManager;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
-//import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
-
-import java.util.*;
+import org.regenstrief.linkage.MatchResult;
+import org.regenstrief.linkage.MatchVector;
+import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.analysis.Modifier;
+import org.regenstrief.linkage.analysis.VectorTable;
 
 public class ScorePair {
 	private VectorTable vt;
@@ -64,7 +66,7 @@ public class ScorePair {
 			mv.setMatch(comparison_demographic, match);
 		}
 
-		MatchResult mr = new MatchResult(vt.getScore(mv),vt.getInclusiveScore(mv),vt.getMatchVectorTrueProbability(mv),vt.getMatchVectorFalseProbability(mv),vt.getSensitivity(mv),vt.getSpecificity(mv),mv,vt.getScoreVector(mv),rec1,rec2);
+		MatchResult mr = new MatchResult(vt.getScore(mv),vt.getInclusiveScore(mv),vt.getMatchVectorTrueProbability(mv),vt.getMatchVectorFalseProbability(mv),vt.getSensitivity(mv),vt.getSpecificity(mv),mv,vt.getScoreVector(mv),rec1,rec2,mc);
 		for(Modifier m : modifiers){
 			m.modifyMatchResult(mr, mc);
 		}

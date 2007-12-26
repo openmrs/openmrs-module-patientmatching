@@ -6,7 +6,7 @@
  	        <!-- Base Module Properties -->
  	        <id>patientmatching</id>
  	        <name>Patient Matching</name>
- 	        <version>1.1.4</version>
+ 	        <version>1.1.5</version>
  	        <package>org.openmrs.module.@MODULE_ID@</package>
  	        <author>James Egg</author>
  	        <description>

@@ -12,6 +12,7 @@ import org.openmrs.module.patientmatching.PatientMatchingActivator;
 import org.regenstrief.linkage.MatchFinder;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.analysis.TwinAnalyzer;
 import org.regenstrief.linkage.analysis.UnMatchableRecordException;
 import org.regenstrief.linkage.db.RecordDBManager;
 
@@ -94,11 +95,21 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 					MatchResult mr = matcher.findBestMatch(r);
 					if(mr != null){
 						Record rec_match = mr.getRecord2();
-						String which_mc = matcher.getBlockingRunName();
+						String which_mc = mr.getMatchingConfig().getName();
 						String key_demographic = rec_match.getDemographic(PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC);
 						log.warn("Match with patient " + key_demographic + " - score: " + mr.getScore() + "\tTprob: " + mr.getTrueProbability() + "\tFprob: " + mr.getFalseProbability() + "\tSens: " + mr.getSensitivity() + "\tSpec: " + mr.getSpecificity() + "\tBlock: " + which_mc);
+						log.warn("Score vector for " + mr.getScore() + ":\t" + mr.getScoreVector());
 						file_log.info("Match with patient " + key_demographic + " - score: " + mr.getScore() + "\tTprob: " + mr.getTrueProbability() + "\tFprob: " + mr.getFalseProbability() + "\tSens: " + mr.getSensitivity() + "\tSpec: " + mr.getSpecificity() + "\tBlock: " + which_mc);
+						file_log.info("Score vector for " + mr.getScore() + ":\t" + mr.getScoreVector());
 						
+						TwinAnalyzer ta = new TwinAnalyzer();
+						boolean are_twins = ta.areTwins(rec_match, r);
+						if(are_twins){
+							// returned pair seem to be twins; return o and log reason
+							log.warn("Match analyzed as being twins, returning default invocation match");
+							file_log.info("Match analyzed as being twins, returning default OpenMRS invocation match");
+							return o;
+						}
 						
 						Patient patient_match = Context.getPatientService().getPatient(new Integer(rec_match.getDemographic(PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC)));
 						return patient_match;

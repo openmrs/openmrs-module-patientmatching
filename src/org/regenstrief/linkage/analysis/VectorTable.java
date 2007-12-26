@@ -221,7 +221,7 @@ public class VectorTable {
 			match_score_vectors.put(mv, getMatchVectorScoreVector(mv));
 			
 			//MatchResult(double score, double incl_score, double true_prob, double false_prob, double sensitivity, double specificity, MatchVector match_vct, ScoreVector score_vct, Record r1, Record r2){
-			mvs.add(new MatchResult(score, incl_score, getMatchVectorTrueProbability(mv), getMatchVectorFalseProbability(mv), 0, 0, mv, null, null, null));
+			mvs.add(new MatchResult(score, incl_score, getMatchVectorTrueProbability(mv), getMatchVectorFalseProbability(mv), 0, 0, mv, null, null, null, mc));
 		}
 		
 		
