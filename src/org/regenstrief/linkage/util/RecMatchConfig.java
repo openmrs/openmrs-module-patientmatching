@@ -19,6 +19,12 @@ public class RecMatchConfig implements Iterable<MatchingConfig> {
 	private AnalysisConfig analysis_configs;
 	private List<MatchingConfig> mc_configs;
 	
+	public RecMatchConfig(){
+		lds1 = null;
+		lds2 = null;
+		mc_configs = new ArrayList<MatchingConfig>();
+	}
+	
 	public RecMatchConfig(LinkDataSource lds1, LinkDataSource lds2, List<MatchingConfig> mc_configs){
 		this.lds1 = lds1;
 		this.lds2 = lds2;
@@ -35,13 +41,29 @@ public class RecMatchConfig implements Iterable<MatchingConfig> {
 	public Iterator<MatchingConfig> iterator() {
 		return mc_configs.iterator();
 	}
-		
+	
+	/**
+	 * 
+	 * @param lds	the new first LinkDataSource
+	 */
+	public void setLinkDataSource1(LinkDataSource lds){
+		lds1 = lds;
+	}
+	
 	/**
 	 * 
 	 * @return	the first LinkDataSource
 	 */
 	public LinkDataSource getLinkDataSource1(){
 		return lds1;
+	}
+	
+	/**
+	 * 
+	 * @param lds	the new second LinkDataSource
+	 */
+	public void setLinkDataSource2(LinkDataSource lds){
+		lds2 = lds;
 	}
 	
 	/**
