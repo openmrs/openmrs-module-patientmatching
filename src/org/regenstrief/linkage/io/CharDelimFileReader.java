@@ -28,7 +28,7 @@ public class CharDelimFileReader implements DataSourceReader{
 	protected File switched_file;
 	protected BufferedReader file_reader;
 	protected Record next_record;
-	
+	protected char raw_file_sep;
 	
 	/**
 	 * The constructor sorts the file according to the blocking variables and opens
@@ -42,7 +42,7 @@ public class CharDelimFileReader implements DataSourceReader{
 		
 		File raw_file = new File(lds.getName());
 		switched_file = switchColumns(raw_file);
-		char raw_file_sep = lds.getAccess().charAt(0);
+		raw_file_sep = lds.getAccess().charAt(0);
 		
 		try{
 			file_reader = new BufferedReader(new FileReader(switched_file));
@@ -130,7 +130,7 @@ public class CharDelimFileReader implements DataSourceReader{
 	 * @return	the Record object with the data from that line
 	 */
 	public Record line2Record(String line){
-		String[] split_line = line.split("\\|", -1);
+		String[] split_line = line.split(getHexString(raw_file_sep), -1);
 		Record ret = new Record();
 		List<DataColumn> cols = data_source.getDataColumns();
 		for(int i = 0; i < cols.size(); i++){
@@ -142,6 +142,16 @@ public class CharDelimFileReader implements DataSourceReader{
 		}
 		
 		return ret;
+	}
+	
+	private String getHexString(char c){
+		int i = Integer.valueOf(c);
+		String hex = Integer.toHexString(i);
+		while(hex.length() < 4){
+			hex = "0" + hex;
+		}
+		hex = "\\u" + hex;
+		return hex;
 	}
 	
 	/**

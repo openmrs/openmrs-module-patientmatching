@@ -116,7 +116,6 @@ public class LinkDataSourceChooser implements ActionListener{
 		line = new JPanel();
 		line.add(new JLabel("Delimiter:"));
 		delim = new JTextField(3);
-		delim.setEditable(false);
 		delim.setText("|");
 		line.add(delim);
 		ret.add(line);

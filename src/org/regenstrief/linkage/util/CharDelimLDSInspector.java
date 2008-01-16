@@ -26,6 +26,8 @@ public class CharDelimLDSInspector implements LinkDataSourceInspector{
 		lds.getDataColumns().clear();
 		File f = new File(lds.getName());
 		String delim = lds.getAccess();
+		// convert delimiter character to hex string
+		delim = getHexString(delim.charAt(0));
 		try{
 			BufferedReader reader = new BufferedReader(new FileReader(f));
 			String line = reader.readLine();
@@ -42,5 +44,15 @@ public class CharDelimLDSInspector implements LinkDataSourceInspector{
 		catch(IOException ioe){
 			return;
 		}
+	}
+	
+	private String getHexString(char c){
+		int i = Integer.valueOf(c);
+		String hex = Integer.toHexString(i);
+		while(hex.length() < 4){
+			hex = "0" + hex;
+		}
+		hex = "\\u" + hex;
+		return hex;
 	}
 }
