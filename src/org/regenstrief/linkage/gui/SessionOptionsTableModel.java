@@ -21,7 +21,11 @@ public class SessionOptionsTableModel extends AbstractTableModel{
 		// setup table to follow the columns defined in MatchingConfig
 		// rows contain the names of the rows to currently display
 		mc = m;
-		row_names = mc.getRowNames();
+		if(m == null){
+			row_names = null;
+		} else {
+			row_names = mc.getRowNames();
+		}
 		
 	}
 	

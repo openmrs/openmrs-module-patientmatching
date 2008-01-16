@@ -60,6 +60,11 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		createSessionPanel();
 	}
 	
+	public void setRecMatchConfig(RecMatchConfig rmc){
+		rm_conf = rmc;
+		this.repaint();
+	}
+	
 	private void createSessionPanel(){
 		// split the panel into two parts, top for table, bottom for other user interaction
 		//JPanel session_panel = new JPanel(new GridLayout(2, 1));
@@ -91,13 +96,17 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		runs.setCellRenderer(new MatchingConfigCellRenderer());
 		
 		// if there are already MatchingConfig objects, add to runs
-		if(rm_conf.getMatchingConfigs().size() > 0){
-			Iterator<MatchingConfig> it = rm_conf.getMatchingConfigs().iterator();
-			while(it.hasNext()){
-				dlm.addElement(it.next());
+		if(rm_conf != null){
+			if(rm_conf.getMatchingConfigs().size() > 0){
+				Iterator<MatchingConfig> it = rm_conf.getMatchingConfigs().iterator();
+				while(it.hasNext()){
+					dlm.addElement(it.next());
+				}
+				current_working_config = rm_conf.getMatchingConfigs().get(0);
+			} else {
+				current_working_config = null;
 			}
 		}
-		current_working_config = rm_conf.getMatchingConfigs().get(0);
 		
 		JScrollPane jsp = new JScrollPane(runs);
 		jsp.setPreferredSize(new Dimension(150, 200));
@@ -319,21 +328,26 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	 */
 	public void paint(Graphics g){
 		if(rm_conf.getMatchingConfigs().size() == 0){
-			// need to create an empty one to display in session options table, and add to rm_conf
-			Hashtable<String, DataColumn> col_names = rm_conf.getLinkDataSource1().getIncludedDataColumns();
-			String[] names = new String[col_names.keySet().size()];
-			Enumeration<String> e = col_names.keys();
-			int i = 0;
-			while(e.hasMoreElements()){
-				names[i++] = e.nextElement();
-			}
-			MatchingConfig mc = new MatchingConfig(DEFAULT_NAME, names);
-			rm_conf.getMatchingConfigs().add(mc);
-			// add to JList, set as active
 			DefaultListModel dlm = (DefaultListModel)runs.getModel();
 			dlm.clear();
-			dlm.addElement(mc);
-			current_working_config = mc;
+			// need to create an empty one to display in session options table, and add to rm_conf
+			// but only if the two link data sources are both defined
+			if(rm_conf.getLinkDataSource1() != null && rm_conf.getLinkDataSource2() != null){
+				Hashtable<String, DataColumn> col_names = rm_conf.getLinkDataSource1().getIncludedDataColumns();
+				String[] names = new String[col_names.keySet().size()];
+				Enumeration<String> e = col_names.keys();
+				int i = 0;
+				while(e.hasMoreElements()){
+					names[i++] = e.nextElement();
+				}
+				MatchingConfig mc = new MatchingConfig(DEFAULT_NAME, names);
+				rm_conf.getMatchingConfigs().add(mc);
+				
+				// add to JList, set as active
+				dlm.addElement(mc);
+				current_working_config = mc;
+			}
+			
 		} else if(runs.getModel().getSize() == 0){
 			// rm_conf object has MatchingConfig objects, but they have not 
 			// been inserted into the JList yet

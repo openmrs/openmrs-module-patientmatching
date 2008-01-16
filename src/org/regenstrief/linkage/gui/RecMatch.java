@@ -51,7 +51,7 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 		if(config != null){
 			rm_conf = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(config));
 		} else {
-			rm_conf = null;
+			rm_conf = new RecMatchConfig();
 		}
 		
 		// according to Sun, the recommended way of being thread-safe
@@ -87,12 +87,15 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 		main_window.setVisible(true);
 		
 		// display data in rm_conf
-		if(rm_conf.getLinkDataSource1() != null){
-			dpanel.parseDataToTable(DataPanel.TOP);
+		if(rm_conf != null){
+			if(rm_conf.getLinkDataSource1() != null){
+				dpanel.parseDataToTable(DataPanel.TOP);
+			}
+			if(rm_conf.getLinkDataSource2() != null){
+				dpanel.parseDataToTable(DataPanel.BOTTOM);
+			}
 		}
-		if(rm_conf.getLinkDataSource2() != null){
-			dpanel.parseDataToTable(DataPanel.BOTTOM);
-		}
+		
 	}
 	
 	private JMenuBar createMenu(){
@@ -274,6 +277,9 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 				File config = getFileFromChooser();
 				if(config != null){
 					rm_conf = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(config));
+					dpanel.setRecMatchConfig(rm_conf);
+					current_program_config_file = config;
+					spanel.setRecMatchConfig(rm_conf);
 					// need to reflect the rm_conf object in the GUI
 					//updateGUI();
 				}

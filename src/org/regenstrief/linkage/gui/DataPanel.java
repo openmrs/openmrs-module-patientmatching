@@ -81,6 +81,7 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 	 */
 	public void setRecMatchConfig(RecMatchConfig rmc){
 		rm_conf = rmc;
+		applyChanges();
 	}
 	
 	private void createDataPanel(){
@@ -152,17 +153,15 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 		if(rm_conf != null){
 			LinkDataSource lds1 = rm_conf.getLinkDataSource1();
 			LinkDataSource lds2 = rm_conf.getLinkDataSource2();
-			if(lds1.getName() != null){
+			if(lds1 != null && lds1.getName() != null){
 				tfn.setText(lds1.getName());
+				parseDataToTable(TOP);
 			}
-			if(lds2.getName() != null){
+			if(lds2 != null && lds2.getName() != null){
 				bfn.setText(lds2.getName());
+				parseDataToTable(BOTTOM);
 			}
 			
-			// if possible, populate tables with data
-			if(lds1.getAccess() != null && lds1.getType() != null){
-				
-			}
 		}
 	}
 	
