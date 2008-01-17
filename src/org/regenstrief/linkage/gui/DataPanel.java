@@ -170,8 +170,10 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 		MatchingTableModel mtm;
 		if(which == TOP){
 			mtm = new MatchingTableModel(rm_conf.getLinkDataSource1());
+			tfn.setText(rm_conf.getLinkDataSource1().getName());
 		} else if(which == BOTTOM){
 			mtm = new MatchingTableModel(rm_conf.getLinkDataSource2());
+			bfn.setText(rm_conf.getLinkDataSource2().getName());
 		} else {
 			// invalid value, return early
 			return;

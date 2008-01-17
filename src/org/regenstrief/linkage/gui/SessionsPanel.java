@@ -157,6 +157,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	
 	private Component getSessionTable(){
 		JPanel table_panel = new JPanel(new BorderLayout());
+		JScrollPane table_pane = new JScrollPane();
 		session_options = new JTable(new SessionOptionsTableModel());
 		
 		JComboBox jcb = new JComboBox();
@@ -169,8 +170,11 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		
 		table_panel.add(session_options.getTableHeader(), BorderLayout.PAGE_START);
 		table_panel.add(session_options, BorderLayout.CENTER);
+		//table_pane.add(session_options);
+		//table_panel.add(table_pane, BorderLayout.CENTER);
 		
 		return table_panel;
+		
 	}
 	
 	private void displayThisMatchingConfig(MatchingConfig mc){

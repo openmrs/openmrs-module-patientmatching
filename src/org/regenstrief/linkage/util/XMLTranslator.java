@@ -12,19 +12,36 @@ package org.regenstrief.linkage.util;
  */
 
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.IllegalFormatException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
 
-import javax.xml.parsers.*;
-import javax.xml.transform.*;
-import javax.xml.transform.stream.*;
-import javax.xml.transform.dom.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
-import org.xml.sax.*;
 import org.regenstrief.linkage.util.MatchingConfigRow.ScaleWeightSetting;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 public class XMLTranslator {
 	public static Document getXMLDocFromFile(File f){
@@ -93,18 +110,24 @@ public class XMLTranslator {
 			ret.appendChild(root);
 			
 			// DataSources
-			Element lds1_node = toDOMNode(rmc.getLinkDataSource1(), ret);
-			root.appendChild(lds1_node);
-			Node lds2_node = toDOMNode(rmc.getLinkDataSource2(), ret);
-			root.appendChild(lds2_node);
+			if(rmc.getLinkDataSource1() != null){
+				Element lds1_node = toDOMNode(rmc.getLinkDataSource1(), ret);
+				root.appendChild(lds1_node);
+			}
+			if(rmc.getLinkDataSource2() != null){
+				Node lds2_node = toDOMNode(rmc.getLinkDataSource2(), ret);
+				root.appendChild(lds2_node);
+			}
 			
 			// Analysis part
 			AnalysisConfig ac = rmc.getAnalysis_configs();
-			HashMap<String, String> config_table = ac.getSettings();
-			for(String type : config_table.keySet()) {
-				String init = config_table.get(type);
-				Element analysis = toDOMNode(type, init, ret);
-				root.appendChild(analysis);
+			if(ac != null){
+				HashMap<String, String> config_table = ac.getSettings();
+				for(String type : config_table.keySet()) {
+					String init = config_table.get(type);
+					Element analysis = toDOMNode(type, init, ret);
+					root.appendChild(analysis);
+				}
 			}
 			
 			// MatchingConfigRows
