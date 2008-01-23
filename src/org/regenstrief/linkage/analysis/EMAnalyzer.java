@@ -1,10 +1,8 @@
 package org.regenstrief.linkage.analysis;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.MatchVector;
@@ -160,12 +158,12 @@ public class EMAnalyzer { //extends Analyzer {
 						}
 						termM = termM * Math.pow(mest.get(demographic), comp) * Math.pow(1 - mest.get(demographic), 1 - comp);
 						termU = termU * Math.pow(uest.get(demographic), comp) * Math.pow(1 - uest.get(demographic), 1 - comp);
-						//System.out.println(termM + "\t" + termU);
+						System.out.println(termM + "\t" + termU);
 					}
-					//System.out.println();
+					System.out.println();
 					gMtemp = (p * termM) / ((p * termM) + ((1 - p) * termU));
 					gUtemp = ((1 - p) * termU) / (((1 - p) * termU) + (p * termM)); 
-					//System.out.println("gMtemp: " + gMtemp);
+					System.out.println("gMtemp: " + gMtemp);
 					
 					// update the running sum for msum and usum
 					for(int k = 0; k < demographics.length; k++){
@@ -192,8 +190,8 @@ public class EMAnalyzer { //extends Analyzer {
 			
 			// update p_est
 			p = gMsum / vct_count;
-			//System.out.println("Iteration " + (i + 1));
-			//System.out.println("P: " + p);
+			System.out.println("Iteration " + (i + 1));
+			System.out.println("P: " + p);
 			
 			// update the mest and uest values after each iteration
 			for(int j = 0; j < demographics.length; j++){
@@ -204,11 +202,11 @@ public class EMAnalyzer { //extends Analyzer {
 				uest.put(demographic, uest_val);
 			}
 			
-			/*
+			
 			for(int j = 0; j < demographics.length; j++){
 				String demographic = demographics[j];
 				System.out.println(demographic + ":   mest: " + mest.get(demographic) + "   uest: " + uest.get(demographic));
-			}*/
+			}
 			
 		}
 		

@@ -28,13 +28,12 @@ public class FileWritingMatcher {
 	
 	public static final String OUT_FILE = "linkage.out";
 	
-	/**
-	 * 
-	 * @param rmc
-	 * @return
-	 */
 	public static File writeMatchResults(RecMatchConfig rmc){
-		File f = new File(OUT_FILE);
+		return writeMatchResults(rmc, new File(OUT_FILE));
+	}
+	
+	public static File writeMatchResults(RecMatchConfig rmc, File f){
+		
 		try{
 			BufferedWriter fout = new BufferedWriter(new FileWriter(f));
 			ReaderProvider rp = new ReaderProvider();

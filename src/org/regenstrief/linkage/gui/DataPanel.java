@@ -32,6 +32,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
+import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.RecMatchConfig;
@@ -196,6 +197,16 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 			top_content.add(tjt.getTableHeader(), BorderLayout.PAGE_START);
 			top_content.add(tjt, BorderLayout.CENTER);
 			
+			// remove hidden columns
+			TableColumnModel tcm = tjt.getColumnModel();
+			for(int i = 0; i < tcm.getColumnCount(); i++){
+				TableColumn tc = tcm.getColumn(i);
+				DataColumn dc = rm_conf.getLinkDataSource1().getDataColumn(tc.getModelIndex());
+				if(dc.getIncludePosition() == DataColumn.INCLUDE_NA){
+					this.hideColumn(TOP, tcm, i);
+				}
+			}
+			
 			// if other half is loaded, need to sync
 			if(rm_conf.getLinkDataSource2() != null){
 				// when initially loading, parseDataToTable() will be called with top
@@ -217,6 +228,16 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 			
 			bottom_content.add(bjt.getTableHeader(), BorderLayout.PAGE_START);
 			bottom_content.add(bjt, BorderLayout.CENTER);
+			
+			// remove hidden columns
+			TableColumnModel tcm = bjt.getColumnModel();
+			for(int i = 0; i < tcm.getColumnCount(); i++){
+				TableColumn tc = tcm.getColumn(i);
+				DataColumn dc = rm_conf.getLinkDataSource2().getDataColumn(tc.getModelIndex());
+				if(dc.getIncludePosition() == DataColumn.INCLUDE_NA){
+					this.hideColumn(BOTTOM, tcm, i);
+				}
+			}
 			
 			// if other half is in a table, need to sync
 			if(rm_conf.getLinkDataSource1() != null){
@@ -351,6 +372,9 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 			tc = tcm.getColumn(i);
 			tc.setPreferredWidth(((Integer)widths.elementAt(i)).intValue());
 		}
+		
+		// apply changes to matching table model
+		syncColumnIncludes(rm_conf.getLinkDataSource1(), tjt);
 	}
 	
 	private void syncBottom(){
@@ -432,6 +456,24 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 			tc = tcm_bottom.getColumn(i);
 			tc.setPreferredWidth(((Integer)widths.elementAt(i)).intValue());
 		}
+		
+		// apply new ordering to matching table model
+		syncColumnIncludes(rm_conf.getLinkDataSource2(), bjt);
+	}
+	
+	private void syncColumnIncludes(LinkDataSource lds, JTable jt){
+		// method needs to set the include position values for the 
+		// link data source to match what is being displayed in the 
+		// table's column model
+		TableColumnModel tcm = jt.getColumnModel();
+		
+		for(int i = 0; i < jt.getColumnCount(); i++){
+			TableColumn tc = tcm.getColumn(i);
+			int model_index = tc.getModelIndex();
+			DataColumn dc = lds.getDataColumn(model_index);
+			dc.setIncludePosition(i);
+		}
+		
 	}
 	
 	private void hideColumn(int which, TableColumnModel cm, int col){
@@ -439,14 +481,18 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 		// col is the index in the table column model and might not match the
 		// index in the table data model
 		Vector<TableColumn> hidden;
+		LinkDataSource lds;
 		if(which == TOP){
 			hidden = top_hidden;
+			lds = rm_conf.getLinkDataSource1();
 		} else {
 			hidden = bottom_hidden;
+			lds = rm_conf.getLinkDataSource2();
 		}
 		
 		// remove column at given index
 		TableColumn tc = cm.getColumn(col);
+		int model_index = tc.getModelIndex();
 		hidden.add(tc);
 		cm.removeColumn(tc);
 		
@@ -463,6 +509,10 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 			// if file is loading this flag should be blocked
 			need_to_write = true;
 		}
+		
+		// need to set include position of column that was removed
+		DataColumn dc = lds.getDataColumn(model_index);
+		dc.setIncludePosition(DataColumn.INCLUDE_NA);
 		
 	}
 	
@@ -635,6 +685,7 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 			
 			if(me.getSource() == tjt.getTableHeader()){
 				System.out.println("on top");
+				syncColumnIncludes(rm_conf.getLinkDataSource1(), tjt);
 				if(rm_conf.getLinkDataSource2() != null){
 					syncBottom();
 				}
@@ -645,7 +696,14 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 				}
 			}
 		}
-		
+		/*
+		// set include position in table model
+		if(tcme.getSource() == tjt){
+			System.out.println("top table column moved");
+			syncColumnIncludes(rm_conf.getLinkDataSource1(), tjt);
+		} else if(tcme.getSource() == bjt){
+			System.out.println("bottom table column moved");
+		}*/
 	}
 	
 	public void mouseExited(MouseEvent me){
@@ -746,6 +804,7 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 					// session table no longer valid
 					rm_conf.getMatchingConfigs().clear();
 					
+					
 					return;
 				}
 			}
@@ -778,6 +837,8 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 		
 		// session table no longer valid
 		//resetSessionTableWithBlankConfig();
+		
+		
 	}
 	
 	public void columnRemoved(TableColumnModelEvent tcme){

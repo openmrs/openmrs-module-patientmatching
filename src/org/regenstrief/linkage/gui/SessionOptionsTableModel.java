@@ -56,11 +56,24 @@ public class SessionOptionsTableModel extends AbstractTableModel{
 		} else if(col == 3 && value instanceof Boolean){
 			Boolean b = (Boolean)value;
 			mcr.setInclude(b.booleanValue());
+			if(b){
+				mcr.setBlockOrder(MatchingConfigRow.DEFAULT_BLOCK_ORDER);
+			}
 		} else if(col == 4 && value instanceof Double){
 			Double d = (Double)value;
+			if(d > 0.99999){
+				d = 0.99999;
+			} else if(d < 0.00001){
+				d = 0.00001;
+			}
 			mcr.setAgreement(d.doubleValue());
 		} else if(col == 5 && value instanceof Double){
 			Double d = (Double)value;
+			if(d > 0.99999){
+				d = 0.99999;
+			} else if(d < 0.00001){
+				d = 0.00001;
+			}
 			mcr.setNonAgreement(d.doubleValue());
 		} else if(col == 6){
 			

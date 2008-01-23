@@ -17,8 +17,6 @@ import org.regenstrief.linkage.util.LinkDataSource;
  * reached.  The input file is first re-written to create a file of only the columns
  * of interest.  This file is then read and Records created using column
  * information in the LinkDataSource object.
- * 
- * As of July, 2007, class is hardwired to just parse pipe delimited files.
  *
  */
 
@@ -52,6 +50,13 @@ public class CharDelimFileReader implements DataSourceReader{
 			file_reader = null;
 			next_record = null;
 		}
+	}
+	
+	/*
+	 * Default constructor protected so subclasses don't need to call super class constructor
+	 */
+	protected CharDelimFileReader(){
+		data_source = null;
 	}
 	
 	public int getRecordSize(){
@@ -134,9 +139,10 @@ public class CharDelimFileReader implements DataSourceReader{
 		Record ret = new Record();
 		List<DataColumn> cols = data_source.getDataColumns();
 		for(int i = 0; i < cols.size(); i++){
+			int line_index = Integer.parseInt(cols.get(i).getColumnID());
 			int include_index = cols.get(i).getIncludePosition();
 			if(include_index != -1){
-				ret.addDemographic(cols.get(i).getName(), split_line[include_index]);
+				ret.addDemographic(cols.get(i).getName(), split_line[line_index]);
 			}
 			
 		}
@@ -144,7 +150,7 @@ public class CharDelimFileReader implements DataSourceReader{
 		return ret;
 	}
 	
-	private String getHexString(char c){
+	protected String getHexString(char c){
 		int i = Integer.valueOf(c);
 		String hex = Integer.toHexString(i);
 		while(hex.length() < 4){

@@ -6,6 +6,7 @@ import java.util.List;
 import javax.swing.table.AbstractTableModel;
 
 import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.io.BasicCharDelimFileReader;
 import org.regenstrief.linkage.io.DataSourceReader;
 import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.DataColumn;
@@ -36,7 +37,14 @@ public class MatchingTableModel extends AbstractTableModel {
 	
 	private void getLines(){
 		ReaderProvider rp = new ReaderProvider();
-		DataSourceReader dsr = rp.getReader(lds);
+		// need to get a BasicCharDelimFileReader instead of a CharDelimFileReader
+		// to get more information about raw data
+		DataSourceReader dsr;
+		if(lds.getType().equals("CharDelimFile")){
+			dsr = new BasicCharDelimFileReader(lds);
+		} else {
+			dsr = rp.getReader(lds);
+		}
 		
 		List<DataColumn> dcs = lds.getDataColumns();
 		Iterator<DataColumn> it = dcs.iterator();

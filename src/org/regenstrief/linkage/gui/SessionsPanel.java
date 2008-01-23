@@ -1,6 +1,5 @@
 package org.regenstrief.linkage.gui;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -21,6 +20,7 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -156,8 +156,6 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	}
 	
 	private Component getSessionTable(){
-		JPanel table_panel = new JPanel(new BorderLayout());
-		JScrollPane table_pane = new JScrollPane();
 		session_options = new JTable(new SessionOptionsTableModel());
 		
 		JComboBox jcb = new JComboBox();
@@ -167,13 +165,9 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		jcb.addItem(MatchingConfig.ALGORITHMS[3]);
 		TableColumn tc = session_options.getColumnModel().getColumn(6);
 		tc.setCellEditor(new DefaultCellEditor(jcb));
+		JScrollPane table_pane = new JScrollPane(session_options);
 		
-		table_panel.add(session_options.getTableHeader(), BorderLayout.PAGE_START);
-		table_panel.add(session_options, BorderLayout.CENTER);
-		//table_pane.add(session_options);
-		//table_panel.add(table_pane, BorderLayout.CENTER);
-		
-		return table_panel;
+		return table_pane;
 		
 	}
 	
@@ -315,7 +309,16 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 				dlm.addElement(mc);
 				displayThisMatchingConfig(mc);
 			} else if(source.getText().equals("Run linkage process")){
-				File match_file = FileWritingMatcher.writeMatchResults(rm_conf);
+				JFileChooser out_chooser = new JFileChooser();
+				int ret = out_chooser.showDialog(this, "Choose output file");
+				File out, match_file;
+				if(ret == JFileChooser.APPROVE_OPTION){
+					out = out_chooser.getSelectedFile();
+					match_file = FileWritingMatcher.writeMatchResults(rm_conf, out);
+				} else {
+					match_file = FileWritingMatcher.writeMatchResults(rm_conf);
+				}
+				
 				if(match_file == null){
 					JOptionPane.showMessageDialog(this, "Error writing match result file", "Error", JOptionPane.ERROR_MESSAGE);
 				} else {
