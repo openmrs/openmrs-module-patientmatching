@@ -24,6 +24,7 @@ public class MatchingTableModel extends AbstractTableModel {
 	public static final int NUMBER = DataColumn.NUMERIC_TYPE;
 	
 	private LinkDataSource lds;
+	private int raw_lines;
 	
 	// display data stored in a hash where first key is row number, second demographic of
 	// data column
@@ -32,6 +33,7 @@ public class MatchingTableModel extends AbstractTableModel {
 	public MatchingTableModel(LinkDataSource lds){
 		this.lds = lds;
 		display_data = new Hashtable<Integer, Hashtable<Integer, String>>();
+		raw_lines = 0;
 		getLines();
 	}
 	
@@ -71,7 +73,7 @@ public class MatchingTableModel extends AbstractTableModel {
 			}
 			read_lines++;
 		}
-		
+		raw_lines = read_lines;
 	}
 	
 	public String getColumnName(int c){
@@ -137,7 +139,7 @@ public class MatchingTableModel extends AbstractTableModel {
     }
 	
 	public int getRowCount(){
-		return RecMatch.ROWS_IN_TABLE;
+		return raw_lines;
 	}
 	
 	public int getRealColumnCount(){

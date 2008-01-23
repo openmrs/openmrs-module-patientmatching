@@ -11,12 +11,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.ColumnSortOption;
 import org.regenstrief.linkage.util.ColumnSorter;
 import org.regenstrief.linkage.util.ColumnSwitcher;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.MatchingConfigRow;
 /**
  * Class extends CharDelimFileReader by taking a MatchingConfig object in
  * the constructor.  Information in this object determines the order to sort
@@ -40,10 +42,11 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader implements O
 	 * @param mc	information on the record linkage options, containing blocking variable order (sort order)
 	 */
 	public OrderedCharDelimFileReader(LinkDataSource lds, MatchingConfig mc){
-		super(lds);
+		//super(lds);
+		data_source = lds;
 		this.mc = mc;
 		this.switched_file = switchColumns(new File(lds.getName()), mc);
-		char raw_file_sep = lds.getAccess().charAt(0);
+		raw_file_sep = lds.getAccess().charAt(0);
 		sorted_file = sortInputFile(switched_file, raw_file_sep);
 		try{
 			file_reader = new BufferedReader(new FileReader(sorted_file));
@@ -146,6 +149,32 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader implements O
 				return null;
 			}
 		}
+	}
+	
+	/**
+	 * Converts a character delimited String into a Record object based on the 
+	 * data source information in this object's LinkDataSource.
+	 * 
+	 * @param line	character-delimited line to convert to a Record object
+	 * @return	the Record object with the data from that line
+	 */
+	public Record line2Record(String line){
+		String[] split_line = line.split(getHexString(raw_file_sep), -1);
+		Record ret = new Record();
+		List<DataColumn> cols = data_source.getDataColumns();
+		for(int i = 0; i < cols.size(); i++){
+			DataColumn dc = cols.get(i);
+			int line_index = Integer.parseInt(dc.getColumnID());
+			int include_index = dc.getIncludePosition();
+			MatchingConfigRow mcr = mc.getMatchingConfigRowByName(dc.getName());
+			int block_order = mcr.getBlockOrder();
+			if(include_index != -1 || block_order > 0){
+				ret.addDemographic(dc.getName(), split_line[line_index]);
+			}
+			
+		}
+		
+		return ret;
 	}
 	
 	/*

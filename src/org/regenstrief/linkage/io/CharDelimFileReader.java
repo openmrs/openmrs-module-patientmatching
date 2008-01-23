@@ -128,7 +128,7 @@ public class CharDelimFileReader implements DataSourceReader{
 	}
 	
 	/**
-	 * Converts a character delimted String into a Record object based on the 
+	 * Converts a character delimited String into a Record object based on the 
 	 * data source information in this object's LinkDataSource.
 	 * 
 	 * @param line	character-delimited line to convert to a Record object

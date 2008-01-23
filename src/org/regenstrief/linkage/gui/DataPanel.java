@@ -205,6 +205,7 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 				if(dc.getIncludePosition() == DataColumn.INCLUDE_NA){
 					this.hideColumn(TOP, tcm, i);
 				}
+				
 			}
 			
 			// if other half is loaded, need to sync
@@ -327,6 +328,7 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 		int[] order = new int[col_count];
 		for(int i = 0; i < col_count; i++){
 			order[i] = tjt.convertColumnIndexToModel(i);
+			
 		}
 		
 		// save width information

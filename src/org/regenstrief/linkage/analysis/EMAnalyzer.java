@@ -30,7 +30,7 @@ public class EMAnalyzer { //extends Analyzer {
 	final static double EM_ONE = 0.99999;
 	final static double EM_ZERO = 0.00001;
 	
-	final static int ITERATIONS = 3;
+	final static int ITERATIONS = 15;
 	
 	private Hashtable<MatchVector,Integer> vector_count;
 	//private List<MatchVector> vector_list;
@@ -158,12 +158,12 @@ public class EMAnalyzer { //extends Analyzer {
 						}
 						termM = termM * Math.pow(mest.get(demographic), comp) * Math.pow(1 - mest.get(demographic), 1 - comp);
 						termU = termU * Math.pow(uest.get(demographic), comp) * Math.pow(1 - uest.get(demographic), 1 - comp);
-						System.out.println(termM + "\t" + termU);
+						//System.out.println(termM + "\t" + termU);
 					}
-					System.out.println();
+					//System.out.println();
 					gMtemp = (p * termM) / ((p * termM) + ((1 - p) * termU));
 					gUtemp = ((1 - p) * termU) / (((1 - p) * termU) + (p * termM)); 
-					System.out.println("gMtemp: " + gMtemp);
+					//System.out.println("gMtemp: " + gMtemp);
 					
 					// update the running sum for msum and usum
 					for(int k = 0; k < demographics.length; k++){

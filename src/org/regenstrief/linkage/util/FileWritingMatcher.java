@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
@@ -92,13 +93,15 @@ public class FileWritingMatcher {
 	private static String getOutputLine(MatchResult mr){
 		String s = new String();
 		s += mr.getScore();
-		List<String> demographics = mr.getDemographics();
+		Enumeration<String> demographics = mr.getRecord1().getDemographics().keys();
 		Record r1 = mr.getRecord1();
 		Record r2 = mr.getRecord2();
-		Iterator<String> it = demographics.iterator();
-		while(it.hasNext()){
-			String demographic = it.next();
-			s += "|" + r1.getDemographic(demographic) + "|" + r2.getDemographic(demographic);
+		while(demographics.hasMoreElements()){
+			String demographic = demographics.nextElement();
+			MatchingConfigRow mcr = mr.getMatchingConfig().getMatchingConfigRowByName(demographic);
+			if(mcr.isIncluded() || mcr.getBlockOrder() > 0){
+				s += "|" + r1.getDemographic(demographic) + "|" + r2.getDemographic(demographic);
+			}
 		}
 		return s;
 	}
