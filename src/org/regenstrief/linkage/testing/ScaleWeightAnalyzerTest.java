@@ -2,12 +2,14 @@ package org.regenstrief.linkage.testing;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.Hashtable;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.analysis.DataSourceAnalysis;
 import org.regenstrief.linkage.analysis.ScaleWeightAnalyzer;
@@ -18,6 +20,7 @@ import org.regenstrief.linkage.io.OrderedCharDelimFileReader;
 import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.MatchingConfigRow;
 import org.regenstrief.linkage.util.RecMatchConfig;
 import org.regenstrief.linkage.util.ScorePair;
 import org.regenstrief.linkage.util.XMLTranslator;
@@ -95,8 +98,9 @@ public class ScaleWeightAnalyzerTest {
 					while((pair = fp.getNextRecordPair()) != null) {
 						Record r1 = pair[0];
 						Record r2 = pair[1];
-						double score = sp.scorePair(r1, r2).getScore();
-						System.out.println("score: " + score);
+						MatchResult mr = sp.scorePair(r1, r2);
+						String match_details = getOutputLine(mr);
+						System.out.println(match_details);
 						i++;
 					}
 
@@ -115,5 +119,21 @@ public class ScaleWeightAnalyzerTest {
 			System.out.println(ioe.getMessage());
 		}
 
+	}
+	
+	private static String getOutputLine(MatchResult mr){
+		String s = new String();
+		s += mr.getScore();
+		Enumeration<String> demographics = mr.getRecord1().getDemographics().keys();
+		Record r1 = mr.getRecord1();
+		Record r2 = mr.getRecord2();
+		while(demographics.hasMoreElements()){
+			String demographic = demographics.nextElement();
+			MatchingConfigRow mcr = mr.getMatchingConfig().getMatchingConfigRowByName(demographic);
+			if(mcr.isIncluded() || mcr.getBlockOrder() > 0){
+				s += "|" + r1.getDemographic(demographic) + "|" + r2.getDemographic(demographic);
+			}
+		}
+		return s;
 	}
 }
