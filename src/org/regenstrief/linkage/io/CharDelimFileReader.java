@@ -139,10 +139,10 @@ public class CharDelimFileReader implements DataSourceReader{
 		Record ret = new Record();
 		List<DataColumn> cols = data_source.getDataColumns();
 		for(int i = 0; i < cols.size(); i++){
-			int line_index = Integer.parseInt(cols.get(i).getColumnID());
+			//int line_index = Integer.parseInt(cols.get(i).getColumnID());
 			int include_index = cols.get(i).getIncludePosition();
 			if(include_index != -1){
-				ret.addDemographic(cols.get(i).getName(), split_line[line_index]);
+				ret.addDemographic(cols.get(i).getName(), split_line[include_index]);
 			}
 			
 		}
