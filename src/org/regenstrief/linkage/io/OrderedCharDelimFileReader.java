@@ -151,13 +151,14 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader implements O
 		}
 	}
 	
-	/**
+	/*
 	 * Converts a character delimited String into a Record object based on the 
 	 * data source information in this object's LinkDataSource.
 	 * 
 	 * @param line	character-delimited line to convert to a Record object
 	 * @return	the Record object with the data from that line
 	 */
+	/*
 	public Record line2Record(String line){
 		String[] split_line = line.split(getHexString(raw_file_sep), -1);
 		Record ret = new Record();
@@ -166,16 +167,19 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader implements O
 			DataColumn dc = cols.get(i);
 			int line_index = Integer.parseInt(dc.getColumnID());
 			int include_index = dc.getIncludePosition();
-			MatchingConfigRow mcr = mc.getMatchingConfigRowByName(dc.getName());
-			int block_order = mcr.getBlockOrder();
-			if(include_index != -1 || block_order > 0){
-				ret.addDemographic(dc.getName(), split_line[line_index]);
+			if(include_index != -1){
+				MatchingConfigRow mcr = mc.getMatchingConfigRowByName(dc.getName());
+				int block_order = mcr.getBlockOrder();
+				if(include_index != -1 || block_order > 0){
+					ret.addDemographic(dc.getName(), split_line[line_index]);
+				}
 			}
+			
 			
 		}
 		
 		return ret;
-	}
+	}*/
 	
 	/*
 	 * Need to override parent class since sorted file needs to be read, not
