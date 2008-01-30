@@ -64,7 +64,9 @@ public class MatchingConfigRow {
 		return agreement;
 	}
 
-
+	public void setName(String new_name){
+		name = new_name;
+	}
 
 	public void setAgreement(double agreement) {
 		this.agreement = agreement;

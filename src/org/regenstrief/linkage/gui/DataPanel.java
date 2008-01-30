@@ -335,8 +335,7 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 			DataColumn to_sync = lds2.getDataColumn(tc_bottom.getModelIndex());
 			
 			// need to make sure column names match, and data types
-			//to_sync.setName(master.getName());
-			mtm_bottom.setColumnName(master.getName(), tc_top.getModelIndex());
+			to_sync.setName(master.getName());
 			to_sync.setType(master.getType());
 			
 			// update UI elements
@@ -573,12 +572,18 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 			jt.getColumnModel().getColumn(col).setHeaderValue(new_name);
 			jt.getColumnModel().getColumn(col).setIdentifier(new_name);
 			
-			// resync tables for TOP table
-			//syncTop();
+			// synchronize the two table names
 			if(rm_conf.getLinkDataSource2() != null){
-				//syncBottom();
 				syncTables();
 			}
+		}
+		
+		// need to update this columns name in the MatchingConfig objects, since any existing ones were
+		// instantiated with old_name for the column
+		Iterator<MatchingConfig> it = rm_conf.iterator();
+		while(it.hasNext()){
+			MatchingConfig mc = it.next();
+			mc.getMatchingConfigRowByName(old_name).setName(new_name);
 		}
 		
 		
@@ -595,27 +600,16 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 			
 			if(me.getSource() == tjt.getTableHeader()){
 				System.out.println("on top");
-				//setIncludeFromTable(rm_conf.getLinkDataSource1(), tjt);
 				if(rm_conf.getLinkDataSource2() != null){
-					//syncBottom();
 					syncTables();
 				}
 			} else if(me.getSource() == bjt.getTableHeader()){
 				System.out.println("on bottom");
 				if(rm_conf.getLinkDataSource1() != null){
-					//syncBottom();
-					//syncTables();
+					syncTables();
 				}
 			}
 		}
-		/*
-		// set include position in table model
-		if(tcme.getSource() == tjt){
-			System.out.println("top table column moved");
-			syncColumnIncludes(rm_conf.getLinkDataSource1(), tjt);
-		} else if(tcme.getSource() == bjt){
-			System.out.println("bottom table column moved");
-		}*/
 	}
 	
 	public void mouseExited(MouseEvent me){

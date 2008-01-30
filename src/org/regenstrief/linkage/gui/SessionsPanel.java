@@ -343,9 +343,10 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 				Hashtable<String, DataColumn> col_names = rm_conf.getLinkDataSource1().getIncludedDataColumns();
 				String[] names = new String[col_names.keySet().size()];
 				Enumeration<String> e = col_names.keys();
-				int i = 0;
 				while(e.hasMoreElements()){
-					names[i++] = e.nextElement();
+					String name = e.nextElement();
+					DataColumn dc = col_names.get(name);
+					names[dc.getIncludePosition()] = name;
 				}
 				MatchingConfig mc = new MatchingConfig(DEFAULT_NAME, names);
 				rm_conf.getMatchingConfigs().add(mc);
