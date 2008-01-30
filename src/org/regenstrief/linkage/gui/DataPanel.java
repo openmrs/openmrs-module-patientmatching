@@ -13,6 +13,9 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.ButtonGroup;
@@ -58,7 +61,7 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 	JRadioButtonMenuItem string_type, number_type;
 	JMenu unhide, bottom_unhide;
 	
-	Vector<TableColumn> top_hidden, bottom_hidden;
+	Hashtable<String,Integer> top_hidden, bottom_hidden;
 	Vector<JMenuItem> unhide_menu_items;
 	boolean loading_file, need_to_write, need_to_sync;
 	
@@ -69,8 +72,8 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 	public DataPanel(RecMatchConfig rmc){
 		super();
 		rm_conf = rmc;
-		top_hidden = new Vector<TableColumn>();
-		bottom_hidden = new Vector<TableColumn>();
+		top_hidden = new Hashtable<String,Integer>();
+		bottom_hidden = new Hashtable<String,Integer>();
 		unhide_menu_items = new Vector<JMenuItem>();
 		createDataPanel();
 		applyChanges();
@@ -169,11 +172,14 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 	public void parseDataToTable(int which){
 		// creates and sets table to the top or bottom display pane
 		MatchingTableModel mtm;
+		MatchingTableColumnModel mtcm;
 		if(which == TOP){
 			mtm = new MatchingTableModel(rm_conf.getLinkDataSource1());
+			mtcm = new MatchingTableColumnModel(rm_conf.getLinkDataSource1());
 			tfn.setText(rm_conf.getLinkDataSource1().getName());
 		} else if(which == BOTTOM){
 			mtm = new MatchingTableModel(rm_conf.getLinkDataSource2());
+			mtcm = new SecondaryMatchingTableColumnModel(rm_conf.getLinkDataSource2());
 			bfn.setText(rm_conf.getLinkDataSource2().getName());
 		} else {
 			// invalid value, return early
@@ -186,7 +192,9 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 			top_content.remove(tjt.getTableHeader());
 			
 			// create table, set options
-			tjt = new JTable(mtm);
+			tjt = new JTable(mtm, mtcm);
+			tjt.createDefaultColumnsFromModel();
+			
 			tjt.getTableHeader().addMouseListener(this);
 			tjt.getColumnModel().addColumnModelListener(this);
 			
@@ -197,16 +205,15 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 			top_content.add(tjt.getTableHeader(), BorderLayout.PAGE_START);
 			top_content.add(tjt, BorderLayout.CENTER);
 			
-			// remove hidden columns
-			TableColumnModel tcm = tjt.getColumnModel();
-			for(int i = 0; i < tcm.getColumnCount(); i++){
-				TableColumn tc = tcm.getColumn(i);
-				DataColumn dc = rm_conf.getLinkDataSource1().getDataColumn(tc.getModelIndex());
+			// find hidden column names and store them
+			List<DataColumn> dcs = rm_conf.getLinkDataSource1().getDataColumns();
+			for(int i = 0; i < dcs.size(); i++){
+				DataColumn dc = dcs.get(i);
 				if(dc.getIncludePosition() == DataColumn.INCLUDE_NA){
-					this.hideColumn(TOP, tcm, i);
+					top_hidden.put(dc.getName(), i);
 				}
-				
 			}
+			
 			
 			// if other half is loaded, need to sync
 			if(rm_conf.getLinkDataSource2() != null){
@@ -215,14 +222,17 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 				// checking if bottom table model is a matching model
 				// will see if default blank table is loaded currently
 				if(bjt.getModel() instanceof MatchingTableModel){
-					syncBottom();
+					//syncBottom();
+					syncTables();
 				}
 			}
 		} else {
 			bottom_content.remove(bjt);
 			bottom_content.remove(bjt.getTableHeader());
 			
-			bjt = new JTable(mtm);
+			bjt = new JTable(mtm, mtcm);
+			bjt.createDefaultColumnsFromModel();
+			
 			bjt.getTableHeader().addMouseListener(this);
 			bjt.getColumnModel().addColumnModelListener(this);
 			bjt.getTableHeader().setToolTipText("Chanages made on the top will be reflected here, shift-click to hide column");
@@ -230,19 +240,19 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 			bottom_content.add(bjt.getTableHeader(), BorderLayout.PAGE_START);
 			bottom_content.add(bjt, BorderLayout.CENTER);
 			
-			// remove hidden columns
-			TableColumnModel tcm = bjt.getColumnModel();
-			for(int i = 0; i < tcm.getColumnCount(); i++){
-				TableColumn tc = tcm.getColumn(i);
-				DataColumn dc = rm_conf.getLinkDataSource2().getDataColumn(tc.getModelIndex());
+			// find hidden column names and store them
+			List<DataColumn> dcs = rm_conf.getLinkDataSource2().getDataColumns();
+			for(int i = 0; i < dcs.size(); i++){
+				DataColumn dc = dcs.get(i);
 				if(dc.getIncludePosition() == DataColumn.INCLUDE_NA){
-					this.hideColumn(BOTTOM, tcm, i);
+					bottom_hidden.put(dc.getName(), i);
 				}
 			}
 			
 			// if other half is in a table, need to sync
 			if(rm_conf.getLinkDataSource1() != null){
-				syncBottom();
+				//syncBottom();
+				syncTables();
 			}
 		}
 		
@@ -289,15 +299,6 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 		return jpm;
 	}
 	
-	private boolean intArrayContains(int[] array, int num){
-		for(int i = 0; i < array.length; i++){
-			if(array[i] == num){
-				return true;
-			}
-		}
-		return false;
-	}
-	
 	private void shiftHideColumn(JTable jt, int col){
 		// called when the user shift-clicks on a column in a data table
 		// calls hideColumn once the other arguments are determined
@@ -317,193 +318,98 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 		
 	}
 	
-	private void syncTop(){
-		// synchronizing the top means updating so new column names are displayed
-		// method called when:
-		//	column renamed
-		//	top column moved
-		System.out.println("synchronizing top table");
-		// save order of columns
-		int col_count = tjt.getColumnCount();
-		int[] order = new int[col_count];
-		for(int i = 0; i < col_count; i++){
-			order[i] = tjt.convertColumnIndexToModel(i);
-			
-		}
-		
-		// save width information
-		Vector<Integer> widths = new Vector<Integer>();
-		int limit = tjt.getColumnCount();
-		TableColumnModel tcm = tjt.getColumnModel();
-		TableColumn tc;
-		for(int i = 0; i < limit; i++){
-			tc = tcm.getColumn(i);
-			widths.add(new Integer(tc.getWidth()));
-		}
-		
-		// rebuild table to apply new column name
-		MatchingTableModel mtm = (MatchingTableModel)tjt.getModel();
-		mtm.fireTableStructureChanged();
-		
-		// populate an array with columns in correct order
-		TableColumn[] cols = new TableColumn[col_count];
-		int col_index = 0;
-		Enumeration<TableColumn> e = tcm.getColumns();
-		while(e.hasMoreElements()){
-			tc = e.nextElement();
-			if(intArrayContains(order, tc.getModelIndex())){
-				cols[col_index] = tcm.getColumn(order[col_index]);
-				col_index++;
-			}
-		}
-		
-		// remove all columns
-		int total_cols = tjt.getColumnCount();
-		for(int i = 0; i < total_cols; i++){
-			tc = tcm.getColumn(0);
-			tcm.removeColumn(tc);
-		}
-		
-		// add columns based on ordering in cols
-		for(int i = 0; i < col_count; i++){
-			tcm.addColumn(cols[i]);
-		}
-		
-		// apply the widths saved in widths
-		for(int i = 0; i < col_count; i++){
-			tc = tcm.getColumn(i);
-			tc.setPreferredWidth(((Integer)widths.elementAt(i)).intValue());
-		}
-		
-		// apply changes to matching table model
-		syncColumnIncludes(rm_conf.getLinkDataSource1(), tjt);
-	}
-	
-	private void syncBottom(){
-		// synchronizing bottom means bottom table shows the top's column names
-		// method called when:
-		//	column renamed, if bottom table is loaded
-		//	top column moved
-		System.out.println("synchronziing bottom table");
-		
-		TableColumnModel tcm_top = tjt.getColumnModel();
-		TableColumnModel tcm_bottom = bjt.getColumnModel();
+	private void syncTables(){
+		// will need to synhronize the two tables, using the top table for information
+		System.out.println("sync tables");
 		MatchingTableModel mtm_top = (MatchingTableModel)tjt.getModel();
 		MatchingTableModel mtm_bottom = (MatchingTableModel)bjt.getModel();
-		TableColumn tc;
+		LinkDataSource lds1 = rm_conf.getLinkDataSource1();
+		LinkDataSource lds2 = rm_conf.getLinkDataSource2();
 		
-		// set names on bottom equal to those on top, based on ColumnModel
-		int limit = tcm_top.getColumnCount();
-		String top_name;
-		if(tcm_bottom.getColumnCount() < limit){
-			limit = tcm_bottom.getColumnCount();
-		}
-		for(int i = 0; i < tcm_bottom.getColumnCount(); i++){
-			// set table model columns to match the top column model columns
-			if(i < limit){
-				tc = tcm_top.getColumn(i);
-				top_name = mtm_top.getColumnName(tc.getModelIndex());
-				tc = tcm_bottom.getColumn(i);
-				mtm_bottom.setColumnName(top_name, tc.getModelIndex());
-			} else {
-				mtm_bottom.setColumnName(null, bjt.convertColumnIndexToModel(i));
-			}
+		// will need to iterate over the top columns of the table
+		for(int i = 0; i < tjt.getColumnCount() && i < bjt.getColumnCount(); i++){
+			TableColumn tc_top = tjt.getColumnModel().getColumn(i);
+			TableColumn tc_bottom = bjt.getColumnModel().getColumn(i);
 			
+			DataColumn master = lds1.getDataColumn(tc_top.getModelIndex());
+			DataColumn to_sync = lds2.getDataColumn(tc_bottom.getModelIndex());
+			
+			// need to make sure column names match, and data types
+			//to_sync.setName(master.getName());
+			mtm_bottom.setColumnName(master.getName(), tc_top.getModelIndex());
+			to_sync.setType(master.getType());
+			
+			// update UI elements
+			tc_bottom.setHeaderValue(master.getName());
+			tc_bottom.setIdentifier(master.getName());
 		}
 		
-		// save order of columns
-		int col_count = bjt.getColumnCount();
-		int[] order = new int[col_count];
-		for(int i = 0; i < col_count; i++){
-			order[i] = bjt.convertColumnIndexToModel(i);
-		}
-		
-		// save width information
-		Vector<Integer> widths = new Vector<Integer>();
-		for(int i = 0; i < col_count; i++){
-			tc = tcm_bottom.getColumn(i);
-			widths.add(new Integer(tc.getWidth()));
-		}
-		
-		// fire table update
+		mtm_top.fireTableStructureChanged();
 		mtm_bottom.fireTableStructureChanged();
 		
-		// apply saved order of columns
-		// populate an array with columns in correct order
-		TableColumnModel tcm = bjt.getColumnModel();
-		TableColumn[] cols = new TableColumn[col_count];
-		int col_index = 0;
-		Enumeration<TableColumn> e = tcm.getColumns();
-		while(e.hasMoreElements()){
-			tc = e.nextElement();
-			if(intArrayContains(order, tc.getModelIndex())){
-				cols[col_index] = tcm.getColumn(order[col_index]);
-				col_index++;
-			}
-		}
-		
-		// remove all columns
-		limit = bjt.getColumnCount();
-		for(int i = 0; i < limit; i++){
-			tcm.removeColumn(tcm.getColumn(0));
-		}
-		
-		// add columns based on ordering in cols
-		for(int i = 0; i < col_count; i++){
-			tcm.addColumn(cols[i]);
-		}
-		
-		// apply the widths saved in widths
-		for(int i = 0; i < col_count; i++){
-			tc = tcm_bottom.getColumn(i);
-			tc.setPreferredWidth(((Integer)widths.elementAt(i)).intValue());
-		}
-		
-		// apply new ordering to matching table model
-		syncColumnIncludes(rm_conf.getLinkDataSource2(), bjt);
+		// brute force way of showing updates to table is firing update, then removing and adding
+		// all the columns
+		removeAndReplaceTableColumns(tjt);
+		removeAndReplaceTableColumns(bjt);
 	}
 	
-	private void syncColumnIncludes(LinkDataSource lds, JTable jt){
-		// method needs to set the include position values for the 
-		// link data source to match what is being displayed in the 
-		// table's column model
-		TableColumnModel tcm = jt.getColumnModel();
-		
-		for(int i = 0; i < jt.getColumnCount(); i++){
-			TableColumn tc = tcm.getColumn(i);
-			int model_index = tc.getModelIndex();
-			DataColumn dc = lds.getDataColumn(model_index);
-			dc.setIncludePosition(i);
+	/*
+	 * 
+	 */
+	private void removeAndReplaceTableColumns(JTable jt){
+		Vector<TableColumn> tcs = new Vector<TableColumn>();
+		Enumeration<TableColumn> e = jt.getColumnModel().getColumns();
+		while(e.hasMoreElements()){
+			TableColumn tc = e.nextElement();
+			tcs.add(tc);
 		}
 		
+		Iterator<TableColumn> it = tcs.iterator();
+		while(it.hasNext()){
+			TableColumn tc = it.next();
+			jt.removeColumn(tc);
+		}
+		
+		it = tcs.iterator();
+		while(it.hasNext()){
+			TableColumn tc = it.next();
+			jt.addColumn(tc);
+		}
 	}
 	
 	private void hideColumn(int which, TableColumnModel cm, int col){
 		// removes a table column from the model and saves it for when it's uhid
 		// col is the index in the table column model and might not match the
 		// index in the table data model
-		Vector<TableColumn> hidden;
+		Hashtable<String,Integer> hidden;
 		LinkDataSource lds;
+		JTable jt;
 		if(which == TOP){
 			hidden = top_hidden;
 			lds = rm_conf.getLinkDataSource1();
+			jt = tjt;
 		} else {
 			hidden = bottom_hidden;
 			lds = rm_conf.getLinkDataSource2();
+			jt = bjt;
 		}
 		
 		// remove column at given index
 		TableColumn tc = cm.getColumn(col);
 		int model_index = tc.getModelIndex();
-		hidden.add(tc);
+		hidden.put(jt.getModel().getColumnName(model_index), model_index);
 		cm.removeColumn(tc);
+		
+		// update include position in data model
+		//setIncludeFromTable(lds, jt);
 		
 		// need to sync between tables
 		// if it were top, then would need to syncBottom to reflect top
 		// if it were bottom, still need to match up bottom's columns with top
 		// only a syncBottom is needed if both top and bottom are tabled
 		if(rm_conf.getLinkDataSource1() != null && rm_conf.getLinkDataSource2() != null){
-			syncBottom();
+			//syncBottom();
+			syncTables();
 		}
 		
 		if(!loading_file){
@@ -601,7 +507,7 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 		}
 
 		// build unhide menu list
-		Vector<TableColumn> hidden;
+		Hashtable<String,Integer> hidden;
 		JMenu uh;
 		JMenuItem jmi;
 		
@@ -630,11 +536,10 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 			uh.add(jmi);
 		} else {
 			// loop through and for each column, add entry to menu
-			TableColumn tc;
 			String entry;
-			for(int i = 0; i < hidden.size(); i++){
-				tc = (TableColumn)hidden.elementAt(i);
-				entry = jt.getModel().getColumnName(tc.getModelIndex());
+			Iterator<String> it = hidden.keySet().iterator();
+			while(it.hasNext()){
+				entry = it.next();
 				jmi = new JMenuItem(entry);
 				jmi.addActionListener(this);
 				uh.add(jmi);
@@ -665,11 +570,14 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 		if(jt.getModel() instanceof MatchingTableModel){
 			mtm = (MatchingTableModel)jt.getModel();
 			mtm.setColumnName(new_name, col);
+			jt.getColumnModel().getColumn(col).setHeaderValue(new_name);
+			jt.getColumnModel().getColumn(col).setIdentifier(new_name);
 			
 			// resync tables for TOP table
-			syncTop();
+			//syncTop();
 			if(rm_conf.getLinkDataSource2() != null){
-				syncBottom();
+				//syncBottom();
+				syncTables();
 			}
 		}
 		
@@ -687,14 +595,16 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 			
 			if(me.getSource() == tjt.getTableHeader()){
 				System.out.println("on top");
-				syncColumnIncludes(rm_conf.getLinkDataSource1(), tjt);
+				//setIncludeFromTable(rm_conf.getLinkDataSource1(), tjt);
 				if(rm_conf.getLinkDataSource2() != null){
-					syncBottom();
+					//syncBottom();
+					syncTables();
 				}
 			} else if(me.getSource() == bjt.getTableHeader()){
 				System.out.println("on bottom");
 				if(rm_conf.getLinkDataSource1() != null){
-					syncBottom();
+					//syncBottom();
+					//syncTables();
 				}
 			}
 		}
@@ -726,17 +636,14 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 				jmi = unhide_menu_items.elementAt(i);
 				if(jmi == source){
 					System.out.println("uhide column " + source.getText());
-					JMenu uh;
-					Vector<TableColumn> hidden_columns;
+					Hashtable<String,Integer> hidden_columns;
 					JTable jt;
 					if(current_mtm == tjt.getModel()){
 						// unhide column on the top
-						uh = unhide;
 						hidden_columns = top_hidden;
 						jt = tjt;
 					} else {
 						// unhide column on the bottom
-						uh = bottom_unhide;
 						hidden_columns = bottom_hidden;
 						jt = bjt;
 					}
@@ -775,41 +682,33 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 		
 	}
 	
-	private void unHideColumn(String label, Vector<TableColumn> hidden_columns, JTable table){
-		// label is text to compare it to, hidden_columns hold TableColumn objects
+	private void unHideColumn(String label, Hashtable<String,Integer> hidden_columns, JTable table){
 		// table is where the matching table needs to be inserted
-		TableColumn tc;
-		Object header_obj;
-		String header_label;
 		if(!loading_file){
 			// need to set this if it's not being blocked by a in-progress file load
 			need_to_write = true;
 		}
-		for(int i = 0; i < hidden_columns.size(); i++){
-			tc = hidden_columns.elementAt(i);
-			header_obj = tc.getHeaderValue();
-			if(header_obj instanceof String){
-				// check to see if header of this column matches the label we're looking for
-				header_label = (String)header_obj;
-				if(label.equals(header_label)){
-					// need to insert this column back into table's column model, remove from hidden_columns vector
-					// since columns were chagned, need to synch after tc's been added
-					table.getColumnModel().addColumn(tc);
-					hidden_columns.remove(tc);
-					if(rm_conf.getLinkDataSource1() != null){
-						syncTop();
-					}
-					if(rm_conf.getLinkDataSource1() != null && rm_conf.getLinkDataSource2() != null){
-						syncBottom();
-					}
-					
-					// session table no longer valid
-					rm_conf.getMatchingConfigs().clear();
-					
-					
-					return;
-				}
+		Integer model_index = hidden_columns.get(label);
+		if(model_index != null){
+			TableColumn tc = new TableColumn(model_index);
+			tc.setIdentifier(label);
+			tc.setHeaderValue(label);
+			table.getColumnModel().addColumn(tc);
+			hidden_columns.remove(label);
+			
+			if(rm_conf.getLinkDataSource1() != null){
+				//syncTop();
 			}
+			if(rm_conf.getLinkDataSource1() != null && rm_conf.getLinkDataSource2() != null){
+				//syncBottom();
+				syncTables();
+			}
+			
+			// session table no longer valid
+			rm_conf.getMatchingConfigs().clear();
+			
+			return;
+			
 		}
 		
 	}
@@ -837,8 +736,26 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 		need_to_write = true;
 		need_to_sync = true;
 		
-		// session table no longer valid
-		//resetSessionTableWithBlankConfig();
+		boolean in_range = bjt.getColumnCount() > original_index && bjt.getColumnCount() > new_index;
+		if(tcme.getSource() == tjt.getColumnModel() && in_range){
+			// can update columns on lower table and lds2
+			// commented lines out, since currently lds objects are being synced in the
+			// syncTables() method when the mouse is release,
+			// and just the GUI can be done now
+			//MatchingTableModel mtm_top = (MatchingTableModel)tjt.getModel();
+			//MatchingTableModel mtm_bottom = (MatchingTableModel)bjt.getModel();
+			
+			TableColumn tc_bottom = bjt.getColumnModel().getColumn(original_index);
+			TableColumn tc2_bottom = bjt.getColumnModel().getColumn(new_index);
+			
+			TableColumn tc = tjt.getColumnModel().getColumn(original_index);
+			TableColumn tc2 = tjt.getColumnModel().getColumn(new_index);
+			
+			tc_bottom.setHeaderValue(tc.getHeaderValue());
+			tc2_bottom.setHeaderValue(tc2.getHeaderValue());
+			
+			removeAndReplaceTableColumns(bjt);
+		}
 		
 		
 	}
