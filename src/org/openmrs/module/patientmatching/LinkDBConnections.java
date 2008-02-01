@@ -100,7 +100,11 @@ public class LinkDBConnections {
 			Document doc = builder.parse(config);
 			RecMatchConfig rmc = XMLTranslator.createRecMatchConfig(doc);
 			rp = new ReaderProvider();
-			finder = new MatchFinder(rmc.getLinkDataSource1(), rp, rmc.getMatchingConfigs(), new RecordFieldAnalyzer(),MatchFinder.Scoring.BLOCKING_EXCLUSIVE);
+			
+			// as of version 1.2.0, removing RecordFieldAnalyzer object from Matchfiner since new Blocking exclusion
+			// feature is being used
+			//finder = new MatchFinder(rmc.getLinkDataSource1(), rp, rmc.getMatchingConfigs(), new RecordFieldAnalyzer(),MatchFinder.Scoring.BLOCKING_EXCLUSIVE);
+			finder = new MatchFinder(rmc.getLinkDataSource1(), rp, rmc.getMatchingConfigs(), MatchFinder.Scoring.BLOCKING_EXCLUSIVE);
 			link_db = new RecordDBManager(rmc.getLinkDataSource1());
 		}
 		catch(ParserConfigurationException pce){

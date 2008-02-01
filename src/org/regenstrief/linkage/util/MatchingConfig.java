@@ -39,6 +39,7 @@ public class MatchingConfig {
 	
 	private String name;
 	private boolean estimate;
+	private BlockingExclusionList bel;
 	
 	public MatchingConfig(String name, String[] rn){
 		row_options = new ArrayList<MatchingConfigRow>();
@@ -51,6 +52,7 @@ public class MatchingConfig {
 		double_format = NumberFormat.getInstance();
 		double_format.setMaximumFractionDigits(DOUBLE_SIG_FIGS);
 		score_threshold = DEFAULT_SCORE_THRESHOLD;
+		bel = null;
 	}
 	
 	public MatchingConfig(String name, MatchingConfigRow[] mcrs){
@@ -63,6 +65,7 @@ public class MatchingConfig {
 		double_format = NumberFormat.getInstance();
 		double_format.setMaximumFractionDigits(DOUBLE_SIG_FIGS);
 		score_threshold = DEFAULT_SCORE_THRESHOLD;
+		bel = null;
 	}
 	
 	public MatchingConfigRow getMatchingConfigRowByName(String name) {
@@ -74,6 +77,14 @@ public class MatchingConfig {
 			}
 		}
 		return null;
+	}
+	
+	public void setBlockingExclusionList(BlockingExclusionList b){
+		bel = b;
+	}
+	
+	public BlockingExclusionList getBlockingExclusionList(){
+		return bel;
 	}
 	
 	public List<MatchingConfigRow> getMatchingConfigRows(){

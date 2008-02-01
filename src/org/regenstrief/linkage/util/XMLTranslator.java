@@ -413,6 +413,7 @@ public class XMLTranslator {
 			estimate = true;
 		}
 		Node score_threshold = attributes.getNamedItem("threshold");
+		BlockingExclusionList bel = null;
 		
 		// iterate over the children nodes and create the MatchingConfigRow objects
 		ArrayList<MatchingConfigRow> mcrs = new ArrayList<MatchingConfigRow>();
@@ -421,6 +422,9 @@ public class XMLTranslator {
 			if(child.getNodeName().equals("row")){
 				MatchingConfigRow mcr = createMatchingConfigRow(child);
 				mcrs.add(mcr);
+			} else if(child.getNodeName().equals("BlockingExclusion")){
+				// create blocking exclusion list object
+				bel = createBlockingExclusionList(child);
 			}
 		}
 		
@@ -430,6 +434,7 @@ public class XMLTranslator {
 		}
 		
 		MatchingConfig ret = new MatchingConfig(mc_name, mcr_array);
+		ret.setBlockingExclusionList(bel);
 		ret.setEstimate(estimate);
 		if(score_threshold != null){
 			try{
@@ -515,6 +520,22 @@ public class XMLTranslator {
 				} else if(alg.equals(MatchingConfig.ALGORITHMS[MatchingConfig.LCS])){
 					ret.setAlgorithm(MatchingConfig.LCS);
 				}
+			}
+		}
+		
+		return ret;
+	}
+	
+	public static BlockingExclusionList createBlockingExclusionList(Node n){
+		BlockingExclusionList ret = new BlockingExclusionList();
+		
+		for(int i = 0; i < n.getChildNodes().getLength(); i++){
+			Node child = n.getChildNodes().item(i);
+			String child_name = child.getNodeName();
+			if(child_name.equals("exclusion")){
+				String demographic = child.getAttributes().getNamedItem("demographic").getTextContent();
+				String regex = child.getAttributes().getNamedItem("regex").getTextContent();
+				ret.addExclusion(demographic, regex);
 			}
 		}
 		

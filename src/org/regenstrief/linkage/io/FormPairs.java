@@ -11,6 +11,7 @@ import java.util.Hashtable;
 import java.util.List;
 
 import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.util.BlockingExclusionList;
 import org.regenstrief.linkage.util.ComparisonException;
 import org.regenstrief.linkage.util.MatchingConfig;
 
@@ -31,6 +32,8 @@ public class FormPairs {
 	private List<Record> dsr2_buffer;
 	private Record dsr2_next, dsr1_next;
 	private int buffer_read_index;
+	
+	private BlockingExclusionList bel;
 	
 	private static final int GREATER_THAN = 1;
 	private static final int EQUAL = 0;
@@ -53,7 +56,15 @@ public class FormPairs {
 		dsr2_next = dsr2.nextRecord();
 		dsr1_next = dsr1.nextRecord();
 		fillDSR2Buffer();
-		
+		bel = mc.getBlockingExclusionList();
+	}
+	
+	public BlockingExclusionList getBlockingExclutionList(){
+		return bel;
+	}
+	
+	public void setBlockingExclusionList(BlockingExclusionList b){
+		bel = b;
 	}
 	
 	/**
@@ -171,6 +182,14 @@ public class FormPairs {
 			}
 			
 			try{
+				if(bel != null){
+					// check if either value matches a regex to skip as a blocking value
+					if(bel.isExcludeValue(comp, str1)){
+						return LESS_THAN;
+					} else if(bel.isExcludeValue(comp, str2)){
+						return GREATER_THAN;
+					}
+				}
 				ret = compareString(str1, str2, type_table.get(comp).intValue());
 			}
 			catch(ComparisonException ce){
