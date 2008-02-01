@@ -51,7 +51,7 @@ public class ScaleWeightAnalyzer extends Analyzer {
 			sw_connection.connect();
 		}
 		
-		Hashtable <String, DataColumn> sw_columns = new Hashtable<String,DataColumn>();
+		sw_columns = new Hashtable<String,DataColumn>();
 		Iterator<DataColumn> it = lds.getDataColumns().iterator();
 		Hashtable<String, Boolean> is_scaleweight = mc.getScaleWeightorNotTable();
 		while(it.hasNext()){
