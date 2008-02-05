@@ -142,12 +142,8 @@ public class MatchingTableModel extends AbstractTableModel {
 		return raw_lines;
 	}
 	
-	public int getRealColumnCount(){
-		return lds.getDataColumns().size();
-	}
-	
 	public int getColumnCount(){
-		return lds.getIncludeCount();
+		return lds.getDataColumns().size();
 	}
 	
 	 public boolean isCellEditable(int row, int col){

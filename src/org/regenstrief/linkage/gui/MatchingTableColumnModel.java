@@ -1,11 +1,17 @@
 package org.regenstrief.linkage.gui;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
 
 import org.regenstrief.linkage.util.DataColumn;
+import org.regenstrief.linkage.util.DataColumnIncludeComparator;
 import org.regenstrief.linkage.util.LinkDataSource;
 
 /**
@@ -23,11 +29,36 @@ import org.regenstrief.linkage.util.LinkDataSource;
 
 public class MatchingTableColumnModel extends DefaultTableColumnModel {
 	
-	LinkDataSource lds;
+	protected LinkDataSource lds;
+	protected Hashtable<String,TableColumn> hidden_columns;
+	
+	protected DataColumnIncludeComparator column_comparator;
 	
 	public MatchingTableColumnModel(LinkDataSource lds){
 		super();
 		this.lds = lds;
+		
+		hidden_columns = new Hashtable<String,TableColumn>();
+		column_comparator = new DataColumnIncludeComparator(lds);
+	}
+	
+	protected void removeNonIncludedColumns(){
+		Iterator<DataColumn> it = lds.getDataColumns().iterator();
+		while(it.hasNext()){
+			DataColumn dc = it.next();
+			if(dc.getIncludePosition() == DataColumn.INCLUDE_NA){
+				String dc_name = dc.getName();
+				Enumeration<TableColumn> e = this.getColumns();
+				while(e.hasMoreElements()){
+					TableColumn tc = e.nextElement();
+					if(tc.getHeaderValue().equals(dc_name)){
+						removeColumn(tc);
+						hidden_columns.put(dc_name, tc);
+					}
+				}
+			}
+			
+		}
 	}
 	
 	/**
@@ -38,8 +69,28 @@ public class MatchingTableColumnModel extends DefaultTableColumnModel {
 	public void addColumn(TableColumn tc){
 		int model_index = tc.getModelIndex();
 		DataColumn dc = lds.getDataColumn(model_index);
-		super.addColumn(tc);
-		dc.setIncludePosition(this.getColumnIndex(tc.getIdentifier()));
+		
+		// set identifier object if not set yet
+		if(tc.getIdentifier() == null){
+			tc.setIdentifier(dc.getName());
+		}
+		
+		if(dc.getIncludePosition() == DataColumn.INCLUDE_NA){
+			hidden_columns.put(dc.getName(), tc);
+		} else {
+			super.addColumn(tc);
+			Collections.sort(tableColumns, new DataColumnIncludeComparator(lds));
+		}
+	}
+	
+	public void unHideColumn(String col_name){
+		TableColumn tc = hidden_columns.get(col_name);
+		if(tc != null){
+			hidden_columns.remove(col_name);
+			DataColumn dc = lds.getDataColumn(tc.getModelIndex());
+			dc.setIncludePosition(tableColumns.size());
+			addColumn(tc);
+		}
 	}
 	
 	/**
@@ -91,10 +142,17 @@ public class MatchingTableColumnModel extends DefaultTableColumnModel {
 	 * INCLUDE_NA in the DataColumn to update the LinkDataSource
 	 * object to show column is no longer included in the analysis.
 	 */
-	public void removeColumn(TableColumn tc){
+	public void hideColumn(TableColumn tc){
 		int model_index = tc.getModelIndex();
 		DataColumn dc = lds.getDataColumn(model_index);
 		dc.setIncludePosition(DataColumn.INCLUDE_NA);
+		hidden_columns.put(tc.getHeaderValue().toString(), tc);
 		super.removeColumn(tc);
+	}
+	
+	public List<String> getHiddenColumns(){
+		ArrayList<String> ret = new ArrayList<String>();
+		ret.addAll(hidden_columns.keySet());
+		return ret;
 	}
 }
