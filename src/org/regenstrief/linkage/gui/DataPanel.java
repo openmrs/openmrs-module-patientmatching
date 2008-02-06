@@ -496,9 +496,13 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 			jt.getColumnModel().getColumn(col).setHeaderValue(new_name);
 			jt.getColumnModel().getColumn(col).setIdentifier(new_name);
 			
+			//mtm.fireTableStructureChanged();
+			
 			// synchronize the two table names
 			if(rm_conf.getLinkDataSource2() != null){
 				syncTables();
+			} else {
+				removeAndReplaceTableColumns(tjt);
 			}
 		}
 		

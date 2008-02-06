@@ -71,15 +71,14 @@ public class MatchingTableColumnModel extends DefaultTableColumnModel {
 		DataColumn dc = lds.getDataColumn(model_index);
 		
 		// set identifier object if not set yet
-		if(tc.getIdentifier() == null){
-			tc.setIdentifier(dc.getName());
-		}
+		tc.setIdentifier(dc.getName());
+		tc.setHeaderValue(dc.getName());
 		
 		if(dc.getIncludePosition() == DataColumn.INCLUDE_NA){
 			hidden_columns.put(dc.getName(), tc);
 		} else {
 			super.addColumn(tc);
-			Collections.sort(tableColumns, new DataColumnIncludeComparator(lds));
+			Collections.sort(tableColumns, column_comparator);
 		}
 	}
 	
