@@ -81,10 +81,11 @@ public class ScaleWeightAnalyzerTest {
 					dsa1.addAnalyzer(swa1);
 					dsa2.addAnalyzer(swa2);
 
-					dsa1.analyzeData();
-					dsa2.analyzeData();
+					//dsa1.analyzeData();
+					//dsa2.analyzeData();
 					
 					ScaleWeightModifier swm = new ScaleWeightModifier(swa1, swa2);
+					swm.initializeModifier();
 					sp.addScoreModifier(swm);
 				}	
 

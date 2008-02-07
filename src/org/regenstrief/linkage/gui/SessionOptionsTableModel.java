@@ -76,7 +76,7 @@ public class SessionOptionsTableModel extends AbstractTableModel{
 			}
 			mcr.setNonAgreement(d.doubleValue());
 		} else if(col == 6){
-			
+			System.out.println("set value for algorithm to " + value);
 		}
 		fireTableCellUpdated(row, col);
 		
@@ -88,7 +88,7 @@ public class SessionOptionsTableModel extends AbstractTableModel{
 	
 	 public boolean isCellEditable(int row, int col){
 	 	// first column is only to be viewed
-	 	if(col == 0 || col == 6){
+	 	if(col == 0){// || col == 6){
 	 		return false;
 	 	} else {
 	 		return true;

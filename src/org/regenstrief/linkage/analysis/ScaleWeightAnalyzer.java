@@ -96,7 +96,8 @@ public class ScaleWeightAnalyzer extends Analyzer {
 	}
 
 	public void analyzeRecord(Record rec){
-		for(String current_demographic : rec.getDemographics().keySet()){
+		//for(String current_demographic : rec.getDemographics().keySet()){
+		for(String current_demographic : sw_columns.keySet()){
 			String dem_value = rec.getDemographic(current_demographic);
 			MatchingConfigRow mcr = config.getMatchingConfigRowByName(current_demographic);
 			int buffer_size = mcr.getBuffer_size();

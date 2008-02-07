@@ -49,6 +49,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	JList runs;
 	JTextField run_name;
 	JTable session_options;
+	JComboBox jcb;
 	
 	RecMatchConfig rm_conf;
 	 
@@ -122,7 +123,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		left_list_panel.add(jp);
 		
 		// add JButtons and JTextField to the other panel
-		JButton rename, remove, new_run, validate, write, run_link;
+		JButton rename, remove, new_run, run_link;
 		run_name = new JTextField(18);
 		run_name.setMaximumSize(run_name.getPreferredSize());
 		run_name.addKeyListener(this);
@@ -158,13 +159,14 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	private Component getSessionTable(){
 		session_options = new JTable(new SessionOptionsTableModel());
 		
-		JComboBox jcb = new JComboBox();
+		jcb = new JComboBox();
 		jcb.addItem(MatchingConfig.ALGORITHMS[0]);
 		jcb.addItem(MatchingConfig.ALGORITHMS[1]);
 		jcb.addItem(MatchingConfig.ALGORITHMS[2]);
 		jcb.addItem(MatchingConfig.ALGORITHMS[3]);
 		TableColumn tc = session_options.getColumnModel().getColumn(6);
 		tc.setCellEditor(new DefaultCellEditor(jcb));
+		
 		JScrollPane table_pane = new JScrollPane(session_options);
 		
 		return table_pane;
@@ -339,7 +341,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			dlm.clear();
 			// need to create an empty one to display in session options table, and add to rm_conf
 			// but only if the two link data sources are both defined
-			if(rm_conf.getLinkDataSource1() != null && rm_conf.getLinkDataSource2() != null){
+			if(rm_conf.getLinkDataSource1() != null){
 				Hashtable<String, DataColumn> col_names = rm_conf.getLinkDataSource1().getIncludedDataColumns();
 				String[] names = new String[col_names.keySet().size()];
 				Enumeration<String> e = col_names.keys();
@@ -368,6 +370,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		}
 		
 		session_options.setModel(new SessionOptionsTableModel(current_working_config));
+		
 		
 		super.paint(g);
 	}
