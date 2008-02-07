@@ -493,8 +493,10 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 		if(jt.getModel() instanceof MatchingTableModel){
 			mtm = (MatchingTableModel)jt.getModel();
 			mtm.setColumnName(new_name, col);
-			jt.getColumnModel().getColumn(col).setHeaderValue(new_name);
-			jt.getColumnModel().getColumn(col).setIdentifier(new_name);
+			
+			//int display_index = mtm.get
+			//jt.getColumnModel().getColumn(col).setHeaderValue(new_name);
+			//jt.getColumnModel().getColumn(col).setIdentifier(new_name);
 			
 			//mtm.fireTableStructureChanged();
 			

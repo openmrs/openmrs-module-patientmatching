@@ -80,15 +80,18 @@ public class ScaleWeightAnalyzerTest {
 
 					dsa1.addAnalyzer(swa1);
 					dsa2.addAnalyzer(swa2);
-
-					//dsa1.analyzeData();
-					//dsa2.analyzeData();
+					
+					System.out.println(new java.util.Date() + ":  starting to analyze first data source");
+					dsa1.analyzeData();
+					System.out.println(new java.util.Date() + ":  starting to analyze second data source");
+					dsa2.analyzeData();
 					
 					ScaleWeightModifier swm = new ScaleWeightModifier(swa1, swa2);
 					swm.initializeModifier();
 					sp.addScoreModifier(swm);
 				}	
-
+				
+				System.out.println(new java.util.Date() + ":  starting to get record pairs");
 				if(!mc_test.getName().equals("default")) {
 					// Form pairs should come after analysis, because it modifies next_record of the readers
 					org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(rp.getReader(rmc.getLinkDataSource1(), mc_test), rp.getReader(rmc.getLinkDataSource2(), mc_test), mc_test, type_table);
@@ -101,12 +104,13 @@ public class ScaleWeightAnalyzerTest {
 						Record r2 = pair[1];
 						MatchResult mr = sp.scorePair(r1, r2);
 						String match_details = getOutputLine(mr);
-						System.out.println(match_details);
+						//System.out.println(match_details);
 						i++;
 					}
 
 					System.out.println("found " + i + " records that matched on the blocking field");
 				}
+				System.out.println(new java.util.Date() + ":  finsihed");
 			}
 
 		}
