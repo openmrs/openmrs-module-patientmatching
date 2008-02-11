@@ -122,6 +122,7 @@ public class MatchingTableColumnModel extends DefaultTableColumnModel {
 	
 	/**
 	 * Method added for when non-adjacent columns get moved
+	 * or a column is hidden and later indexes need to be fixed
 	 * 
 	 */
 	protected void syncIncludes(){
@@ -147,6 +148,7 @@ public class MatchingTableColumnModel extends DefaultTableColumnModel {
 		dc.setIncludePosition(DataColumn.INCLUDE_NA);
 		hidden_columns.put(tc.getHeaderValue().toString(), tc);
 		super.removeColumn(tc);
+		syncIncludes();
 	}
 	
 	public List<String> getHiddenColumns(){

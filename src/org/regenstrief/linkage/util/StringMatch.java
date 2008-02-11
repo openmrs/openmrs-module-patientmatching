@@ -16,9 +16,9 @@ import uk.ac.shef.wit.simmetrics.similaritymetrics.Levenshtein;
 
 public class StringMatch {
 	// threshold values for valid matches
-	final static double JWC_THRESH = 0.8;
-	final static double LCS_THRESH = 0.8;
-	final static double LEV_THRESH = 0.7;
+	public final static double JWC_THRESH = 0.8;
+	public final static double LCS_THRESH = 0.8;
+	public final static double LEV_THRESH = 0.7;
 	
 	public static boolean exacthMatch(String str1, String str2, double threshold){
 		return str1.equals(str2) && str1.length() > 0;

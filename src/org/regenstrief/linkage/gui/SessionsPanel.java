@@ -160,10 +160,10 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		session_options = new JTable(new SessionOptionsTableModel());
 		
 		jcb = new JComboBox();
-		jcb.addItem(MatchingConfig.ALGORITHMS[0]);
-		jcb.addItem(MatchingConfig.ALGORITHMS[1]);
-		jcb.addItem(MatchingConfig.ALGORITHMS[2]);
-		jcb.addItem(MatchingConfig.ALGORITHMS[3]);
+		//jcb.addItem(MatchingConfig.ALGORITHMS[0]);
+		//jcb.addItem(MatchingConfig.ALGORITHMS[1]);
+		//jcb.addItem(MatchingConfig.ALGORITHMS[2]);
+		//jcb.addItem(MatchingConfig.ALGORITHMS[3]);
 		TableColumn tc = session_options.getColumnModel().getColumn(6);
 		tc.setCellEditor(new DefaultCellEditor(jcb));
 		

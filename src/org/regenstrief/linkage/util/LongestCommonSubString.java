@@ -83,7 +83,7 @@ public class LongestCommonSubString {
 	 * Implements algorithm by Lonnie Blevins.
 	 * 
 	 */
-	float getSimilarity(String str1, String str2){
+	public float getSimilarity(String str1, String str2){
 		String min, max;
 		
 		// set strings to lowercase for comparison purposes
