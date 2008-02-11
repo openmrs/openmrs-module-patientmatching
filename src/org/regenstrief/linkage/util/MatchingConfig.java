@@ -209,7 +209,7 @@ public class MatchingConfig {
 		while(it.hasNext()) {
 			MatchingConfigRow mcr = it.next();
 			String col_name = mcr.getName();
-			if(mcr.isScaleWeight() && mcr.isIncluded()) {
+			if(mcr.isScaleWeight()){// && mcr.isIncluded()) {
 				scale_weight_columns.put(col_name, true);
 			}
 			else {
