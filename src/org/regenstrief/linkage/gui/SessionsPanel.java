@@ -298,14 +298,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			} else if(source.getText().equals("Rename")){
 				renameSessionConfig();
 			} else if(source.getText().equals("New")){
-				Hashtable<String, DataColumn> col_names = rm_conf.getLinkDataSource1().getIncludedDataColumns();
-				String[] names = new String[col_names.keySet().size()];
-				Enumeration<String> e = col_names.keys();
-				int i = 0;
-				while(e.hasMoreElements()){
-					names[i++] = e.nextElement();
-				}
-				MatchingConfig mc = new MatchingConfig(DEFAULT_NAME, names);
+				MatchingConfig mc = makeNewMatchingConfig();
 				rm_conf.getMatchingConfigs().add(mc);
 				DefaultListModel dlm = (DefaultListModel)runs.getModel();
 				dlm.addElement(mc);
@@ -331,6 +324,26 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		
 	}
 	
+	/*
+	 * Method called to create a new MatchingConfig when the user selecs this pane for the
+	 * first time (caught in the paint method, making sure there is at least one MatchingConfig
+	 * to show in the table) or when the user clicks on the "New" button.  The main behaviour 
+	 * requested is to have the order of the rows in the table reflect the include ordering
+	 * of the included data columns from the Data tab
+	 */
+	private MatchingConfig makeNewMatchingConfig(){
+		Hashtable<String, DataColumn> col_names = rm_conf.getLinkDataSource1().getIncludedDataColumns();
+		String[] names = new String[col_names.keySet().size()];
+		Enumeration<String> e = col_names.keys();
+		while(e.hasMoreElements()){
+			String name = e.nextElement();
+			DataColumn dc = col_names.get(name);
+			names[dc.getIncludePosition()] = name;
+		}
+		MatchingConfig ret = new MatchingConfig(DEFAULT_NAME, names);
+		return ret;
+	}
+	
 	/**
 	 * Method first adds a check to see what MatchingConfig to set as active
 	 * for the SessionOptionsTable to display
@@ -342,15 +355,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			// need to create an empty one to display in session options table, and add to rm_conf
 			// but only if the two link data sources are both defined
 			if(rm_conf.getLinkDataSource1() != null){
-				Hashtable<String, DataColumn> col_names = rm_conf.getLinkDataSource1().getIncludedDataColumns();
-				String[] names = new String[col_names.keySet().size()];
-				Enumeration<String> e = col_names.keys();
-				while(e.hasMoreElements()){
-					String name = e.nextElement();
-					DataColumn dc = col_names.get(name);
-					names[dc.getIncludePosition()] = name;
-				}
-				MatchingConfig mc = new MatchingConfig(DEFAULT_NAME, names);
+				MatchingConfig mc = makeNewMatchingConfig();
 				rm_conf.getMatchingConfigs().add(mc);
 				
 				// add to JList, set as active

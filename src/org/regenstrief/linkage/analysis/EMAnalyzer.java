@@ -1,6 +1,7 @@
 package org.regenstrief.linkage.analysis;
 
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 
@@ -64,8 +65,7 @@ public class EMAnalyzer { //extends Analyzer {
 	}
 	
 	/**
-	 * Analyzes the record pairs according to the given MatchingConfig object and returns
-	 * a hash map of the column names to new values
+	 * Analyzes the record pairs according to the given MatchingConfig object
 	 * 
 	 * @param fp	provides the stream of Record pairs to be analyzed
 	 * @param mc	stores the information on how to compare the Records.  This will have
@@ -93,6 +93,15 @@ public class EMAnalyzer { //extends Analyzer {
 			}
 			
 		}
+		
+		// print basic information about analysis
+		String[] bcs = mc.getBlockingColumns();
+		System.out.print("Blocking columns: ");
+		for(int i = 0; i < bcs.length; i++){
+			String block_col_name = bcs[i];
+			System.out.print(" " + block_col_name);
+		}
+		System.out.println();
 		finishAnalysis(new VectorTable(mc), mc.getIncludedColumnsNames(), mc, iterations);
 		
 	}
@@ -209,6 +218,30 @@ public class EMAnalyzer { //extends Analyzer {
 			}
 			
 		}
+		
+		//***************************************
+		// print basic information about analysis
+		String[] bcs = mc.getBlockingColumns();
+		System.out.print("\nBlocking columns: ");
+		for(int i = 0; i < bcs.length; i++){
+			String block_col_name = bcs[i];
+			System.out.print(" " + block_col_name);
+		}
+		System.out.println();
+		System.out.println("P:\t" + p);
+		int total_pairs = 0;
+		Enumeration<MatchVector> e = vector_count.keys();
+		while(e.hasMoreElements()){
+			MatchVector mv = e.nextElement();
+			total_pairs += vector_count.get(mv);
+		}
+		double true_matches = total_pairs * p;
+		double non_matches = total_pairs * (1 - p);
+		System.out.println("Total pairs processed:\t" + total_pairs);
+		System.out.println("Estimated true matches:\t" + true_matches);
+		System.out.println("Estimated non matches:\t" + non_matches);
+		System.out.println();
+		//***************************************
 		
 		for(int i = 0; i < demographics.length; i++){
 			String demographic = demographics[i];
