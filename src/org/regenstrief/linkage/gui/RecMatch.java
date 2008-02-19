@@ -360,31 +360,13 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 	
 	public void stateChanged(ChangeEvent ce){
 		// currently, only the tab selection fires this event
-		/*
-		if(need_session_refresh){
-			if(current_working_config == null && top_tabled && bottom_tabled){
-				// get a new, blank matching config
-				current_working_config = getCurrentMC();
-				SessionOptionsTableModel sotm = (SessionOptionsTableModel)session_options.getModel();
-				sotm.setConfig(current_working_config);
-				need_session_refresh = false;
-				
-				// make sure it's added to runs and selected
-				DefaultListModel dlm = (DefaultListModel)runs.getModel();
-				dlm.addElement(current_working_config);
-				runs.setSelectedValue(current_working_config, true);
-				run_name.setText(current_working_config.getName());
-			} else if(!(top_tabled && bottom_tabled)){
-				// session option table should be blank, runs should be empty
-				SessionOptionsTableModel sotm = (SessionOptionsTableModel)session_options.getModel();
-				sotm.clearTable();
-				DefaultListModel dlm = (DefaultListModel)runs.getModel();
-				dlm.clear();
-				run_name.setText("");
+		
+		if(ce.getSource() == tabs){
+			if(tabs.getSelectedComponent() instanceof SessionsPanel){
+				spanel.setGuiElements();
 			}
 		}
 		
-		*/
 	}
 	
 	/**

@@ -3,7 +3,6 @@ package org.regenstrief.linkage.gui;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -31,7 +30,6 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import org.regenstrief.linkage.util.DataColumn;
@@ -349,7 +347,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	 * Method first adds a check to see what MatchingConfig to set as active
 	 * for the SessionOptionsTable to display
 	 */
-	public void paint(Graphics g){
+	public void setGuiElements(){
 		if(rm_conf.getMatchingConfigs().size() == 0){
 			DefaultListModel dlm = (DefaultListModel)runs.getModel();
 			dlm.clear();
@@ -376,8 +374,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		}
 		
 		session_options.setModel(new SessionOptionsTableModel(current_working_config));
-		
-		
-		super.paint(g);
+		TableColumn tc = session_options.getColumnModel().getColumn(6);
+		tc.setCellEditor(new DefaultCellEditor(jcb));
 	}
 }

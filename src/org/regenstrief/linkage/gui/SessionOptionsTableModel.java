@@ -76,7 +76,6 @@ public class SessionOptionsTableModel extends AbstractTableModel{
 			}
 			mcr.setNonAgreement(d.doubleValue());
 		} else if(col == 6){
-			System.out.println("set value for algorithm to " + value);
 			if(value.equals(MatchingConfig.ALGORITHMS[0])){
 				mcr.setAlgorithm(0);
 			} else if(value.equals(MatchingConfig.ALGORITHMS[1])){
