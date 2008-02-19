@@ -13,7 +13,7 @@ public class SessionOptionsTableModel extends AbstractTableModel{
 	MatchingConfig mc;
 	String row_names[];
 	
-	public static final Class[] column_classes = {String.class, Integer.class, Integer.class, Boolean.class, Double.class, Double.class, String.class};
+	public static final Class[] column_classes = {String.class, Integer.class, Integer.class, Boolean.class, Double.class, Double.class, Object.class};
 	public static final String[] column_names = {"Name", "Block Order", "Blck Chars", "Include", "T Agreement", "Non-Agreement", "Algorithm"};
 	
 	
@@ -77,6 +77,18 @@ public class SessionOptionsTableModel extends AbstractTableModel{
 			mcr.setNonAgreement(d.doubleValue());
 		} else if(col == 6){
 			System.out.println("set value for algorithm to " + value);
+			if(value.equals(MatchingConfig.ALGORITHMS[0])){
+				mcr.setAlgorithm(0);
+			} else if(value.equals(MatchingConfig.ALGORITHMS[1])){
+				mcr.setAlgorithm(1);
+			} else if(value.equals(MatchingConfig.ALGORITHMS[2])){
+				mcr.setAlgorithm(2);
+			} else if(value.equals(MatchingConfig.ALGORITHMS[3])){
+				mcr.setAlgorithm(3);
+			} else {
+				mcr.setAlgorithm(0);
+			}
+			
 		}
 		fireTableCellUpdated(row, col);
 		

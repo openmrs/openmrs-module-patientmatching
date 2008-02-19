@@ -4,6 +4,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 
 import org.regenstrief.linkage.MatchResult;
+import org.regenstrief.linkage.ModifiedMatchResult;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
@@ -91,7 +92,7 @@ public class EntropyAnalyzer extends Analyzer implements Modifier {
 		
 	}
 	
-	public void modifyMatchResult(MatchResult mr, MatchingConfig mc){
-		
+	public ModifiedMatchResult getModifiedMatchResult(MatchResult mr, MatchingConfig mc){
+		return null;
 	}
 }

@@ -10,11 +10,11 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.regenstrief.linkage.MatchResult;
+import org.regenstrief.linkage.ModifiedMatchResult;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.analysis.DataSourceAnalysis;
 import org.regenstrief.linkage.analysis.ScaleWeightAnalyzer;
 import org.regenstrief.linkage.analysis.ScaleWeightModifier;
-import org.regenstrief.linkage.io.DataBaseReader;
 import org.regenstrief.linkage.io.DataSourceReader;
 import org.regenstrief.linkage.io.OrderedCharDelimFileReader;
 import org.regenstrief.linkage.io.ReaderProvider;
@@ -82,9 +82,9 @@ public class ScaleWeightAnalyzerTest {
 					dsa2.addAnalyzer(swa2);
 					
 					System.out.println(new java.util.Date() + ":  starting to analyze first data source");
-					dsa1.analyzeData();
+					//dsa1.analyzeData();
 					System.out.println(new java.util.Date() + ":  starting to analyze second data source");
-					dsa2.analyzeData();
+					//dsa2.analyzeData();
 					
 					ScaleWeightModifier swm = new ScaleWeightModifier(swa1, swa2);
 					swm.initializeModifier();
@@ -99,12 +99,18 @@ public class ScaleWeightAnalyzerTest {
 					// iterate through the Record pairs and print the score
 					Record[] pair;
 					int i = 0;
-					while((pair = fp.getNextRecordPair()) != null) {
+					while((pair = fp.getNextRecordPair()) != null && i < 10) {
 						Record r1 = pair[0];
 						Record r2 = pair[1];
 						MatchResult mr = sp.scorePair(r1, r2);
-						String match_details = getOutputLine(mr);
-						//System.out.println(match_details);
+						String match_details;
+						if(mr instanceof ModifiedMatchResult){
+							match_details = getOutputLine((ModifiedMatchResult)mr);
+						} else {
+							match_details = getOutputLine(mr);
+						}
+						
+						System.out.println(match_details);
 						i++;
 					}
 
@@ -139,6 +145,26 @@ public class ScaleWeightAnalyzerTest {
 				s += "|" + r1.getDemographic(demographic) + "|" + r2.getDemographic(demographic);
 			}
 		}
+		return s;
+	}
+	
+	private static String getOutputLine(ModifiedMatchResult mr){
+		String s = new String();
+		s += "records";
+		Enumeration<String> demographics = mr.getRecord1().getDemographics().keys();
+		Record r1 = mr.getRecord1();
+		Record r2 = mr.getRecord2();
+		while(demographics.hasMoreElements()){
+			String demographic = demographics.nextElement();
+			MatchingConfigRow mcr = mr.getMatchingConfig().getMatchingConfigRowByName(demographic);
+			if(mcr.isIncluded() || mcr.getBlockOrder() > 0){
+				s += "|" + r1.getDemographic(demographic) + "|" + r2.getDemographic(demographic);
+			}
+		}
+		s += "\n";
+		s += mr.getScore() + "|" + mr.getBasicMatchResult().getScoreVector();
+		s+= "\n";
+		s += mr.getBaseScore() + "|" + mr.getScoreVector();
 		return s;
 	}
 }

@@ -31,6 +31,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import org.regenstrief.linkage.util.DataColumn;
@@ -157,13 +158,13 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	}
 	
 	private Component getSessionTable(){
-		session_options = new JTable(new SessionOptionsTableModel());
+		session_options = new JTable(new SessionOptionsTableModel());		
 		
 		jcb = new JComboBox();
-		//jcb.addItem(MatchingConfig.ALGORITHMS[0]);
-		//jcb.addItem(MatchingConfig.ALGORITHMS[1]);
-		//jcb.addItem(MatchingConfig.ALGORITHMS[2]);
-		//jcb.addItem(MatchingConfig.ALGORITHMS[3]);
+		jcb.addItem(MatchingConfig.ALGORITHMS[0]);
+		jcb.addItem(MatchingConfig.ALGORITHMS[1]);
+		jcb.addItem(MatchingConfig.ALGORITHMS[2]);
+		jcb.addItem(MatchingConfig.ALGORITHMS[3]);
 		TableColumn tc = session_options.getColumnModel().getColumn(6);
 		tc.setCellEditor(new DefaultCellEditor(jcb));
 		

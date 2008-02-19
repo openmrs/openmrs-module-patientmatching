@@ -111,6 +111,34 @@ public class LongestCommonSubString {
 		}
 	}
 	
+	public float getSimilarity2(String str1, String str2){
+		String min, max;
+		
+		// set strings to lowercase for comparison purposes
+		if(str1.length() <= str2.length()){
+			min = str1.toLowerCase();
+			max = str2.toLowerCase();
+		} else {
+			min = str2.toLowerCase();
+			max = str1.toLowerCase();
+		}
+		
+		int min_length;
+		if(min.length() >= 6){
+			min_length = 3;
+		} else {
+			min_length = 2;
+		}
+		
+		int lcss_length = getLCS(min, max, min_length);
+		
+		if(lcss_length == 0){
+			return 0;
+		} else {
+			return (float)lcss_length / min.length();
+		}
+	}
+	
 	/*
 	 * An iterative version of the below method, written in an attempt to make
 	 * it run faster.  It did not seem to improve when tested.

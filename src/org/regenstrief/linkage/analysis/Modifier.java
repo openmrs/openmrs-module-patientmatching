@@ -6,6 +6,7 @@ package org.regenstrief.linkage.analysis;
  */
 
 import org.regenstrief.linkage.MatchResult;
+import org.regenstrief.linkage.ModifiedMatchResult;
 import org.regenstrief.linkage.util.MatchingConfig;
 
 public interface Modifier {
@@ -20,5 +21,5 @@ public interface Modifier {
 	 * @param mr	the object containing the two Records and the base Score
 	 * @param mc	the particular configuration with flags indicating which columns to scale
 	 */
-	public void modifyMatchResult(MatchResult mr, MatchingConfig mc);
+	public ModifiedMatchResult getModifiedMatchResult(MatchResult mr, MatchingConfig mc);
 }

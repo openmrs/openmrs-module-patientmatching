@@ -5,6 +5,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 
 import org.regenstrief.linkage.MatchResult;
+import org.regenstrief.linkage.ModifiedMatchResult;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.ScoreVector;
 import org.regenstrief.linkage.db.ScaleWeightDBManager;
@@ -127,7 +128,9 @@ public class ScaleWeightModifier implements Modifier {
 		return result;
 	}
 
-	public void modifyMatchResult(MatchResult mr, MatchingConfig mc) {
+	public ModifiedMatchResult getModifiedMatchResult(MatchResult mr, MatchingConfig mc) {
+		ModifiedMatchResult ret = new ModifiedMatchResult(mr);
+		
 		// If there is at least one column that requires weight scaling
 		if(mc.get_is_scale_weight()) {
 			
@@ -147,12 +150,19 @@ public class ScaleWeightModifier implements Modifier {
 					// Calculate scaling factor obtained from two data sources
 					SWAdjustScore adjustment = SWAdjustScore.sumTwoScores(adjust1.get(cur_demographic), adjust2.get(cur_demographic));
 					// Adjust the score
-					score_vector.setScore(cur_demographic, score_vector.getScore(cur_demographic) * adjustment.getScalingFactor());
+					// score_vector.setScore(cur_demographic, score_vector.getScore(cur_demographic) + log base 2(adjustment.getScalingFactor()));
+					//score_vector.setScore(cur_demographic, score_vector.getScore(cur_demographic) * adjustment.getScalingFactor());
+					
+					
+					double scalar = Math.log(adjustment.getScalingFactor())/Math.log(2);
+					
+					ret.addDemographicScalarModifier(this, cur_demographic, scalar, ModifiedMatchResult.Operator.PLUS);
 				} 
 			}
 			
-			mr.setScoreVector(score_vector);
 		}
+		
+		return ret;
 	}
 
 }

@@ -16,11 +16,11 @@ import org.regenstrief.linkage.util.MatchingConfig;
  */
 
 public class MatchResult implements Comparable{
-	private double score, incl_score, true_prob, false_prob, sensitivity, specificity;
-	private MatchVector match_vct;
-	private ScoreVector score_vct;
-	private Record r1, r2;
-	private MatchingConfig mc;
+	protected double score, incl_score, true_prob, false_prob, sensitivity, specificity;
+	protected MatchVector match_vct;
+	protected ScoreVector score_vct;
+	protected Record r1, r2;
+	protected MatchingConfig mc;
 	
 	/**
 	 * Constructor initializes the Hashtable match_table

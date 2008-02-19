@@ -68,7 +68,7 @@ public class ScorePair {
 
 		MatchResult mr = new MatchResult(vt.getScore(mv),vt.getInclusiveScore(mv),vt.getMatchVectorTrueProbability(mv),vt.getMatchVectorFalseProbability(mv),vt.getSensitivity(mv),vt.getSpecificity(mv),mv,vt.getScoreVector(mv),rec1,rec2,mc);
 		for(Modifier m : modifiers){
-			m.modifyMatchResult(mr, mc);
+			mr = m.getModifiedMatchResult(mr, mc);
 		}
 
 		return mr;
