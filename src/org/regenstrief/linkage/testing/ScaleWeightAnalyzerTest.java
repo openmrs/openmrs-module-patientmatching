@@ -99,7 +99,7 @@ public class ScaleWeightAnalyzerTest {
 					// iterate through the Record pairs and print the score
 					Record[] pair;
 					int i = 0;
-					while((pair = fp.getNextRecordPair()) != null && i < 10) {
+					while((pair = fp.getNextRecordPair()) != null) {
 						Record r1 = pair[0];
 						Record r2 = pair[1];
 						MatchResult mr = sp.scorePair(r1, r2);
