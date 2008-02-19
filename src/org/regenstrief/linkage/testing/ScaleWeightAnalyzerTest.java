@@ -162,9 +162,9 @@ public class ScaleWeightAnalyzerTest {
 			}
 		}
 		s += "\n";
-		s += mr.getScore() + "|" + mr.getBasicMatchResult().getScoreVector();
+		s += mr.getBaseScore() + "|" + mr.getBasicMatchResult().getScoreVector();
 		s+= "\n";
-		s += mr.getBaseScore() + "|" + mr.getScoreVector();
+		s += mr.getScore() + "|" + mr.getScoreVector();
 		return s;
 	}
 }
