@@ -10,7 +10,8 @@ import org.regenstrief.linkage.Record;
  *     FN’s disagree and Genders disagree
  *     FN’s disagree and at least one MRN null
  * 
- * 
+ * An initial check for different MRNs are done and if they are
+ * the same, then the method immediately returns false.
  * 
  * @author jegg
  *
@@ -30,6 +31,12 @@ public class TwinAnalyzer {
 		String fn2 = rec2.getDemographic("fn");
 		String mrn2 = rec2.getDemographic("mrn");
 		String gender2 = rec2.getDemographic("gender");
+		
+		// do this check first, MRN is important demographic and equality on
+		// this field should always mean not a twin
+		if(mrn1 != null && mrn2 != null && mrn1.equals(mrn2)){
+			return false;
+		}
 		
 		if(fn1 != null && fn2 != null && !fn1.equals(fn2) && mrn1 != null && mrn2 != null && !mrn1.equals(mrn2)){
 			// first names and mrns disagree
