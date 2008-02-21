@@ -176,6 +176,8 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		//session_options.setModel(new SessionOptionsTableModel(mc));
 		current_working_config = mc;
 		session_options.setModel(new SessionOptionsTableModel(mc));
+		TableColumn tc = session_options.getColumnModel().getColumn(6);
+		tc.setCellEditor(new DefaultCellEditor(jcb));
 	}
 	
 	private MatchingConfig getSelectedConfig(){
