@@ -187,6 +187,7 @@ public class LinkDataSourceChooser implements ActionListener{
 		contentPane.add(bottom_panel, BorderLayout.SOUTH);
         
         dialog.setSize(350, 250);
+        dialog.setLocationRelativeTo(null);
         
 		return dialog;
 	}
