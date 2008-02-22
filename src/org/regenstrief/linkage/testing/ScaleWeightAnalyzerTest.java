@@ -13,6 +13,7 @@ import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.ModifiedMatchResult;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.analysis.DataSourceAnalysis;
+import org.regenstrief.linkage.analysis.EMAnalyzer;
 import org.regenstrief.linkage.analysis.ScaleWeightAnalyzer;
 import org.regenstrief.linkage.analysis.ScaleWeightModifier;
 import org.regenstrief.linkage.io.DataSourceReader;
@@ -69,6 +70,10 @@ public class ScaleWeightAnalyzerTest {
 					dsr2 = new OrderedCharDelimFileReader(rmc.getLinkDataSource2(), mc_test);;
 				}
 								
+				org.regenstrief.linkage.io.FormPairs fp2 = new org.regenstrief.linkage.io.FormPairs(rp.getReader(rmc.getLinkDataSource1(), mc_test), rp.getReader(rmc.getLinkDataSource2(), mc_test), mc_test, type_table);
+				EMAnalyzer ema = new EMAnalyzer();
+				ema.analyzeRecordPairs(fp2, mc_test);
+				
 				ScorePair sp = new ScorePair(mc_test);
 					
 				if(mc_test.get_is_scale_weight()) {
@@ -95,7 +100,9 @@ public class ScaleWeightAnalyzerTest {
 				if(!mc_test.getName().equals("default")) {
 					// Form pairs should come after analysis, because it modifies next_record of the readers
 					org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(rp.getReader(rmc.getLinkDataSource1(), mc_test), rp.getReader(rmc.getLinkDataSource2(), mc_test), mc_test, type_table);
-
+					
+					
+					
 					// iterate through the Record pairs and print the score
 					Record[] pair;
 					int i = 0;
