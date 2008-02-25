@@ -1,6 +1,7 @@
 package org.regenstrief.linkage.analysis;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 
@@ -148,7 +149,11 @@ public class ScaleWeightModifier implements Modifier {
 				// If exact matching is used
 				if(cur_row.getAlgorithm() == MatchingConfig.EXACT_MATCH) {
 					// Calculate scaling factor obtained from two data sources
-					SWAdjustScore adjustment = SWAdjustScore.sumTwoScores(adjust1.get(cur_demographic), adjust2.get(cur_demographic));
+					DataColumn dc1 = lds1_inc_cols.get(cur_demographic);
+					DataColumn dc2 = lds2_inc_cols.get(cur_demographic);
+					int unique_union = unionUniqueTokens(dc1, dc2, lds1_id, lds2_id);
+					SWAdjustScore adjustment = SWAdjustScore.sumTwoScores(adjust1.get(cur_demographic), adjust2.get(cur_demographic), unique_union);
+					
 					// Adjust the score
 					// score_vector.setScore(cur_demographic, score_vector.getScore(cur_demographic) + log base 2(adjustment.getScalingFactor()));
 					//score_vector.setScore(cur_demographic, score_vector.getScore(cur_demographic) * adjustment.getScalingFactor());
@@ -164,5 +169,17 @@ public class ScaleWeightModifier implements Modifier {
 		
 		return ret;
 	}
-
+	
+	private int unionUniqueTokens(DataColumn dc1, DataColumn dc2, int id1, int id2){
+		int unique_count1 = sw_connection.getCount(ScaleWeightDBManager.CountType.Unique, dc1, id1);
+		int unique_count2 = sw_connection.getCount(ScaleWeightDBManager.CountType.Unique, dc2, id2);
+		
+		Hashtable<String,Integer> freqs1 = sw_connection.getTokenFrequenciesFromDB(dc1, id1, MatchingConfigRow.ScaleWeightSetting.TopN, (float)unique_count1);
+		Hashtable<String,Integer> freqs2 = sw_connection.getTokenFrequenciesFromDB(dc2, id2, MatchingConfigRow.ScaleWeightSetting.TopN, (float)unique_count2);
+		
+		HashSet<String> s = new HashSet<String>(freqs1.keySet());
+		s.addAll(freqs2.keySet());
+		
+		return s.size();
+	}
 }

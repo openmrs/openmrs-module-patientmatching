@@ -26,8 +26,9 @@ public class SWAdjustScore {
 	 * @param s2
 	 * @return
 	 */
-	public static SWAdjustScore sumTwoScores(SWAdjustScore s1, SWAdjustScore s2) {
-		return new SWAdjustScore(s1.total_tokens + s2.total_tokens, s1.unique_tokens + s2.unique_tokens, s1.token_freq + s2.token_freq);
+	public static SWAdjustScore sumTwoScores(SWAdjustScore s1, SWAdjustScore s2, int union_unique) {
+		//return new SWAdjustScore(s1.total_tokens + s2.total_tokens, s1.unique_tokens + s2.unique_tokens, s1.token_freq + s2.token_freq);
+		return new SWAdjustScore(s1.total_tokens + s2.total_tokens, union_unique, s1.token_freq + s2.token_freq);
 	}
 	
 	/**
