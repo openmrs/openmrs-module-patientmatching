@@ -45,6 +45,9 @@ public class ScaleWeightModifier implements Modifier {
 	
 	// Connection to database where tokens are stored
 	private static ScaleWeightDBManager sw_connection;
+	
+	// hashtable to store unique token counts for both datasources
+	private Hashtable<String, Integer> union_uniques;
 
 	public ScaleWeightModifier(ScaleWeightAnalyzer swa1, ScaleWeightAnalyzer swa2) {
 		this.swa1 = swa1;
@@ -88,6 +91,8 @@ public class ScaleWeightModifier implements Modifier {
 				lds2_frequencies.put(col_label, table2);
 			}
 		}
+		
+		union_uniques = new Hashtable<String,Integer>();
 	}
 
 	/**
@@ -171,15 +176,26 @@ public class ScaleWeightModifier implements Modifier {
 	}
 	
 	private int unionUniqueTokens(DataColumn dc1, DataColumn dc2, int id1, int id2){
-		int unique_count1 = sw_connection.getCount(ScaleWeightDBManager.CountType.Unique, dc1, id1);
-		int unique_count2 = sw_connection.getCount(ScaleWeightDBManager.CountType.Unique, dc2, id2);
+		int ret;
 		
-		Hashtable<String,Integer> freqs1 = sw_connection.getTokenFrequenciesFromDB(dc1, id1, MatchingConfigRow.ScaleWeightSetting.TopN, (float)unique_count1);
-		Hashtable<String,Integer> freqs2 = sw_connection.getTokenFrequenciesFromDB(dc2, id2, MatchingConfigRow.ScaleWeightSetting.TopN, (float)unique_count2);
+		Integer count = union_uniques.get(dc1.getName());
+		if(count == null){
+			int unique_count1 = sw_connection.getCount(ScaleWeightDBManager.CountType.Unique, dc1, id1);
+			int unique_count2 = sw_connection.getCount(ScaleWeightDBManager.CountType.Unique, dc2, id2);
+			
+			Hashtable<String,Integer> freqs1 = sw_connection.getTokenFrequenciesFromDB(dc1, id1, MatchingConfigRow.ScaleWeightSetting.TopN, (float)unique_count1);
+			Hashtable<String,Integer> freqs2 = sw_connection.getTokenFrequenciesFromDB(dc2, id2, MatchingConfigRow.ScaleWeightSetting.TopN, (float)unique_count2);
+			
+			HashSet<String> s = new HashSet<String>(freqs1.keySet());
+			s.addAll(freqs2.keySet());
+			
+			ret = s.size();
+			union_uniques.put(dc1.getName(), new Integer(ret));
+		} else {
+			ret = count.intValue();
+		}
 		
-		HashSet<String> s = new HashSet<String>(freqs1.keySet());
-		s.addAll(freqs2.keySet());
 		
-		return s.size();
+		return ret;
 	}
 }
