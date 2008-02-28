@@ -3,9 +3,14 @@ package org.regenstrief.linkage.analysis;
 import java.util.Hashtable;
 import java.util.List;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
+import org.regenstrief.linkage.util.LoggingObject;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
 
@@ -17,10 +22,11 @@ import org.regenstrief.linkage.util.MatchingConfigRow;
  * 
  */
 
-public abstract class Analyzer {
+public abstract class Analyzer  implements LoggingObject{
 	protected MatchingConfig config;
 	protected LinkDataSource lds;
 	protected Hashtable<String,Boolean> analyzed_demographics;
+	protected Logger log = Logger.getLogger(this.getClass());
 	
 	/**
 	 * Constructor takes the LinkDataSource to be analyzed
@@ -50,6 +56,14 @@ public abstract class Analyzer {
 			}
 		}
 		
+		// set default console logger for writing analysis messages
+		log.addAppender(new ConsoleAppender(new PatternLayout("%m%n")));
+		log.setAdditivity(false);
+		log.setLevel(Level.INFO);
+	}
+	
+	public Logger getLog(){
+		return log;
 	}
 	
 	/**

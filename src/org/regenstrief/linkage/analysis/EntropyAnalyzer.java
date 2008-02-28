@@ -3,6 +3,7 @@ package org.regenstrief.linkage.analysis;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.ModifiedMatchResult;
 import org.regenstrief.linkage.Record;
@@ -26,6 +27,10 @@ public class EntropyAnalyzer extends Analyzer implements Modifier {
 		super(lds, mc);
 		freq_table = new Hashtable<String,Hashtable<String,Integer>>();
 		total_records = 0;
+	}
+	
+	public Logger getLogger(){
+		return null;
 	}
 	
 	public boolean isAnalyzedDemographic(MatchingConfigRow mcr){

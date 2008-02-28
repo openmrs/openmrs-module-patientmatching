@@ -5,6 +5,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.PriorityQueue;
 
+import org.apache.log4j.Logger;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.db.ScaleWeightDBManager;
 import org.regenstrief.linkage.db.ScaleWeightDBManager.CountType;
@@ -75,6 +76,10 @@ public class ScaleWeightAnalyzer extends Analyzer {
 		non_null_counter = new Hashtable<String, Integer>(2*column_count);
 		frequencies = new Hashtable<String, Hashtable<String,Integer>>(2*column_count);
 		min_priority_queues = new Hashtable<String, PriorityQueue<AnalysisObject>>(2*column_count);
+	}
+	
+	public Logger getLogger(){
+		return null;
 	}
 	
 	public boolean isAnalyzedDemographic(MatchingConfigRow mcr){

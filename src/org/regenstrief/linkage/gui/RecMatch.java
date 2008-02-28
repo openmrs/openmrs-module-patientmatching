@@ -40,6 +40,7 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 	JTabbedPane tabs;
 	SessionsPanel spanel;
 	DataPanel dpanel;
+	AnalysisPanel apanel;
 	RecMatchConfig rm_conf;
 	
 	private File current_program_config_file;
@@ -78,9 +79,10 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 		tabs = new JTabbedPane();
 		dpanel = new DataPanel(rm_conf);
 		tabs.addTab("Data sources", dpanel);
+		apanel = new AnalysisPanel(rm_conf);
+		tabs.addTab("Analysis", apanel);
 		spanel = new SessionsPanel(rm_conf);
 		tabs.addTab("Sessions", spanel);
-		//tabs.addTab("Sessions", new JPanel());
 		tabs.addChangeListener(this);
 		
 		main_window.getContentPane().add(tabs);
@@ -280,6 +282,7 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 					dpanel.setRecMatchConfig(rm_conf);
 					current_program_config_file = config;
 					spanel.setRecMatchConfig(rm_conf);
+					apanel.setRecMatchConfig(rm_conf);
 					// need to reflect the rm_conf object in the GUI
 					//updateGUI();
 				}

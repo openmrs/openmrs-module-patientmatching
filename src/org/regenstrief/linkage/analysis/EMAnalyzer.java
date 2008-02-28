@@ -5,9 +5,14 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.MatchVector;
 import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.util.LoggingObject;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
 import org.regenstrief.linkage.util.ScorePair;
@@ -21,7 +26,7 @@ import org.regenstrief.linkage.util.ScorePair;
  * a side effect
  */
 
-public class EMAnalyzer { //extends Analyzer {
+public class EMAnalyzer implements LoggingObject { //extends Analyzer {
 	final static double INIT_MEST = 0.9;
 	final static double INIT_UEST = 0.1;
 	final static int INIT_COMP = 0;
@@ -32,6 +37,8 @@ public class EMAnalyzer { //extends Analyzer {
 	final static double EM_ZERO = 0.00001;
 	
 	final static int ITERATIONS = 15;
+	
+	private Logger log = Logger.getLogger(this.getClass());
 	
 	private Hashtable<MatchVector,Integer> vector_count;
 	//private List<MatchVector> vector_list;
@@ -45,6 +52,18 @@ public class EMAnalyzer { //extends Analyzer {
 		vector_count = new Hashtable<MatchVector,Integer>();
 		//vector_list = new ArrayList<MatchVector>();
 		
+		log.addAppender(new ConsoleAppender(new PatternLayout("%m%n")));
+		log.setAdditivity(false);
+		log.setLevel(Level.INFO);
+	}
+	
+	/**
+	 * Returns the logger used for analysis messages
+	 * 
+	 * @return	analysis logger, setup by default to just print messages to console
+	 */
+	public Logger getLogger(){
+		return log;
 	}
 	
 	/**
@@ -96,12 +115,14 @@ public class EMAnalyzer { //extends Analyzer {
 		
 		// print basic information about analysis
 		String[] bcs = mc.getBlockingColumns();
-		System.out.print("Blocking columns: ");
+		//System.out.print("Blocking columns: ");
+		log.info("Blocking columns: ");
 		for(int i = 0; i < bcs.length; i++){
 			String block_col_name = bcs[i];
-			System.out.print(" " + block_col_name);
+			//System.out.print(" " + block_col_name);
+			log.info(" " + block_col_name);
 		}
-		System.out.println();
+		//System.out.println();
 		finishAnalysis(new VectorTable(mc), mc.getIncludedColumnsNames(), mc, iterations);
 		
 	}
@@ -199,8 +220,10 @@ public class EMAnalyzer { //extends Analyzer {
 			
 			// update p_est
 			p = gMsum / vct_count;
-			System.out.println("Iteration " + (i + 1));
-			System.out.println("P: " + p);
+			//System.out.println("Iteration " + (i + 1));
+			//System.out.println("P: " + p);
+			log.info("Iteration " + (i + 1));
+			log.info("P: " + p);
 			
 			// update the mest and uest values after each iteration
 			for(int j = 0; j < demographics.length; j++){
@@ -214,7 +237,8 @@ public class EMAnalyzer { //extends Analyzer {
 			
 			for(int j = 0; j < demographics.length; j++){
 				String demographic = demographics[j];
-				System.out.println(demographic + ":   mest: " + mest.get(demographic) + "   uest: " + uest.get(demographic));
+				//System.out.println(demographic + ":   mest: " + mest.get(demographic) + "   uest: " + uest.get(demographic));
+				log.info(demographic + ":   mest: " + mest.get(demographic) + "   uest: " + uest.get(demographic));
 			}
 			
 		}
@@ -222,13 +246,16 @@ public class EMAnalyzer { //extends Analyzer {
 		//***************************************
 		// print basic information about analysis
 		String[] bcs = mc.getBlockingColumns();
-		System.out.print("\nBlocking columns: ");
+		//System.out.print("\nBlocking columns: ");
+		log.info("\nBlocking columns: ");
 		for(int i = 0; i < bcs.length; i++){
 			String block_col_name = bcs[i];
-			System.out.print(" " + block_col_name);
+			//System.out.print(" " + block_col_name);
+			log.info(" " + block_col_name);
 		}
-		System.out.println();
-		System.out.println("P:\t" + p);
+		//System.out.println();
+		//System.out.println("P:\t" + p);
+		log.info("P:\t" + p);
 		int total_pairs = 0;
 		Enumeration<MatchVector> e = vector_count.keys();
 		while(e.hasMoreElements()){
@@ -237,10 +264,13 @@ public class EMAnalyzer { //extends Analyzer {
 		}
 		double true_matches = total_pairs * p;
 		double non_matches = total_pairs * (1 - p);
-		System.out.println("Total pairs processed:\t" + total_pairs);
-		System.out.println("Estimated true matches:\t" + true_matches);
-		System.out.println("Estimated non matches:\t" + non_matches);
-		System.out.println();
+		//System.out.println("Total pairs processed:\t" + total_pairs);
+		//System.out.println("Estimated true matches:\t" + true_matches);
+		//System.out.println("Estimated non matches:\t" + non_matches);
+		//System.out.println();
+		log.info("Total pairs processed:\t" + total_pairs);
+		log.info("Estimated true matches:\t" + true_matches);
+		log.info("Estimated non matches:\t" + non_matches);
 		//***************************************
 		
 		for(int i = 0; i < demographics.length; i++){
