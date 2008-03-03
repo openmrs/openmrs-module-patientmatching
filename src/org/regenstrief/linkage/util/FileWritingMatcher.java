@@ -99,9 +99,9 @@ public class FileWritingMatcher {
 		while(demographics.hasMoreElements()){
 			String demographic = demographics.nextElement();
 			MatchingConfigRow mcr = mr.getMatchingConfig().getMatchingConfigRowByName(demographic);
-			if(mcr.isIncluded() || mcr.getBlockOrder() > 0){
+			//if(mcr.isIncluded() || mcr.getBlockOrder() > 0){
 				s += "|" + r1.getDemographic(demographic) + "|" + r2.getDemographic(demographic);
-			}
+			//}
 		}
 		return s;
 	}
