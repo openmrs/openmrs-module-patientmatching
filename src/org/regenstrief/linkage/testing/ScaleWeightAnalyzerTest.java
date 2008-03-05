@@ -1,7 +1,10 @@
 package org.regenstrief.linkage.testing;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -20,6 +23,7 @@ import org.regenstrief.linkage.io.DataSourceReader;
 import org.regenstrief.linkage.io.OrderedCharDelimFileReader;
 import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.LinkDataSource;
+import org.regenstrief.linkage.util.MatchResultsXML;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
 import org.regenstrief.linkage.util.RecMatchConfig;
@@ -53,7 +57,10 @@ public class ScaleWeightAnalyzerTest {
 			ReaderProvider rp = new ReaderProvider();
 
 			for(MatchingConfig mc_test : rmc) {
-
+				// create output file for this MatchingConfig
+				File out_file = new File("output_" + mc_test.getName() + ".txt");
+				BufferedWriter fout = new BufferedWriter(new FileWriter(out_file));
+				
 				Hashtable<String,Integer> type_table = lds1.getTypeTable();
 
 				DataSourceReader dsr1, dsr2;				
@@ -87,9 +94,9 @@ public class ScaleWeightAnalyzerTest {
 					dsa2.addAnalyzer(swa2);
 					
 					System.out.println(new java.util.Date() + ":  starting to analyze first data source");
-					//dsa1.analyzeData();
+					dsa1.analyzeData();
 					System.out.println(new java.util.Date() + ":  starting to analyze second data source");
-					//dsa2.analyzeData();
+					dsa2.analyzeData();
 					
 					ScaleWeightModifier swm = new ScaleWeightModifier(swa1, swa2);
 					swm.initializeModifier();
@@ -97,6 +104,7 @@ public class ScaleWeightAnalyzerTest {
 				}	
 				
 				System.out.println(new java.util.Date() + ":  starting to get record pairs");
+				ArrayList<MatchResult> results = new ArrayList<MatchResult>();
 				if(!mc_test.getName().equals("default")) {
 					// Form pairs should come after analysis, because it modifies next_record of the readers
 					org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(rp.getReader(rmc.getLinkDataSource1(), mc_test), rp.getReader(rmc.getLinkDataSource2(), mc_test), mc_test, type_table);
@@ -110,6 +118,7 @@ public class ScaleWeightAnalyzerTest {
 						Record r1 = pair[0];
 						Record r2 = pair[1];
 						MatchResult mr = sp.scorePair(r1, r2);
+						results.add(mr);
 						String match_details;
 						if(mr instanceof ModifiedMatchResult){
 							match_details = getOutputLine((ModifiedMatchResult)mr);
@@ -117,13 +126,19 @@ public class ScaleWeightAnalyzerTest {
 							match_details = getOutputLine(mr);
 						}
 						
-						System.out.println(match_details);
+						//System.out.println(match_details);
+						fout.write(match_details + "\n");
 						i++;
 					}
 
 					System.out.println("found " + i + " records that matched on the blocking field");
 				}
-				System.out.println(new java.util.Date() + ":  finsihed");
+				
+				//Document d = MatchResultsXML.resultsToXML(results);
+				//XMLTranslator.writeXMLDocToFile(d, new File("test output.xml"));
+				//System.out.println(new java.util.Date() + ":  finsihed");
+				
+				fout.close();
 			}
 
 		}
