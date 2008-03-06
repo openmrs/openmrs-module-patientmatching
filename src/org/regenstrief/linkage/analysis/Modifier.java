@@ -14,6 +14,8 @@ public interface Modifier {
 	
 	public void initializeModifier();
 	
+	public String getModifierName();
+	
 	/**
 	 * Method must be implemented for a class to be used by ScorePair to modify a
 	 * score.

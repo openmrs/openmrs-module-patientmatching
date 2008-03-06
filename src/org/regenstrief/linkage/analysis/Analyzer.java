@@ -26,7 +26,7 @@ public abstract class Analyzer  implements LoggingObject{
 	protected MatchingConfig config;
 	protected LinkDataSource lds;
 	protected Hashtable<String,Boolean> analyzed_demographics;
-	protected Logger log = Logger.getLogger(this.getClass());
+	protected Logger log = Logger.getLogger(this.getClass() + this.toString());
 	
 	/**
 	 * Constructor takes the LinkDataSource to be analyzed

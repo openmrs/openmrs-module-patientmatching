@@ -198,15 +198,16 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 				System.out.println("error removing matching config from JList");
 				return;
 			}
+			rm_conf.getMatchingConfigs().remove(mc);
 			
 			// set another item to be selected
 			if(runs.getModel().getSize() <= old_index){
 				// set the new selected object as the last item
 				if(runs.getModel().getSize() == 0){
 					// removed last one, clear table to clear everything and crate a blank config
-					//resetSessionTableWithBlankConfig();
+					setGuiElements();
 				}
-				runs.setSelectedIndex(runs.getModel().getSize() - 1);
+				//runs.setSelectedIndex(runs.getModel().getSize() - 1);
 			} else {
 				// set the old index as what is selected
 				runs.setSelectedIndex(old_index);
@@ -319,6 +320,12 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 					JOptionPane.showMessageDialog(this, "Error writing match result file", "Error", JOptionPane.ERROR_MESSAGE);
 				} else {
 					JOptionPane.showMessageDialog(this, "Matching results written to " + match_file, "Matching Successful", JOptionPane.INFORMATION_MESSAGE);
+				}
+			} else if(source.getText().equals("Remove")){
+				Object o = runs.getSelectedValue();
+				if(o instanceof MatchingConfig){
+					MatchingConfig mc = (MatchingConfig)o;
+					removeSessionConfig(mc);
 				}
 			}
 		}

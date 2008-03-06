@@ -37,6 +37,10 @@ public class EntropyAnalyzer extends Analyzer implements Modifier {
 		return false;
 	}
 	
+	public String getModifierName(){
+		return "Entropy";
+	}
+	
 	public void analyzeRecord(Record rec){
 		total_records++;
 		Iterator<String> it = rec.getDemographics().keySet().iterator();

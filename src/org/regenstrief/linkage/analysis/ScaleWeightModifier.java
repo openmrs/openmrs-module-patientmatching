@@ -94,7 +94,11 @@ public class ScaleWeightModifier implements Modifier {
 		
 		union_uniques = new Hashtable<String,Integer>();
 	}
-
+	
+	public String getModifierName(){
+		return "ScaleWeight";
+	}
+	
 	/**
 	 * Internal method used by ScorePair
 	 * Collects all information needed for weight scaling 

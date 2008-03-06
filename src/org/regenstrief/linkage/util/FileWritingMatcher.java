@@ -77,6 +77,10 @@ public class FileWritingMatcher {
 						MatchResult mr = it2.next();
 						fout.write(getOutputLine(mr) + "\n");
 					}
+					
+					// write to an xml file also, to test this new format
+					File xml_out = new File(f.getPath() + ".xml");
+					XMLTranslator.writeXMLDocToFile(MatchResultsXML.resultsToXML(results), xml_out);
 				}
 			}
 			fout.flush();
