@@ -207,7 +207,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 					// removed last one, clear table to clear everything and crate a blank config
 					setGuiElements();
 				}
-				//runs.setSelectedIndex(runs.getModel().getSize() - 1);
+				runs.setSelectedIndex(runs.getModel().getSize() - 1);
 			} else {
 				// set the old index as what is selected
 				runs.setSelectedIndex(old_index);
