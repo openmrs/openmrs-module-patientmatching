@@ -15,7 +15,6 @@ package org.regenstrief.linkage.util;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -70,18 +69,29 @@ public class XMLTranslator {
 	
 	public static boolean writeXMLDocToFile(Document d, File f){
 		try{
+			
 			TransformerFactory transfac = TransformerFactory.newInstance();
 			Transformer trans = transfac.newTransformer();
 			trans.setOutputProperty(OutputKeys.INDENT, "yes");
 			
-			StringWriter sw = new StringWriter();
-			StreamResult sr = new StreamResult(sw);
+			FileWriter fw = new FileWriter(f);
+			
+			StreamResult sr = new StreamResult(fw);
 			DOMSource source = new DOMSource(d);
 			trans.transform(source, sr);
-			String xmlString = sw.toString();
-			FileWriter fw = new FileWriter(f);
-			fw.write(xmlString);
+			
 			fw.close();
+			
+			/* alternate method
+			Source source = new DOMSource(d);
+		    
+            // Prepare the output file
+            Result result = new StreamResult(f);
+    
+            // Write the DOM document to the file
+            Transformer xformer = TransformerFactory.newInstance().newTransformer();
+            xformer.transform(source, result);
+			*/
 			return true;
 		}
 		catch(TransformerConfigurationException tce){
@@ -93,7 +103,6 @@ public class XMLTranslator {
 			return false;
 		}
 		catch(IOException ioe){
-			//System.out.println("IO error");
 			return false;
 		}
 		
