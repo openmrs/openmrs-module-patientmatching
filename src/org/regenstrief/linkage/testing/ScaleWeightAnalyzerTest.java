@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -17,13 +18,13 @@ import org.regenstrief.linkage.ModifiedMatchResult;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.analysis.DataSourceAnalysis;
 import org.regenstrief.linkage.analysis.EMAnalyzer;
+import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.ScaleWeightAnalyzer;
 import org.regenstrief.linkage.analysis.ScaleWeightModifier;
 import org.regenstrief.linkage.io.DataSourceReader;
 import org.regenstrief.linkage.io.OrderedCharDelimFileReader;
 import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.LinkDataSource;
-import org.regenstrief.linkage.util.MatchResultsXML;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
 import org.regenstrief.linkage.util.RecMatchConfig;
@@ -78,8 +79,10 @@ public class ScaleWeightAnalyzerTest {
 				}
 								
 				org.regenstrief.linkage.io.FormPairs fp2 = new org.regenstrief.linkage.io.FormPairs(rp.getReader(rmc.getLinkDataSource1(), mc_test), rp.getReader(rmc.getLinkDataSource2(), mc_test), mc_test, type_table);
-				EMAnalyzer ema = new EMAnalyzer();
-				ema.analyzeRecordPairs(fp2, mc_test);
+				EMAnalyzer ema = new EMAnalyzer(lds1, lds2, mc_test);
+				PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
+				pdsa.addAnalyzer(ema);
+				pdsa.analyzeData();
 				
 				ScorePair sp = new ScorePair(mc_test);
 					
@@ -94,9 +97,9 @@ public class ScaleWeightAnalyzerTest {
 					dsa2.addAnalyzer(swa2);
 					
 					System.out.println(new java.util.Date() + ":  starting to analyze first data source");
-					dsa1.analyzeData();
+					//dsa1.analyzeData();
 					System.out.println(new java.util.Date() + ":  starting to analyze second data source");
-					dsa2.analyzeData();
+					//dsa2.analyzeData();
 					
 					ScaleWeightModifier swm = new ScaleWeightModifier(swa1, swa2);
 					swm.initializeModifier();
@@ -105,7 +108,7 @@ public class ScaleWeightAnalyzerTest {
 				
 				System.out.println(new java.util.Date() + ":  starting to get record pairs");
 				ArrayList<MatchResult> results = new ArrayList<MatchResult>();
-				if(!mc_test.getName().equals("default")) {
+				//if(mc_test.getName().equals("2")) {
 					// Form pairs should come after analysis, because it modifies next_record of the readers
 					org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(rp.getReader(rmc.getLinkDataSource1(), mc_test), rp.getReader(rmc.getLinkDataSource2(), mc_test), mc_test, type_table);
 					
@@ -129,15 +132,18 @@ public class ScaleWeightAnalyzerTest {
 						//System.out.println(match_details);
 						fout.write(match_details + "\n");
 						i++;
+						if(i % 10000 == 0){
+							System.out.println(new Date() + ": read pair " + i);
+						}
 					}
 
 					System.out.println("found " + i + " records that matched on the blocking field");
-				}
+				//}
 				
 				//Document d = MatchResultsXML.resultsToXML(results);
 				//XMLTranslator.writeXMLDocToFile(d, new File("test output.xml"));
 				//System.out.println(new java.util.Date() + ":  finsihed");
-				
+				fout.flush();
 				fout.close();
 			}
 
@@ -179,9 +185,9 @@ public class ScaleWeightAnalyzerTest {
 		while(demographics.hasMoreElements()){
 			String demographic = demographics.nextElement();
 			MatchingConfigRow mcr = mr.getMatchingConfig().getMatchingConfigRowByName(demographic);
-			if(mcr.isIncluded() || mcr.getBlockOrder() > 0){
+			//if(mcr.isIncluded() || mcr.getBlockOrder() > 0){
 				s += "|" + r1.getDemographic(demographic) + "|" + r2.getDemographic(demographic);
-			}
+			//}
 		}
 		s += "\n";
 		s += mr.getBaseScore() + "|" + mr.getBasicMatchResult().getScoreVector();

@@ -18,7 +18,7 @@ import org.regenstrief.linkage.util.MatchingConfigRow;
  *
  */
 
-public class EntropyAnalyzer extends Analyzer implements Modifier {
+public class EntropyAnalyzer extends DataSourceAnalyzer implements Modifier {
 	// of the format table{demographic} -> table{token} -> count
 	private Hashtable<String,Hashtable<String,Integer>> freq_table;
 	private int total_records;

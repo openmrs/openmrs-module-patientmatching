@@ -48,10 +48,10 @@ public class FileWritingMatcher {
 				
 				OrderedDataSourceReader odsr1 = rp.getReader(rmc.getLinkDataSource1(), mc);
 				OrderedDataSourceReader odsr2 = rp.getReader(rmc.getLinkDataSource2(), mc);
-				if(odsr1 != null && odsr2 != null){
+				/*if(odsr1 != null && odsr2 != null){
 					// analyze with EM
 					org.regenstrief.linkage.io.FormPairs fp2 = new org.regenstrief.linkage.io.FormPairs(odsr1, odsr2, mc, rmc.getLinkDataSource1().getTypeTable());
-					EMAnalyzer ema = new EMAnalyzer();
+					EMAnalyzer ema = new EMAnalyzer(rmc.getLinkDataSource1(), rmc.getLinkDataSource2(), mc);
 					ema.analyzeRecordPairs(fp2, mc);
 				}
 				odsr1.close();
@@ -59,7 +59,7 @@ public class FileWritingMatcher {
 				
 				// create form pair object
 				odsr1 = rp.getReader(rmc.getLinkDataSource1(), mc);
-				odsr2 = rp.getReader(rmc.getLinkDataSource2(), mc);
+				odsr2 = rp.getReader(rmc.getLinkDataSource2(), mc);*/
 				if(odsr1 != null && odsr2 != null){
 					org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(odsr1, odsr2, mc, rmc.getLinkDataSource1().getTypeTable());
 					

@@ -11,7 +11,7 @@ import java.util.*;
  */
 
 public class DataSourceAnalysis {
-	List<Analyzer> analyzers;
+	List<DataSourceAnalyzer> analyzers;
 	DataSourceReader data_reader;
 	
 	/**
@@ -21,7 +21,7 @@ public class DataSourceAnalysis {
 	 */
 	public DataSourceAnalysis(DataSourceReader data_reader){
 		this.data_reader = data_reader;
-		analyzers = new ArrayList<Analyzer>();
+		analyzers = new ArrayList<DataSourceAnalyzer>();
 	}
 	
 	/**
@@ -29,7 +29,7 @@ public class DataSourceAnalysis {
 	 * 
 	 * @param a	an Analyzer object that will analyze the records of the data source
 	 */
-	public void addAnalyzer(Analyzer a){
+	public void addAnalyzer(DataSourceAnalyzer a){
 		analyzers.add(a);
 	}
 	
@@ -38,7 +38,7 @@ public class DataSourceAnalysis {
 	 * 
 	 * @return	the List of Analyzers
 	 */
-	public List<Analyzer> getAnalyzers(){
+	public List<DataSourceAnalyzer> getAnalyzers(){
 		return analyzers;
 	}
 	
@@ -54,7 +54,7 @@ public class DataSourceAnalysis {
 			Record r = data_reader.nextRecord();
 			for(int i = 0; i < analyzers.size(); i++){
 				// pass Record object to analyzer object
-				Analyzer a = analyzers.get(i);
+				DataSourceAnalyzer a = analyzers.get(i);
 				a.analyzeRecord(r);
 			}
 		}

@@ -156,7 +156,7 @@ public class ScaleWeightModifier implements Modifier {
 				MatchingConfigRow cur_row = sv_iterator.next();
 				String cur_demographic = cur_row.getName();
 				// If exact matching is used
-				if(cur_row.getAlgorithm() == MatchingConfig.EXACT_MATCH) {
+				if(cur_row.getAlgorithm() == MatchingConfig.EXACT_MATCH && mr.getMatchVector().matchedOn(cur_demographic)) {
 					// Calculate scaling factor obtained from two data sources
 					DataColumn dc1 = lds1_inc_cols.get(cur_demographic);
 					DataColumn dc2 = lds2_inc_cols.get(cur_demographic);

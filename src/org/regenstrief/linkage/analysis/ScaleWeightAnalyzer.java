@@ -22,7 +22,7 @@ import org.regenstrief.linkage.util.MatchingConfigRow;
  *
  */
 
-public class ScaleWeightAnalyzer extends Analyzer {
+public class ScaleWeightAnalyzer extends DataSourceAnalyzer {
 	
 	private static ScaleWeightDBManager sw_connection;
 
