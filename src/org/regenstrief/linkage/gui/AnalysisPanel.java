@@ -60,6 +60,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 				org.regenstrief.linkage.io.FormPairs fp2 = new org.regenstrief.linkage.io.FormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
 				PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
 				EMAnalyzer ema = new EMAnalyzer(rm_conf.getLinkDataSource1(), rm_conf.getLinkDataSource2(), mc);
+				pdsa.addAnalyzer(ema);
 				LoggingFrame lf = new LoggingFrame(ema);
 				//try{
 					pdsa.analyzeData();
