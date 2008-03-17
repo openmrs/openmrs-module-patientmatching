@@ -35,6 +35,15 @@ public class FileWritingMatcher {
 	
 	public static File writeMatchResults(RecMatchConfig rmc, File f){
 		
+		// set output order based on include position in lds
+		LinkDataSource lds = rmc.getLinkDataSource1();
+		String[] order = new String[lds.getIncludeCount()];
+		for(int i = 0; i < order.length; i++){
+			DataColumn dc = lds.getDataColumnByIncludePosition(i);
+			order[i] = dc.getName();
+		}
+		
+		
 		try{
 			BufferedWriter fout = new BufferedWriter(new FileWriter(f));
 			ReaderProvider rp = new ReaderProvider();
@@ -75,7 +84,7 @@ public class FileWritingMatcher {
 					Iterator<MatchResult> it2 = results.iterator();
 					while(it2.hasNext()){
 						MatchResult mr = it2.next();
-						fout.write(getOutputLine(mr) + "\n");
+						fout.write(getOutputLine(mr, order) + "\n");
 					}
 					
 					// write to an xml file also, to test this new format
@@ -94,14 +103,15 @@ public class FileWritingMatcher {
 		return f;
 	}
 	
-	private static String getOutputLine(MatchResult mr){
+	private static String getOutputLine(MatchResult mr, String[] order){
 		String s = new String();
 		s += mr.getScore();
-		Enumeration<String> demographics = mr.getRecord1().getDemographics().keys();
+		//Enumeration<String> demographics = mr.getRecord1().getDemographics().keys();
 		Record r1 = mr.getRecord1();
 		Record r2 = mr.getRecord2();
-		while(demographics.hasMoreElements()){
-			String demographic = demographics.nextElement();
+		//while(demographics.hasMoreElements()){
+		for(int i = 0; i < order.length; i++){
+			String demographic = order[i];
 			MatchingConfigRow mcr = mr.getMatchingConfig().getMatchingConfigRowByName(demographic);
 			//if(mcr.isIncluded() || mcr.getBlockOrder() > 0){
 				s += "|" + r1.getDemographic(demographic) + "|" + r2.getDemographic(demographic);
