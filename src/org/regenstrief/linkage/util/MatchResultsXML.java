@@ -1,5 +1,7 @@
 package org.regenstrief.linkage.util;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -9,6 +11,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.regenstrief.linkage.MatchResult;
+import org.regenstrief.linkage.MatchVector;
 import org.regenstrief.linkage.ModifiedMatchResult;
 import org.regenstrief.linkage.ScoreVector;
 import org.regenstrief.linkage.ModifiedMatchResult.Operator;
@@ -80,6 +83,7 @@ public class MatchResultsXML {
 			String demographic = it.next();
 			Element field = doc.createElement("field");
 			field.setAttribute("label", demographic);
+			field.setAttribute("type", "match");
 			fields.appendChild(field);
 			
 			Element val_a = doc.createElement("valueA");
@@ -87,6 +91,7 @@ public class MatchResultsXML {
 			Element matched = doc.createElement("matched");
 			Element score_val = doc.createElement("score_value");
 			Element comparator = doc.createElement("comparator");
+			Element similarity = doc.createElement("similarity");
 			
 			val_a.setTextContent(mr.getRecord1().getDemographic(demographic));
 			val_b.setTextContent(mr.getRecord2().getDemographic(demographic));
@@ -97,13 +102,49 @@ public class MatchResultsXML {
 			}
 			score_val.setTextContent(Double.toString(mr.getScoreVector().getScore(demographic)));
 			comparator.setTextContent(MatchingConfig.ALGORITHMS[mr.getMatchingConfig().getAlgorithm(mr.getMatchingConfig().getRowIndexforName(demographic))]);
+			similarity.setTextContent(Double.toString(mr.getSimilarityScore(demographic)));
 			
 			field.appendChild(val_a);
 			field.appendChild(val_b);
 			field.appendChild(matched);
 			field.appendChild(score_val);
 			field.appendChild(comparator);
+			field.appendChild(similarity);
 		}
+		
+		// iterate over demographics not used in the matching, but present in the Record objects
+		Collection<String> demographics = new ArrayList<String>();
+		demographics.addAll(mr.getRecord1().getDemographics().keySet());
+		//demographics.addAll(mr.getRecord2().getDemographics().keySet());
+		
+		Iterator<String> it2 = demographics.iterator();
+		List<String> matched_demographics = mr.getMatchVector().getDemographics();
+		String[] bd = mr.getMatchingConfig().getBlockingColumns();
+		List<String> blocking_demographics = new ArrayList<String>();
+		for(int i = 0; i < bd.length; i++){
+			blocking_demographics.add(bd[i]);
+		}
+		while(it2.hasNext()){
+			String dem = it2.next();
+			if(!matched_demographics.contains(dem)){
+				// demographic wasn't used when calculating the score, but is present and needs to be added
+				Element field = doc.createElement("field");
+				field.setAttribute("label", dem);
+				fields.appendChild(field);
+				if(blocking_demographics.contains(dem)){
+					field.setAttribute("type", "block");
+				} else {
+					field.setAttribute("type", "display");
+				}
+				Element val_a = doc.createElement("valueA");
+				Element val_b = doc.createElement("valueB");
+				val_a.setTextContent(mr.getRecord1().getDemographic(dem));
+				val_b.setTextContent(mr.getRecord2().getDemographic(dem));
+				field.appendChild(val_a);
+				field.appendChild(val_b);
+			}
+		}
+		
 		ret.appendChild(fields);
 		
 		return ret;

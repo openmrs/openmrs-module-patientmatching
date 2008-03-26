@@ -57,4 +57,29 @@ public class StringMatch {
 	public static boolean LEVMatch(String str1, String str2){
 		return LEVMatch(str1, str2, LEV_THRESH);
 	}
+	
+	public static float getExactMatchSimilarity(String str1, String str2){
+		if(str1.equals(str2) && str1.length() > 0)
+			return 1;
+		else
+			return 0;
+	}
+	
+	public static float getJWCMatchSimilarity(String str1, String str2){
+		JaroWinkler jwc = new JaroWinkler();
+		float thresh = jwc.getSimilarity(str1, str2);
+		return thresh;
+	}
+	
+	public static float getLCSMatchSimilarity(String str1, String str2){
+		LongestCommonSubString lcss = new LongestCommonSubString();
+		float thresh = lcss.getSimilarity(str1, str2);
+		return thresh;
+	}
+	
+	public static float getLEVMatchSimilarity(String str1, String str2){
+		Levenshtein lev = new Levenshtein();
+		float thresh = lev.getSimilarity(str1, str2);
+		return thresh;
+	}
 }

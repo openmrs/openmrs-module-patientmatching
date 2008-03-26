@@ -30,10 +30,10 @@ public class FileWritingMatcher {
 	public static final String OUT_FILE = "linkage.out";
 	
 	public static File writeMatchResults(RecMatchConfig rmc){
-		return writeMatchResults(rmc, new File(OUT_FILE));
+		return writeMatchResults(rmc, new File(OUT_FILE), true);
 	}
 	
-	public static File writeMatchResults(RecMatchConfig rmc, File f){
+	public static File writeMatchResults(RecMatchConfig rmc, File f, boolean write_xml){
 		
 		// set output order based on include position in lds
 		LinkDataSource lds = rmc.getLinkDataSource1();
@@ -45,7 +45,8 @@ public class FileWritingMatcher {
 		
 		
 		try{
-			BufferedWriter fout = new BufferedWriter(new FileWriter(f));
+			//BufferedWriter fout = new BufferedWriter(new FileWriter(f));
+			
 			ReaderProvider rp = new ReaderProvider();
 			
 			// iterate over each MatchingConfig
@@ -54,6 +55,8 @@ public class FileWritingMatcher {
 			while(it.hasNext()){
 				MatchingConfig mc = it.next();
 				List<MatchResult> results = new ArrayList<MatchResult>();
+				File f2 = new File(f.getPath() + "_" + mc.getName() + ".txt");
+				BufferedWriter fout = new BufferedWriter(new FileWriter(f2));
 				
 				OrderedDataSourceReader odsr1 = rp.getReader(rmc.getLinkDataSource1(), mc);
 				OrderedDataSourceReader odsr2 = rp.getReader(rmc.getLinkDataSource2(), mc);
@@ -88,12 +91,17 @@ public class FileWritingMatcher {
 					}
 					
 					// write to an xml file also, to test this new format
-					File xml_out = new File(f.getPath() + ".xml");
-					XMLTranslator.writeXMLDocToFile(MatchResultsXML.resultsToXML(results), xml_out);
+					if(write_xml){
+						File xml_out = new File(f2.getPath() + ".xml");
+						XMLTranslator.writeXMLDocToFile(MatchResultsXML.resultsToXML(results), xml_out);
+					}
+					
 				}
+				
+				fout.flush();
+				fout.close();
 			}
-			fout.flush();
-			fout.close();
+			
 		}
 		catch(IOException ioe){
 			System.err.println("error writing linkage results: " + ioe.getMessage());

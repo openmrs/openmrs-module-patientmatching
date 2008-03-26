@@ -3,6 +3,8 @@ package org.regenstrief.linkage;
 import java.util.List;
 
 import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.MatchingConfigRow;
+import org.regenstrief.linkage.util.StringMatch;
 
 /**
  * Class represents the results of matching two Record objects.
@@ -135,6 +137,39 @@ public class MatchResult implements Comparable{
 	 */
 	public MatchingConfig getMatchingConfig(){
 		return mc;
+	}
+	
+	/**
+	 * Method returns the value between 0 and 1 that the used  oomparator calculated for
+	 * the given demographic and the two values for the two records
+	 * 
+	 * @param demographic	the demographic of interest
+	 * @return	the similarity of the two values using the comparator designated in the MatchingConfig object
+	 */
+	public double getSimilarityScore(String demographic){
+		double ret = 0;
+		MatchingConfigRow mcr = mc.getMatchingConfigRowByName(demographic);
+		int algorithm = mcr.getAlgorithm();
+		String val1 = r1.getDemographic(demographic);
+		String val2 = r2.getDemographic(demographic);
+		switch(algorithm){
+		case MatchingConfig.EXACT_MATCH:
+			ret = StringMatch.getExactMatchSimilarity(val1, val2);
+			break;
+		case MatchingConfig.LCS:
+			ret = StringMatch.getLCSMatchSimilarity(val1, val2);
+			break;
+		case MatchingConfig.LEV:
+			ret = StringMatch.getLEVMatchSimilarity(val1, val2);
+			break;
+		case MatchingConfig.JWC:
+			ret = StringMatch.getJWCMatchSimilarity(val1, val2);
+			break;
+		default:
+			return 0;
+				
+		}
+		return ret;
 	}
 	
 	public boolean equals(Object o) throws ClassCastException {
