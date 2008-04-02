@@ -7,6 +7,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.openmrs.api.AdministrationService;
+import org.openmrs.api.context.Context;
 import org.regenstrief.linkage.MatchFinder;
 import org.regenstrief.linkage.analysis.RecordFieldAnalyzer;
 import org.regenstrief.linkage.db.RecordDBManager;
@@ -32,7 +34,12 @@ public class LinkDBConnections {
 	private final static LinkDBConnections INSTANCE = new LinkDBConnections();
 	
 	private LinkDBConnections(){
-		if(!parseConfig(new File(PatientMatchingActivator.CONFIG_FILE))){
+		
+		AdministrationService adminService = Context.getAdministrationService();
+		String configFilename = adminService.getGlobalProperty("patientmatching.linkConfigFile",
+				PatientMatchingActivator.CONFIG_FILE);
+		
+		if(!parseConfig(new File(configFilename))){
 			finder = null;
 			link_db = null;
 			rp = null;

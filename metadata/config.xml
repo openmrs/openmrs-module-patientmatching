@@ -26,4 +26,9 @@
  	        </advice>
  	        
  	        <!-- /AOP -->
+ 	        	<globalProperty>
+					<property>patientmatching.linkConfigFile</property>
+   					<description>This file can be found at doc/link_config.xml
+   					</description>
+				</globalProperty>
  	</module>
