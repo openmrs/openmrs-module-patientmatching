@@ -36,7 +36,8 @@ public class LoggingFrame extends JFrame implements ActionListener{
 	JTextArea jta;
 	JButton close_window;
 	
-	public LoggingFrame(LoggingObject lo){
+	public LoggingFrame(LoggingObject lo, String title){
+		super(title);
 		log_source = lo;
 		initGUI();
 		setLogging();

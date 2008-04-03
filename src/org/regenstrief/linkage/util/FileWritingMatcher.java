@@ -93,7 +93,9 @@ public class FileWritingMatcher {
 					// write to an xml file also, to test this new format
 					if(write_xml){
 						File xml_out = new File(f2.getPath() + ".xml");
-						XMLTranslator.writeXMLDocToFile(MatchResultsXML.resultsToXML(results), xml_out);
+						//XMLTranslator.writeXMLDocToFile(MatchResultsXML.resultsToXML(results), xml_out);
+						// below method uses SAX to write XML file, so no memory problems like earlier method
+						MatchResultsXML.resultsToXML(results, xml_out);
 					}
 					
 				}

@@ -61,7 +61,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 				PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
 				EMAnalyzer ema = new EMAnalyzer(rm_conf.getLinkDataSource1(), rm_conf.getLinkDataSource2(), mc);
 				pdsa.addAnalyzer(ema);
-				LoggingFrame lf = new LoggingFrame(ema);
+				LoggingFrame lf = new LoggingFrame(ema, mc.getName());
 				//try{
 					pdsa.analyzeData();
 				//}
