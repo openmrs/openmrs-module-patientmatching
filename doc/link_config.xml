@@ -1,79 +1,44 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Session>
-	<datasource id="1" name="linkagetable" type="DataBase" access="com.mysql.jdbc.Driver,jdbc:mysql://localhost:3306/nbs,test,test" n_records="-1"> 
-		<column include_position="0" column_id="mrn" label="mrn" type="string" n_non_null="-1" n_null="-1" n_unique="-1"/>
-		<column include_position="1" column_id="ln" label="ln" type="string" n_non_null="-1" n_null="-1" n_unique="-1"/>
-		<column include_position="2" column_id="lny" label="lny" type="string" n_non_null="-1" n_null="-1" n_unique="-1"/>
-		<column include_position="3" column_id="fn" label="fn" type="string" n_non_null="-1" n_null="-1" n_unique="-1"/>
-		<column include_position="4" column_id="yb" label="yb" type="string" n_non_null="-1" n_null="-1" n_unique="-1"/>
-		<column include_position="5" column_id="mb" label="mb" type="string" n_non_null="-1" n_null="-1" n_unique="-1"/>
-		<column include_position="6" column_id="db" label="db" type="string" n_non_null="-1" n_null="-1" n_unique="-1"></column> 
-		<column include_position="7" column_id="sex" label="sex" type="string" n_non_null="-1" n_null="-1" n_unique="-1"/>
-		<column include_position="8" column_id="race" label="race" type="string" n_non_null="-1" n_null="-1" n_unique="-1"/>
-		<column include_position="9" column_id="city" label="city" type="string" n_non_null="-1" n_null="-1" n_unique="-1"/>
-		<column include_position="10" column_id="st" label="st" type="string" n_non_null="-1" n_null="-1" n_unique="-1"/>
-		<column include_position="11" column_id="zip" label="zip" type="string" n_non_null="-1" n_null="-1" n_unique="-1"/>
-		<column include_position="12" column_id="tel" label="tel" type="string" n_non_null="-1" n_null="-1" n_unique="-1"/>
-		<column include_position="13" column_id="nkln" label="nkln" type="string" n_non_null="-1" n_null="-1" n_unique="-1"/>
-		<column include_position="14" column_id="nkfn" label="nkfn" type="string" n_non_null="-1" n_null="-1" n_unique="-1"/>
-		<column include_position="15" column_id="drid" label="drid" type="string" n_non_null="-1" n_null="-1" n_unique="-1"/>
-		<column include_position="16" column_id="drln" label="drln" type="string" n_non_null="-1" n_null="-1" n_unique="-1"/>
-		<column include_position="17" column_id="drfn" label="drfn" type="string" n_non_null="-1" n_null="-1" n_unique="-1"/>
-		<column include_position="18" column_id="openmrs_id" label="openmrs_id" type="string" n_non_null="-1" n_null="-1" n_unique="-1"/>
+	<datasource id="ID" name="table_name" type="DataBase" access="JDBC driver,database URL,user,passwd">
+		<column include_position="0" column_id="mrn" label="mrn" type="string"/>
+		<column include_position="1" column_id="ln" label="ln" type="string"/>
+		<column include_position="2" column_id="lny" label="lny" type="string"/>
+		<column include_position="3" column_id="fn" label="fn" type="string"/>
+		<column include_position="4" column_id="yb" label="yb" type="string"/>
+		<column include_position="5" column_id="mb" label="mb" type="string"/>
+		<column include_position="6" column_id="db" label="db" type="string"></column>
+		<column include_position="7" column_id="sex" label="sex" type="string"/>
+		<column include_position="8" column_id="city" label="city" type="string"/>
+		<column include_position="9" column_id="st" label="st" type="string"/>
+		<column include_position="10" column_id="zip" label="zip" type="string"/>
+		<column include_position="11" column_id="tel" label="tel" type="string"/>
+		<column include_position="12" column_id="nkln" label="nkln" type="string"/>
+		<column include_position="12" column_id="nkfn" label="nkfn" type="string"/>
+		<column include_position="14" column_id="drid" label="drid" type="string"/>
+		<column include_position="15" column_id="drln" label="drln" type="string"/>
+		<column include_position="16" column_id="drfn" label="drfn" type="string"/>
+		<column include_position="17" column_id="openmrs_id" label="openmrs_id" type="string"/>
 	</datasource>
-	<run estimate="true" name="MRN" threshold="-12">
-    <BlockingExclusion>
-      <exclusion demographic="fn" regex="infant"/>
-      <exclusion demographic="fn" regex="infant [a-z0-9]"/>
-      <exclusion demographic="fn" regex="infant girl [a-z0-9]"/>
-      <exclusion demographic="fn" regex="infant girl"/>
-      <exclusion demographic="fn" regex="infant boy"/>
-      <exclusion demographic="fn" regex="infant boy [a-z0-9]"/>
-      <exclusion demographic="fn" regex="inf"/>
-      <exclusion demographic="fn" regex="inf [a-z0-9]"/>
-      <exclusion demographic="fn" regex="inf boy"/>
-      <exclusion demographic="fn" regex="inf girl"/>
-      <exclusion demographic="fn" regex="inf girl [a-z0-9]"/>
-      <exclusion demographic="fn" regex="inf boy [a-z0-9]"/>
-      <exclusion demographic="fn" regex="boy"/>
-      <exclusion demographic="fn" regex="boy [a-z0-9]"/>
-      <exclusion demographic="fn" regex="girl"/>
-      <exclusion demographic="fn" regex="girl [a-z0-9]"/>
-      <exclusion demographic="fn" regex="baby"/>
-      <exclusion demographic="fn" regex="baby [a-z0-9]"/>
-      <exclusion demographic="fn" regex="baby boy"/>
-      <exclusion demographic="fn" regex="baby boy [a-z0-9]"/>
-      <exclusion demographic="fn" regex="baby girl"/>
-      <exclusion demographic="fn" regex="baby girl [a-z0-9]"/>
-      <exclusion demographic="fn" regex="babygirl"/>
-      <exclusion demographic="fn" regex="babygirl [a-z0-9]"/>
-      <exclusion demographic="fn" regex="babyboy"/>
-      <exclusion demographic="fn" regex="babyboy [a-z0-9]"/>
-    </BlockingExclusion>
-		<row name="mrn">
+	<analysis type="scaleweight">
+	<init>database access string</init>
+	</analysis>
+	<run estimate="true" name="sample">
+		<row name="yb">
 			<BlockOrder>1</BlockOrder>
 			<BlckChars>40</BlckChars>
 			<Include>false</Include>
-			<NonAgreement> 0.000068</NonAgreement>
-			<TAgreement>0.15526640</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
+			<TAgreement>0.9</TAgreement>
+			<NonAgreement>0.1</NonAgreement>
+			<ScaleWeight lookup="TopN" N="10.0" buffer="500">true</ScaleWeight>
 			<Algorithm>Exact Match</Algorithm>
 		</row>
-		<row name="drln">
+		<row name="mb">
 			<BlockOrder>null</BlockOrder>
 			<BlckChars>40</BlckChars>
 			<Include>true</Include>
-			<NonAgreement> 0.019642</NonAgreement>
-			<TAgreement>0.3658</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="st">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.890763</NonAgreement>
-			<TAgreement>0.99999</TAgreement>
+			<TAgreement>0.9</TAgreement>
+			<NonAgreement>0.1</NonAgreement>
 			<ScaleWeight>null</ScaleWeight>
 			<Algorithm>Exact Match</Algorithm>
 		</row>
@@ -81,35 +46,8 @@
 			<BlockOrder>null</BlockOrder>
 			<BlckChars>40</BlckChars>
 			<Include>true</Include>
-			<NonAgreement>0.036610</NonAgreement>
-			<TAgreement>0.99211</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="nkfn">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.002175</NonAgreement>
-			<TAgreement>0.39652</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="mb">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.613760</NonAgreement>
-			<TAgreement>0.99999</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="nkln">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.001124</NonAgreement>
-			<TAgreement>0.42496</TAgreement>
+			<TAgreement>0.9</TAgreement>
+			<NonAgreement>0.1</NonAgreement>
 			<ScaleWeight>null</ScaleWeight>
 			<Algorithm>Exact Match</Algorithm>
 		</row>
@@ -117,613 +55,35 @@
 			<BlockOrder>null</BlockOrder>
 			<BlckChars>40</BlckChars>
 			<Include>true</Include>
-			<NonAgreement> 0.33865</NonAgreement>
-			<TAgreement>0.16278</TAgreement>
+			<TAgreement>0.9</TAgreement>
+			<NonAgreement>0.1</NonAgreement>
 			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
+			<Algorithm>LEV</Algorithm>
 		</row>
 		<row name="ln">
 			<BlockOrder>null</BlockOrder>
 			<BlckChars>40</BlckChars>
 			<Include>true</Include>
-			<NonAgreement> 0.002543</NonAgreement>
-			<TAgreement>0.87331</TAgreement>
+			<TAgreement>0.9</TAgreement>
+			<NonAgreement>0.1</NonAgreement>
 			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
+			<Algorithm>LEV</Algorithm>
+		</row>
+		<row name="city">
+			<BlockOrder>null</BlockOrder>
+			<BlckChars>40</BlckChars>
+			<Include>true</Include>
+			<TAgreement>0.9</TAgreement>
+			<NonAgreement>0.1</NonAgreement>
+			<ScaleWeight>null</ScaleWeight>
+			<Algorithm>LCS</Algorithm>
 		</row>
 		<row name="zip">
 			<BlockOrder>null</BlockOrder>
 			<BlckChars>40</BlckChars>
 			<Include>true</Include>
-			<NonAgreement>0.017710</NonAgreement>
-			<TAgreement>0.86455</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="drfn">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.020525</NonAgreement>
-			<TAgreement>0.33043</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="tel">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.001369</NonAgreement>
-			<TAgreement>0.72535</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="sex">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.494164</NonAgreement>
-			<TAgreement>0.96902</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-	</run>
-	<run estimate="true" name="TEL" threshold="10">
-    <BlockingExclusion>
-      <exclusion demographic="fn" regex="infant"/>
-      <exclusion demographic="fn" regex="infant [a-z0-9]"/>
-      <exclusion demographic="fn" regex="infant girl [a-z0-9]"/>
-      <exclusion demographic="fn" regex="infant girl"/>
-      <exclusion demographic="fn" regex="infant boy"/>
-      <exclusion demographic="fn" regex="infant boy [a-z0-9]"/>
-      <exclusion demographic="fn" regex="inf"/>
-      <exclusion demographic="fn" regex="inf [a-z0-9]"/>
-      <exclusion demographic="fn" regex="inf boy"/>
-      <exclusion demographic="fn" regex="inf girl"/>
-      <exclusion demographic="fn" regex="inf girl [a-z0-9]"/>
-      <exclusion demographic="fn" regex="inf boy [a-z0-9]"/>
-      <exclusion demographic="fn" regex="boy"/>
-      <exclusion demographic="fn" regex="boy [a-z0-9]"/>
-      <exclusion demographic="fn" regex="girl"/>
-      <exclusion demographic="fn" regex="girl [a-z0-9]"/>
-      <exclusion demographic="fn" regex="baby"/>
-      <exclusion demographic="fn" regex="baby [a-z0-9]"/>
-      <exclusion demographic="fn" regex="baby boy"/>
-      <exclusion demographic="fn" regex="baby boy [a-z0-9]"/>
-      <exclusion demographic="fn" regex="baby girl"/>
-      <exclusion demographic="fn" regex="baby girl [a-z0-9]"/>
-      <exclusion demographic="fn" regex="babygirl"/>
-      <exclusion demographic="fn" regex="babygirl [a-z0-9]"/>
-      <exclusion demographic="fn" regex="babyboy"/>
-      <exclusion demographic="fn" regex="babyboy [a-z0-9]"/>
-    </BlockingExclusion>
-		<row name="tel">
-			<BlockOrder>1</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>false</Include>
-			<NonAgreement> 0.000320</NonAgreement>
-			<TAgreement>0.72402</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="drln">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.013010</NonAgreement>
-			<TAgreement>0.40158</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="mrn">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.000308</NonAgreement>
-			<TAgreement>0.89374</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="st">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.993398</NonAgreement>
-			<TAgreement>0.99311</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="db">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.034927</NonAgreement>
-			<TAgreement>0.99564</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="nkfn">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.001910</NonAgreement>
-			<TAgreement>0.33438</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="mb">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.669147</NonAgreement>
-			<TAgreement>0.99999</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="nkln">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.000706</NonAgreement>
-			<TAgreement>0.38822</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="fn">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.008725</NonAgreement>
-			<TAgreement>0.19441</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="ln">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.001742</NonAgreement>
-			<TAgreement>0.88314</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="zip">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.019552</NonAgreement>
-			<TAgreement>0.78404</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="drfn">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.004721</NonAgreement>
-			<TAgreement>0.26586</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="sex">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.497587</NonAgreement>
-			<TAgreement>0.95078</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-	</run>
-	<run estimate="true" name="LNFN" threshold="3">
-    <BlockingExclusion>
-      <exclusion demographic="fn" regex="infant"/>
-      <exclusion demographic="fn" regex="infant [a-z0-9]"/>
-      <exclusion demographic="fn" regex="infant girl [a-z0-9]"/>
-      <exclusion demographic="fn" regex="infant girl"/>
-      <exclusion demographic="fn" regex="infant boy"/>
-      <exclusion demographic="fn" regex="infant boy [a-z0-9]"/>
-      <exclusion demographic="fn" regex="inf"/>
-      <exclusion demographic="fn" regex="inf [a-z0-9]"/>
-      <exclusion demographic="fn" regex="inf boy"/>
-      <exclusion demographic="fn" regex="inf girl"/>
-      <exclusion demographic="fn" regex="inf girl [a-z0-9]"/>
-      <exclusion demographic="fn" regex="inf boy [a-z0-9]"/>
-      <exclusion demographic="fn" regex="boy"/>
-      <exclusion demographic="fn" regex="boy [a-z0-9]"/>
-      <exclusion demographic="fn" regex="girl"/>
-      <exclusion demographic="fn" regex="girl [a-z0-9]"/>
-      <exclusion demographic="fn" regex="baby"/>
-      <exclusion demographic="fn" regex="baby [a-z0-9]"/>
-      <exclusion demographic="fn" regex="baby boy"/>
-      <exclusion demographic="fn" regex="baby boy [a-z0-9]"/>
-      <exclusion demographic="fn" regex="baby girl"/>
-      <exclusion demographic="fn" regex="baby girl [a-z0-9]"/>
-      <exclusion demographic="fn" regex="babygirl"/>
-      <exclusion demographic="fn" regex="babygirl [a-z0-9]"/>
-      <exclusion demographic="fn" regex="babyboy"/>
-      <exclusion demographic="fn" regex="babyboy [a-z0-9]"/>
-    </BlockingExclusion>
-		<row name="ln">
-			<BlockOrder>1</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>false</Include>
-			<NonAgreement> 0.001312</NonAgreement>
-			<TAgreement>0.89048</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="fn">
-			<BlockOrder>2</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>false</Include>
-			<NonAgreement> 0.008792</NonAgreement>
-			<TAgreement>0.19542</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="drln">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.002080</NonAgreement>
-			<TAgreement>0.28238</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="mrn">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.00150</NonAgreement>
-			<TAgreement>0.79145</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="st">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.855700</NonAgreement>
-			<TAgreement>0.83424</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="db">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.031980</NonAgreement>
-			<TAgreement>0.031980</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="nkfn">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.002010</NonAgreement>
-			<TAgreement>0.22916</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="mb">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.220130</NonAgreement>
-			<TAgreement>0.99999</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="nkln">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.045480</NonAgreement>
-			<TAgreement>0.3136</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="zip">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.007810</NonAgreement>
-			<TAgreement>0.61419</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="drfn">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.003950</NonAgreement>
-			<TAgreement>0.21054</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="tel">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.000320</NonAgreement>
-			<TAgreement>0.59852</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="sex">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.491790</NonAgreement>
-			<TAgreement>0.97932</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-	</run>
-	<run estimate="true" name="LNDB" threshold="15">
-		<row name="ln">
-			<BlockOrder>1</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>false</Include>
-			<NonAgreement> 0.001312</NonAgreement>
-			<TAgreement>0.89048</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="db">
-			<BlockOrder>2</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>false</Include>
-			<NonAgreement>0.032704</NonAgreement>
-			<TAgreement>0.9682924</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="drln">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.003288</NonAgreement>
-			<TAgreement>0.40066</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="mrn">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.000060</NonAgreement>
-			<TAgreement>0.90182</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="st">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.845208</NonAgreement>
-			<TAgreement>0.91165</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="nkfn">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.001280</NonAgreement>
-			<TAgreement>0.31589</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="mb">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.303080</NonAgreement>
-			<TAgreement>0.99999</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="nkln">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.005088</NonAgreement>
-			<TAgreement>0.37111</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="fn">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.007392</NonAgreement>
-			<TAgreement>0.2086</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="zip">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.007748</NonAgreement>
-			<TAgreement>0.6982</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="drfn">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.002516</NonAgreement>
-			<TAgreement>0.23599</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="tel">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.000180</NonAgreement>
-			<TAgreement>0.64092</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="sex">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.491276</NonAgreement>
-			<TAgreement>0.95481</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-	</run>
-	<run estimate="true" name="ZIPDBMB" threshold="21">
-    <BlockingExclusion>
-      <exclusion demographic="fn" regex="infant"/>
-      <exclusion demographic="fn" regex="infant [a-z0-9]"/>
-      <exclusion demographic="fn" regex="infant girl [a-z0-9]"/>
-      <exclusion demographic="fn" regex="infant girl"/>
-      <exclusion demographic="fn" regex="infant boy"/>
-      <exclusion demographic="fn" regex="infant boy [a-z0-9]"/>
-      <exclusion demographic="fn" regex="inf"/>
-      <exclusion demographic="fn" regex="inf [a-z0-9]"/>
-      <exclusion demographic="fn" regex="inf boy"/>
-      <exclusion demographic="fn" regex="inf girl"/>
-      <exclusion demographic="fn" regex="inf girl [a-z0-9]"/>
-      <exclusion demographic="fn" regex="inf boy [a-z0-9]"/>
-      <exclusion demographic="fn" regex="boy"/>
-      <exclusion demographic="fn" regex="boy [a-z0-9]"/>
-      <exclusion demographic="fn" regex="girl"/>
-      <exclusion demographic="fn" regex="girl [a-z0-9]"/>
-      <exclusion demographic="fn" regex="baby"/>
-      <exclusion demographic="fn" regex="baby [a-z0-9]"/>
-      <exclusion demographic="fn" regex="baby boy"/>
-      <exclusion demographic="fn" regex="baby boy [a-z0-9]"/>
-      <exclusion demographic="fn" regex="baby girl"/>
-      <exclusion demographic="fn" regex="baby girl [a-z0-9]"/>
-      <exclusion demographic="fn" regex="babygirl"/>
-      <exclusion demographic="fn" regex="babygirl [a-z0-9]"/>
-      <exclusion demographic="fn" regex="babyboy"/>
-      <exclusion demographic="fn" regex="babyboy [a-z0-9]"/>
-    </BlockingExclusion>
-		<row name="db">
-			<BlockOrder>2</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>false</Include>
-			<NonAgreement>0.032704</NonAgreement>
-			<TAgreement>0.9682924</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="zip">
-			<BlockOrder>1</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>false</Include>
-			<NonAgreement>0.118252</NonAgreement>
-			<TAgreement>0.92629</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="mb">
-			<BlockOrder>3</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>false</Include>
-			<NonAgreement>0.363960</NonAgreement>
-			<TAgreement>0.981044757</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="drln">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.008328</NonAgreement>
-			<TAgreement>0.39291</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="mrn">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.000192</NonAgreement>
-			<TAgreement>0.89912</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="st">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.999660</NonAgreement>
-			<TAgreement>0.99999</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="nkfn">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.001940</NonAgreement>
-			<TAgreement>0.40582</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="nkln">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.000696</NonAgreement>
-			<TAgreement>0.45688</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="fn">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.008792</NonAgreement>
-			<TAgreement>0.19542</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="ln">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.001312</NonAgreement>
-			<TAgreement>0.89048</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="drfn">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.003888</NonAgreement>
-			<TAgreement>0.25118</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="tel">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement> 0.000320</NonAgreement>
-			<TAgreement>0.72402</TAgreement>
-			<ScaleWeight>null</ScaleWeight>
-			<Algorithm>Exact Match</Algorithm>
-		</row>
-		<row name="sex">
-			<BlockOrder>null</BlockOrder>
-			<BlckChars>40</BlckChars>
-			<Include>true</Include>
-			<NonAgreement>0.493472</NonAgreement>
-			<TAgreement>0.95412</TAgreement>
+			<TAgreement>0.9</TAgreement>
+			<NonAgreement>0.1</NonAgreement>
 			<ScaleWeight>null</ScaleWeight>
 			<Algorithm>Exact Match</Algorithm>
 		</row>
