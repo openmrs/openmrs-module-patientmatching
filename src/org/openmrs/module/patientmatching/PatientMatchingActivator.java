@@ -7,19 +7,17 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.aopalliance.aop.Advice;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.PersonAttribute;
 import org.openmrs.PersonAttributeType;
+import org.openmrs.api.PatientService;
 import org.openmrs.api.PatientSetService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.Activator;
@@ -80,7 +78,6 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	
 	private Log log = LogFactory.getLog(this.getClass());
 	public static String FILE_LOG = "patient_matching_file_log";
-	public static String LOG_FILE_NAME = "log/link_module.log";
 	private Logger file_log = Logger.getLogger(FILE_LOG);
 	
 	
@@ -106,17 +103,6 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		// to fix automatic startup, get privilege
 		Context.addProxyPrivilege(PRIVILEGE);
 		Context.addProxyPrivilege(PRIVILEGE2);
-		
-		// configure file logging
-		file_log.setAdditivity(false);
-		file_log.setLevel((Level)Level.INFO);
-		try{
-			file_log.addAppender(new FileAppender(new PatternLayout("[%d{yyyy-MM-dd HH:mm:ss}]%m%n"), LOG_FILE_NAME));
-			
-		}
-		catch(IOException ioe){
-			file_log.addAppender(new ConsoleAppender());
-		}
 		
 		log.info("Starting to populate matching table");
 		if(LinkDBConnections.getInstance().getRecDBManager() != null){
@@ -148,10 +134,11 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		// iterate through them, and if linkage tables does not contain 
 		// a record with openmrs_id equal to patient.getID, then add
 		PatientSetService pss = Context.getPatientSetService();
-		List<Patient> patient_list = pss.getAllPatients().getPatients();
-		Iterator<Patient> it = patient_list.iterator();
+		PatientService patientService = Context.getPatientService();
+		Set<Integer> patient_list = pss.getAllPatients().getPersonIds(null);
+		Iterator<Integer> it = patient_list.iterator();
 		while(it.hasNext()){
-			Patient p = it.next();
+			Patient p = patientService.getPatient(it.next());
 			Integer id = p.getPatientId();
 			int existing_patients = link_db.getRecordCountFromDB(LINK_TABLE_KEY_DEMOGRAPHIC, id.toString());
 			if(existing_patients == 0){
