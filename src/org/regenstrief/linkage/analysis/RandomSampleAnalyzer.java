@@ -27,62 +27,45 @@ import org.regenstrief.linkage.util.StringMatch;
  * 
  */
 
-public class RandomSampleAnalyzer {
+public class RandomSampleAnalyzer extends RecordPairAnalyzer{
 	public static final int SAMPLE_SIZE = 100000;
 	
-	LinkDataSource lds1, lds2;
-	ReaderProvider rp;
 	Random rand;
 	
 	List<int[]> index_pairs;
+	Record[] recs1, recs2;
+	int pair_count;
 	
-	public RandomSampleAnalyzer(LinkDataSource lds1, LinkDataSource lds2){
-		this.lds1 = lds1;
-		this.lds2 = lds2;
+	public RandomSampleAnalyzer(LinkDataSource lds1, LinkDataSource lds2, MatchingConfig mc){
+		super(lds1, lds2, mc);
 		rand = new Random();
 		
-		rp = new ReaderProvider();
-		
 		index_pairs = new ArrayList<int[]>();
+		
+		setIndexPairs(countRecordPairs());
+		recs1 = new Record[SAMPLE_SIZE];
+		recs2 = new Record[SAMPLE_SIZE];
+		pair_count = 0;
 	}
 	
-	/**
-	 * Modify the given MatchingConfig u values with numbers
-	 * determine by random sampling possible pairs from a
-	 * FormPairs object a statistically significant number of times.
-	 * 
-	 * @param mc	the MatchingConfig object to modify using this analysis
-	 */
-	public void setUValues(MatchingConfig mc){
-		int pair_count = countRecordPairs(mc);
-		setIndexPairs(pair_count);
-		
-		Record[] recs1 = new Record[SAMPLE_SIZE];
-		Record[] recs2 = new Record[SAMPLE_SIZE];
-		
-		// first need to create ordered readers and a FormPairs object to 
-		// get the record pairs
-		OrderedDataSourceReader reader1 = rp.getReader(lds1, mc);
-		OrderedDataSourceReader reader2 = rp.getReader(lds2, mc);
-		FormPairs fp = new FormPairs(reader1, reader2, mc, lds1.getTypeTable());
-		
-		Record[] pair;
-		int count = 0;
-		while((pair = fp.getNextRecordPair()) != null){
-			for(int i = 0; i < SAMPLE_SIZE; i++){
-				int[] set = index_pairs.get(i);
-				if(set[0] == count){
-					recs1[i] = pair[0];
-				}
-				if(set[1] == count){
-					recs2[i] = pair[1];
-				}
+	public void analyzeRecordPair(Record[] pair){
+		// need to set the corresponding value in record arrays if one of
+		// the current records is set to be sampled
+		for(int i = 0; i < SAMPLE_SIZE; i++){
+			int[] set = index_pairs.get(i);
+			if(set[0] == pair_count){
+				recs1[i] = pair[0];
 			}
-			
-			count++;
+			if(set[1] == pair_count){
+				recs2[i] = pair[1];
+			}
 		}
 		
-		// initialize values to calculate u
+		pair_count++;
+	}
+	
+	public void finishAnalysis(){
+		// iterate over the saved record pairs and determine rate of matching
 		Hashtable<String,Integer> demographic_agree_count = new Hashtable<String,Integer>();
 		
 		for(int i = 0; i < SAMPLE_SIZE; i++){
@@ -154,7 +137,8 @@ public class RandomSampleAnalyzer {
 		return match;
 	}
 	
-	private int countRecordPairs(MatchingConfig mc){
+	private int countRecordPairs(){
+		ReaderProvider rp = new ReaderProvider();
 		OrderedDataSourceReader reader1 = rp.getReader(lds1, mc);
 		OrderedDataSourceReader reader2 = rp.getReader(lds2, mc);
 		FormPairs fp = new FormPairs(reader1, reader2, mc, lds1.getTypeTable());

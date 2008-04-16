@@ -35,9 +35,18 @@ public class ScaleWeightDBManager extends DBManager {
 	private static final String token_table = "patientmatching_token";
 	private static final String analyses_table = "patientmatching_analysis";
 	private static final String fields_table = "patientmatching_field";
-
+	
+	private static final String UNION_FREQ_QUERY = "select c.token, sum(frequency) from (select token, frequency from " + fields_table + " as a, " + token_table + " as b where a.label = ? and a.column_id = b.column_id group by token, frequency ) as c group by c.token;";
+	PreparedStatement union_freq_stmt;
+	
+	// hashtable stores the frequencies for each demographic when the data sources
+	// in the frequency table is unioned.  Eventually, should add support for
+	// multiple data sources
+	private Hashtable<String,Hashtable<String,Integer>> union_values;
+	
 	public ScaleWeightDBManager(String driver, String url, String user, String passwd){
 		super(driver, url, user, passwd);
+		union_values = new Hashtable<String,Hashtable<String,Integer>>();
 	}
 
 	/**
@@ -415,6 +424,48 @@ public class ScaleWeightDBManager extends DBManager {
 		} else {
 			return updateRecordCount(ds_id, count);
 		}
+	}
+	
+	/**
+	 * Method returns information on the frequency of unique tokens over combined
+	 * data sources.  For example, frequencies of {'a'=3,'b'=2} and {'a'=1,'c'=4}
+	 * in two different data sources would have a frequency of {'a'=4,'b'=2,'c'=4}
+	 * 
+	 * @param demographic	the analyzed demographic of interest
+	 * @return	a hashtable indexed on token, pointing to the frequency count of that value
+	 */
+	public Hashtable<String,Integer> unionUniqueTokens(String demographic){
+		Hashtable<String,Integer> ret = union_values.get(demographic);
+		
+		if(ret == null){
+			if(union_freq_stmt == null){
+				try{
+					union_freq_stmt = db.prepareStatement(UNION_FREQ_QUERY);
+				}catch(SQLException sqle){
+					return null;
+				}
+			}
+			
+			ResultSet rs = null;
+			try{
+				ret = new Hashtable<String,Integer>();
+				union_freq_stmt.setString(1, demographic);
+				rs = union_freq_stmt.executeQuery();
+				while(rs.next()){
+					String dem = rs.getString(1);
+					int freq = rs.getInt(2);
+					ret.put(dem, freq);
+				}
+				union_values.put(demographic, ret);
+				
+			}
+			catch(SQLException sqle){
+				ret = null;
+			}
+			
+		}
+		
+		return ret;
 	}
 	
 	public boolean doesTableExist(String table_name) {

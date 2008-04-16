@@ -28,14 +28,16 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 	final static double INIT_MEST = 0.9;
 	final static double INIT_UEST = 0.1;
 	final static int INIT_COMP = 0;
+	final static double EARLY_TERMINATION_THRESHOLD = 0.00001;
 	
 	// use approximate values close to zero and one
 	// due to the math used in the record linking
 	final static double EM_ONE = 0.99999;
-	final static double EM_ZERO = 0.00001;
+	final static double EM_ZERO = 0.000001;
 	
-	final static int ITERATIONS = 15;
+	final static int ITERATIONS = 200;
 	private int iterations;
+	private boolean pin_u_values;
 	
 	//private Logger log = Logger.getLogger(this.getClass() + this.toString());
 	
@@ -52,6 +54,15 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 		vector_count = new Hashtable<MatchVector,Integer>();
 		sp = new ScorePair(mc);
 		iterations = ITERATIONS;
+		pin_u_values = false;
+	}
+	
+	public boolean isUStatic(){
+		return pin_u_values;
+	}
+	
+	public void setUStatic(boolean b){
+		pin_u_values = b;
 	}
 	
 	/**
@@ -160,7 +171,11 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 		// initialize default values
 		for(int i = 0; i < demographics.length; i++){
 			mest.put(demographics[i], new Double(INIT_MEST));
-			uest.put(demographics[i], new Double(INIT_UEST));
+			if(pin_u_values){
+				uest.put(demographics[i], mc.getMatchingConfigRowByName(demographics[i]).getNonAgreement());
+			} else {
+				uest.put(demographics[i], new Double(INIT_UEST));
+			}
 			msum.put(demographics[i], new Double(0));
 			usum.put(demographics[i], new Double(0));
 		}
@@ -169,6 +184,8 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 		double gMsum, gUsum, gMtemp, gUtemp;
 		double termM, termU;
 		double p = 0.01;
+		double prev_p = 0.01;
+		boolean break_early = false;
 		//gMsum = 0;
 		//gUsum = 0;
 		//gMtemp = 0;
@@ -242,6 +259,10 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 			
 			// update p_est
 			p = gMsum / vct_count;
+			if(Math.abs(p - prev_p) < EARLY_TERMINATION_THRESHOLD){
+				break_early = true;
+			}
+			prev_p = p;
 			//System.out.println("Iteration " + (i + 1));
 			//System.out.println("P: " + p);
 			log.info("Iteration " + (i + 1));
@@ -253,7 +274,9 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 				double mest_val = msum.get(demographic) / gMsum;
 				double uest_val = usum.get(demographic) / gUsum;
 				mest.put(demographic, mest_val);
-				uest.put(demographic, uest_val);
+				if(!pin_u_values){
+					uest.put(demographic, uest_val);
+				}
 			}
 			
 			
@@ -261,6 +284,10 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 				String demographic = demographics[j];
 				//System.out.println(demographic + ":   mest: " + mest.get(demographic) + "   uest: " + uest.get(demographic));
 				log.info(demographic + ":   mest: " + mest.get(demographic) + "   uest: " + uest.get(demographic));
+			}
+			if(break_early){
+				log.info("Terminating early due to P value converging");
+				break;
 			}
 			
 		}

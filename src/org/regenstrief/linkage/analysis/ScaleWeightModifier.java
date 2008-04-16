@@ -182,7 +182,7 @@ public class ScaleWeightModifier implements Modifier {
 	private int unionUniqueTokens(DataColumn dc1, DataColumn dc2, int id1, int id2){
 		int ret;
 		
-		Integer count = union_uniques.get(dc1.getName());
+		/*Integer count = union_uniques.get(dc1.getName());
 		if(count == null){
 			int unique_count1 = sw_connection.getCount(ScaleWeightDBManager.CountType.Unique, dc1, id1);
 			int unique_count2 = sw_connection.getCount(ScaleWeightDBManager.CountType.Unique, dc2, id2);
@@ -198,7 +198,8 @@ public class ScaleWeightModifier implements Modifier {
 		} else {
 			ret = count.intValue();
 		}
-		
+		*/
+		ret = sw_connection.unionUniqueTokens(dc1.getName()).keySet().size();
 		
 		return ret;
 	}
