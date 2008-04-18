@@ -35,7 +35,7 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 	final static double EM_ONE = 0.99999;
 	final static double EM_ZERO = 0.000001;
 	
-	final static int ITERATIONS = 200;
+	final static int ITERATIONS = 100;
 	private int iterations;
 	private boolean pin_u_values;
 	
@@ -73,68 +73,6 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 	public Logger getLogger(){
 		return log;
 	}
-	
-	/**
-	 * Analyzes the record pairs according to the given MatchingConfig object and returns
-	 * a hash map of the column names to new values.  This method uses the default
-	 * number of iterations.
-	 * 
-	 * Like the version that also has an iterations argument, the MatchingConfig object
-	 * passed will be modified
-	 * 
-	 * @param fp	provides the stream of Record pairs to be analyzed
-	 * @param mc	stores the information on how to compare the Records.  This will have
-	 * 				its m and u values modified for columns included in the matching
-	 * @throws IOException
-	 */
-	/*
-	public void analyzeRecordPairs(org.regenstrief.linkage.io.FormPairs fp, MatchingConfig mc) throws IOException{
-		analyzeRecordPairs(fp, mc, ITERATIONS);
-	}
-	
-	/**
-	 * Analyzes the record pairs according to the given MatchingConfig object
-	 * 
-	 * @param fp	provides the stream of Record pairs to be analyzed
-	 * @param mc	stores the information on how to compare the Records.  This will have
-	 * 				its m and u values modified for columns included in the matching
-	 * @param iterations	the number of iterations to perform when calculating optimized
-	 * 				m and u values
-	 * @throws IOException
-	 */
-	/*
-	public void analyzeRecordPairs(org.regenstrief.linkage.io.FormPairs fp, MatchingConfig mc, int iterations) throws IOException{
-		ScorePair sp = new ScorePair(mc);
-		Record[] pair;
-		while((pair = fp.getNextRecordPair()) != null){
-			Record r1 = pair[0];
-			Record r2 = pair[1];
-			MatchResult mr = sp.scorePair(r1, r2);
-			MatchVector mr_vect = mr.getMatchVector();
-			//vector_list.add(mr_vect);
-			
-			Integer mv_count = vector_count.get(mr_vect);
-			if(mv_count == null){
-				vector_count.put(mr_vect, new Integer(1));
-			} else {
-				vector_count.put(mr_vect, new Integer(mv_count.intValue() + 1));
-			}
-			
-		}
-		
-		// print basic information about analysis
-		String[] bcs = mc.getBlockingColumns();
-		//System.out.print("Blocking columns: ");
-		log.info("Blocking columns: ");
-		for(int i = 0; i < bcs.length; i++){
-			String block_col_name = bcs[i];
-			//System.out.print(" " + block_col_name);
-			log.info(" " + block_col_name);
-		}
-		//System.out.println();
-		finishAnalysis(new VectorTable(mc), mc.getIncludedColumnsNames(), mc, iterations);
-		
-	}*/
 	
 	public void analyzeRecordPair(Record[] pair){
 		Record r1 = pair[0];

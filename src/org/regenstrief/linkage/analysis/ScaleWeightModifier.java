@@ -1,7 +1,7 @@
 package org.regenstrief.linkage.analysis;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 
@@ -17,7 +17,9 @@ import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
 
 /**
- * Changes scores of a MatchResult according to weight scaling formula
+ * Changes scores of a MatchResult according to weight scaling formula.  Now with added feature
+ * of scaling frequencies that fall within a certain percentile range, like above 10% or 
+ * below 33%
  * 
  * @author scentel
  * 
@@ -25,7 +27,10 @@ import org.regenstrief.linkage.util.MatchingConfigRow;
  */
 
 public class ScaleWeightModifier implements Modifier {
-
+	
+	public static enum ModifySet { ABOVE, BELOW };
+	private Hashtable<String,Hashtable<Integer,ModifySet>> percentile_modification_sets;
+	
 	private ScaleWeightAnalyzer swa1, swa2;
 
 	// MatchingConfigRows that weight scaling will be used
@@ -45,9 +50,6 @@ public class ScaleWeightModifier implements Modifier {
 	
 	// Connection to database where tokens are stored
 	private static ScaleWeightDBManager sw_connection;
-	
-	// hashtable to store unique token counts for both datasources
-	private Hashtable<String, Integer> union_uniques;
 
 	public ScaleWeightModifier(ScaleWeightAnalyzer swa1, ScaleWeightAnalyzer swa2) {
 		this.swa1 = swa1;
@@ -92,11 +94,28 @@ public class ScaleWeightModifier implements Modifier {
 			}
 		}
 		
-		union_uniques = new Hashtable<String,Integer>();
+		percentile_modification_sets = new Hashtable<String,Hashtable<Integer,ModifySet>>();
 	}
 	
 	public String getModifierName(){
 		return "ScaleWeight";
+	}
+	
+	public void setPercntileRequirement(String demographic, ModifySet s, int percentile){
+		Hashtable<Integer,ModifySet> demographic_sets = percentile_modification_sets.get(demographic);
+		if(demographic_sets == null){
+			demographic_sets = new Hashtable<Integer,ModifySet>();
+			percentile_modification_sets.put(demographic, demographic_sets);
+		}
+		demographic_sets.put(percentile, s);
+	}
+	
+	public void clearPercentileRequirement(String demographic, int percentile){
+		Hashtable<Integer,ModifySet> demographic_sets = percentile_modification_sets.get(demographic);
+		if(demographic_sets != null){
+			demographic_sets.remove(percentile);
+		}
+		
 	}
 	
 	/**
@@ -157,26 +176,57 @@ public class ScaleWeightModifier implements Modifier {
 				String cur_demographic = cur_row.getName();
 				// If exact matching is used
 				if(cur_row.getAlgorithm() == MatchingConfig.EXACT_MATCH && mr.getMatchVector().matchedOn(cur_demographic)) {
-					// Calculate scaling factor obtained from two data sources
-					DataColumn dc1 = lds1_inc_cols.get(cur_demographic);
-					DataColumn dc2 = lds2_inc_cols.get(cur_demographic);
-					int unique_union = unionUniqueTokens(dc1, dc2, lds1_id, lds2_id);
-					SWAdjustScore adjustment = SWAdjustScore.sumTwoScores(adjust1.get(cur_demographic), adjust2.get(cur_demographic), unique_union);
 					
-					// Adjust the score
-					// score_vector.setScore(cur_demographic, score_vector.getScore(cur_demographic) + log base 2(adjustment.getScalingFactor()));
-					//score_vector.setScore(cur_demographic, score_vector.getScore(cur_demographic) * adjustment.getScalingFactor());
-					
-					
-					double scalar = Math.log(adjustment.getScalingFactor())/Math.log(2);
-					
-					ret.addDemographicScalarModifier(this, cur_demographic, scalar, ModifiedMatchResult.Operator.PLUS);
+					// check if current matched demographic is within set of frequencies to scale
+					String val = mr.getRecord1().getDemographic(cur_demographic);
+					if(inScalingSet(cur_demographic, val)){
+						// Calculate scaling factor obtained from two data sources
+						DataColumn dc1 = lds1_inc_cols.get(cur_demographic);
+						DataColumn dc2 = lds2_inc_cols.get(cur_demographic);
+						int unique_union = unionUniqueTokens(dc1, dc2, lds1_id, lds2_id);
+						SWAdjustScore adjustment = SWAdjustScore.sumTwoScores(adjust1.get(cur_demographic), adjust2.get(cur_demographic), unique_union);
+						
+						// Adjust the score
+						// score_vector.setScore(cur_demographic, score_vector.getScore(cur_demographic) + log base 2(adjustment.getScalingFactor()));
+						//score_vector.setScore(cur_demographic, score_vector.getScore(cur_demographic) * adjustment.getScalingFactor());
+						
+						
+						double scalar = Math.log(adjustment.getScalingFactor())/Math.log(2);
+						
+						ret.addDemographicScalarModifier(this, cur_demographic, scalar, ModifiedMatchResult.Operator.PLUS);
+					}
 				} 
 			}
 			
 		}
 		
 		return ret;
+	}
+	
+	/**
+	 * Method determines whether demographic and value will be scaled given the
+	 * percentile requirements listed in percentile_scale_sets 
+	 * 
+	 * @param demographic
+	 * @return
+	 */
+	private boolean inScalingSet(String demographic, String token){
+		// if there are no criteria, then return true
+		Hashtable<Integer,ModifySet> demographic_sets = percentile_modification_sets.get(demographic);
+		if(percentile_modification_sets.size() == 0 || demographic_sets == null){
+			return true;
+		}
+		
+		// need to iterate through the different percentile guidelines and determine
+		// if current token matches any of the criteria
+		Enumeration<Integer> e = demographic_sets.keys();
+		boolean in_range = false;
+		while(!in_range && e.hasMoreElements()){
+			int percentile = e.nextElement();
+			ModifySet ms = demographic_sets.get(percentile);
+			in_range = sw_connection.inPercentileRange(demographic, token, percentile, ms);
+		}
+		return in_range;
 	}
 	
 	private int unionUniqueTokens(DataColumn dc1, DataColumn dc2, int id1, int id2){

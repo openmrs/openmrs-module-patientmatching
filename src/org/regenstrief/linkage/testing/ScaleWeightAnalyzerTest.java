@@ -21,10 +21,11 @@ import org.regenstrief.linkage.analysis.EMAnalyzer;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.ScaleWeightAnalyzer;
 import org.regenstrief.linkage.analysis.ScaleWeightModifier;
+import org.regenstrief.linkage.analysis.ScaleWeightModifier.ModifySet;
 import org.regenstrief.linkage.io.DataSourceReader;
-import org.regenstrief.linkage.io.OrderedCharDelimFileReader;
 import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.LinkDataSource;
+import org.regenstrief.linkage.util.MatchResultsXML;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
 import org.regenstrief.linkage.util.RecMatchConfig;
@@ -58,34 +59,31 @@ public class ScaleWeightAnalyzerTest {
 			ReaderProvider rp = new ReaderProvider();
 
 			for(MatchingConfig mc_test : rmc) {
+			//for(int j = 0; j < 1; j++){
+				//MatchingConfig mc_test = rmc.getMatchingConfigs().get(j);
 				// create output file for this MatchingConfig
 				File out_file = new File("output_" + mc_test.getName() + ".txt");
 				BufferedWriter fout = new BufferedWriter(new FileWriter(out_file));
 				
 				Hashtable<String,Integer> type_table = lds1.getTypeTable();
 
-				DataSourceReader dsr1, dsr2;				
-				// create readers and a FormPairs object
-				if(lds1.getType().equals("DataBase")) {
-					dsr1 = (DataSourceReader)rp.getReader(lds1);
-				} else {
-					dsr1 = new OrderedCharDelimFileReader(lds1, mc_test);
-				}
-
-				if(lds2.getType().equals("DataBase")) {
-					dsr2 = (DataSourceReader)rp.getReader(lds2);
-				} else {
-					dsr2 = new OrderedCharDelimFileReader(rmc.getLinkDataSource2(), mc_test);;
-				}
+				DataSourceReader dsr1 = rp.getReader(lds1);
+				DataSourceReader dsr2 = rp.getReader(lds2);
 								
 				org.regenstrief.linkage.io.FormPairs fp2 = new org.regenstrief.linkage.io.FormPairs(rp.getReader(rmc.getLinkDataSource1(), mc_test), rp.getReader(rmc.getLinkDataSource2(), mc_test), mc_test, type_table);
 				EMAnalyzer ema = new EMAnalyzer(lds1, lds2, mc_test);
 				PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
+				//RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(lds1, lds2, mc_test);
 				pdsa.addAnalyzer(ema);
+				//pdsa.addAnalyzer(rsa);
+				//System.out.println(mc_test);
+				//System.out.println("**********************************");
 				pdsa.analyzeData();
+				//System.out.println(mc_test);
+				//System.exit(0);
 				
 				ScorePair sp = new ScorePair(mc_test);
-					
+				
 				if(mc_test.get_is_scale_weight()) {
 					DataSourceAnalysis dsa1 = new DataSourceAnalysis(dsr1);
 					DataSourceAnalysis dsa2 = new DataSourceAnalysis(dsr2);
@@ -103,6 +101,7 @@ public class ScaleWeightAnalyzerTest {
 					
 					ScaleWeightModifier swm = new ScaleWeightModifier(swa1, swa2);
 					swm.initializeModifier();
+					//swm.setPercntileRequirement("ln", ModifySet.BELOW, 99);
 					sp.addScoreModifier(swm);
 				}	
 				
@@ -145,6 +144,21 @@ public class ScaleWeightAnalyzerTest {
 				//System.out.println(new java.util.Date() + ":  finsihed");
 				fout.flush();
 				fout.close();
+				
+				
+				File xml_out = new File("output_" + mc_test.getName() + ".xml");
+				File sax_out = new File("sax_output_" + mc_test.getName() + ".xml");
+				
+				/*
+				System.out.println("starting to write dom output at " + new java.util.Date());
+				Document d = MatchResultsXML.resultsToXML(results);
+				System.out.println("finished making dom at " + new java.util.Date());
+				XMLTranslator.writeXMLDocToFile(d, xml_out);
+				System.out.println("finished writing dom output at " + new java.util.Date());
+				*/
+				System.out.println("starting to write sax output at " + new java.util.Date());
+				MatchResultsXML.resultsToXML(results, sax_out);
+				System.out.println("finished writing sax output at " + new java.util.Date());
 			}
 
 		}
@@ -169,16 +183,17 @@ public class ScaleWeightAnalyzerTest {
 		while(demographics.hasMoreElements()){
 			String demographic = demographics.nextElement();
 			MatchingConfigRow mcr = mr.getMatchingConfig().getMatchingConfigRowByName(demographic);
-			if(mcr.isIncluded() || mcr.getBlockOrder() > 0){
+			//if(mcr.isIncluded() || mcr.getBlockOrder() > 0){
 				s += "|" + r1.getDemographic(demographic) + "|" + r2.getDemographic(demographic);
-			}
+			//}
 		}
 		return s;
 	}
 	
 	private static String getOutputLine(ModifiedMatchResult mr){
 		String s = new String();
-		s += "records";
+		s += mr.getBaseScore() + "|" + mr.getScore() + "|";
+		//s += "records";
 		Enumeration<String> demographics = mr.getRecord1().getDemographics().keys();
 		Record r1 = mr.getRecord1();
 		Record r2 = mr.getRecord2();
@@ -189,10 +204,10 @@ public class ScaleWeightAnalyzerTest {
 				s += "|" + r1.getDemographic(demographic) + "|" + r2.getDemographic(demographic);
 			//}
 		}
-		s += "\n";
-		s += mr.getBaseScore() + "|" + mr.getBasicMatchResult().getScoreVector();
-		s+= "\n";
-		s += mr.getScore() + "|" + mr.getScoreVector();
+		//s += "\n";
+		//s += mr.getBaseScore() + "|" + mr.getBasicMatchResult().getScoreVector();
+		//s+= "\n";
+		//s += mr.getScore() + "|" + mr.getScoreVector();
 		return s;
 	}
 }

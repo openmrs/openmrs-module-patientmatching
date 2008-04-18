@@ -6,10 +6,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
 
+import org.apache.commons.math.stat.descriptive.rank.Percentile;
+import org.regenstrief.linkage.analysis.ScaleWeightModifier.ModifySet;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.MatchingConfigRow.ScaleWeightSetting;
 
@@ -37,16 +41,23 @@ public class ScaleWeightDBManager extends DBManager {
 	private static final String fields_table = "patientmatching_field";
 	
 	private static final String UNION_FREQ_QUERY = "select c.token, sum(frequency) from (select token, frequency from " + fields_table + " as a, " + token_table + " as b where a.label = ? and a.column_id = b.column_id group by token, frequency ) as c group by c.token;";
-	PreparedStatement union_freq_stmt;
+	private static final String UNION_FREQ_THRESHOLD_ABOVE_QUERY = "select token, sum from (select c.token, sum(frequency) from (select token, frequency from " + fields_table + " as a, " + token_table + " as b where a.label = ? and a.column_id = b.column_id group by token, frequency ) as c group by c.token) as d where sum > ?;";
+	private static final String UNION_FREQ_THRESHOLD_BELOW_QUERY = "select token, sum from (select c.token, sum(frequency) from (select token, frequency from " + fields_table + " as a, " + token_table + " as b where a.label = ? and a.column_id = b.column_id group by token, frequency ) as c group by c.token) as d where sum < ?;";
+	PreparedStatement union_freq_stmt, union_threshold_stmt;
 	
 	// hashtable stores the frequencies for each demographic when the data sources
 	// in the frequency table is unioned.  Eventually, should add support for
 	// multiple data sources
 	private Hashtable<String,Hashtable<String,Integer>> union_values;
 	
+	// hashtable stores a list of strings that the UNION_FREQ_THRESHOLD_QUERY returns for
+	// a given demographic, percentile value, and ModifySet
+	Hashtable<String,Hashtable<Integer,Hashtable<ModifySet,List<String>>>> percentile_tokens;
+	
 	public ScaleWeightDBManager(String driver, String url, String user, String passwd){
 		super(driver, url, user, passwd);
 		union_values = new Hashtable<String,Hashtable<String,Integer>>();
+		percentile_tokens = new Hashtable<String,Hashtable<Integer,Hashtable<ModifySet,List<String>>>>();
 	}
 
 	/**
@@ -466,6 +477,71 @@ public class ScaleWeightDBManager extends DBManager {
 		}
 		
 		return ret;
+	}
+	
+	public boolean inPercentileRange(String demographic, String value, int percentile, ModifySet m){
+		Hashtable<String,Integer> demographic_frequencies = unionUniqueTokens(demographic);
+		double[] frequencies = new double[demographic_frequencies.size()];
+		Enumeration<String> e = demographic_frequencies.keys();
+		int i = 0;
+		while(e.hasMoreElements()){
+			String key = e.nextElement();
+			int count = demographic_frequencies.get(key);
+			frequencies[i++] = count;
+		}
+		
+		Hashtable<Integer,Hashtable<ModifySet,List<String>>> demographic_table = percentile_tokens.get(demographic);
+		if(demographic_table == null){
+			demographic_table = new Hashtable<Integer,Hashtable<ModifySet,List<String>>>();
+			percentile_tokens.put(demographic, demographic_table);
+		}
+		
+		Hashtable<ModifySet,List<String>> set_table = demographic_table.get(percentile);
+		if(set_table == null){
+			set_table = new Hashtable<ModifySet,List<String>>();
+			demographic_table.put(percentile, set_table);
+		}
+		
+		List<String> tokens = set_table.get(m);
+		String query;
+		if(tokens == null){
+			tokens = new ArrayList<String>();
+			set_table.put(m, tokens);
+			if(m == ModifySet.ABOVE){
+				query = UNION_FREQ_THRESHOLD_ABOVE_QUERY;
+			} else {
+				query = UNION_FREQ_THRESHOLD_BELOW_QUERY;
+			}
+			
+			try{
+				union_threshold_stmt = db.prepareStatement(query);
+			}catch(SQLException sqle){
+				return false;
+			}
+			
+			
+			Percentile p = new Percentile();
+			double threshold = p.evaluate(frequencies, percentile);
+				
+			ResultSet rs = null;
+			try{
+				union_threshold_stmt.setString(1, demographic);
+				union_threshold_stmt.setDouble(2, threshold);
+				rs = union_threshold_stmt.executeQuery();
+				while(rs.next()){
+					String t = rs.getString(1);
+					tokens.add(t);
+				}
+				set_table.put(m, tokens);
+			}
+			catch(SQLException sqle){
+				return false;
+			}
+		
+		}
+		
+		boolean valid_token = tokens.contains(value);
+		return valid_token;
 	}
 	
 	public boolean doesTableExist(String table_name) {
