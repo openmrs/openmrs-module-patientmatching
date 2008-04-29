@@ -1,6 +1,5 @@
 package org.regenstrief.linkage.analysis;
 
-import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -35,7 +34,8 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 	final static double EM_ONE = 0.99999;
 	final static double EM_ZERO = 0.000001;
 	
-	final static int ITERATIONS = 100;
+	final static int MIN_ITERATIONS = 15;
+	final static int MAX_ITERATIONS = 200;
 	private int iterations;
 	private boolean pin_u_values;
 	
@@ -53,7 +53,7 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 		super(lds1, lds2, mc);
 		vector_count = new Hashtable<MatchVector,Integer>();
 		sp = new ScorePair(mc);
-		iterations = ITERATIONS;
+		iterations = MAX_ITERATIONS;
 		pin_u_values = false;
 	}
 	
@@ -197,7 +197,7 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 			
 			// update p_est
 			p = gMsum / vct_count;
-			if(Math.abs(p - prev_p) < EARLY_TERMINATION_THRESHOLD){
+			if(Math.abs(p - prev_p) < EARLY_TERMINATION_THRESHOLD && i > MIN_ITERATIONS){
 				break_early = true;
 			}
 			prev_p = p;
