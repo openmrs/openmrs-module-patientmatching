@@ -57,6 +57,10 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 		pin_u_values = false;
 	}
 	
+	public void setIterations(int iterations){
+		this.iterations = iterations;
+	}
+	
 	public boolean isUStatic(){
 		return pin_u_values;
 	}

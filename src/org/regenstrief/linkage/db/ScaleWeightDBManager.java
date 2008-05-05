@@ -1,5 +1,9 @@
 package org.regenstrief.linkage.db;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.DatabaseMetaData;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -12,10 +16,28 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.commons.math.stat.descriptive.rank.Percentile;
+import org.regenstrief.linkage.analysis.DataSourceAnalysis;
+import org.regenstrief.linkage.analysis.EMAnalyzer;
+import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
+import org.regenstrief.linkage.analysis.ScaleWeightAnalyzer;
+import org.regenstrief.linkage.analysis.ScaleWeightModifier;
 import org.regenstrief.linkage.analysis.ScaleWeightModifier.ModifySet;
+import org.regenstrief.linkage.io.DataSourceReader;
+import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.DataColumn;
+import org.regenstrief.linkage.util.LinkDataSource;
+import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.RecMatchConfig;
+import org.regenstrief.linkage.util.ScorePair;
+import org.regenstrief.linkage.util.XMLTranslator;
 import org.regenstrief.linkage.util.MatchingConfigRow.ScaleWeightSetting;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 
 
@@ -479,6 +501,50 @@ public class ScaleWeightDBManager extends DBManager {
 		return ret;
 	}
 	
+	public boolean aboveAverageFrequency(String demographic, String value){
+		Hashtable<String,Integer> freqs = unionUniqueTokens(demographic);
+		Enumeration<String> e = freqs.keys();
+		int sum = 0;
+		while(e.hasMoreElements()){
+			String token = e.nextElement();
+			int freq = freqs.get(token);
+			sum += freq;
+		}
+		double avg = sum / freqs.keySet().size();
+		
+		e = freqs.keys();
+		while(e.hasMoreElements()){
+			String token = e.nextElement();
+			int freq = freqs.get(token);
+			if(freq > avg && token.equals(value)){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean belowAverageFrequency(String demographic, String value){
+		Hashtable<String,Integer> freqs = unionUniqueTokens(demographic);
+		Enumeration<String> e = freqs.keys();
+		int sum = 0;
+		while(e.hasMoreElements()){
+			String token = e.nextElement();
+			int freq = freqs.get(token);
+			sum += freq;
+		}
+		double avg = sum / freqs.keySet().size();
+		
+		e = freqs.keys();
+		while(e.hasMoreElements()){
+			String token = e.nextElement();
+			int freq = freqs.get(token);
+			if(freq < avg && token.equals(value)){
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public boolean inPercentileRange(String demographic, String value, int percentile, ModifySet m){
 		Hashtable<String,Integer> demographic_frequencies = unionUniqueTokens(demographic);
 		double[] frequencies = new double[demographic_frequencies.size()];
@@ -558,6 +624,78 @@ public class ScaleWeightDBManager extends DBManager {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return false;
+		}
+	}
+	
+	/*
+	 * test class just to see how frequencies and percentiles work with currently loaded frequencies
+	 */
+	public static void main(String[] args){
+		File config = new File(args[0]);
+		if(!config.exists()){
+			System.out.println("config file does not exist, exiting");
+		}
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		try{
+			// Load the XML configuration file
+			DocumentBuilder builder = factory.newDocumentBuilder();
+			Document doc = builder.parse(config);
+			RecMatchConfig rmc = XMLTranslator.createRecMatchConfig(doc);
+
+			// Retrieve data sources for easier access
+			LinkDataSource lds1 = rmc.getLinkDataSource1();
+			LinkDataSource lds2 = rmc.getLinkDataSource2();
+			
+			MatchingConfig mc_test = rmc.getMatchingConfigs().get(0);
+			String db_access = rmc.getAnalysis_configs().getInitString("scaleweight");
+			ScaleWeightAnalyzer swa1 = new ScaleWeightAnalyzer(lds1, mc_test, db_access);
+			ScaleWeightAnalyzer swa2 = new ScaleWeightAnalyzer(lds2, mc_test, db_access);
+			
+			String[] init = db_access.split(",");
+			ScaleWeightDBManager swdbm = new ScaleWeightDBManager(init[0],init[1],init[2],init[3]);
+			swdbm.connect();
+			
+			String demographic = "ln";
+			Hashtable<String,Integer> demographic_frequencies = swdbm.unionUniqueTokens(demographic);
+			double[] frequencies = new double[demographic_frequencies.size()];
+			Enumeration<String> e = demographic_frequencies.keys();
+			int i = 0;
+			while(e.hasMoreElements()){
+				String key = e.nextElement();
+				int count = demographic_frequencies.get(key);
+				frequencies[i++] = count;
+			}
+			
+			Percentile p = new Percentile();
+			int[] percentiles = {10,20,30,40,50,60,70,80,90,95,98,99,100};
+			for(i = 0; i < percentiles.length; i++){
+				System.out.println("frequency at " + percentiles[i] + " percentile:\t" + p.evaluate(frequencies, percentiles[i]));
+			}
+			
+			/*
+			ScaleWeightModifier swm = new ScaleWeightModifier(swa1, swa2);
+			swm.initializeModifier();
+			
+			// test scaling set inclusiveness
+			String[] names = {"SMITH","BAKER","LEE","GONZALES","THOMPSON","MCINTYRE","ACRES","123"};
+			String dem = "ln";
+			int percent = 99;
+			swm.setPercntileRequirement("ln", ModifySet.ABOVE, percent);
+			System.out.println("names for " + dem + " above " + percent + " percentile:");
+			for(int i = 0; i < names.length; i++){
+				boolean b = swm.inScalingSet(dem, names[i]);
+				System.out.println(names[i] + ":\t" + b);
+			}
+			*/
+		}
+		catch(ParserConfigurationException pce){
+			System.out.println("error making XML parser: " + pce.getMessage());
+		}
+		catch(SAXException spe){
+			System.out.println("error parsing config file: " + spe.getMessage());
+		}
+		catch(IOException ioe){
+			System.out.println(ioe.getMessage());
 		}
 	}
 }

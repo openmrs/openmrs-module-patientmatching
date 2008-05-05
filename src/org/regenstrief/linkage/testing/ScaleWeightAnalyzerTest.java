@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -25,7 +27,6 @@ import org.regenstrief.linkage.analysis.ScaleWeightModifier.ModifySet;
 import org.regenstrief.linkage.io.DataSourceReader;
 import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.LinkDataSource;
-import org.regenstrief.linkage.util.MatchResultsXML;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
 import org.regenstrief.linkage.util.RecMatchConfig;
@@ -72,6 +73,7 @@ public class ScaleWeightAnalyzerTest {
 								
 				org.regenstrief.linkage.io.FormPairs fp2 = new org.regenstrief.linkage.io.FormPairs(rp.getReader(rmc.getLinkDataSource1(), mc_test), rp.getReader(rmc.getLinkDataSource2(), mc_test), mc_test, type_table);
 				EMAnalyzer ema = new EMAnalyzer(lds1, lds2, mc_test);
+				ema.setIterations(15);
 				PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
 				//RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(lds1, lds2, mc_test);
 				pdsa.addAnalyzer(ema);
@@ -80,7 +82,8 @@ public class ScaleWeightAnalyzerTest {
 				//System.out.println("**********************************");
 				pdsa.analyzeData();
 				//System.out.println(mc_test);
-				//System.exit(0);
+				
+				
 				
 				ScorePair sp = new ScorePair(mc_test);
 				
@@ -101,8 +104,17 @@ public class ScaleWeightAnalyzerTest {
 					
 					ScaleWeightModifier swm = new ScaleWeightModifier(swa1, swa2);
 					swm.initializeModifier();
-					//swm.setPercntileRequirement("ln", ModifySet.BELOW, 99);
+					int percent = 50;
+					// set requirements for all included demographics
+					List<MatchingConfigRow> scale_cols = mc_test.getScaleWeightColumns();
+					Iterator<MatchingConfigRow> it = scale_cols.iterator();
+					while(it.hasNext()){
+						MatchingConfigRow mcr = it.next();
+						//swm.setPercntileRequirement(mcr.getName(), ModifySet.BELOW, percent);
+						swm.setAverageRequirement(ModifySet.BELOW);
+					}
 					sp.addScoreModifier(swm);
+					
 				}	
 				
 				System.out.println(new java.util.Date() + ":  starting to get record pairs");
@@ -156,9 +168,9 @@ public class ScaleWeightAnalyzerTest {
 				XMLTranslator.writeXMLDocToFile(d, xml_out);
 				System.out.println("finished writing dom output at " + new java.util.Date());
 				*/
-				System.out.println("starting to write sax output at " + new java.util.Date());
-				MatchResultsXML.resultsToXML(results, sax_out);
-				System.out.println("finished writing sax output at " + new java.util.Date());
+				//System.out.println("starting to write sax output at " + new java.util.Date());
+				//MatchResultsXML.resultsToXML(results, sax_out);
+				//System.out.println("finished writing sax output at " + new java.util.Date());
 			}
 
 		}

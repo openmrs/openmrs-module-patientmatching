@@ -48,6 +48,8 @@ public class ScaleWeightModifier implements Modifier {
 	private int lds1_id;
 	private int lds2_id;
 	
+	private ModifySet avg_discrimination_set;
+	
 	// Connection to database where tokens are stored
 	private static ScaleWeightDBManager sw_connection;
 
@@ -108,6 +110,15 @@ public class ScaleWeightModifier implements Modifier {
 			percentile_modification_sets.put(demographic, demographic_sets);
 		}
 		demographic_sets.put(percentile, s);
+	}
+	
+	public void setAverageRequirement(ModifySet s){
+		percentile_modification_sets.clear();
+		avg_discrimination_set = s;
+	}
+	
+	public void clearAverageRequirement(){
+		avg_discrimination_set = null;
 	}
 	
 	public void clearPercentileRequirement(String demographic, int percentile){
@@ -210,11 +221,26 @@ public class ScaleWeightModifier implements Modifier {
 	 * @param demographic
 	 * @return
 	 */
-	private boolean inScalingSet(String demographic, String token){
+	public boolean inScalingSet(String demographic, String token){
 		// if there are no criteria, then return true
 		Hashtable<Integer,ModifySet> demographic_sets = percentile_modification_sets.get(demographic);
-		if(percentile_modification_sets.size() == 0 || demographic_sets == null){
+		if(avg_discrimination_set == null &&(percentile_modification_sets.size() == 0 || demographic_sets == null)){
 			return true;
+		}
+		
+		// first check if discrimination based on above/below average is set
+		if(avg_discrimination_set == ModifySet.ABOVE){
+			if(sw_connection.aboveAverageFrequency(demographic, token)){
+				return true;
+			} else {
+				return false;
+			}
+		} else if(avg_discrimination_set == ModifySet.BELOW){
+			if(sw_connection.belowAverageFrequency(demographic, token)){
+				return true;
+			} else {
+				return false;
+			}
 		}
 		
 		// need to iterate through the different percentile guidelines and determine
