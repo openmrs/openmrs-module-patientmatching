@@ -214,6 +214,16 @@ public class XMLTranslator {
 		
 		ret.setAttribute("name", mc.getName());
 		
+		// if the user want to use random sampling, then add attributes in
+		// the "run" element of the configuration file to persist the random
+		// sampling parameters
+		if(mc.isUsingRandomSampling()) {
+			ret.setAttribute("random-sample", "true");
+			ret.setAttribute("sample-size", String.valueOf(mc.getRandomSampleSize()));
+		} else {
+			ret.setAttribute("random-sample", "false");
+		}
+		
 		if(mc.getScoreThreshold() != MatchingConfig.DEFAULT_SCORE_THRESHOLD){
 			ret.setAttribute("threshold", Double.toString(mc.getScoreThreshold()));
 		}
@@ -424,6 +434,22 @@ public class XMLTranslator {
 		Node score_threshold = attributes.getNamedItem("threshold");
 		BlockingExclusionList bel = null;
 		
+		// get the random sampling params
+		Node node = attributes.getNamedItem("random-sample");
+		// check for compatibility with older xml
+		boolean randomSampling = false;
+		int sampleSize = 0;
+		if(node != null) {
+			// check whether to use random sampling or not
+			String useRandomSampling = node.getTextContent();
+			if(useRandomSampling.equals("true")) {
+				randomSampling = true;
+				// if random sampling is used, then there will be a sample size attribute
+				String randomSampleSize = attributes.getNamedItem("sample-size").getTextContent();
+				sampleSize = Integer.parseInt(randomSampleSize);
+			}
+		}
+		
 		// iterate over the children nodes and create the MatchingConfigRow objects
 		ArrayList<MatchingConfigRow> mcrs = new ArrayList<MatchingConfigRow>();
 		for(int i = 0; i < mc.getChildNodes().getLength(); i++){
@@ -445,6 +471,8 @@ public class XMLTranslator {
 		MatchingConfig ret = new MatchingConfig(mc_name, mcr_array);
 		ret.setBlockingExclusionList(bel);
 		ret.setEstimate(estimate);
+		ret.setUsingRandomSampling(randomSampling);
+		ret.setRandomSampleSize(sampleSize);
 		if(score_threshold != null){
 			try{
 				double threshold = Double.parseDouble(score_threshold.getTextContent());

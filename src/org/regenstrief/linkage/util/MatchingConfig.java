@@ -41,6 +41,16 @@ public class MatchingConfig {
 	private boolean estimate;
 	private BlockingExclusionList bel;
 	
+	/**
+	 * boolean value to determine whether current blocking run use random
+	 * sampling to get the u values or not
+	 */
+	private boolean usingRandomSampling;
+	/**
+	 * sample size of the random sampling process
+	 */
+	private int randomSampleSize;
+	
 	public MatchingConfig(String name, String[] rn){
 		row_options = new ArrayList<MatchingConfigRow>();
 		for(int i = 0; i < rn.length; i++){
@@ -79,6 +89,22 @@ public class MatchingConfig {
 		return null;
 	}
 	
+	public boolean isUsingRandomSampling() {
+		return usingRandomSampling;
+	}
+
+	public void setUsingRandomSampling(boolean usingRandomSampling) {
+		this.usingRandomSampling = usingRandomSampling;
+	}
+
+	public int getRandomSampleSize() {
+		return randomSampleSize;
+	}
+
+	public void setRandomSampleSize(int randomSampleSize) {
+		this.randomSampleSize = randomSampleSize;
+	}
+
 	public void setBlockingExclusionList(BlockingExclusionList b){
 		bel = b;
 	}

@@ -7,11 +7,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.log4j.Logger;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.io.FormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceReader;
 import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.LinkDataSource;
+import org.regenstrief.linkage.util.LoggingObject;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
 import org.regenstrief.linkage.util.StringMatch;
@@ -27,7 +29,7 @@ import org.regenstrief.linkage.util.StringMatch;
  * 
  */
 
-public class RandomSampleAnalyzer extends RecordPairAnalyzer{
+public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingObject {
 	public static final int SAMPLE_SIZE = 100000;
 	
 	Random rand;
@@ -36,22 +38,32 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer{
 	Record[] recs1, recs2;
 	int pair_count;
 	
+	/*
+	 * Random sampling size as defined by the user that will replace the static value
+	 */
+	private int sampleSize;
+	
 	public RandomSampleAnalyzer(LinkDataSource lds1, LinkDataSource lds2, MatchingConfig mc){
 		super(lds1, lds2, mc);
 		rand = new Random();
 		
 		index_pairs = new ArrayList<int[]>();
 		
-		setIndexPairs(countRecordPairs());
-		recs1 = new Record[SAMPLE_SIZE];
-		recs2 = new Record[SAMPLE_SIZE];
+		int recordPairCount = countRecordPairs();
+		
+		sampleSize = mc.getRandomSampleSize();
+		
+		setIndexPairs(recordPairCount);
+		
+		recs1 = new Record[sampleSize];
+		recs2 = new Record[sampleSize];
 		pair_count = 0;
 	}
 	
 	public void analyzeRecordPair(Record[] pair){
 		// need to set the corresponding value in record arrays if one of
 		// the current records is set to be sampled
-		for(int i = 0; i < SAMPLE_SIZE; i++){
+		for(int i = 0; i < sampleSize; i++){
 			int[] set = index_pairs.get(i);
 			if(set[0] == pair_count){
 				recs1[i] = pair[0];
@@ -68,7 +80,7 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer{
 		// iterate over the saved record pairs and determine rate of matching
 		Hashtable<String,Integer> demographic_agree_count = new Hashtable<String,Integer>();
 		
-		for(int i = 0; i < SAMPLE_SIZE; i++){
+		for(int i = 0; i < sampleSize; i++){
 			Record r1 = recs1[i];
 			Record r2 = recs2[i];
 			
@@ -99,13 +111,13 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer{
 		while(it.hasNext()){
 			String demographic = it.next();
 			int agree_count = demographic_agree_count.get(demographic);
-			double u_val = (double)agree_count/(double)SAMPLE_SIZE;
+			double u_val = (double)agree_count/(double)sampleSize;
 			if(u_val < EMAnalyzer.EM_ZERO){
 				u_val = EMAnalyzer.EM_ZERO;
 			} else if(u_val > EMAnalyzer.EM_ONE){
 				u_val = EMAnalyzer.EM_ONE;
 			}
-			
+			log.info("Generated u for: " + demographic + " is: " + u_val);
 			mc.getMatchingConfigRowByName(demographic).setNonAgreement(u_val);
 		}
 	}
@@ -156,11 +168,15 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer{
 		index_pairs.clear();
 		
 		// need to get two sets of random numbers, one for each data source
-		for(int i = 0; i < SAMPLE_SIZE; i++){
+		for(int i = 0; i < sampleSize; i++){
 			int[] pair = new int[2];
 			pair[0] = rand.nextInt(max_index);
 			pair[1] = rand.nextInt(max_index);
 			index_pairs.add(pair);
 		}
+	}
+
+	public Logger getLogger() {
+		return log;
 	}
 }

@@ -1,23 +1,26 @@
 package org.regenstrief.linkage.gui;
 
 import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -42,7 +45,7 @@ import org.regenstrief.linkage.util.RecMatchConfig;
  *
  *
  */
-public class SessionsPanel extends JPanel implements ActionListener, KeyListener, ListSelectionListener{
+public class SessionsPanel extends JPanel implements ActionListener, KeyListener, ListSelectionListener, ItemListener, FocusListener{
 	public final String DEFAULT_NAME = "New match";
 	
 	JList runs;
@@ -53,6 +56,10 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	RecMatchConfig rm_conf;
 	 
 	MatchingConfig current_working_config;
+	
+    private JCheckBox randomSampleCheckBox;
+    private JTextField randomSampleTextField;
+    private JLabel randomSampleSizeLabel;
 	
 	public SessionsPanel(RecMatchConfig rmc){
 		//super();
@@ -74,83 +81,217 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		this.add(getSessionTable());
 		
 		// add items for the bottom panel
-		
-		JPanel list_panel = new JPanel();//new BoxLayout(list_panel, BoxLayout.LINE_AXIS));
-		
-		
-		
-		list_panel.setLayout(new BoxLayout(list_panel, BoxLayout.LINE_AXIS));
-		JPanel left_list_panel = new JPanel();
-		left_list_panel.setLayout(new BoxLayout(left_list_panel, BoxLayout.PAGE_AXIS));
-		list_panel.add(left_list_panel);
-		JPanel right_list_panel = new JPanel();
-		right_list_panel.setLayout(new BoxLayout(right_list_panel, BoxLayout.PAGE_AXIS));
-		list_panel.add(right_list_panel);
-		list_panel.add(Box.createHorizontalGlue());
-		
-		// add the JList object to the left_list_panel
-		DefaultListModel dlm = new DefaultListModel();
-		runs = new JList(dlm);
-		runs.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		runs.addListSelectionListener(this);
-		runs.setCellRenderer(new MatchingConfigCellRenderer());
-		
-		// if there are already MatchingConfig objects, add to runs
-		if(rm_conf != null){
-			if(rm_conf.getMatchingConfigs().size() > 0){
-				Iterator<MatchingConfig> it = rm_conf.getMatchingConfigs().iterator();
-				while(it.hasNext()){
-					dlm.addElement(it.next());
-				}
-				current_working_config = rm_conf.getMatchingConfigs().get(0);
-			} else {
-				current_working_config = null;
-			}
-		}
-		
-		JScrollPane jsp = new JScrollPane(runs);
-		jsp.setPreferredSize(new Dimension(150, 200));
-		jsp.setMaximumSize(new Dimension(150, 200));
-		left_list_panel.add(jsp);
-		JButton up = new JButton("Move up");
-		up.addActionListener(this);
-		JButton down = new JButton("Move down");
-		down.addActionListener(this);
-		JPanel jp = new JPanel(new FlowLayout());
-		jp.add(up);
-		jp.add(down);
-		left_list_panel.add(jp);
-		
-		// add JButtons and JTextField to the other panel
-		JButton rename, remove, new_run, run_link;
-		run_name = new JTextField(18);
-		run_name.setMaximumSize(run_name.getPreferredSize());
-		run_name.addKeyListener(this);
-		JLabel name = new JLabel("Name of configuration");
-		rename = new JButton("Rename");
-		rename.addActionListener(this);
-		remove = new JButton("Remove");
-		remove.addActionListener(this);
-		new_run = new JButton("New");
-		new_run.addActionListener(this);
-		// validate selections button moved to an implicit process done as a part
-		// of the linkage process
-		//validate = new JButton("Check table selections");
-		//validate.addActionListener(this);
-		// separate button for writing meta files removed; will be part of
-		// linkage process and done automatically
-		//write = new JButton("Write session metafiles");
-		//write.addActionListener(this);
-		run_link = new JButton("Run linkage process");
-		run_link.addActionListener(this);
-		right_list_panel.add(name);
-		right_list_panel.add(run_name);
-		right_list_panel.add(rename);
-		right_list_panel.add(remove);
-		right_list_panel.add(new_run);
-		//right_list_panel.add(validate);
-		//right_list_panel.add(write);
-		right_list_panel.add(run_link);
+        
+        /* *********************************
+         * list and move up down button area
+         * *********************************/
+        JPanel list_panel = new javax.swing.JPanel();
+        list_panel.setBorder(javax.swing.BorderFactory.createTitledBorder("Session List"));
+        
+        JButton up = new JButton();
+        up.addActionListener(this);
+        up.setText("Move Up");
+        
+        JButton down = new JButton();
+        down.addActionListener(this);
+        down.setText("Move Down");
+        
+        DefaultListModel dlm = new DefaultListModel();
+        runs = new javax.swing.JList(dlm);
+        runs.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        runs.addListSelectionListener(this);
+        runs.setCellRenderer(new MatchingConfigCellRenderer());
+        
+        // if there are already MatchingConfig objects, add to runs
+        if(rm_conf != null){
+            if(rm_conf.getMatchingConfigs().size() > 0){
+                Iterator<MatchingConfig> it = rm_conf.getMatchingConfigs().iterator();
+                while(it.hasNext()){
+                    dlm.addElement(it.next());
+                }
+                current_working_config = rm_conf.getMatchingConfigs().get(0);
+                runs.setSelectedIndex(0);
+            } else {
+                current_working_config = null;
+            }
+        }
+
+        JScrollPane blockingRunScrollPane = new javax.swing.JScrollPane();
+        blockingRunScrollPane.setViewportView(runs);
+        /* ****************************************
+         * End of list and move up down button area
+         * ****************************************/
+        
+        /* ******************************
+         * Session Entry Modificator Area
+         * ******************************/
+        JPanel sessionListEntryPanel = new JPanel();
+        
+        run_name = new JTextField();
+        run_name.addKeyListener(this);
+        
+        JButton remove = new JButton();
+        remove.addActionListener(this);
+        remove.setText("Remove");
+        
+        JButton rename = new JButton();
+        rename.addActionListener(this);
+        rename.setText("Rename");
+        
+        JButton new_run = new JButton();
+        new_run.addActionListener(this);
+        new_run.setText("New");
+
+        sessionListEntryPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Edit Session Entry"));
+        /* ******************************
+         * End Session Entry Modificator Area
+         * ******************************/
+        
+        /* ******************************
+         * Random Sample Area
+         * ******************************/
+        JPanel randomSamplePanel = new JPanel();
+        randomSamplePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Session Global Parameter"));
+        
+        randomSampleCheckBox = new JCheckBox();
+        randomSampleCheckBox.setText("Use Random Sampling");
+        randomSampleCheckBox.addItemListener(this);
+        
+        randomSampleSizeLabel = new JLabel();
+        randomSampleSizeLabel.setText("Sample Size");
+        randomSampleSizeLabel.setEnabled(false);
+        
+        randomSampleTextField = new javax.swing.JTextField();
+        randomSampleTextField.setText("100000");
+        randomSampleTextField.setEnabled(false);
+        randomSampleTextField.addFocusListener(this);
+        /* ******************************
+         * End Random Sample Area
+         * ******************************/
+        
+        /* ******************
+         * Linkage Panel Area
+         * ******************/
+        JPanel linkagePanel = new javax.swing.JPanel();
+        linkagePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Linkage Process"));
+        
+        JButton run_link = new javax.swing.JButton();
+        run_link.addActionListener(this);
+        run_link.setText("Run Linkage Process");
+        /* **********************
+         * End Linkage Panel Area
+         * **********************/
+        
+        javax.swing.GroupLayout sessionListEntryPanelLayout = new javax.swing.GroupLayout(sessionListEntryPanel);
+        sessionListEntryPanel.setLayout(sessionListEntryPanelLayout);
+        sessionListEntryPanelLayout.setHorizontalGroup(
+            sessionListEntryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(sessionListEntryPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(sessionListEntryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(sessionListEntryPanelLayout.createSequentialGroup()
+                        .addComponent(new_run)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(run_name, javax.swing.GroupLayout.DEFAULT_SIZE, 235, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, sessionListEntryPanelLayout.createSequentialGroup()
+                        .addComponent(rename)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(remove)))
+                .addContainerGap())
+        );
+        sessionListEntryPanelLayout.setVerticalGroup(
+            sessionListEntryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(sessionListEntryPanelLayout.createSequentialGroup()
+                .addGroup(sessionListEntryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(sessionListEntryPanelLayout.createSequentialGroup()
+                        .addGap(32, 32, 32)
+                        .addGroup(sessionListEntryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(remove)
+                            .addComponent(rename)))
+                    .addGroup(sessionListEntryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(new_run)
+                        .addComponent(run_name, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout randomSamplePanelLayout = new javax.swing.GroupLayout(randomSamplePanel);
+        randomSamplePanel.setLayout(randomSamplePanelLayout);
+        randomSamplePanelLayout.setHorizontalGroup(
+            randomSamplePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(randomSamplePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(randomSamplePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(randomSampleCheckBox)
+                    .addGroup(randomSamplePanelLayout.createSequentialGroup()
+                        .addComponent(randomSampleSizeLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(randomSampleTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        randomSamplePanelLayout.setVerticalGroup(
+            randomSamplePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(randomSamplePanelLayout.createSequentialGroup()
+                .addComponent(randomSampleCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(randomSamplePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(randomSampleSizeLabel)
+                    .addComponent(randomSampleTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout linkagePanelLayout = new javax.swing.GroupLayout(linkagePanel);
+        linkagePanel.setLayout(linkagePanelLayout);
+        linkagePanelLayout.setHorizontalGroup(
+            linkagePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(linkagePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(run_link)
+                .addContainerGap(151, Short.MAX_VALUE))
+        );
+        linkagePanelLayout.setVerticalGroup(
+            linkagePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(linkagePanelLayout.createSequentialGroup()
+                .addComponent(run_link)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout list_panelLayout = new javax.swing.GroupLayout(list_panel);
+        list_panel.setLayout(list_panelLayout);
+        list_panelLayout.setHorizontalGroup(
+            list_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(list_panelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(list_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(list_panelLayout.createSequentialGroup()
+                        .addComponent(up)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(down))
+                    .addComponent(blockingRunScrollPane, 0, 0, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addGroup(list_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(linkagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(randomSamplePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(sessionListEntryPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(238, 238, 238))
+        );
+        list_panelLayout.setVerticalGroup(
+            list_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(list_panelLayout.createSequentialGroup()
+                .addGroup(list_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, list_panelLayout.createSequentialGroup()
+                        .addComponent(blockingRunScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(list_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(up)
+                            .addComponent(down)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, list_panelLayout.createSequentialGroup()
+                        .addComponent(sessionListEntryPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(randomSamplePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(linkagePanel, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(129, Short.MAX_VALUE))
+        );
 		
 		this.add(list_panel);
 	}
@@ -174,6 +315,32 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	
 	private void displayThisMatchingConfig(MatchingConfig mc){
 		//session_options.setModel(new SessionOptionsTableModel(mc));
+		
+		// only display runs data if there's actually mc in the list model
+		if(runs.getModel().getSize() > 0) {
+			int selectedIndex = runs.getSelectedIndex();
+			// this special case when a user already load they're config file
+			// no item in the blocking runs is selected. pick the first blocking
+			// runs
+			if(selectedIndex == -1) {
+				selectedIndex = 0;
+			}
+			// select the first element in the list or current selected index
+			// (redundant selection process)
+			runs.setSelectedIndex(selectedIndex);
+			MatchingConfig m = (MatchingConfig) runs.getModel().getElementAt(selectedIndex);
+			// update the text field to reflect currently selected element in the list
+			run_name.setText(m.getName());
+			
+			// update the random sample size and check box based on the matching
+			// config data
+			randomSampleCheckBox.setSelected(mc.isUsingRandomSampling());
+			randomSampleSizeLabel.setEnabled(mc.isUsingRandomSampling());
+			randomSampleTextField.setEnabled(mc.isUsingRandomSampling());
+			if(mc.isUsingRandomSampling()) {
+				randomSampleTextField.setText(String.valueOf(m.getRandomSampleSize()));
+			}
+		}
 		current_working_config = mc;
 		session_options.setModel(new SessionOptionsTableModel(mc));
 		TableColumn tc = session_options.getColumnModel().getColumn(6);
@@ -281,7 +448,8 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 				MatchingConfig mc = (MatchingConfig)runs.getSelectedValue();
 				if(mc != null && mc != current_working_config){
 					// clicked on a new item
-					displayThisMatchingConfig(mc);
+					current_working_config = mc;
+					displayThisMatchingConfig(current_working_config);
 				}
 			}
 		}
@@ -291,10 +459,11 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	public void actionPerformed(ActionEvent ae){
 		if(ae.getSource() instanceof JButton){
 			JButton source = (JButton)ae.getSource();
-			if(source.getText().equals("Move up")){
+			System.out.println("Source: " + source.getText());
+			if(source.getText().equals("Move Up")){
 				int index = runs.getSelectedIndex();
 				moveUpSessionConfig(index);
-			} else if(source.getText().equals("Move down")){
+			} else if(source.getText().equals("Move Down")){
 				int index = runs.getSelectedIndex();
 				moveDownSessionConfig(index);
 			} else if(source.getText().equals("Rename")){
@@ -304,8 +473,9 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 				rm_conf.getMatchingConfigs().add(mc);
 				DefaultListModel dlm = (DefaultListModel)runs.getModel();
 				dlm.addElement(mc);
+				runs.setSelectedIndex(dlm.getSize() - 1);
 				displayThisMatchingConfig(mc);
-			} else if(source.getText().equals("Run linkage process")){
+			} else if(source.getText().equals("Run Linkage Process")){
 				JFileChooser out_chooser = new JFileChooser();
 				int ret = out_chooser.showDialog(this, "Choose output file");
 				File out, match_file;
@@ -391,5 +561,53 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		
 		displayThisMatchingConfig(current_working_config);
 		
+	}
+
+    public void itemStateChanged(ItemEvent e) {
+    	// update the ui based on whether the use random sample is checked or not
+    	if(e.getStateChange() == ItemEvent.SELECTED) {
+            randomSampleSizeLabel.setEnabled(true);
+            randomSampleTextField.setEnabled(true);
+            randomSampleTextField.requestFocus();
+			if(current_working_config != null) {
+	        	current_working_config.setUsingRandomSampling(true);
+	        	int sampleSize = Integer.parseInt(randomSampleTextField.getText());
+	        	current_working_config.setRandomSampleSize(sampleSize);
+			}
+        } else if(e.getStateChange() == ItemEvent.DESELECTED){
+            randomSampleSizeLabel.setEnabled(false);
+            randomSampleTextField.setEnabled(false);
+            randomSampleTextField.select(0, 0);
+			if(current_working_config != null) {
+	        	current_working_config.setUsingRandomSampling(false);
+			}
+        }
+    }
+
+	@Override
+	public void focusGained(FocusEvent e) {
+		if(randomSampleTextField == e.getSource()) {
+			randomSampleTextField.selectAll();
+		}
+	}
+
+	@Override
+	public void focusLost(FocusEvent e) {
+		if(randomSampleTextField == e.getSource()) {
+			// only allows positive digit in the text field
+			String digit = "\\d+";
+			String textValue = randomSampleTextField.getText();
+			Pattern pattern = Pattern.compile(digit);
+			Matcher matcher = pattern.matcher(textValue);
+			if (matcher.matches()) {
+				if(current_working_config != null) {
+					int sampleSize = Integer.parseInt(textValue);
+					current_working_config.setRandomSampleSize(sampleSize);
+				}
+			} else {
+				// should be showing a message using option pane here
+				randomSampleTextField.setText("100000");
+			}
+		}
 	}
 }

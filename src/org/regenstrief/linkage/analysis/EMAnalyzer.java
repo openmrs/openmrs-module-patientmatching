@@ -54,7 +54,10 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 		vector_count = new Hashtable<MatchVector,Integer>();
 		sp = new ScorePair(mc);
 		iterations = MAX_ITERATIONS;
-		pin_u_values = false;
+		/*
+		 * Check the current blocking run use random sampling or not.
+		 */
+		pin_u_values = mc.isUsingRandomSampling();
 	}
 	
 	public void setIterations(int iterations){
@@ -118,6 +121,7 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 			} else {
 				uest.put(demographics[i], new Double(INIT_UEST));
 			}
+			log.info("Initializing demographic: " + demographics[i] + " u = " + uest.get(demographics[i]) + " and m = " + mest.get(demographics[i]));
 			msum.put(demographics[i], new Double(0));
 			usum.put(demographics[i], new Double(0));
 		}

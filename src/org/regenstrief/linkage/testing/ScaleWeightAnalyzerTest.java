@@ -19,8 +19,8 @@ import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.ModifiedMatchResult;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.analysis.DataSourceAnalysis;
-import org.regenstrief.linkage.analysis.EMAnalyzer;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
+import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
 import org.regenstrief.linkage.analysis.ScaleWeightAnalyzer;
 import org.regenstrief.linkage.analysis.ScaleWeightModifier;
 import org.regenstrief.linkage.analysis.ScaleWeightModifier.ModifySet;
@@ -72,11 +72,11 @@ public class ScaleWeightAnalyzerTest {
 				DataSourceReader dsr2 = rp.getReader(lds2);
 								
 				org.regenstrief.linkage.io.FormPairs fp2 = new org.regenstrief.linkage.io.FormPairs(rp.getReader(rmc.getLinkDataSource1(), mc_test), rp.getReader(rmc.getLinkDataSource2(), mc_test), mc_test, type_table);
-				EMAnalyzer ema = new EMAnalyzer(lds1, lds2, mc_test);
-				ema.setIterations(15);
+				//EMAnalyzer ema = new EMAnalyzer(lds1, lds2, mc_test);
+				//ema.setIterations(15);
 				PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
-				//RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(lds1, lds2, mc_test);
-				pdsa.addAnalyzer(ema);
+				RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(lds1, lds2, mc_test);
+				pdsa.addAnalyzer(rsa);
 				//pdsa.addAnalyzer(rsa);
 				//System.out.println(mc_test);
 				//System.out.println("**********************************");
