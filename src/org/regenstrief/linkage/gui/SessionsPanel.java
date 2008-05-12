@@ -1,7 +1,11 @@
 package org.regenstrief.linkage.gui;
 
 import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -17,6 +21,7 @@ import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -81,12 +86,11 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		this.add(getSessionTable());
 		
 		// add items for the bottom panel
-        
         /* *********************************
          * list and move up down button area
          * *********************************/
-        JPanel list_panel = new javax.swing.JPanel();
-        list_panel.setBorder(javax.swing.BorderFactory.createTitledBorder("Session List"));
+        JPanel list_panel = new JPanel();
+        list_panel.setBorder(BorderFactory.createTitledBorder("Session List"));
         
         JButton up = new JButton();
         up.addActionListener(this);
@@ -97,7 +101,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         down.setText("Move Down");
         
         DefaultListModel dlm = new DefaultListModel();
-        runs = new javax.swing.JList(dlm);
+        runs = new JList(dlm);
         runs.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         runs.addListSelectionListener(this);
         runs.setCellRenderer(new MatchingConfigCellRenderer());
@@ -116,7 +120,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
             }
         }
 
-        JScrollPane blockingRunScrollPane = new javax.swing.JScrollPane();
+        JScrollPane blockingRunScrollPane = new JScrollPane();
         blockingRunScrollPane.setViewportView(runs);
         /* ****************************************
          * End of list and move up down button area
@@ -142,7 +146,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         new_run.addActionListener(this);
         new_run.setText("New");
 
-        sessionListEntryPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Edit Session Entry"));
+        sessionListEntryPanel.setBorder(BorderFactory.createTitledBorder("Edit Session Entry"));
         /* ******************************
          * End Session Entry Modificator Area
          * ******************************/
@@ -151,7 +155,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
          * Random Sample Area
          * ******************************/
         JPanel randomSamplePanel = new JPanel();
-        randomSamplePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Session Global Parameter"));
+        randomSamplePanel.setBorder(BorderFactory.createTitledBorder("Session Global Parameter"));
         
         randomSampleCheckBox = new JCheckBox();
         randomSampleCheckBox.setText("Use Random Sampling");
@@ -161,7 +165,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         randomSampleSizeLabel.setText("Sample Size");
         randomSampleSizeLabel.setEnabled(false);
         
-        randomSampleTextField = new javax.swing.JTextField();
+        randomSampleTextField = new JTextField();
         randomSampleTextField.setText("100000");
         randomSampleTextField.setEnabled(false);
         randomSampleTextField.addFocusListener(this);
@@ -172,126 +176,189 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         /* ******************
          * Linkage Panel Area
          * ******************/
-        JPanel linkagePanel = new javax.swing.JPanel();
-        linkagePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Linkage Process"));
+        JPanel linkagePanel = new JPanel();
+        linkagePanel.setBorder(BorderFactory.createTitledBorder("Linkage Process"));
         
-        JButton run_link = new javax.swing.JButton();
+        JButton run_link = new JButton();
         run_link.addActionListener(this);
         run_link.setText("Run Linkage Process");
         /* **********************
          * End Linkage Panel Area
          * **********************/
+        GridBagConstraints gridBagConstraints;
+        JPanel flowPanel = new JPanel();
+        JPanel mainPanelSessions = new JPanel();
+        JPanel listPanel = new JPanel();
         
-        javax.swing.GroupLayout sessionListEntryPanelLayout = new javax.swing.GroupLayout(sessionListEntryPanel);
-        sessionListEntryPanel.setLayout(sessionListEntryPanelLayout);
-        sessionListEntryPanelLayout.setHorizontalGroup(
-            sessionListEntryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(sessionListEntryPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(sessionListEntryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(sessionListEntryPanelLayout.createSequentialGroup()
-                        .addComponent(new_run)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(run_name, javax.swing.GroupLayout.DEFAULT_SIZE, 235, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, sessionListEntryPanelLayout.createSequentialGroup()
-                        .addComponent(rename)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(remove)))
-                .addContainerGap())
-        );
-        sessionListEntryPanelLayout.setVerticalGroup(
-            sessionListEntryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(sessionListEntryPanelLayout.createSequentialGroup()
-                .addGroup(sessionListEntryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(sessionListEntryPanelLayout.createSequentialGroup()
-                        .addGap(32, 32, 32)
-                        .addGroup(sessionListEntryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(remove)
-                            .addComponent(rename)))
-                    .addGroup(sessionListEntryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(new_run)
-                        .addComponent(run_name, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+        list_panel.setLayout(new GridLayout(1, 0));
 
-        javax.swing.GroupLayout randomSamplePanelLayout = new javax.swing.GroupLayout(randomSamplePanel);
-        randomSamplePanel.setLayout(randomSamplePanelLayout);
-        randomSamplePanelLayout.setHorizontalGroup(
-            randomSamplePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(randomSamplePanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(randomSamplePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(randomSampleCheckBox)
-                    .addGroup(randomSamplePanelLayout.createSequentialGroup()
-                        .addComponent(randomSampleSizeLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(randomSampleTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 193, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        randomSamplePanelLayout.setVerticalGroup(
-            randomSamplePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(randomSamplePanelLayout.createSequentialGroup()
-                .addComponent(randomSampleCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(randomSamplePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(randomSampleSizeLabel)
-                    .addComponent(randomSampleTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+        flowPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0));
 
-        javax.swing.GroupLayout linkagePanelLayout = new javax.swing.GroupLayout(linkagePanel);
-        linkagePanel.setLayout(linkagePanelLayout);
-        linkagePanelLayout.setHorizontalGroup(
-            linkagePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(linkagePanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(run_link)
-                .addContainerGap(151, Short.MAX_VALUE))
-        );
-        linkagePanelLayout.setVerticalGroup(
-            linkagePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(linkagePanelLayout.createSequentialGroup()
-                .addComponent(run_link)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+        mainPanelSessions.setLayout(new GridBagLayout());
 
-        javax.swing.GroupLayout list_panelLayout = new javax.swing.GroupLayout(list_panel);
-        list_panel.setLayout(list_panelLayout);
-        list_panelLayout.setHorizontalGroup(
-            list_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(list_panelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(list_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(list_panelLayout.createSequentialGroup()
-                        .addComponent(up)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(down))
-                    .addComponent(blockingRunScrollPane, 0, 0, Short.MAX_VALUE))
-                .addGap(18, 18, 18)
-                .addGroup(list_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(linkagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(randomSamplePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(sessionListEntryPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(238, 238, 238))
-        );
-        list_panelLayout.setVerticalGroup(
-            list_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(list_panelLayout.createSequentialGroup()
-                .addGroup(list_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, list_panelLayout.createSequentialGroup()
-                        .addComponent(blockingRunScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(list_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(up)
-                            .addComponent(down)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, list_panelLayout.createSequentialGroup()
-                        .addComponent(sessionListEntryPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(randomSamplePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(linkagePanel, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(129, Short.MAX_VALUE))
-        );
+        /*
+         * Blocking Run List Section
+         * 
+         * Blocking run list section. This section contains list of
+         * blocking runs and two button (up and down) to control the sequence of
+         * the blocking run process.
+         */
+        listPanel.setLayout(new GridBagLayout());
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.ipadx = 5;
+        gridBagConstraints.anchor = GridBagConstraints.NORTH;
+        gridBagConstraints.weighty = 0.7;
+        gridBagConstraints.insets = new Insets(1, 1, 1, 1);
+        listPanel.add(blockingRunScrollPane, gridBagConstraints);
+        
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.ipadx = 15;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(5, 0, 0, 2);
+        listPanel.add(up, gridBagConstraints);
+        
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = GridBagConstraints.EAST;
+        gridBagConstraints.insets = new Insets(5, 2, 0, 0);
+        listPanel.add(down, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new Insets(7, 10, 8, 10);
+        mainPanelSessions.add(listPanel, gridBagConstraints);
+        /*
+         * End of Blocking Run List Section
+         */
+        
+        /*
+         * Blocking Run Modifier Section
+         * 
+         * This sections is used to update the blocking runs list. User
+         * can add, remove or rename a blocking run. The text field will
+         * display current active blocking run.
+         */
+        sessionListEntryPanel.setLayout(new GridBagLayout());
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.ipadx = 10;
+        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+        sessionListEntryPanel.add(new_run, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new Insets(0, 0, 5, 5);
+        sessionListEntryPanel.add(run_name, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.ipadx = 2;
+        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+        sessionListEntryPanel.add(rename, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.ipadx = 2;
+        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+        sessionListEntryPanel.add(remove, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        mainPanelSessions.add(sessionListEntryPanel, gridBagConstraints);
+        /*
+         * End of Blocking Run Modifier Section
+         */
+        
+        /*
+         * Random Sampling Parameters Section
+         * 
+         * This section is used to modify the random sampling parameter
+         * that will be used to generate the u-values. User can specify
+         * whether to use random sampling and the sample size
+         */
+        randomSamplePanel.setLayout(new GridBagLayout());
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.7;
+        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+        randomSamplePanel.add(randomSampleCheckBox, gridBagConstraints);
+        
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.ipadx = 5;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+        randomSamplePanel.add(randomSampleSizeLabel, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+        randomSamplePanel.add(randomSampleTextField, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        mainPanelSessions.add(randomSamplePanel, gridBagConstraints);
+        /*
+         * End of Random Sampling Parameters Section
+         */
+
+        /*
+         * Linkage Process Section
+         * 
+         * This section is used to run the linkage process after the 
+         * record is analyzed using EM with or without random sampling
+         */
+        linkagePanel.setLayout(new GridBagLayout());
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.7;
+        gridBagConstraints.insets = new Insets(0, 5, 5, 100);
+        linkagePanel.add(run_link, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        mainPanelSessions.add(linkagePanel, gridBagConstraints);
+        /*
+         * End of Linkage Process Section
+         */
+
+        flowPanel.add(mainPanelSessions);
+
+        list_panel.add(flowPanel);
 		
 		this.add(list_panel);
 	}
@@ -584,14 +651,12 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         }
     }
 
-	@Override
 	public void focusGained(FocusEvent e) {
 		if(randomSampleTextField == e.getSource()) {
 			randomSampleTextField.selectAll();
 		}
 	}
 
-	@Override
 	public void focusLost(FocusEvent e) {
 		if(randomSampleTextField == e.getSource()) {
 			// only allows positive digit in the text field
