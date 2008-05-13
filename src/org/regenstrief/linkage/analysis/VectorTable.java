@@ -1,9 +1,20 @@
 package org.regenstrief.linkage.analysis;
 
-import org.regenstrief.linkage.util.*;
-import org.regenstrief.linkage.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
 
-import java.util.*;
+import org.regenstrief.linkage.MatchResult;
+import org.regenstrief.linkage.MatchVector;
+import org.regenstrief.linkage.ScoreVector;
+import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.MatchingConfigRow;
 
 /**
  * Class calculates a score, sensitivity, and specificity table
@@ -335,7 +346,16 @@ public class VectorTable {
 	public String toString(){
 		String ret = new String("vector,score,sens,spec\n");
 		
-		Iterator<MatchVector> it = match_scores.keySet().iterator();
+		LinkedList<MatchVector> vectors = new LinkedList<MatchVector>(match_scores.keySet());
+		
+		Collections.sort(vectors, new Comparator<MatchVector>(){
+			public int compare(MatchVector mr1, MatchVector mr2){
+				return Double.compare(getScore(mr2), getScore(mr1));
+				
+			}
+		});
+		
+		Iterator<MatchVector> it = vectors.iterator();
 		while(it.hasNext()){
 			MatchVector mv = it.next();
 			double score = match_scores.get(mv);
