@@ -30,6 +30,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -54,7 +55,6 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 	RecMatchConfig rm_conf;
 	
 	JLabel tfn, bfn;
-	JPanel top_content, bottom_content;
 	JTable tjt, bjt;
 	JPopupMenu column_options, bottom_column_options;
 	JRadioButtonMenuItem string_type, number_type;
@@ -82,6 +82,14 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 	 */
 	public void setRecMatchConfig(RecMatchConfig rmc){
 		rm_conf = rmc;
+        /*
+         * Remove the previously loaded table model. This to prevent the table being
+         * synchronized when only the top table is loaded from the new config file which
+         * will cause the application to synch table from two different config file (top
+         * table from new config and bottom table from old config file).
+         */
+        tjt.setModel(new DefaultTableModel());
+        bjt.setModel(new DefaultTableModel());
 		applyChanges();
 	}
 	
@@ -101,8 +109,8 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 		Insets top_and_bottom_padding = new Insets(5,0,5,0);
 		
 		// these two panels will hold the tables
-		top_content = new JPanel(new BorderLayout());
-		bottom_content = new JPanel(new BorderLayout());
+		JPanel top_content = new JPanel(new BorderLayout());
+		JPanel bottom_content = new JPanel(new BorderLayout());
 		
 		tjt = new JTable();
 		bjt = new JTable();
@@ -162,7 +170,6 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 				bfn.setText(lds2.getName());
 				parseDataToTable(BOTTOM);
 			}
-			
 		}
 	}
 	
@@ -184,13 +191,23 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 		}
 		
 		if(which == TOP){
+            /*
+             * Remarking this area to remove GUI modification outside Panel initialization.
+             */
 			// remove existing table
-			top_content.remove(tjt);
-			top_content.remove(tjt.getTableHeader());
+			// top_content.remove(tjt);
+			// top_content.remove(tjt.getTableHeader());
 			
 			// create table, set options
-			tjt = new JTable(mtm, mtcm);
-			tjt.createDefaultColumnsFromModel();
+			// tjt = new JTable(mtm, mtcm);
+		    
+            /*
+             * Use this two line of codes to update the table
+             */
+            tjt.setModel(mtm);
+            tjt.setColumnModel(mtcm);
+			
+		    tjt.createDefaultColumnsFromModel();
 			
 			tjt.getTableHeader().addMouseListener(this);
 			tjt.getColumnModel().addColumnModelListener(this);
@@ -199,8 +216,8 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 			tjt.getTableHeader().setToolTipText("Right-click to change properties for the column, shift-click to hide column");
 			
 			// add new table to panel
-			top_content.add(tjt.getTableHeader(), BorderLayout.PAGE_START);
-			top_content.add(tjt, BorderLayout.CENTER);
+			// top_content.add(tjt.getTableHeader(), BorderLayout.PAGE_START);
+			// top_content.add(tjt, BorderLayout.CENTER);
 			
 			// if other half is loaded, need to sync
 			if(rm_conf.getLinkDataSource2() != null){
@@ -214,18 +231,28 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 				}
 			}
 		} else {
-			bottom_content.remove(bjt);
-			bottom_content.remove(bjt.getTableHeader());
+            /*
+             * Remarking this section to remove GUI modification outside Panel initialization.
+             */
+			// bottom_content.remove(bjt);
+			// bottom_content.remove(bjt.getTableHeader());
 			
-			bjt = new JTable(mtm, mtcm);
-			bjt.createDefaultColumnsFromModel();
+			// bjt = new JTable(mtm, mtcm);
+		    
+            /*
+             * Use this two line of codes to update the table
+             */
+            bjt.setModel(mtm);
+            bjt.setColumnModel(mtcm);
+			
+		    bjt.createDefaultColumnsFromModel();
 			
 			bjt.getTableHeader().addMouseListener(this);
 			bjt.getColumnModel().addColumnModelListener(this);
 			bjt.getTableHeader().setToolTipText("Chanages made on the top will be reflected here, shift-click to hide column");
 			
-			bottom_content.add(bjt.getTableHeader(), BorderLayout.PAGE_START);
-			bottom_content.add(bjt, BorderLayout.CENTER);
+			// bottom_content.add(bjt.getTableHeader(), BorderLayout.PAGE_START);
+			// bottom_content.add(bjt, BorderLayout.CENTER);
 			
 			// if other half is in a table, need to sync
 			if(rm_conf.getLinkDataSource1() != null){
