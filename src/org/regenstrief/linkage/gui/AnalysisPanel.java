@@ -11,6 +11,7 @@ import javax.swing.JPanel;
 import org.regenstrief.linkage.analysis.EMAnalyzer;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
+import org.regenstrief.linkage.analysis.VectorTable;
 import org.regenstrief.linkage.io.OrderedDataSourceReader;
 import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.MatchingConfig;
@@ -26,7 +27,7 @@ import org.regenstrief.linkage.util.RecMatchConfig;
 public class AnalysisPanel extends JPanel implements ActionListener{
 	RecMatchConfig rm_conf;
 	
-	private JButton the_button;
+	private JButton the_button, vector_button;
 	
 	public AnalysisPanel(RecMatchConfig rmc){
 		super();
@@ -43,6 +44,10 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		the_button = new JButton("Perform EM Analysis");
 		this.add(the_button);
 		the_button.addActionListener(this);
+		
+		vector_button = new JButton("View score tables");
+		this.add(vector_button);
+		vector_button.addActionListener(this);
 	}
 	
 	private void runEMAnalysis(){
@@ -94,9 +99,20 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		}
 	}
 	
+	private void displayVectorTables(){
+		Iterator<MatchingConfig> it = rm_conf.getMatchingConfigs().iterator();
+		while(it.hasNext()){
+			MatchingConfig mc = it.next();
+			VectorTable vt = new VectorTable(mc);
+			TextDisplayFrame tdf = new TextDisplayFrame(mc.getName(), vt.toString());
+		}
+	}
+	
 	public void actionPerformed(ActionEvent ae){
 		if(ae.getSource() == the_button){
 			runEMAnalysis();
+		} else if(ae.getSource() == vector_button){
+			displayVectorTables();
 		}
 	}
 }
