@@ -14,7 +14,7 @@ public class SessionOptionsTableModel extends AbstractTableModel{
 	String row_names[];
 	
 	public static final Class[] column_classes = {String.class, Integer.class, Integer.class, Boolean.class, Double.class, Double.class, Object.class};
-	public static final String[] column_names = {"Name", "Block Order", "Blck Chars", "Include", "T Agreement", "Non-Agreement", "Algorithm"};
+	public static final String[] column_names = {"Name", "Block Order", "Block Chars", "Include", "m-value", "u-value", "Algorithm"};
 	
 	
 	public SessionOptionsTableModel(MatchingConfig m){

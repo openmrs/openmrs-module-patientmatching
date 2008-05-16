@@ -102,10 +102,10 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 		this.setLayout(new GridLayout(2,1));
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.fill = GridBagConstraints.BOTH;
-		JLabel tfl = new JLabel("Top File Name:  ");
-		JLabel bfl = new JLabel("Bottom File Name:  ");
-		tfn = new JLabel("No file currently loaded");
-		bfn = new JLabel("No file currently loaded");
+		JLabel tfl = new JLabel("Data Source A:  ");
+		JLabel bfl = new JLabel("Data Source B:  ");
+		tfn = new JLabel("No data source configured");
+		bfn = new JLabel("No data source configured");
 		Insets top_and_bottom_padding = new Insets(5,0,5,0);
 		
 		// these two panels will hold the tables

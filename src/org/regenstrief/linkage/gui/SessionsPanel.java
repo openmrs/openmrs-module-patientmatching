@@ -146,7 +146,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         new_run.addActionListener(this);
         new_run.setText("New");
 
-        sessionListEntryPanel.setBorder(BorderFactory.createTitledBorder("Edit Session Entry"));
+        sessionListEntryPanel.setBorder(BorderFactory.createTitledBorder("Edit Session Label"));
         /* ******************************
          * End Session Entry Modificator Area
          * ******************************/
