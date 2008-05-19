@@ -14,7 +14,7 @@ import java.util.List;
  *
  */
 
-public class BlockingExclusionList {
+public class BlockingExclusionList implements Cloneable {
 	private Hashtable<String,List<String>> exclude_regexs;
 	
 	public BlockingExclusionList(){
@@ -60,5 +60,26 @@ public class BlockingExclusionList {
 			}
 		}
 		return ret;
+	}
+	
+	public Object clone() {
+	    BlockingExclusionList list = null;
+	    
+	    try {
+	        // clone the main object
+	        list = (BlockingExclusionList) super.clone();
+	        // clone the hashtable
+	        list.exclude_regexs = (Hashtable<String, List<String>>) this.exclude_regexs.clone();
+	        // copy the hashtable value
+	        Enumeration<String> e = this.exclude_regexs.keys();
+	        while(e.hasMoreElements()){
+	            String demographic = e.nextElement();
+	            list.exclude_regexs.put(demographic, this.exclude_regexs.get(demographic));
+	        }
+	    } catch (CloneNotSupportedException e) {
+	        e.printStackTrace();
+	    }
+	    
+	    return list;
 	}
 }

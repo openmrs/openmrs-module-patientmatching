@@ -117,11 +117,47 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 			} else if(u_val > EMAnalyzer.EM_ONE){
 				u_val = EMAnalyzer.EM_ONE;
 			}
-			log.info("Generated u for: " + demographic + " is: " + u_val);
+			
+			double stdDev = getStandardDeviation(sampleSize, u_val);
+			double[] confidenceInterval = getConfidenceInterval(u_val, stdDev);
+			
+			log.info("Generated u for: " + demographic + formatOutput(u_val, stdDev, confidenceInterval));
 			mc.getMatchingConfigRowByName(demographic).setNonAgreement(u_val);
 		}
 	}
 	
+	private String formatOutput(double u, double stdDev, double[] interval){
+	    StringBuffer buffer = new StringBuffer();
+	    buffer.append(System.getProperty("line.separator"));
+	    buffer.append("\tu value: ").append(u).append(", ");
+	    buffer.append(System.getProperty("line.separator"));
+	    buffer.append("\tsd: ").append(stdDev).append(", ");
+	    buffer.append(System.getProperty("line.separator"));
+	    buffer.append("\t95% CI: ");
+	    buffer.append("(").append(interval[0]).append(", ");
+	    buffer.append(interval[1]).append(")");
+	    return buffer.toString();
+	}
+
+    /*
+     * Generate standard deviation value
+     * Probably should move this to a static utility class
+     */
+    private double getStandardDeviation(double n, double p) {
+        return Math.sqrt(n * p * (1 - p));
+    }
+    
+    /*
+     * Generate the confidence interval value.
+     * Probably should move this to a static utility class
+     */
+    private double[] getConfidenceInterval(double p, double std) {
+        double[] d = new double[2];
+        d[0] = p - 2 * std;
+        d[1] = p + 2 * std;
+        return d;
+    }
+    
 	private boolean matchesOnDemographic(Record r1, Record r2, String demographic, MatchingConfig mc){
 		String val1 = r1.getDemographic(demographic);
 		String val2 = r2.getDemographic(demographic);

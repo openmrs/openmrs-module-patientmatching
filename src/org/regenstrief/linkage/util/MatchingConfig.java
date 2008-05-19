@@ -8,7 +8,7 @@ package org.regenstrief.linkage.util;
 import java.util.*;
 import java.text.*;
 
-public class MatchingConfig {
+public class MatchingConfig implements Cloneable {
 	
 	// options for the algorithms
 	public static final String[] ALGORITHMS = {"Exact Match", "JWC", "LCS", "LEV"};
@@ -41,15 +41,19 @@ public class MatchingConfig {
 	private boolean estimate;
 	private BlockingExclusionList bel;
 	
-	/**
+	/*
 	 * boolean value to determine whether current blocking run use random
 	 * sampling to get the u values or not
 	 */
 	private boolean usingRandomSampling;
-	/**
+	/*
 	 * sample size of the random sampling process
 	 */
 	private int randomSampleSize;
+	/*
+	 * boolean value to determine whether the user want to use current random sampling
+	 */
+	private boolean lockedUValues;
 	
 	public MatchingConfig(String name, String[] rn){
 		row_options = new ArrayList<MatchingConfigRow>();
@@ -105,7 +109,15 @@ public class MatchingConfig {
 		this.randomSampleSize = randomSampleSize;
 	}
 
-	public void setBlockingExclusionList(BlockingExclusionList b){
+    public boolean isLockedUValues() {
+        return lockedUValues;
+    }
+
+    public void setLockedUValues(boolean lockedUValues) {
+        this.lockedUValues = lockedUValues;
+    }
+
+    public void setBlockingExclusionList(BlockingExclusionList b){
 		bel = b;
 	}
 	
@@ -350,5 +362,29 @@ public class MatchingConfig {
 
 	public void make_scale_weight() {
 		this.is_scale_weight = true;
+	}
+	
+	public Object clone() {
+	    MatchingConfig config = null;
+	    
+	    try {
+	        config = (MatchingConfig) super.clone();
+	        
+	        if(this.bel != null) {
+	            config.bel = (BlockingExclusionList) this.bel.clone();
+	        }
+            
+	        config.double_format = (NumberFormat) this.double_format.clone();
+            
+            config.row_options = new ArrayList<MatchingConfigRow>();
+            for (MatchingConfigRow mcr : this.row_options) {
+                config.row_options.add(mcr);
+            }
+            
+	    } catch (CloneNotSupportedException e) {
+	        e.printStackTrace();
+	    }
+	    
+	    return config;
 	}
 }

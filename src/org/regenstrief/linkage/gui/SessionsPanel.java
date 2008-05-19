@@ -42,6 +42,7 @@ import javax.swing.table.TableColumn;
 
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.FileWritingMatcher;
+import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.RecMatchConfig;
 
@@ -61,8 +62,9 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	RecMatchConfig rm_conf;
 	 
 	MatchingConfig current_working_config;
-	
+
     private JCheckBox randomSampleCheckBox;
+    private JCheckBox randomSampleLockCheckBox;
     private JTextField randomSampleTextField;
     private JLabel randomSampleSizeLabel;
 	
@@ -169,6 +171,11 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         randomSampleTextField.setText("100000");
         randomSampleTextField.setEnabled(false);
         randomSampleTextField.addFocusListener(this);
+        
+        randomSampleLockCheckBox = new JCheckBox();
+        randomSampleLockCheckBox.setText("Lock u-Values");
+        randomSampleLockCheckBox.setEnabled(false);
+        randomSampleLockCheckBox.addItemListener(this);
         /* ******************************
          * End Random Sample Area
          * ******************************/
@@ -323,6 +330,16 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         randomSamplePanel.add(randomSampleTextField, gridBagConstraints);
 
         gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.7;
+        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+        randomSamplePanel.add(randomSampleLockCheckBox, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
@@ -403,7 +420,8 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			// config data
 			randomSampleCheckBox.setSelected(mc.isUsingRandomSampling());
 			randomSampleSizeLabel.setEnabled(mc.isUsingRandomSampling());
-			randomSampleTextField.setEnabled(mc.isUsingRandomSampling());
+            randomSampleTextField.setEnabled(mc.isUsingRandomSampling());
+            randomSampleLockCheckBox.setSelected(mc.isLockedUValues());
 			if(mc.isUsingRandomSampling()) {
 				randomSampleTextField.setText(String.valueOf(m.getRandomSampleSize()));
 			}
@@ -632,22 +650,41 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 
     public void itemStateChanged(ItemEvent e) {
     	// update the ui based on whether the use random sample is checked or not
-    	if(e.getStateChange() == ItemEvent.SELECTED) {
-            randomSampleSizeLabel.setEnabled(true);
-            randomSampleTextField.setEnabled(true);
-            randomSampleTextField.requestFocus();
-			if(current_working_config != null) {
-	        	current_working_config.setUsingRandomSampling(true);
-	        	int sampleSize = Integer.parseInt(randomSampleTextField.getText());
-	        	current_working_config.setRandomSampleSize(sampleSize);
-			}
-        } else if(e.getStateChange() == ItemEvent.DESELECTED){
-            randomSampleSizeLabel.setEnabled(false);
-            randomSampleTextField.setEnabled(false);
-            randomSampleTextField.select(0, 0);
-			if(current_working_config != null) {
-	        	current_working_config.setUsingRandomSampling(false);
-			}
+        if(e.getSource() == randomSampleCheckBox) {
+            if(e.getStateChange() == ItemEvent.SELECTED) {
+                randomSampleSizeLabel.setEnabled(true);
+                randomSampleTextField.setEnabled(true);
+                randomSampleLockCheckBox.setEnabled(true);
+                randomSampleTextField.requestFocus();
+                if(current_working_config != null) {
+                    current_working_config.setUsingRandomSampling(true);
+                    int sampleSize = Integer.parseInt(randomSampleTextField.getText());
+                    current_working_config.setRandomSampleSize(sampleSize);
+                }
+            } else if(e.getStateChange() == ItemEvent.DESELECTED){
+                randomSampleSizeLabel.setEnabled(false);
+                randomSampleTextField.setEnabled(false);
+                randomSampleLockCheckBox.setEnabled(false);
+                randomSampleTextField.select(0, 0);
+                if(current_working_config != null) {
+                    current_working_config.setUsingRandomSampling(false);
+                }
+            }
+        } else if(e.getSource() == randomSampleLockCheckBox) {
+            if(e.getStateChange() == ItemEvent.SELECTED) {
+                randomSampleSizeLabel.setEnabled(false);
+                randomSampleTextField.select(0, 0);
+                randomSampleTextField.setEnabled(false);
+                if(current_working_config != null) {
+                    current_working_config.setLockedUValues(true);
+                }
+            } else if(e.getStateChange() == ItemEvent.DESELECTED){
+                randomSampleSizeLabel.setEnabled(true);
+                randomSampleTextField.setEnabled(true);
+                if(current_working_config != null) {
+                    current_working_config.setLockedUValues(false);
+                }
+            }
         }
     }
 

@@ -9,7 +9,7 @@ package org.regenstrief.linkage.util;
  * its name.
  */
 
-public class MatchingConfigRow {
+public class MatchingConfigRow implements Cloneable {
 	// Determines if bottom/top N frequencies will be loaded
 	public enum ScaleWeightSetting { TopN, BottomN, TopNPercent, BottomNPercent, AboveN, BelowN}
 
@@ -193,5 +193,17 @@ public class MatchingConfigRow {
 
 	public void setBuffer_size(int buffer_size) {
 		this.buffer_size = buffer_size;
+	}
+	
+	public Object clone() {
+	    MatchingConfigRow configRow = null;
+	    
+	    try {
+	        configRow = (MatchingConfigRow) super.clone();
+	    } catch (CloneNotSupportedException e) {
+	        e.printStackTrace();
+	    }
+	    
+	    return configRow;
 	}
 }

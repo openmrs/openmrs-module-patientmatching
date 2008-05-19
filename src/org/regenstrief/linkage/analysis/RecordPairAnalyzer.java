@@ -24,6 +24,10 @@ public abstract class RecordPairAnalyzer implements PairAnalyzer{
 		log.setLevel(Level.INFO);
 	}
 	
+	public MatchingConfig getAnalyzerMatchingConfig() {
+	    return mc;
+	}
+	
 	public abstract void analyzeRecordPair(Record[] pair);
 	
 }
