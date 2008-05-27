@@ -135,7 +135,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		// a record with openmrs_id equal to patient.getID, then add
 		PatientSetService pss = Context.getPatientSetService();
 		PatientService patientService = Context.getPatientService();
-		Set<Integer> patient_list = pss.getAllPatients().getPersonIds(null);
+		Set<Integer> patient_list = pss.getAllPatients().getMemberIds();
 		Iterator<Integer> it = patient_list.iterator();
 		while(it.hasNext()){
 			Patient p = patientService.getPatient(it.next());
