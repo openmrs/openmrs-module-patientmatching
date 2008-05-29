@@ -204,8 +204,8 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
             /*
              * Use this two line of codes to update the table
              */
-            tjt.setModel(mtm);
             tjt.setColumnModel(mtcm);
+            tjt.setModel(mtm);
 			
 		    tjt.createDefaultColumnsFromModel();
 			
@@ -242,8 +242,8 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
             /*
              * Use this two line of codes to update the table
              */
-            bjt.setModel(mtm);
             bjt.setColumnModel(mtcm);
+            bjt.setModel(mtm);
 			
 		    bjt.createDefaultColumnsFromModel();
 			
