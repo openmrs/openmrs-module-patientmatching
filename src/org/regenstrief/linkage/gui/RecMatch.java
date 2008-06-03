@@ -292,7 +292,7 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 				//JOptionPane.showMessageDialog(main_window, "Error opening configuration file");
 				
 				
-			} else if(source.getText().equals("Set top data source")){
+			} else if(source.getText().equals("Configure Data Source A")){
 				LinkDataSource lds = LinkDataSourceChooser.chooseLinkDataSource();
 				if(lds != null){
 					lds.setDataSource_ID(0);
@@ -303,7 +303,7 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 					rm_conf.setLinkDataSource1(lds);
 					dpanel.parseDataToTable(DataPanel.TOP);
 				}
-			} else if(source.getText().equals("Set bottom data source")){
+			} else if(source.getText().equals("Configure Data Source B")){
 				LinkDataSource lds = LinkDataSourceChooser.chooseLinkDataSource();
 				if(lds != null){
 					lds.setDataSource_ID(0);
