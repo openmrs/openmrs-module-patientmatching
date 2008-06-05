@@ -36,7 +36,7 @@ public class DataBaseLDSInspector implements LinkDataSourceInspector{
 			for(int i = 1; i <= rsm.getColumnCount(); i++){
 				String col_name = rsm.getColumnName(i);
 				DataColumn dc = new DataColumn(col_name);
-				dc.setIncludePosition(i);
+				dc.setIncludePosition(i-1);
 				int col_type = rsm.getColumnType(i);
 				if(col_type == Types.NUMERIC || col_type == Types.INTEGER || col_type == Types.FLOAT || col_type == Types.DOUBLE){
 					dc.setType(DataColumn.NUMERIC_TYPE);
