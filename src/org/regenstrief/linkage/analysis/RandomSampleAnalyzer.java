@@ -86,8 +86,13 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 			
 			// compare the two records to modify u values
 			HashSet<String> demographics = new HashSet<String>();
-			demographics.addAll(r1.getDemographics().keySet());
-			demographics.addAll(r2.getDemographics().keySet());
+			List<MatchingConfigRow> includedColumn = mc.getIncludedColumns();
+			Iterator<MatchingConfigRow> mcrIterator = includedColumn.iterator();
+			while(mcrIterator.hasNext()) {
+			    MatchingConfigRow mcr = mcrIterator.next();
+			    demographics.add(mcr.getName());
+			}
+			
 			Iterator<String> it = demographics.iterator();
 			while(it.hasNext()){
 				String demographic = it.next();
@@ -144,7 +149,7 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
      * Probably should move this to a static utility class
      */
     private double getStandardDeviation(double n, double p) {
-        return Math.sqrt(n * p * (1 - p));
+        return Math.sqrt(n * p * (1 - p)) / n;
     }
     
     /*

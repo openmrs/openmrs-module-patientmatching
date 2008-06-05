@@ -76,7 +76,25 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	
 	public void setRecMatchConfig(RecMatchConfig rmc){
 		rm_conf = rmc;
-		this.repaint();
+		updateBlockingRunsList();
+	}
+	
+	private void updateBlockingRunsList() {
+        if(rm_conf != null){
+            if(rm_conf.getMatchingConfigs().size() > 0){
+                DefaultListModel dlm = new DefaultListModel();
+                Iterator<MatchingConfig> it = rm_conf.getMatchingConfigs().iterator();
+                while(it.hasNext()){
+                    dlm.addElement(it.next());
+                }
+                runs.setModel(dlm);
+                runs.setSelectedIndex(0);
+                current_working_config = rm_conf.getMatchingConfigs().get(0);
+                displayThisMatchingConfig(current_working_config);
+            } else {
+                current_working_config = null;
+            }
+        }
 	}
 	
 	private void createSessionPanel(){
@@ -102,25 +120,12 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         down.addActionListener(this);
         down.setText("Move Down");
         
-        DefaultListModel dlm = new DefaultListModel();
-        runs = new JList(dlm);
+        runs = new JList();
         runs.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         runs.addListSelectionListener(this);
         runs.setCellRenderer(new MatchingConfigCellRenderer());
         
-        // if there are already MatchingConfig objects, add to runs
-        if(rm_conf != null){
-            if(rm_conf.getMatchingConfigs().size() > 0){
-                Iterator<MatchingConfig> it = rm_conf.getMatchingConfigs().iterator();
-                while(it.hasNext()){
-                    dlm.addElement(it.next());
-                }
-                current_working_config = rm_conf.getMatchingConfigs().get(0);
-                runs.setSelectedIndex(0);
-            } else {
-                current_working_config = null;
-            }
-        }
+        updateBlockingRunsList();
 
         JScrollPane blockingRunScrollPane = new JScrollPane();
         blockingRunScrollPane.setViewportView(runs);
@@ -418,13 +423,13 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			
 			// update the random sample size and check box based on the matching
 			// config data
+            if(mc.isUsingRandomSampling()) {
+                randomSampleTextField.setText(String.valueOf(m.getRandomSampleSize()));
+            }
 			randomSampleCheckBox.setSelected(mc.isUsingRandomSampling());
 			randomSampleSizeLabel.setEnabled(mc.isUsingRandomSampling());
             randomSampleTextField.setEnabled(mc.isUsingRandomSampling());
             randomSampleLockCheckBox.setSelected(mc.isLockedUValues());
-			if(mc.isUsingRandomSampling()) {
-				randomSampleTextField.setText(String.valueOf(m.getRandomSampleSize()));
-			}
 		}
 		current_working_config = mc;
 		session_options.setModel(new SessionOptionsTableModel(mc));
