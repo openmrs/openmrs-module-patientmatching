@@ -80,14 +80,13 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	}
 	
 	private void updateBlockingRunsList() {
+        DefaultListModel dlm = new DefaultListModel();
         if(rm_conf != null){
             if(rm_conf.getMatchingConfigs().size() > 0){
-                DefaultListModel dlm = new DefaultListModel();
                 Iterator<MatchingConfig> it = rm_conf.getMatchingConfigs().iterator();
                 while(it.hasNext()){
                     dlm.addElement(it.next());
                 }
-                runs.setModel(dlm);
                 runs.setSelectedIndex(0);
                 current_working_config = rm_conf.getMatchingConfigs().get(0);
                 displayThisMatchingConfig(current_working_config);
@@ -95,6 +94,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
                 current_working_config = null;
             }
         }
+        runs.setModel(dlm);
 	}
 	
 	private void createSessionPanel(){
