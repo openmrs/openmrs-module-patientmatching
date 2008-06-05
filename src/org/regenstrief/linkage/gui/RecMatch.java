@@ -20,6 +20,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.regenstrief.linkage.util.CharDelimLDSInspector;
+import org.regenstrief.linkage.util.DataBaseLDSInspector;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.RecMatchConfig;
 import org.regenstrief.linkage.util.XMLTranslator;
@@ -300,6 +301,10 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 						CharDelimLDSInspector cdldsi = new CharDelimLDSInspector();
 						cdldsi.setDefaultDataColumns(lds);
 					}
+					if(lds.getType().equals("DataBase")){
+						DataBaseLDSInspector dbldsi = new DataBaseLDSInspector();
+						dbldsi.setDefaultDataColumns(lds);
+					}
 					rm_conf.setLinkDataSource1(lds);
 					dpanel.parseDataToTable(DataPanel.TOP);
 				}
@@ -310,6 +315,10 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 					if(lds.getType().equals("CharDelimFile")){
 						CharDelimLDSInspector cdldsi = new CharDelimLDSInspector();
 						cdldsi.setDefaultDataColumns(lds);
+					}
+					if(lds.getType().equals("DataBase")){
+						DataBaseLDSInspector dbldsi = new DataBaseLDSInspector();
+						dbldsi.setDefaultDataColumns(lds);
 					}
 					rm_conf.setLinkDataSource2(lds);
 					dpanel.parseDataToTable(DataPanel.BOTTOM);

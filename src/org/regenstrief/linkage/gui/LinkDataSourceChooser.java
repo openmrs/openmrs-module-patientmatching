@@ -132,7 +132,7 @@ public class LinkDataSourceChooser implements ActionListener{
 		} else {
 			name = table.getText();
 			type = "DataBase";
-			access = url + "," + user.getText() + "," + new String(passwd.getPassword());
+			access = driver.getText() + "," + url.getText() + "," + user.getText() + "," + new String(passwd.getPassword());
 			id = 0;
 		}
 		
