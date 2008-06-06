@@ -80,7 +80,7 @@ public class ScoreModifier {
 	 * @param scale		the amount to scale the score Records
 	 */
 	public void addColumnValueModifier(String demographic, String regexp, double scale, Matches which){
-		Record pattern = new Record();
+		Record pattern = new Record(0, null);
 		pattern.addDemographic(demographic, regexp);
 		addPatternRecord(pattern, scale, which);
 	}

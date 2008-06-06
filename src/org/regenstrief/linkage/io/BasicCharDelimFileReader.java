@@ -40,7 +40,7 @@ public class BasicCharDelimFileReader extends CharDelimFileReader {
 	
 	public Record line2Record(String line){
 		String[] split_line = line.split(getHexString(raw_file_sep), -1);
-		Record ret = new Record();
+		Record ret = new Record(record_count++, data_source.getName());
 		List<DataColumn> cols = data_source.getDataColumns();
 		for(int i = 0; i < cols.size(); i++){
 			int line_index = Integer.parseInt(cols.get(i).getColumnID());

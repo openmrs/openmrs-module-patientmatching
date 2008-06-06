@@ -7,18 +7,44 @@ import java.util.*;
  * an examlpe of a demographic for first name would be stored in the 
  * Hashtable with a key of "FN" and a value of "John." 
  * 
+ * Unique ID should be a unique integer, such that all Records from a given
+ * datasource receives a different integer ID.  Also, different datasources
+ * should have a unique uid_context so that same ID records from different
+ * datasources will have a different context and uid pair. 
  *
  */
 public class Record {
 	
 	Hashtable<String,String> demographics;
+	int uid;
+	String uid_context;
 	
 	/**
-	 * Initializes the demographics Hashtable
+	 * Initializes the demographics Hashtable and stores the unique ID and ID context
 	 *
 	 */
-	public Record(){
+	public Record(int id, String context){
 		demographics = new Hashtable<String,String>();
+		uid = id;
+		uid_context = context;
+	}
+	
+	/**
+	 * Value should be unique among all Records created from the same DataSource
+	 * 
+	 * @return	the Record's unique ID
+	 */
+	public int getUID(){
+		return uid;
+	}
+	
+	/**
+	 * Method returns the context for the unique ID
+	 * 
+	 * @return	Context of unique ID
+	 */
+	public String getContext(){
+		return uid_context;
 	}
 	
 	/**

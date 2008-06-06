@@ -27,6 +27,8 @@ public class DataBaseReader implements DataSourceReader {
 	protected boolean ready;
 	protected boolean read_record;
 	protected Record next_record;
+	protected int record_count;
+	
 	
 	// columns queried from the data base
 	List<DataColumn> incl_cols;
@@ -41,6 +43,7 @@ public class DataBaseReader implements DataSourceReader {
 		data_source = lds;
 		this.db = db;
 		ready = false;
+		record_count = 0;
 	}
 	
 	public int getRecordSize(){
@@ -50,9 +53,9 @@ public class DataBaseReader implements DataSourceReader {
 	/*
 	 * ResultSet is created when object is first used, not when constructor is called.
 	 * 
-	 * Method separated from cosntructor since the constructQuery() method might need elements only
+	 * Method separated from constructor since the constructQuery() method might need elements only
 	 * in subclasses.  For example, OrderedDataBaseReader uses a MatchingConfig object to make the query,
-	 * and this class's constructur must be called before the object is assigned in the subclass.  
+	 * and this class's constructor must be called before the object is assigned in the subclass.  
 	 */
 	protected void getResultSet(){
 		
@@ -127,7 +130,7 @@ public class DataBaseReader implements DataSourceReader {
 	
 	protected void parseDataBaseRow(){
 		try{
-			next_record = new Record();
+			next_record = new Record(record_count++, data_source.getName());
 			for(int i = 0; i < incl_cols.size(); i++){
 				String demographic = data.getString(i+1);
 				next_record.addDemographic(incl_cols.get(i).getName(), demographic);
@@ -170,6 +173,7 @@ public class DataBaseReader implements DataSourceReader {
 	public boolean reset(){
 		next_record = null;
 		read_record = false;
+		record_count = 0;
 		try{
 			if(data != null){
 				data.close();
@@ -183,6 +187,7 @@ public class DataBaseReader implements DataSourceReader {
 	}
 	
 	public boolean close(){
+		record_count = 0;
 		try{
 			if(pstmt != null){
 				pstmt.clearParameters();

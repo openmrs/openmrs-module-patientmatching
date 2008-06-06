@@ -219,7 +219,7 @@ public class RecordDBManager extends DBManager {
 			ResultSet rows = stmt.executeQuery(query);
 			
 			while(rows.next()){
-				Record row_rec = new Record();
+				Record row_rec = new Record(0, lds.getName());
 				ResultSetMetaData meta = rows.getMetaData();
 				for(int i = 1; i <= meta.getColumnCount(); i++){
 					String d = meta.getColumnName(i);

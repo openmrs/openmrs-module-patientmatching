@@ -73,7 +73,7 @@ public class VectorReader implements DataSourceReader, OrderedDataSourceReader{
 	 * @return	the Record holding the LinkDataSource information
 	 */
 	private Record buildRecord(LinkDataSource lds){
-		Record data = new Record();
+		Record data = new Record(0, lds.getName());
 		Iterator<DataColumn> it = lds.getDataColumns().iterator();
 		while(it.hasNext()){
 			DataColumn dc = it.next();

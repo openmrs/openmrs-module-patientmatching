@@ -57,7 +57,7 @@ public class DBTest {
 			}
 			System.out.println("created a config of:\n" + test_mc);
 			
-			Record test_insert = new Record();
+			Record test_insert = new Record(0, "testing");
 			test_insert.addDemographic("fn", "test");
 			test_insert.addDemographic("ln", "o'brien");
 			
