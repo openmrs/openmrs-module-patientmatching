@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.regenstrief.linkage.MatchResult;
+import org.regenstrief.linkage.Record;
 
 /**
  * Class written to group like Records together.  If Records A, B, C, and D
@@ -64,5 +65,32 @@ public class SetSimilarityAnalysis {
 		}
 		
 		return getSimilarSets(true_matches);
+	}
+	
+	/**
+	 * Method flattens the results of getSimilarSets methods and just returns
+	 * lists of Records without matching performance information
+	 * 
+	 * @param match_result_sets	lists of lists of MatchResult objects
+	 * @return	lists of Records, each list having Records determined to be the same entity
+	 */
+	public List<List<Record>> getSimilarPatients(List<List<MatchResult>> match_result_sets){
+		Iterator<List<MatchResult>> it = match_result_sets.iterator();
+		List<List<Record>> ret = new ArrayList<List<Record>>();
+		
+		while(it.hasNext()){
+			List<MatchResult> set = it.next();
+			List<Record> current_records = new ArrayList<Record>();
+			Iterator<MatchResult> it2 = set.iterator();
+			while(it2.hasNext()){
+				MatchResult mr = it2.next();
+				// currently, Records may appear twice within a list
+				current_records.add(mr.getRecord1());
+				current_records.add(mr.getRecord2());
+			}
+			ret.add(current_records);
+		}
+		
+		return ret;
 	}
 }
