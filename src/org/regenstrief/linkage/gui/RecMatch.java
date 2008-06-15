@@ -72,7 +72,7 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 		main_window = new JFrame(PROGRAM_NAME);
 		main_window.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		main_window.addWindowListener(this);
-		main_window.setSize(800, 700);
+		main_window.setSize(800, 750);
 		main_window.setLocationRelativeTo(null);
 		
 		main_window.setJMenuBar(createMenu());

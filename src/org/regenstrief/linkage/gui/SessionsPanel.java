@@ -42,7 +42,6 @@ import javax.swing.table.TableColumn;
 
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.FileWritingMatcher;
-import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.RecMatchConfig;
 
@@ -67,6 +66,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
     private JCheckBox randomSampleLockCheckBox;
     private JTextField randomSampleTextField;
     private JLabel randomSampleSizeLabel;
+    private JTextField thresholdTextField;
 	
 	public SessionsPanel(RecMatchConfig rmc){
 		//super();
@@ -197,6 +197,18 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         /* **********************
          * End Linkage Panel Area
          * **********************/
+        
+        /* *******************************
+         * Threshold Area
+         * *******************************/
+        JPanel thresholdPanel = new JPanel();
+        JLabel thresholdLabel = new JLabel();
+        thresholdTextField = new JTextField();
+        thresholdTextField.addFocusListener(this);
+        /* *******************************
+         * End Threshold Area
+         * *******************************/
+        
         GridBagConstraints gridBagConstraints;
         JPanel flowPanel = new JPanel();
         JPanel mainPanelSessions = new JPanel();
@@ -244,7 +256,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.gridheight = 4;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.anchor = GridBagConstraints.NORTH;
         gridBagConstraints.insets = new Insets(7, 10, 8, 10);
@@ -378,6 +390,43 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
          * End of Linkage Process Section
          */
 
+        /*
+         * Matching Threshold Section
+         * 
+         * This section is used input a threshold value to determine whether a record is match
+         * or not. #807
+         */
+        thresholdPanel.setBorder(BorderFactory.createTitledBorder("Matching Threshold"));
+        thresholdPanel.setLayout(new GridBagLayout());
+
+        thresholdLabel.setText("Threshold Value");
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(5, 5, 5, 2);
+        thresholdPanel.add(thresholdLabel, gridBagConstraints);
+
+        thresholdTextField.setText("0");
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 0.5;
+        gridBagConstraints.weighty = 0.5;
+        gridBagConstraints.insets = new Insets(5, 2, 5, 5);
+        thresholdPanel.add(thresholdTextField, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        mainPanelSessions.add(thresholdPanel, gridBagConstraints);
+        /*
+         * End of Linkage Process Section
+         */
+
         flowPanel.add(mainPanelSessions);
 
         list_panel.add(flowPanel);
@@ -423,13 +472,14 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			
 			// update the random sample size and check box based on the matching
 			// config data
-            if(mc.isUsingRandomSampling()) {
+            if(m.isUsingRandomSampling()) {
                 randomSampleTextField.setText(String.valueOf(m.getRandomSampleSize()));
             }
-			randomSampleCheckBox.setSelected(mc.isUsingRandomSampling());
-			randomSampleSizeLabel.setEnabled(mc.isUsingRandomSampling());
-            randomSampleTextField.setEnabled(mc.isUsingRandomSampling());
-            randomSampleLockCheckBox.setSelected(mc.isLockedUValues());
+			randomSampleCheckBox.setSelected(m.isUsingRandomSampling());
+			randomSampleSizeLabel.setEnabled(m.isUsingRandomSampling());
+            randomSampleTextField.setEnabled(m.isUsingRandomSampling());
+            randomSampleLockCheckBox.setSelected(m.isLockedUValues());
+            thresholdTextField.setText(String.valueOf(m.getScoreThreshold()));
 		}
 		current_working_config = mc;
 		session_options.setModel(new SessionOptionsTableModel(mc));
@@ -696,6 +746,8 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	public void focusGained(FocusEvent e) {
 		if(randomSampleTextField == e.getSource()) {
 			randomSampleTextField.selectAll();
+		} else if(thresholdTextField == e.getSource()) {
+		    thresholdTextField.selectAll();
 		}
 	}
 
@@ -715,6 +767,19 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 				// should be showing a message using option pane here
 				randomSampleTextField.setText("100000");
 			}
+		} else if (thresholdTextField == e.getSource()) {
+		    String thresholdPattern = "(\\d+)(.\\d*){0,1}";
+		    String textValue = thresholdTextField.getText();
+		    Pattern pattern = Pattern.compile(thresholdPattern);
+		    Matcher matcher = pattern.matcher(textValue);
+		    if (matcher.matches()) {
+                if(current_working_config != null) {
+                    double threshold = Double.parseDouble(textValue);
+                    current_working_config.setScoreThreshold(threshold);
+                }
+		    } else {
+		        thresholdTextField.setText("0");
+		    }
 		}
 	}
 }
