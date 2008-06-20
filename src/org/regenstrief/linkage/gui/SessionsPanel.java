@@ -1,6 +1,7 @@
 package org.regenstrief.linkage.gui;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -259,7 +260,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         gridBagConstraints.gridheight = 4;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.anchor = GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new Insets(7, 10, 8, 10);
+        gridBagConstraints.insets = new Insets(5, 10, 5, 10);
         mainPanelSessions.add(listPanel, gridBagConstraints);
         /*
          * End of Blocking Run List Section
@@ -304,6 +305,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 2;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         mainPanelSessions.add(sessionListEntryPanel, gridBagConstraints);
         /*
@@ -358,7 +360,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         mainPanelSessions.add(randomSamplePanel, gridBagConstraints);
@@ -376,15 +378,16 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.fill = GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.anchor = GridBagConstraints.CENTER;
         gridBagConstraints.weightx = 0.7;
         gridBagConstraints.insets = new Insets(0, 5, 5, 100);
         linkagePanel.add(run_link, gridBagConstraints);
 
         gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new Insets(0, 10, 5, 10);
         mainPanelSessions.add(linkagePanel, gridBagConstraints);
         /*
          * End of Linkage Process Section
@@ -446,6 +449,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		tc.setCellEditor(new DefaultCellEditor(jcb));
 		
 		JScrollPane table_pane = new JScrollPane(session_options);
+		table_pane.setPreferredSize(new Dimension(800, 300));
 		
 		return table_pane;
 		
