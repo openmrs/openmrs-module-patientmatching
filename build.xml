@@ -93,5 +93,39 @@
  	                        <fileset dir="build" includes="**/*" />
  	                </jar>
  	        </target>
+ 		
+ 			<target name="gui-jar" depends="package-module" description="Creates executable jar that runs GUI">
+ 				<path id="library.Project">
+ 					<fileset dir="lib/">
+ 				    	<include name="*.jar"/>
+ 					</fileset>
+ 					<fileset dir="lib-common/">
+ 						<include name="*.jar"/>
+ 					</fileset>
+ 				</path>
+ 				<pathconvert property="lib.project.manifest.classpath" pathsep=" ">
+ 					<path refid="library.Project"/>
+ 					<chainedmapper>
+ 						<flattenmapper/>
+ 					    <globmapper from="*" to="lib/*"/>
+ 					</chainedmapper>
+ 				</pathconvert>
+
+ 		 		<mkdir dir="dist/RecMatch/tmp" />
+ 		 		<jar destfile="dist/RecMatch/${module.id}-${module.version}-gui.jar">
+ 		 			<manifest>
+ 		 				<attribute name="Main-Class" value="org.regenstrief.linkage.gui.RecMatch" />
+ 		 				<attribute name="Class-Path" value="${lib.project.manifest.classpath}" />
+ 		 			</manifest>
+ 		 			<fileset dir="build" includes="**/*" />
+ 		 		</jar>
+ 		 		<copy todir="dist/RecMatch/lib">
+ 		 			<fileset dir="lib" />
+ 		 		</copy>
+ 				<copy todir="dist/RecMatch/lib-common">
+ 				 	<fileset dir="lib" />
+ 				</copy>
+ 		 		<copy file="win32/sort.exe" todir="dist/RecMatch/win32" />
+ 			</target>
  	       
  	</project>
