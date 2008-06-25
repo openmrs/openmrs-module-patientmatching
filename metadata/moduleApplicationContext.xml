@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<!-- Beans to add to the current Application context definition -->
+  
+<beans>
+	
+    <bean id="patientMatchingUrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+        <property name="mappings">
+            <props>
+                <prop key="/module/@MODULE_ID@/config.list">matchConfig</prop>
+                <prop key="/module/@MODULE_ID@/schedule.list">matchSchedule</prop>
+                <prop key="/module/@MODULE_ID@/dupes.list">matchDupes</prop>
+			</props>
+		</property>
+	</bean>
+
+    <bean id="matchConfig" class="@MODULE_PACKAGE@.web.AddResponseFormController">
+        <property name="formView"><value>/module/@MODULE_ID@/configList</value></property>
+    </bean>
+
+    <bean id="matchSchedule" class="@MODULE_PACKAGE@.web.AddResponseFormController">
+        <property name="formView"><value>/module/@MODULE_ID@/scheduleList</value></property>
+    </bean>
+
+    <bean id="matchDupes" class="@MODULE_PACKAGE@.web.AddResponseFormController">
+        <property name="formView"><value>/module/@MODULE_ID@/dupesList</value></property>
+    </bean>
+	
+</beans>

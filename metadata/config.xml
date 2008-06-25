@@ -1,34 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
- 	<!DOCTYPE module PUBLIC "-//OpenMRS//DTD OpenMRS Config 1.0//EN" "http://resources.openmrs.org/doctype/config-1.0.dtd">
- 	
- 	<module configVersion="1.0">
- 	       
- 	        <!-- Base Module Properties -->
- 	        <id>patientmatching</id>
- 	        <name>Patient Matching</name>
- 	        <version>1.2.2</version>
- 	        <package>org.openmrs.module.@MODULE_ID@</package>
- 	        <author>James Egg</author>
- 	        <description>
- 	                        Patient matching module uses an external database for probabalistic patient matching
- 	        </description>
- 	
- 	        <activator>@MODULE_PACKAGE@.PatientMatchingActivator</activator>
- 	       
- 	        <!-- <updateURL>https://dev.openmrs.org/modules/download/@MODULE_ID@/update.rdf</updateURL> -->
- 	        <!-- /Base Module Properties -->
- 	       
- 	        <require_version>1.1</require_version>
- 	        <!-- AOP -->
- 	        <advice>
- 	                <point>org.openmrs.api.PatientService</point>
- 	                <class>@MODULE_PACKAGE@.PatientMatchingActivator</class>
- 	        </advice>
- 	        
- 	        <!-- /AOP -->
- 	        	<globalProperty>
-					<property>patientmatching.linkConfigFile</property>
-   					<description>This file can be found at doc/link_config.xml
-   					</description>
-				</globalProperty>
- 	</module>
+    <!DOCTYPE module PUBLIC "-//OpenMRS//DTD OpenMRS Config 1.0//EN" "http://resources.openmrs.org/doctype/config-1.0.dtd">
+
+    <module configVersion="1.0">
+
+        <!-- Base Module Properties -->
+        <id>patientmatching</id>
+        <name>Patient Matching</name>
+        <version>1.2.2</version>
+        <package>org.openmrs.module.@MODULE_ID@</package>
+        <author>James Egg</author>
+        <description>
+            Patient matching module uses an external database for probabalistic patient matching
+        </description>
+
+        <activator>@MODULE_PACKAGE@.PatientMatchingActivator</activator>
+
+        <!-- <updateURL>https://dev.openmrs.org/modules/download/@MODULE_ID@/update.rdf</updateURL> -->
+        <!-- /Base Module Properties -->
+
+        <!-- Extensions -->
+        <extension>
+            <point>org.openmrs.admin.list</point>
+            <class>@MODULE_PACKAGE@.extension.html.AdminList</class>
+        </extension>
+
+        <!-- /Extensions -->
+
+        <require_version>1.1</require_version>
+        <!-- AOP -->
+        <advice>
+            <point>org.openmrs.api.PatientService</point>
+            <class>@MODULE_PACKAGE@.PatientMatchingActivator</class>
+        </advice>
+        <!-- /AOP -->
+        
+        <globalProperty>
+            <property>patientmatching.linkConfigFile</property>
+            <description>This file can be found at doc/link_config.xml</description>
+        </globalProperty>
+
+        <!-- Internationalization -->
+        <!-- All message codes should start with moduleId.* -->
+        <messages>
+            <lang>en</lang>
+            <file>messages.properties</file>
+        </messages>
+        <messages>
+            <lang>fr</lang>
+            <file>messages_fr.properties</file>
+        </messages>
+        <messages>
+            <lang>es</lang>
+            <file>messages_es.properties</file>
+        </messages>
+        <!-- /Internationalization -->
+    </module>

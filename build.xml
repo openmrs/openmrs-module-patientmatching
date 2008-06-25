@@ -51,11 +51,11 @@
  	                </javac>
  	               
 	                <!--  Compile module web java files -->
- 	                <!--javac destdir="build" classpathref="classpath" debug="true" debuglevel="lines,source">
+ 	                <javac destdir="build" classpathref="classpath" debug="true" debuglevel="lines,source">
  	                        <compilerarg line="-g" />
  	                        <src path="web/src/" />
  	                        <include name="**/*.java" />
- 	                </javac-->
+ 	                </javac>
  	               
  	        </target>
  	       
@@ -69,10 +69,10 @@
  	                </copy>
  	               
  	                <!-- Copy module web data -->
- 	                <!--copy todir="build/web/module/">
+ 	                <copy todir="build/web/module/">
  	                        <fileset dir="web/module/" includes="**/*" />
  	                        <filterset refid="variables.to.replace" />
- 	                </copy-->
+ 	                </copy>
  	               
  	                <!-- Copy lib folder -->
  	                <!-- (lib should only contain this module's required -->
