@@ -99,10 +99,13 @@
  					<fileset dir="lib/">
  				    	<include name="*.jar"/>
  					</fileset>
- 					<fileset dir="lib-common/">
- 						<include name="*.jar"/>
- 					</fileset>
  				</path>
+ 				<path id="library-common.Project">
+ 				 	<fileset dir="lib-common/">
+ 				 	   	<include name="*.jar"/>
+ 				 	</fileset>
+ 				</path>
+ 				 				
  				<pathconvert property="lib.project.manifest.classpath" pathsep=" ">
  					<path refid="library.Project"/>
  					<chainedmapper>
@@ -110,12 +113,19 @@
  					    <globmapper from="*" to="lib/*"/>
  					</chainedmapper>
  				</pathconvert>
+ 				<pathconvert property="lib-common.project.manifest.classpath" pathsep=" ">
+ 					<path refid="library-common.Project"/>
+ 				 	<chainedmapper>
+ 				 		<flattenmapper/>
+ 				 		<globmapper from="*" to="lib-common/*"/>
+ 					</chainedmapper>
+ 				</pathconvert>
 
  		 		<mkdir dir="dist/RecMatch/tmp" />
  		 		<jar destfile="dist/RecMatch/${module.id}-${module.version}-gui.jar">
  		 			<manifest>
  		 				<attribute name="Main-Class" value="org.regenstrief.linkage.gui.RecMatch" />
- 		 				<attribute name="Class-Path" value="${lib.project.manifest.classpath}" />
+ 		 				<attribute name="Class-Path" value="${lib.project.manifest.classpath} ${lib-common.project.manifest.classpath}" />
  		 			</manifest>
  		 			<fileset dir="build" includes="**/*" />
  		 		</jar>
@@ -123,7 +133,7 @@
  		 			<fileset dir="lib" />
  		 		</copy>
  				<copy todir="dist/RecMatch/lib-common">
- 				 	<fileset dir="lib" />
+ 				 	<fileset dir="lib-common" />
  				</copy>
  		 		<copy file="win32/sort.exe" todir="dist/RecMatch/win32" />
  			</target>
