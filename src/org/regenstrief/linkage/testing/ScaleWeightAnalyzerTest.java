@@ -19,10 +19,12 @@ import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.ModifiedMatchResult;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.analysis.DataSourceAnalysis;
+import org.regenstrief.linkage.analysis.EMAnalyzer;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
 import org.regenstrief.linkage.analysis.ScaleWeightAnalyzer;
 import org.regenstrief.linkage.analysis.ScaleWeightModifier;
+import org.regenstrief.linkage.analysis.VectorTable;
 import org.regenstrief.linkage.analysis.ScaleWeightModifier.ModifySet;
 import org.regenstrief.linkage.io.DataSourceReader;
 import org.regenstrief.linkage.io.ReaderProvider;
@@ -44,6 +46,7 @@ import org.xml.sax.SAXException;
 public class ScaleWeightAnalyzerTest {
 	public static void main(String[] args) {
 		File config = new File(args[0]);
+		config = new File("config_cln.xml");
 		if(!config.exists()){
 			System.out.println("config file does not exist, exiting");
 		}
@@ -61,6 +64,7 @@ public class ScaleWeightAnalyzerTest {
 
 			for(MatchingConfig mc_test : rmc) {
 			//for(int j = 0; j < 1; j++){
+				
 				//MatchingConfig mc_test = rmc.getMatchingConfigs().get(j);
 				// create output file for this MatchingConfig
 				File out_file = new File("output_" + mc_test.getName() + ".txt");
@@ -71,19 +75,25 @@ public class ScaleWeightAnalyzerTest {
 				DataSourceReader dsr1 = rp.getReader(lds1);
 				DataSourceReader dsr2 = rp.getReader(lds2);
 								
-				org.regenstrief.linkage.io.FormPairs fp2 = new org.regenstrief.linkage.io.FormPairs(rp.getReader(rmc.getLinkDataSource1(), mc_test), rp.getReader(rmc.getLinkDataSource2(), mc_test), mc_test, type_table);
-				//EMAnalyzer ema = new EMAnalyzer(lds1, lds2, mc_test);
-				//ema.setIterations(15);
+				org.regenstrief.linkage.io.OrderedDataSourceFormPairs fp2 = new org.regenstrief.linkage.io.OrderedDataSourceFormPairs(rp.getReader(rmc.getLinkDataSource1(), mc_test), rp.getReader(rmc.getLinkDataSource2(), mc_test), mc_test, type_table);
+				EMAnalyzer ema = new EMAnalyzer(lds1, lds2, mc_test);
+				ema.setIterations(15);
 				PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
 				RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(lds1, lds2, mc_test);
 				pdsa.addAnalyzer(rsa);
-				//pdsa.addAnalyzer(rsa);
+				pdsa.addAnalyzer(ema);
 				//System.out.println(mc_test);
 				//System.out.println("**********************************");
 				pdsa.analyzeData();
 				//System.out.println(mc_test);
+				System.exit(0);
 				
-				
+				// print vector table information
+				BufferedWriter vout = new BufferedWriter(new FileWriter(mc_test.getName() + "_vector.txt"));
+				VectorTable vt = new VectorTable(mc_test);
+				vout.write(vt.toString());
+				vout.flush();
+				vout.close();
 				
 				ScorePair sp = new ScorePair(mc_test);
 				
@@ -97,23 +107,25 @@ public class ScaleWeightAnalyzerTest {
 					dsa1.addAnalyzer(swa1);
 					dsa2.addAnalyzer(swa2);
 					
-					System.out.println(new java.util.Date() + ":  starting to analyze first data source");
+					//stem.out.println(new java.util.Date() + ":  starting to analyze first data source");
 					//dsa1.analyzeData();
-					System.out.println(new java.util.Date() + ":  starting to analyze second data source");
+					//System.out.println(new java.util.Date() + ":  starting to analyze second data source");
 					//dsa2.analyzeData();
 					
 					ScaleWeightModifier swm = new ScaleWeightModifier(swa1, swa2);
 					swm.initializeModifier();
-					int percent = 50;
+					int percent = 10;
 					// set requirements for all included demographics
 					List<MatchingConfigRow> scale_cols = mc_test.getScaleWeightColumns();
 					Iterator<MatchingConfigRow> it = scale_cols.iterator();
 					while(it.hasNext()){
 						MatchingConfigRow mcr = it.next();
-						//swm.setPercntileRequirement(mcr.getName(), ModifySet.BELOW, percent);
-						swm.setAverageRequirement(ModifySet.BELOW);
+						swm.setPercntileRequirement(mcr.getName(), ModifySet.BELOW, percent);
+						
+						
+						//swm.setAverageRequirement(ModifySet.BELOW);
 					}
-					sp.addScoreModifier(swm);
+					//sp.addScoreModifier(swm);
 					
 				}	
 				
@@ -121,7 +133,7 @@ public class ScaleWeightAnalyzerTest {
 				ArrayList<MatchResult> results = new ArrayList<MatchResult>();
 				//if(mc_test.getName().equals("2")) {
 					// Form pairs should come after analysis, because it modifies next_record of the readers
-					org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(rp.getReader(rmc.getLinkDataSource1(), mc_test), rp.getReader(rmc.getLinkDataSource2(), mc_test), mc_test, type_table);
+					org.regenstrief.linkage.io.OrderedDataSourceFormPairs fp = new org.regenstrief.linkage.io.OrderedDataSourceFormPairs(rp.getReader(rmc.getLinkDataSource1(), mc_test), rp.getReader(rmc.getLinkDataSource2(), mc_test), mc_test, type_table);
 					
 					
 					

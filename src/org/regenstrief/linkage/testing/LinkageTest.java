@@ -70,7 +70,7 @@ public class LinkageTest {
 			// ugly casting needed until io package object/interface hierarchy is improved or updated
 			OrderedDataSourceReader dsr1 = rp.getReader(rmc.getLinkDataSource1(), mc_test);
 			OrderedDataSourceReader dsr2 = rp.getReader(rmc.getLinkDataSource1(), mc_test);
-			org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(dsr1, dsr2, mc_test, type_table);
+			org.regenstrief.linkage.io.OrderedDataSourceFormPairs fp = new org.regenstrief.linkage.io.OrderedDataSourceFormPairs(dsr1, dsr2, mc_test, type_table);
 			
 			// iterate through the Record pairs and print the score
 			Record[] pair;

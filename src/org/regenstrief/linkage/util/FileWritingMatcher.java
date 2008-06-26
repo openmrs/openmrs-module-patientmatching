@@ -73,7 +73,7 @@ public class FileWritingMatcher {
 				odsr1 = rp.getReader(rmc.getLinkDataSource1(), mc);
 				odsr2 = rp.getReader(rmc.getLinkDataSource2(), mc);*/
 				if(odsr1 != null && odsr2 != null){
-					org.regenstrief.linkage.io.FormPairs fp = new org.regenstrief.linkage.io.FormPairs(odsr1, odsr2, mc, rmc.getLinkDataSource1().getTypeTable());
+					org.regenstrief.linkage.io.OrderedDataSourceFormPairs fp = new org.regenstrief.linkage.io.OrderedDataSourceFormPairs(odsr1, odsr2, mc, rmc.getLinkDataSource1().getTypeTable());
 					
 					ScorePair sp = new ScorePair(mc);
 					Record[] pair;

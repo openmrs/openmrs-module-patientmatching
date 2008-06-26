@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.regenstrief.linkage.Record;
-import org.regenstrief.linkage.io.FormPairs;
+import org.regenstrief.linkage.io.OrderedDataSourceFormPairs;
 
 public class PairDataSourceAnalysis {
 	
 	List<PairAnalyzer> analyzers;
-	FormPairs fp;
+	OrderedDataSourceFormPairs fp;
 	
-	public PairDataSourceAnalysis(FormPairs fp){
+	public PairDataSourceAnalysis(OrderedDataSourceFormPairs fp){
 		this.fp = fp;
 		analyzers = new ArrayList<PairAnalyzer>();
 	}

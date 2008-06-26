@@ -12,7 +12,7 @@ import org.regenstrief.linkage.analysis.EMAnalyzer;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
 import org.regenstrief.linkage.analysis.VectorTable;
-import org.regenstrief.linkage.io.FormPairs;
+import org.regenstrief.linkage.io.OrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceReader;
 import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.MatchingConfig;
@@ -68,7 +68,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 			OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
 			if(odsr1 != null && odsr2 != null){
 				// analyze with EM
-				FormPairs fp2 = new FormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+				OrderedDataSourceFormPairs fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
 				/*
 				 * Using two analyzer at a time in the PairDataSourceAnalysis. The order when adding the analyzer to
 				 * PairDataSourceAnalysis will affect the end results. For example in the following code fragment,
@@ -136,7 +136,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
                 OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
                 OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
                 if(odsr1 != null && odsr2 != null){
-                    FormPairs fp2 = new FormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+                    OrderedDataSourceFormPairs fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
                     
                     PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
                     

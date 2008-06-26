@@ -19,7 +19,7 @@ import java.util.List;
 
 import org.regenstrief.linkage.analysis.RecordFieldAnalyzer;
 import org.regenstrief.linkage.analysis.UnMatchableRecordException;
-import org.regenstrief.linkage.io.FormPairs;
+import org.regenstrief.linkage.io.OrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceReader;
 import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.io.VectorReader;
@@ -132,7 +132,7 @@ public class MatchFinder {
 	 * Method returns a list of Matches that meet the given MatchingConfig score_threshold
 	 */
 	protected synchronized List<MatchResult> getMatches(VectorReader test, OrderedDataSourceReader database_reader, MatchingConfig analytics, Hashtable<String, Integer> type_table){
-		FormPairs fp = new FormPairs(test, database_reader, analytics, type_table);
+		OrderedDataSourceFormPairs fp = new OrderedDataSourceFormPairs(test, database_reader, analytics, type_table);
 		List<MatchResult> candidates = new ArrayList<MatchResult>();
 		
 		Record[] pair;
