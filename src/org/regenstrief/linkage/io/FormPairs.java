@@ -13,8 +13,8 @@ import org.regenstrief.linkage.util.MatchingConfig;
  */
 
 public abstract class FormPairs {
-	MatchingConfig mc;
-	private BlockingExclusionList bel;
+	protected MatchingConfig mc;
+	protected BlockingExclusionList bel;
 	
 	public FormPairs(MatchingConfig mc){
 		this.mc = mc;

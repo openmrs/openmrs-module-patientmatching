@@ -26,14 +26,11 @@ import org.regenstrief.linkage.util.MatchingConfig;
 public class OrderedDataSourceFormPairs extends FormPairs{
 	private OrderedDataSourceReader dsr1;
 	private OrderedDataSourceReader dsr2;
-	private MatchingConfig mc;
 	private Hashtable<String,Integer> type_table;
 	
 	private List<Record> dsr2_buffer;
 	private Record dsr2_next, dsr1_next;
 	private int buffer_read_index;
-	
-	private BlockingExclusionList bel;
 	
 	private static final int GREATER_THAN = 1;
 	private static final int EQUAL = 0;
