@@ -1,6 +1,8 @@
 package org.regenstrief.linkage.analysis;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 
@@ -41,7 +43,43 @@ public class SetSimilarityAnalysis {
 		 */
 		
 		List<List<MatchResult>> ret = new ArrayList<List<MatchResult>>();
-		ret.add(results);
+		Hashtable<String,List<MatchResult>> buckets = new Hashtable<String,List<MatchResult>>();
+		
+		Iterator<MatchResult> it = results.iterator();
+		while(it.hasNext()){
+			MatchResult mr = it.next();
+			Record r1 = mr.getRecord1();
+			Record r2 = mr.getRecord2();
+			String key1 = r1.getContext() + Integer.toString(r1.getUID());
+			String key2 = r1.getContext() + Integer.toString(r2.getUID());
+			List<MatchResult> bucket1 = buckets.get(key1);
+			List<MatchResult> bucket2 = buckets.get(key2);
+			if(bucket1 == null && bucket2 == null){
+				List<MatchResult> bucket = new ArrayList<MatchResult>();
+				bucket.add(mr);
+				buckets.put(key1, bucket);
+				buckets.put(key2, bucket);
+			} else if(bucket1 != null){
+				bucket1.add(mr);
+				if(bucket2 == null){
+					buckets.put(key2, bucket1);
+				}
+			} else if(bucket2 != null){
+				bucket2.add(mr);
+				if(bucket1 == null){
+					buckets.put(key1, bucket2);
+				}
+			}
+		}
+		
+		Enumeration<List<MatchResult>> e = buckets.elements();
+		while(e.hasMoreElements()){
+			List<MatchResult> list = e.nextElement();
+			if(!ret.contains(list)){
+				ret.add(list);
+			}
+		}
+		
 		return ret;
 	}
 	
@@ -74,7 +112,7 @@ public class SetSimilarityAnalysis {
 	 * @param match_result_sets	lists of lists of MatchResult objects
 	 * @return	lists of Records, each list having Records determined to be the same entity
 	 */
-	public List<List<Record>> getSimilarPatients(List<List<MatchResult>> match_result_sets){
+	public List<List<Record>> getSimilarRecords(List<List<MatchResult>> match_result_sets){
 		Iterator<List<MatchResult>> it = match_result_sets.iterator();
 		List<List<Record>> ret = new ArrayList<List<Record>>();
 		
@@ -84,9 +122,12 @@ public class SetSimilarityAnalysis {
 			Iterator<MatchResult> it2 = set.iterator();
 			while(it2.hasNext()){
 				MatchResult mr = it2.next();
-				// currently, Records may appear twice within a list
-				current_records.add(mr.getRecord1());
-				current_records.add(mr.getRecord2());
+				if(!current_records.contains(mr.getRecord1())){
+					current_records.add(mr.getRecord1());
+				}
+				if(!current_records.contains(mr.getRecord2())){
+					current_records.add(mr.getRecord2());
+				}
 			}
 			ret.add(current_records);
 		}
