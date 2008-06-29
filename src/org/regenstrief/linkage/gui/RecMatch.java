@@ -1,11 +1,14 @@
 package org.regenstrief.linkage.gui;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -38,6 +41,9 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 	public static final int ROWS_IN_TABLE = 15;
 	public static final String PROGRAM_NAME = "Record Linker";
 	
+	private static final String TEMP_PATH = System.getProperty("java.io.tmpdir") + System.getProperty("file.separator");
+	public static final String RECENT_FILE_PATH =  TEMP_PATH + "config-recent-list";
+	
 	JFrame main_window;
 	JTabbedPane tabs;
 	SessionsPanel spanel;
@@ -45,9 +51,13 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 	AnalysisPanel apanel;
 	RecMatchConfig rm_conf;
 	
+	private JMenu recentFileMenu;
+	private RecentFile recentFile;
+	
 	private File current_program_config_file;
 	
 	public RecMatch(File config){
+	    recentFile = new RecentFile(5);
 		current_program_config_file = config;
 		
 		// load the config file if one was given when program was started
@@ -110,11 +120,15 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 		jm = new JMenu("File");
 		jm.setMnemonic(KeyEvent.VK_F);
 		jmb.add(jm);
-		jmi = new JMenuItem("Open configuration");
-		jmi.setMnemonic(KeyEvent.VK_O);
+        jmi = new JMenuItem("Open configuration");
+        jmi.setMnemonic(KeyEvent.VK_O);
         jmi.setAccelerator(KeyStroke.getKeyStroke("ctrl O"));
-		jm.add(jmi);
-		jmi.addActionListener(this);
+        jm.add(jmi);
+        jmi.addActionListener(this);
+        recentFileMenu = new JMenu("Open recent configuration ...");
+        jmi.setMnemonic(KeyEvent.VK_R);
+        generateRecentConfigList(recentFileMenu);
+        jm.add(recentFileMenu);
 		jmi = new JMenuItem("Save configuration");
 		jmi.setMnemonic(KeyEvent.VK_S);
         jmi.setAccelerator(KeyStroke.getKeyStroke("ctrl S"));
@@ -151,7 +165,47 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 		return jmb;
 	}
 	
-	public static File getFileFromChooser(){
+	private void generateRecentConfigList(JMenu recentFileMenu) {
+	    recentFileMenu.removeAll();
+	    File file = new File(RECENT_FILE_PATH);
+        RecentFileEntry[] entries = RecentFile.readEntries(file);
+	    if (entries == null) {
+	        JMenuItem menuItem = new JMenuItem("-None-");
+	        menuItem.setEnabled(false);
+	        recentFileMenu.add(menuItem);
+	    } else if(entries.length == 0) {
+	        JMenuItem menuItem = new JMenuItem("-None-");
+	        menuItem.setEnabled(false);
+	        recentFileMenu.add(menuItem);
+	    } else {
+	        for (int i = 0; i < entries.length; i++) {
+	            recentFile.addEntry(entries[i]);
+            }
+	        refreshRecentConfigList(recentFileMenu);
+	    }
+    }
+	
+	private void refreshRecentConfigList(JMenu recentFileMenu){
+        recentFileMenu.removeAll();
+	    RecentFileEntry[] entries = recentFile.getEntries();
+        for (int i = 0; i < entries.length; i++) {
+            final RecentFileEntry entry = entries[i];
+            JMenuItem menuItem = new JMenuItem(entry.getFileName() + "     [" + entry.getPathDisplay() +"]");
+            menuItem.addActionListener(new ActionListener(){
+
+                public void actionPerformed(ActionEvent e) {
+                    File config = new File(entry.getFilePath());
+                    rm_conf = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(config));
+                    dpanel.setRecMatchConfig(rm_conf);
+                    current_program_config_file = config;
+                    spanel.setRecMatchConfig(rm_conf);
+                    apanel.setRecMatchConfig(rm_conf);
+                }});
+            recentFileMenu.add(menuItem);
+        }
+	}
+
+    public static File getFileFromChooser(){
 		// launches a JFileChooser and returns a File object
 		// if user cancels, return null
 		JFileChooser jfc = new JFileChooser();
@@ -186,6 +240,9 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 			if(!writeXMLConfig(rm_conf, current_program_config_file)){
 				JOptionPane.showMessageDialog(main_window, "Error writing configuration file");
 			}
+			
+			updateRecentList(current_program_config_file);
+			
 		} else {
 			// need to bring up a file selection dialog
 			saveAsConfig();
@@ -203,6 +260,8 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 			if(!writeXMLConfig(rm_conf, f)){
 				JOptionPane.showMessageDialog(main_window, "Error writing configuration file");
 			}
+            
+            updateRecentList(f);
 		}
 	}
 	
@@ -286,6 +345,8 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 					current_program_config_file = config;
 					spanel.setRecMatchConfig(rm_conf);
 					apanel.setRecMatchConfig(rm_conf);
+					
+					updateRecentList(config);
 					// need to reflect the rm_conf object in the GUI
 					//updateGUI();
 				}
@@ -326,6 +387,14 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 			}
 		}
 	}
+
+    private void updateRecentList(File config) {
+        RecentFileEntry entry = new RecentFileEntry();
+        entry.setFileName(config.getName());
+        entry.setFilePath(config.getAbsolutePath());
+        recentFile.addEntry(entry);
+        refreshRecentConfigList(recentFileMenu);
+    }
 	
 	/*
 	 * Windowlistener methods
@@ -369,6 +438,8 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 	public void windowClosing(WindowEvent we){
 		// copy behaviour from the Exit option in the menu to give the user
 		// the option to save their work
+	    RecentFileEntry[] entries = recentFile.getEntries();
+	    RecentFile.persistEntries(entries, new File(RECENT_FILE_PATH));
 		exitProgram();
 	}
 	
