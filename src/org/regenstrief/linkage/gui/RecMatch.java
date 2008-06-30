@@ -1,14 +1,11 @@
 package org.regenstrief.linkage.gui;
 
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -41,8 +38,7 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 	public static final int ROWS_IN_TABLE = 15;
 	public static final String PROGRAM_NAME = "Record Linker";
 	
-	private static final String TEMP_PATH = System.getProperty("java.io.tmpdir") + System.getProperty("file.separator");
-	public static final String RECENT_FILE_PATH =  TEMP_PATH + "config-recent-list";
+	public static final String RECENT_FILE_PATH =  ".history";
 	
 	JFrame main_window;
 	JTabbedPane tabs;
@@ -228,6 +224,8 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 	}
 	
 	private void exitProgram(){
+        RecentFileEntry[] entries = recentFile.getEntries();
+        RecentFile.persistEntries(entries, new File(RECENT_FILE_PATH));
 		System.exit(0);
 	}
 	
@@ -438,8 +436,6 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 	public void windowClosing(WindowEvent we){
 		// copy behaviour from the Exit option in the menu to give the user
 		// the option to save their work
-	    RecentFileEntry[] entries = recentFile.getEntries();
-	    RecentFile.persistEntries(entries, new File(RECENT_FILE_PATH));
 		exitProgram();
 	}
 	

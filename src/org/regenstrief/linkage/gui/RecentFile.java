@@ -137,9 +137,10 @@ public class RecentFile {
             }
             entries = entriesList.toArray(new RecentFileEntry[entriesList.size()]);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            
+            // better be using the logging method from log4j
+            System.out.println("File can't be found. No entry can be loaded");
         } catch (IOException e) {
-            e.printStackTrace();
         }
         return entries;
     }
