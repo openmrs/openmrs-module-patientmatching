@@ -36,7 +36,12 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 	
 	Hashtable<Integer,List<Integer>> left_pair_entry;
 	Hashtable<Integer,List<Integer>> right_pair_entry;
-	Record[] recs1, recs2;
+	Hashtable<Integer,Record> record_pairs;
+	Hashtable<String,Integer> demographic_agree_count;
+	
+	boolean[] sample1;
+	boolean[] sample2;
+	
 	int pair_count;
 	
 	/*
@@ -50,84 +55,87 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 		
 		left_pair_entry = new Hashtable<Integer,List<Integer>>();
 		right_pair_entry = new Hashtable<Integer,List<Integer>>();
+		record_pairs = new Hashtable<Integer,Record>();
+		demographic_agree_count = new Hashtable<String,Integer>();
 		
 		int recordPairCount = countRecordPairs();
 		
 		sampleSize = mc.getRandomSampleSize();
+		sample1 = new boolean[sampleSize];
+		sample2 = new boolean[sampleSize];
 		
 		setIndexPairs(recordPairCount);
 		
-		recs1 = new Record[sampleSize];
-		recs2 = new Record[sampleSize];
 		pair_count = 0;
 	}
 	
 	public void analyzeRecordPair(Record[] pair){
-		// need to set the corresponding value in record arrays if one of
-		// the current records is set to be sampled
-		/*
-		for(int i = 0; i < sampleSize; i++){
-			int[] set = index_pairs.get(i);
-			if(set[0] == pair_count){
-				recs1[i] = pair[0];
-			}
-			if(set[1] == pair_count){
-				recs2[i] = pair[1];
-			}
-		}
-		*/
-		List<Integer> indexes = left_pair_entry.get(new Integer(pair_count));
-		if(indexes != null){
+		if(sample1[pair_count]){
+			List<Integer> indexes = left_pair_entry.get(Integer.valueOf(pair_count));
 			for(int i = 0; i < indexes.size(); i++){
 				int index = indexes.get(i).intValue();
-				recs1[index] = pair[0];
+				Record r = record_pairs.get(index);
+				if(r == null){
+					record_pairs.put(Integer.valueOf(index), pair[0]);
+				} else {
+					// compare and increment count hash, then clear
+					checkSimilarity(pair[0],r);
+					record_pairs.remove(Integer.valueOf(index));
+				}
 			}
+			left_pair_entry.remove(Integer.valueOf(pair_count));
 		}
 		
-		List<Integer> indexes2 = right_pair_entry.get(new Integer(pair_count));
-		if(indexes2 != null){
+		if(sample2[pair_count]){
+			List<Integer> indexes2 = right_pair_entry.get(Integer.valueOf(pair_count));
 			for(int i = 0; i < indexes2.size(); i++){
 				int index = indexes2.get(i).intValue();
-				recs2[index] = pair[1];
+				Record r = record_pairs.get(Integer.valueOf(index));
+				if(r == null){
+					record_pairs.put(Integer.valueOf(index), pair[1]);
+				} else {
+					// compare and increment count hash, then clear
+					checkSimilarity(pair[1],r);
+					record_pairs.remove(Integer.valueOf(index));
+				}
 			}
+			right_pair_entry.remove(Integer.valueOf(pair_count));
 		}
-	
+		
+		
+		
+		
 		pair_count++;
 	}
 	
-	public void finishAnalysis(){
-		// iterate over the saved record pairs and determine rate of matching
-		Hashtable<String,Integer> demographic_agree_count = new Hashtable<String,Integer>();
-		
-		for(int i = 0; i < sampleSize; i++){
-			Record r1 = recs1[i];
-			Record r2 = recs2[i];
-			
-			// compare the two records to modify u values
-			HashSet<String> demographics = new HashSet<String>();
-			List<MatchingConfigRow> includedColumn = mc.getIncludedColumns();
-			Iterator<MatchingConfigRow> mcrIterator = includedColumn.iterator();
-			while(mcrIterator.hasNext()) {
-			    MatchingConfigRow mcr = mcrIterator.next();
-			    demographics.add(mcr.getName());
-			}
-			
-			Iterator<String> it = demographics.iterator();
-			while(it.hasNext()){
-				String demographic = it.next();
-				Integer bucket = demographic_agree_count.get(demographic);
-				if(bucket == null){
-					// not keeping stats for this column yet
-					demographic_agree_count.put(demographic, new Integer(0));
-				}
-				
-				if(matchesOnDemographic(r1, r2, demographic, mc)){
-					Integer non_match_count = demographic_agree_count.get(demographic);
-					demographic_agree_count.put(demographic, new Integer(non_match_count.intValue() + 1));
-				}
-				
-			}
+	private void checkSimilarity(Record r1, Record r2){
+		// compare the two records to modify u values
+		HashSet<String> demographics = new HashSet<String>();
+		List<MatchingConfigRow> includedColumn = mc.getIncludedColumns();
+		Iterator<MatchingConfigRow> mcrIterator = includedColumn.iterator();
+		while(mcrIterator.hasNext()) {
+		    MatchingConfigRow mcr = mcrIterator.next();
+		    demographics.add(mcr.getName());
 		}
+		
+		Iterator<String> it = demographics.iterator();
+		while(it.hasNext()){
+			String demographic = it.next();
+			Integer bucket = demographic_agree_count.get(demographic);
+			if(bucket == null){
+				// not keeping stats for this column yet
+				demographic_agree_count.put(demographic, Integer.valueOf(0));
+			}
+			
+			if(matchesOnDemographic(r1, r2, demographic, mc)){
+				Integer non_match_count = demographic_agree_count.get(demographic);
+				demographic_agree_count.put(demographic, Integer.valueOf(non_match_count.intValue() + 1));
+			}
+			
+		}
+	}
+	
+	public void finishAnalysis(){
 		
 		// review totals and calculate u values
 		// modify the matching config object to reflect calculated values
@@ -228,21 +236,22 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 		
 		// need to get two sets of random numbers, one for each data source
 		for(int i = 0; i < sampleSize; i++){
-			int[] pair = new int[2];
-			pair[0] = rand.nextInt(max_index);
-			pair[1] = rand.nextInt(max_index);
+			int left_index = rand.nextInt(max_index);
+			int right_index = rand.nextInt(max_index);
+			sample1[left_index] = true;
+			sample2[right_index] = true;
 			
-			List<Integer> left = left_pair_entry.get(new Integer(pair[0]));
+			List<Integer> left = left_pair_entry.get(left_index);
 			if(left == null){
 				left = new ArrayList<Integer>();
-				left_pair_entry.put(new Integer(pair[0]), left);
+				left_pair_entry.put(left_index, left);
 			}
 			left.add(i);
 			
-			List<Integer> right = right_pair_entry.get(new Integer(pair[1]));
+			List<Integer> right = right_pair_entry.get(right_index);
 			if(right == null){
 				right = new ArrayList<Integer>();
-				right_pair_entry.put(new Integer(pair[1]), right);
+				right_pair_entry.put(right_index, right);
 			}
 			right.add(i);
 		}
