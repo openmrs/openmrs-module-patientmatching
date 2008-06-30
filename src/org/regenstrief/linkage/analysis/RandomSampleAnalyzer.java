@@ -34,7 +34,8 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 	
 	Random rand;
 	
-	List<int[]> index_pairs;
+	Hashtable<Integer,List<Integer>> left_pair_entry;
+	Hashtable<Integer,List<Integer>> right_pair_entry;
 	Record[] recs1, recs2;
 	int pair_count;
 	
@@ -47,7 +48,8 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 		super(lds1, lds2, mc);
 		rand = new Random();
 		
-		index_pairs = new ArrayList<int[]>();
+		left_pair_entry = new Hashtable<Integer,List<Integer>>();
+		right_pair_entry = new Hashtable<Integer,List<Integer>>();
 		
 		int recordPairCount = countRecordPairs();
 		
@@ -63,6 +65,7 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 	public void analyzeRecordPair(Record[] pair){
 		// need to set the corresponding value in record arrays if one of
 		// the current records is set to be sampled
+		/*
 		for(int i = 0; i < sampleSize; i++){
 			int[] set = index_pairs.get(i);
 			if(set[0] == pair_count){
@@ -72,7 +75,23 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 				recs2[i] = pair[1];
 			}
 		}
+		*/
+		List<Integer> indexes = left_pair_entry.get(new Integer(pair_count));
+		if(indexes != null){
+			for(int i = 0; i < indexes.size(); i++){
+				int index = indexes.get(i).intValue();
+				recs1[index] = pair[0];
+			}
+		}
 		
+		List<Integer> indexes2 = right_pair_entry.get(new Integer(pair_count));
+		if(indexes2 != null){
+			for(int i = 0; i < indexes2.size(); i++){
+				int index = indexes2.get(i).intValue();
+				recs2[index] = pair[1];
+			}
+		}
+	
 		pair_count++;
 	}
 	
@@ -206,14 +225,26 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 	}
 	
 	private void setIndexPairs(int max_index){
-		index_pairs.clear();
 		
 		// need to get two sets of random numbers, one for each data source
 		for(int i = 0; i < sampleSize; i++){
 			int[] pair = new int[2];
 			pair[0] = rand.nextInt(max_index);
 			pair[1] = rand.nextInt(max_index);
-			index_pairs.add(pair);
+			
+			List<Integer> left = left_pair_entry.get(new Integer(pair[0]));
+			if(left == null){
+				left = new ArrayList<Integer>();
+				left_pair_entry.put(new Integer(pair[0]), left);
+			}
+			left.add(i);
+			
+			List<Integer> right = right_pair_entry.get(new Integer(pair[1]));
+			if(right == null){
+				right = new ArrayList<Integer>();
+				right_pair_entry.put(new Integer(pair[1]), right);
+			}
+			right.add(i);
 		}
 	}
 
