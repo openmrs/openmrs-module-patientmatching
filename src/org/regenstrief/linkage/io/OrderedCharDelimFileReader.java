@@ -45,7 +45,12 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader implements O
 		//super(lds);
 		data_source = lds;
 		this.mc = mc;
-		this.switched_file = switchColumns(new File(lds.getName()), mc);
+		if(lds.getUniqueID() == null){
+			addIDColumn(lds);
+			this.switched_file = switchColumns(new File(lds.getName()), mc, true);
+		} else {
+			this.switched_file = switchColumns(new File(lds.getName()), mc, false);
+		}
 		raw_file_sep = lds.getAccess().charAt(0);
 		sorted_file = sortInputFile(switched_file, raw_file_sep);
 		try{
@@ -58,7 +63,7 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader implements O
 		}
 	}
 	
-	protected File switchColumns(File f, MatchingConfig mc){
+	protected File switchColumns(File f, MatchingConfig mc, boolean add_id){
 		List<DataColumn> dcs1 = data_source.getDataColumns();
 		int[] order1 = new int[data_source.getIncludeCount()];
 		
@@ -76,6 +81,7 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader implements O
 		File switched = new File(data_source.getName() + this.mc.getName() + ".switched");
 		try{
 			ColumnSwitcher cs = new ColumnSwitcher(f, switched, order1, data_source.getAccess().charAt(0));
+			cs.setAddIDColumn(add_id);
 			cs.switchColumns();
 		}
 		catch(IOException ioe){

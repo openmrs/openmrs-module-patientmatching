@@ -12,6 +12,7 @@ public class LinkDataSource {
 	private String source_name;
 	private String type;
 	private String access;
+	private String unique_id_field;
 	private int ds_id;
 	
 	public static final int UNKNOWN_REC_COUNT = -1;
@@ -40,7 +41,15 @@ public class LinkDataSource {
 		}
 		return ret;
 	}
-			
+	
+	public String getUniqueID(){
+		return unique_id_field;
+	}
+	
+	public void setUniqueID(String column_name){
+		unique_id_field = column_name;
+	}
+	
 	public void setSourceName(String name){
 		source_name = name;
 	}

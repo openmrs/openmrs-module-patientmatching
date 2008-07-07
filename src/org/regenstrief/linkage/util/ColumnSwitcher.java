@@ -17,11 +17,18 @@ public class ColumnSwitcher{
 	private char sep_char;
 	private int[] order;
 	
+	private boolean add_id_column;
+	
 	public ColumnSwitcher(File old_file, File new_file, int[] order, char sep){
 		sep_char = sep;
 		original = old_file;
 		results = new_file;
 		this.order = order;
+		add_id_column = false;
+	}
+	
+	public void setAddIDColumn(boolean add_id){
+		add_id_column = add_id;
 	}
 	
 	public boolean switchColumns() throws IOException{
@@ -31,9 +38,11 @@ public class ColumnSwitcher{
 		String line;
 		String[] split_line;
 		
+		int line_count = 0;
 		while((line = in.readLine()) != null){
 			// split the line using the delimiting character, and write the fields to the new file based
 			// on new_order array
+			String[] out_line = new String[order.length];
 			if(sep_char == '|'){
 				split_line = line.split("\\|");
 			} else {
@@ -42,7 +51,8 @@ public class ColumnSwitcher{
 			
 			for(int i = 0; i < order.length; i++){
 				try{
-					out.write(split_line[order[i]]);
+					//out.write(split_line[order[i]]);
+					out_line[i] = split_line[order[i]];
 				}
 				catch(ArrayIndexOutOfBoundsException aioobe){
 					// this can be thrown here if the line ends with the seperating
@@ -50,13 +60,25 @@ public class ColumnSwitcher{
 					// the same size, ie. a|b|c -> {a,b,c} but a|b| -> {a,b}
 					// if the order were 3, 2, 1, then split_line is too short
 					// to fix, write a blank string
-					out.write("");
+					//out.write("");
+					out_line[i] = "";
 				}
 				
 				if(i < order.length - 1){
-					out.write(sep_char);
+					//out.write(sep_char);
 				}
 			}
+			
+			if(add_id_column){
+				out_line[out_line.length - 1] = Integer.toString(line_count);
+			}
+			line_count++;
+			
+			for(int i = 0; i < out_line.length - 1; i++){
+				out.write(out_line[i]);
+				out.write(sep_char);
+			}
+			out.write(out_line[out_line.length - 1]);
 			out.write("\n");
 		}
 		out.flush();

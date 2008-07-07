@@ -29,6 +29,8 @@ public class CharDelimFileReader implements DataSourceReader{
 	protected char raw_file_sep;
 	protected int record_count;
 	
+	public static final String UNIQUE_ID = "uniq_id";
+	
 	/**
 	 * The constructor sorts the file according to the blocking variables and opens
 	 * a BufferedReader.  If there's an error with sorting the file, the file reader
@@ -41,7 +43,15 @@ public class CharDelimFileReader implements DataSourceReader{
 		record_count = 0;
 		
 		File raw_file = new File(lds.getName());
-		switched_file = switchColumns(raw_file);
+		
+		// determine if unique ID column needs to be added
+		if(lds.getUniqueID() == null){
+			addIDColumn(lds);
+			switched_file = switchColumns(raw_file, true);
+		} else {
+			switched_file = switchColumns(raw_file, false);
+		}
+		
 		raw_file_sep = lds.getAccess().charAt(0);
 		
 		try{
@@ -61,6 +71,18 @@ public class CharDelimFileReader implements DataSourceReader{
 		data_source = null;
 	}
 	
+	
+	protected void addIDColumn(LinkDataSource lds){
+		int id_index = lds.getDataColumns().size();
+		int id_include = lds.getIncludeCount();
+		DataColumn dc = new DataColumn(Integer.toString(id_index));
+		dc.setName(UNIQUE_ID);
+		dc.setType(DataColumn.NUMERIC_TYPE);
+		dc.setIncludePosition(id_include);
+		lds.addDataColumn(dc);
+		lds.setUniqueID(UNIQUE_ID);
+	}
+	
 	public int getRecordSize(){
 		return data_source.getIncludeCount();
 	}
@@ -71,13 +93,13 @@ public class CharDelimFileReader implements DataSourceReader{
 	 * @param f	the file to modify
 	 * @return	the resulting file
 	 */
-	protected File switchColumns(File f){
+	protected File switchColumns(File f, boolean add_id){
 		List<DataColumn> dcs1 = data_source.getDataColumns();
 		int[] order1 = new int[data_source.getIncludeCount()];
 		
 		// iterate over the  DataColumn list and store the data position value
 		// in order arrays at the index given by display_position, as long as
-		// display positioin is not NA
+		// display position is not NA
 		Iterator<DataColumn> it1 = dcs1.iterator();
 		while(it1.hasNext()){
 			DataColumn dc = it1.next();
@@ -89,6 +111,7 @@ public class CharDelimFileReader implements DataSourceReader{
 		File switched = new File(data_source.getName() + ".switched");
 		try{
 			ColumnSwitcher cs = new ColumnSwitcher(f, switched, order1, data_source.getAccess().charAt(0));
+			cs.setAddIDColumn(add_id);
 			cs.switchColumns();
 		}
 		catch(IOException ioe){
@@ -138,12 +161,17 @@ public class CharDelimFileReader implements DataSourceReader{
 	 */
 	public Record line2Record(String line){
 		String[] split_line = line.split(getHexString(raw_file_sep), -1);
-		Record ret = new Record(record_count++, data_source.getName());
+		
+		DataColumn id_column = data_source.getIncludedDataColumns().get(data_source.getUniqueID());
+		int id = Integer.parseInt(split_line[id_column.getIncludePosition()]);
+		
+		Record ret = new Record(id, data_source.getName());
 		List<DataColumn> cols = data_source.getDataColumns();
 		for(int i = 0; i < cols.size(); i++){
 			//int line_index = Integer.parseInt(cols.get(i).getColumnID());
-			int include_index = cols.get(i).getIncludePosition();
-			if(include_index != -1){
+			DataColumn col = cols.get(i);
+			int include_index = col.getIncludePosition();
+			if(include_index != -1 && !col.getName().equals(data_source.getUniqueID())){
 				ret.addDemographic(cols.get(i).getName(), split_line[include_index]);
 			}
 			

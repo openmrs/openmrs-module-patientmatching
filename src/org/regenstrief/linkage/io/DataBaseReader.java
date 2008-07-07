@@ -130,10 +130,14 @@ public class DataBaseReader implements DataSourceReader {
 	
 	protected void parseDataBaseRow(){
 		try{
-			next_record = new Record(record_count++, data_source.getName());
+			DataColumn id_col = data_source.getIncludedDataColumns().get(data_source.getUniqueID());
+			int id = data.getInt(id_col.getIncludePosition()+1);
+			next_record = new Record(id, data_source.getName());
 			for(int i = 0; i < incl_cols.size(); i++){
 				String demographic = data.getString(i+1);
-				next_record.addDemographic(incl_cols.get(i).getName(), demographic);
+				if(incl_cols.get(i).getName() != data_source.getUniqueID()){
+					next_record.addDemographic(incl_cols.get(i).getName(), demographic);
+				}
 			}
 		}
 		catch(SQLException sqle){

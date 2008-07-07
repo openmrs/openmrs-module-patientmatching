@@ -42,6 +42,13 @@ public class BasicCharDelimFileReader extends CharDelimFileReader {
 		String[] split_line = line.split(getHexString(raw_file_sep), -1);
 		Record ret = new Record(record_count++, data_source.getName());
 		List<DataColumn> cols = data_source.getDataColumns();
+		while(cols.size() > split_line.length){
+			// we have data columns in data source that don't match the actual data
+			DataColumn dc = cols.remove(split_line.length);
+			if(dc.getName().equals(data_source.getUniqueID())){
+				data_source.setUniqueID(null);
+			}
+		}
 		for(int i = 0; i < cols.size(); i++){
 			int line_index = Integer.parseInt(cols.get(i).getColumnID());
 			ret.addDemographic(cols.get(i).getName(), split_line[line_index]);
