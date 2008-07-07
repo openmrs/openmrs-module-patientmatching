@@ -9,13 +9,21 @@
         <property name="mappings">
             <props>
                 <prop key="/module/@MODULE_ID@/config.list">matchConfig</prop>
+                <prop key="/module/@MODULE_ID@/config.form">configForm</prop>
                 <prop key="/module/@MODULE_ID@/schedule.list">matchSchedule</prop>
                 <prop key="/module/@MODULE_ID@/dupes.list">matchDupes</prop>
 			</props>
 		</property>
 	</bean>
 
-    <bean id="matchConfig" class="@MODULE_PACKAGE@.web.AddResponseFormController">
+    <bean id="configForm" class="@MODULE_PACKAGE@.web.ConfigSimpleFormController">
+        <property name="commandName"><value>patientMatchingConfig</value></property>
+        <property name="commandClass"><value>@MODULE_PACKAGE@.PatientMatchingConfig</value></property>
+        <property name="formView"><value>/module/@MODULE_ID@/configForm</value></property>
+        <property name="successView"><value>redirect:/module/@MODULE_ID@/config.list</value></property>
+    </bean>
+
+    <bean id="matchConfig" class="@MODULE_PACKAGE@.web.ConfigListSimpleFormController">
         <property name="formView"><value>/module/@MODULE_ID@/configList</value></property>
     </bean>
 

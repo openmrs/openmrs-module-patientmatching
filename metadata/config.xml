@@ -38,6 +38,12 @@
             <property>patientmatching.linkConfigFile</property>
             <description>This file can be found at doc/link_config.xml</description>
         </globalProperty>
+        
+        <globalProperty>
+            <property>patientmatching.excludedProperties</property>
+            <defaultValue>void,change,create,creator</defaultValue>
+            <description>All properties that contains any of this element will be excluded</description>
+        </globalProperty>
 
         <!-- Internationalization -->
         <!-- All message codes should start with moduleId.* -->
