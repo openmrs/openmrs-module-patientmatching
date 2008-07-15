@@ -7,6 +7,29 @@
 
 <br />
 
+<script type="text/javascript">
+    function selectOnly(fieldName) {
+        var blocking = "blocking";
+        var selected = "selected";
+        
+        var fieldSep = fieldName.indexOf(".");
+        var objectName = fieldName.substring(0, fieldSep + 1);
+        
+        var selectedField = document.getElementById(objectName + selected);
+        var blockingField = document.getElementById(objectName + blocking);
+        
+        if (fieldName == selectedField.name) {
+            if(selectedField.checked) {
+                blockingField.checked = false;
+            }
+        } else {
+            if(blockingField.checked) {
+                selectedField.checked = false;
+            }
+        }
+    }
+</script>
+
 <form method="post">
 <b class="boxHeader"><spring:message code="patientmatching.config.new"/></b>
 <div class="box">
@@ -52,30 +75,34 @@
                         <tr>
                             <th><spring:message code="patientmatching.config.new.fieldName"/></th>
                             <th><spring:message code="patientmatching.config.new.fieldNameInclude"/></th>
-                            <th><spring:message code="patientmatching.config.new.fieldName"/></th>
-                            <th><spring:message code="patientmatching.config.new.fieldNameInclude"/></th>
-                            <th><spring:message code="patientmatching.config.new.fieldName"/></th>
-                            <th><spring:message code="patientmatching.config.new.fieldNameInclude"/></th>
+                            <th><spring:message code="patientmatching.config.new.fieldNameBlocking"/></th>
                         </tr>
                         <c:forEach items="${patientMatchingConfig.configEntries}" var="configEntry" varStatus="entriesIndex">
-                            <c:choose>
-                                <c:when test="${(entriesIndex.count - 1) % 3 == 0}">
-                                    <tr>
-                                </c:when>
+                            <tr>
                                 <td nowrap="nowrap">
                                     <spring:message code="${configEntry.fieldName}"/>
                                 </td>
                                 <td align="center">
                                 <spring:bind path="patientMatchingConfig.configEntries[${entriesIndex.count - 1}].selected">
                                     <input type="hidden" name="_<c:out value="${status.expression}"/>">
-                                    <input type="checkbox" name="<c:out value="${status.expression}"/>" value="true"
+                                    <input type="checkbox"
+                                        name="<c:out value="${status.expression}"/>" value="true"
+                                        id="<c:out value="${status.expression}"/>"
+                                        onClick="selectOnly('<c:out value="${status.expression}"/>')"
                                         <c:if test="${status.value}">checked</c:if>/>
                                 </spring:bind>
                                 </td>
-                                <c:when test="${(entriesIndex.count - 1) % 3 == 2}">
-                                    </tr>
-                                </c:when>
-                            </c:choose>
+                                <td align="center">
+                                <spring:bind path="patientMatchingConfig.configEntries[${entriesIndex.count - 1}].blocking">
+                                    <input type="hidden" name="_<c:out value="${status.expression}"/>">
+                                    <input type="checkbox"
+                                        name="<c:out value="${status.expression}"/>" value="true"
+                                        id="<c:out value="${status.expression}"/>"
+                                        onClick="selectOnly('<c:out value="${status.expression}"/>')"
+                                        <c:if test="${status.value}">checked</c:if>/>
+                                </spring:bind>
+                                </td>
+                            </tr>
                         </c:forEach>
                     </table>
                 </div>

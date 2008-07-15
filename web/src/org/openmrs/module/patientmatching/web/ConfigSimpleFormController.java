@@ -51,13 +51,17 @@ public class ConfigSimpleFormController extends SimpleFormController {
 	        
 	        MatchingConfig matchingConfig = recMatchConfig.getMatchingConfigs().get(0);
 	        List<ConfigEntry> configEntries = new ArrayList<ConfigEntry>();
-	        List<String> includeColumn = Arrays.asList(matchingConfig.getIncludedColumnsNames());
+            List<String> includeColumn = Arrays.asList(matchingConfig.getIncludedColumnsNames());
+            List<String> blockingColumn = Arrays.asList(matchingConfig.getBlockingColumns());
 	        
 	        for (DataColumn column : recMatchConfig.getLinkDataSource1().getDataColumns()) {
                 ConfigEntry configEntry = new ConfigEntry();
                 configEntry.setFieldName(column.getColumnID());
                 if (includeColumn.contains(column.getColumnID())) {
                     configEntry.setSelected(true);
+                }
+                if (blockingColumn.contains(column.getColumnID())) {
+                    configEntry.setBlocking(true);
                 }
                 configEntries.add(configEntry);
             }
@@ -120,9 +124,9 @@ public class ConfigSimpleFormController extends SimpleFormController {
         PatientMatchingConfig config = (PatientMatchingConfig) command;
         
         // this should be delegated to a service object
-        Hashtable<String, Boolean> map = new Hashtable<String, Boolean>();
+        Hashtable<String, ConfigEntry> map = new Hashtable<String, ConfigEntry>();
         for (ConfigEntry entry : config.getConfigEntries()) {
-            map.put(entry.getFieldName(), entry.getSelected());
+            map.put(entry.getFieldName(), entry);
         }
         
         String[] demographic = map.keySet().toArray(new String[map.keySet().size()]);
@@ -132,9 +136,15 @@ public class ConfigSimpleFormController extends SimpleFormController {
         
         LinkDataSource linkDataSource = new LinkDataSource("dummy", "dummy", "dummy", 1);
         
+        int blockOrder = 1;
         List<MatchingConfigRow> configRows = matchingConfig.getMatchingConfigRows();
         for (MatchingConfigRow matchingConfigRow : configRows) {
-            matchingConfigRow.setInclude(map.get(matchingConfigRow.getName()));
+            ConfigEntry configEntry = map.get(matchingConfigRow.getName());
+            matchingConfigRow.setInclude(configEntry.isSelected());
+            if(configEntry.isBlocking()) {
+                matchingConfigRow.setBlockOrder(blockOrder);
+                blockOrder ++;
+            }
             linkDataSource.addNewDataColumn(matchingConfigRow.getName());
         }
         

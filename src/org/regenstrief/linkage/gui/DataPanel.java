@@ -8,6 +8,8 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.Vector;
 
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -30,6 +33,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
+import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
@@ -45,7 +49,7 @@ import org.regenstrief.linkage.util.RecMatchConfig;
  *
  *
  */
-public class DataPanel extends JPanel implements MouseListener, ActionListener, TableColumnModelListener, WindowListener{
+public class DataPanel extends JPanel implements MouseListener, ActionListener, TableColumnModelListener, WindowListener, ItemListener {
 	public static final int ROWS_IN_TABLE = 15;
 	public static final int TOP = 0;
 	public static final int BOTTOM = 1;
@@ -59,6 +63,8 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 	JPopupMenu column_options, bottom_column_options;
 	JRadioButtonMenuItem string_type, number_type;
 	JMenu unhide, bottom_unhide;
+	
+	private JCheckBoxMenuItem checkBoxMenuItem;
 	
 	Vector<JMenuItem> unhide_menu_items;
 	boolean loading_file, need_to_write, need_to_sync;
@@ -173,6 +179,19 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 		}
 	}
 	
+	public void clearTable(int which) {
+	    // assume only bottom
+	    if (which == TOP) {
+            tjt.setColumnModel(new DefaultTableColumnModel());
+            tjt.setModel(new DefaultTableModel());
+            tfn.setText("No data source configured");
+	    } else {
+            bjt.setColumnModel(new DefaultTableColumnModel());
+            bjt.setModel(new DefaultTableModel());
+            bfn.setText("No data source configured");
+	    }
+	}
+	
 	public void parseDataToTable(int which){
 		// creates and sets table to the top or bottom display pane
 		MatchingTableModel mtm;
@@ -278,6 +297,10 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 	private JPopupMenu createColumnMenu(){
 		// initialize right click context menus for tables
 		JPopupMenu jpm = new JPopupMenu();
+        
+        checkBoxMenuItem = new JCheckBoxMenuItem("Unique Id Column");
+        checkBoxMenuItem.addItemListener(this);
+        jpm.add(checkBoxMenuItem);
 		
 		JMenuItem jmi = new JMenuItem("Rename column");
 		jmi.addActionListener(this);
@@ -496,7 +519,16 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 				unhide_menu_items.add(jmi);
 			}
 		}
-		
+
+        String columnName = tjt.getColumnModel().getColumn(current_col).getHeaderValue().toString();
+        String uniqueId = rm_conf.getLinkDataSource1().getUniqueID();
+        
+        if (columnName.equals(uniqueId)) {
+            checkBoxMenuItem.setSelected(true);
+        } else {
+            checkBoxMenuItem.setSelected(false);
+        }
+        
 		// show column, get user input
 		jpm.show(me.getComponent(), me.getX(), me.getY());
 		
@@ -542,9 +574,6 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 			MatchingConfig mc = it.next();
 			mc.getMatchingConfigRowByName(old_name).setName(new_name);
 		}
-		
-		
-		
 	}
 	
 	public void mouseReleased(MouseEvent me){
@@ -749,4 +778,25 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 	public void windowClosing(WindowEvent we){
 		// not used
 	}
+
+    public void itemStateChanged(ItemEvent e) {
+        if(e.getSource() == checkBoxMenuItem) {
+            String columnName = tjt.getColumnModel().getColumn(current_col).getHeaderValue().toString();
+            LinkDataSource lds = null;
+            
+            if(e.getStateChange() == ItemEvent.SELECTED) {
+                lds = rm_conf.getLinkDataSource1();
+                lds.setUniqueID(columnName);
+                lds = rm_conf.getLinkDataSource2();
+                lds.setUniqueID(columnName);
+            } else {
+                lds = rm_conf.getLinkDataSource1();
+                if (columnName.equals(lds.getUniqueID())) {
+                    lds.setUniqueID(null);
+                    lds = rm_conf.getLinkDataSource2();
+                    lds.setUniqueID(null);
+                }
+            }
+        }
+    }
 }

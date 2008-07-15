@@ -1,18 +1,28 @@
 package org.regenstrief.linkage.gui;
 
+import java.awt.Container;
+import java.awt.GridBagConstraints;
+import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
@@ -33,7 +43,7 @@ import org.regenstrief.linkage.util.XMLTranslator;
  * away from the GUI layer.
  */
 
-public class RecMatch implements ActionListener, WindowListener, ChangeListener {
+public class RecMatch implements ActionListener, WindowListener, ChangeListener, ItemListener {
 	public static final int CONCURRENT_LINKAGE_RUNS_LIMIT = 1;
 	public static final int ROWS_IN_TABLE = 15;
 	public static final String PROGRAM_NAME = "Record Linker";
@@ -46,6 +56,10 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 	DataPanel dpanel;
 	AnalysisPanel apanel;
 	RecMatchConfig rm_conf;
+    
+    private JCheckBox doneCheckBox;
+    private JCheckBox dedupeCheckBox;
+    private int dupedDataSource = DataPanel.BOTTOM;
 	
 	private JMenu recentFileMenu;
 	private RecentFile recentFile;
@@ -81,18 +95,61 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 		main_window.setLocationRelativeTo(null);
 		
 		main_window.setJMenuBar(createMenu());
+
+        doneCheckBox = new JCheckBox();
+        doneCheckBox.addItemListener(this);
+        doneCheckBox.setEnabled(false);
+        dedupeCheckBox = new JCheckBox();
+        dedupeCheckBox.addItemListener(this);
+        dedupeCheckBox.setEnabled(false);
+        
+        JPanel panelConfig = new JPanel();
+        panelConfig.setBorder(BorderFactory.createTitledBorder("Global Configuration"));
+        panelConfig.setLayout(new java.awt.GridBagLayout());
+        
+        GridBagConstraints gridBagConstraints;
+
+        doneCheckBox.setText("Data Source Configuration Complete");
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = GridBagConstraints.FIRST_LINE_START;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new Insets(0, 0, 0, 50);
+        panelConfig.add(doneCheckBox, gridBagConstraints);
+
+        dedupeCheckBox.setText("Deduplication");
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = GridBagConstraints.FIRST_LINE_START;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new Insets(0, 0, 0, 50);
+        panelConfig.add(dedupeCheckBox, gridBagConstraints);
 		
 		// add tabs to main_window
+        JPanel panelMatching = new JPanel();
+        panelMatching.setBorder(BorderFactory.createTitledBorder("Matching Parameters"));
+        panelMatching.setLayout(new GridLayout());
+        
 		tabs = new JTabbedPane();
 		dpanel = new DataPanel(rm_conf);
 		tabs.addTab("Data sources", dpanel);
+        spanel = new SessionsPanel(rm_conf);
+        tabs.addTab("Sessions", spanel);
 		apanel = new AnalysisPanel(rm_conf);
 		tabs.addTab("Analysis", apanel);
-		spanel = new SessionsPanel(rm_conf);
-		tabs.addTab("Sessions", spanel);
 		tabs.addChangeListener(this);
+        tabs.setEnabledAt(1, false);
+        tabs.setEnabledAt(2, false);
+		panelMatching.add(tabs);
 		
-		main_window.getContentPane().add(tabs);
+		Container c = main_window.getContentPane();
+		c.setLayout(new BoxLayout(c, BoxLayout.PAGE_AXIS));
+		c.add(panelConfig);
+		c.add(panelMatching);
 		main_window.pack();
 		main_window.setVisible(true);
 		
@@ -196,6 +253,7 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
                     current_program_config_file = config;
                     spanel.setRecMatchConfig(rm_conf);
                     apanel.setRecMatchConfig(rm_conf);
+                    updateCheckBox();
                 }});
             recentFileMenu.add(menuItem);
         }
@@ -212,15 +270,6 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 		} else {
 			return null;
 		}
-	}
-	
-	/*
-	 * Methoc called when loading a config file or other changes are made to
-	 * the rm_conf object
-	 */
-	private void updateGUI(){
-		dpanel.setRecMatchConfig(rm_conf);
-		dpanel.update(main_window.getGraphics());
 	}
 	
 	private void exitProgram(){
@@ -383,8 +432,27 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 					dpanel.parseDataToTable(DataPanel.BOTTOM);
 				}
 			}
+			updateCheckBox();
 		}
 	}
+
+    private void updateCheckBox() {
+        dedupeCheckBox.setEnabled(true);
+
+        LinkDataSource lds1 = rm_conf.getLinkDataSource1();
+        LinkDataSource lds2 = rm_conf.getLinkDataSource2();
+
+        if (lds1 != null && lds2 != null) {
+            if (lds1.getName().equals(lds2.getName())) {
+                dedupeCheckBox.setSelected(true);
+            } else {
+                dedupeCheckBox.setSelected(false);
+            }
+            doneCheckBox.setEnabled(true);
+        } else {
+            doneCheckBox.setEnabled(false);
+        }
+    }
 
     private void updateRecentList(File config) {
         RecentFileEntry entry = new RecentFileEntry();
@@ -463,5 +531,72 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener 
 		}
 		RecMatch rm = new RecMatch(config);
 	}
+
+    public void itemStateChanged(ItemEvent e) {
+        if(e.getSource() == dedupeCheckBox) {
+            if(e.getStateChange() == ItemEvent.SELECTED){
+                if (rm_conf.getLinkDataSource1() == null) {
+                    dupedDataSource = DataPanel.TOP;
+                } else if (rm_conf.getLinkDataSource2() == null) {
+                    dupedDataSource = DataPanel.BOTTOM;
+                }
+                updateDataPanel();
+                doneCheckBox.setEnabled(true);
+                rm_conf.setDeduplication(true);
+            } else {
+                if (dupedDataSource == DataPanel.TOP) {
+                    rm_conf.setLinkDataSource1(null);
+                } else if (dupedDataSource == DataPanel.BOTTOM) {
+                    rm_conf.setLinkDataSource2(null);
+                }
+                dpanel.clearTable(dupedDataSource);
+                doneCheckBox.setEnabled(false);
+                rm_conf.setDeduplication(false);
+            }
+        } else if (e.getSource() == doneCheckBox) {
+            if(e.getStateChange() == ItemEvent.SELECTED){
+                boolean uniqueIdSet = true;
+                LinkDataSource firstDataSource = rm_conf.getLinkDataSource1();
+                LinkDataSource secondDataSource = rm_conf.getLinkDataSource2();
+                if ((firstDataSource.getUniqueID() == null)
+                        || (secondDataSource.getUniqueID() == null)) {
+                    uniqueIdSet = false;
+                }
+                if (rm_conf.isDeduplication()) {
+                    if(uniqueIdSet) {
+                        tabs.setEnabledAt(0, false);
+                        tabs.setEnabledAt(1, true);
+                        tabs.setEnabledAt(2, true);
+                        tabs.setSelectedIndex(1);
+                    } else {
+                        doneCheckBox.setSelected(false);
+                        JOptionPane.showMessageDialog(main_window,
+                                "For deduplication process, a unique id column\n must be present and selected.", "Program says ...",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                } else {
+                    tabs.setEnabledAt(0, false);
+                    tabs.setEnabledAt(1, true);
+                    tabs.setEnabledAt(2, true);
+                    tabs.setSelectedIndex(1);
+                }
+            } else {
+                tabs.setEnabledAt(0, true);
+                tabs.setEnabledAt(1, false);
+                tabs.setEnabledAt(2, false);
+                tabs.setSelectedIndex(0);
+            }
+        }
+    }
+
+    private void updateDataPanel() {
+        if (dupedDataSource == DataPanel.TOP) {
+            rm_conf.setLinkDataSource1(rm_conf.getLinkDataSource2());
+            dpanel.parseDataToTable(dupedDataSource);
+        } else if (dupedDataSource == DataPanel.BOTTOM) {
+            rm_conf.setLinkDataSource2(rm_conf.getLinkDataSource1());
+            dpanel.parseDataToTable(dupedDataSource);
+        }
+    }
 	
 }

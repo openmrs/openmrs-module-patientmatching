@@ -11,6 +11,22 @@ public class ConfigEntry implements Comparable<ConfigEntry> {
     private String fieldName;
     
     private boolean selected;
+    
+    private boolean blocking;
+
+    /**
+     * @return the blocking
+     */
+    public boolean isBlocking() {
+        return blocking;
+    }
+
+    /**
+     * @param blocking the blocking to set
+     */
+    public void setBlocking(boolean blocking) {
+        this.blocking = blocking;
+    }
 
     /**
      * @return the fieldName
@@ -29,7 +45,7 @@ public class ConfigEntry implements Comparable<ConfigEntry> {
     /**
      * @return the selected
      */
-    public boolean getSelected() {
+    public boolean isSelected() {
         return selected;
     }
 

@@ -19,6 +19,8 @@ public class RecMatchConfig implements Iterable<MatchingConfig> {
 	private AnalysisConfig analysis_configs;
 	private List<MatchingConfig> mc_configs;
 	
+	private boolean deduplication;
+	
 	public RecMatchConfig(){
 		lds1 = null;
 		lds2 = null;
@@ -134,6 +136,20 @@ public class RecMatchConfig implements Iterable<MatchingConfig> {
 	public AnalysisConfig getAnalysis_configs() {
 		return analysis_configs;
 	}
+
+    /**
+     * @return the deduplication
+     */
+    public boolean isDeduplication() {
+        return deduplication;
+    }
+
+    /**
+     * @param deduplication the deduplication to set
+     */
+    public void setDeduplication(boolean deduplication) {
+        this.deduplication = deduplication;
+    }
 
 
 }
