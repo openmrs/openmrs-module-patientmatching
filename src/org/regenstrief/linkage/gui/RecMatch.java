@@ -590,11 +590,14 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
     }
 
     private void updateDataPanel() {
+        // should create a different instance of data source
         if (dupedDataSource == DataPanel.TOP) {
-            rm_conf.setLinkDataSource1(rm_conf.getLinkDataSource2());
+            LinkDataSource dataSource = (LinkDataSource) rm_conf.getLinkDataSource2().clone();
+            rm_conf.setLinkDataSource1(dataSource);
             dpanel.parseDataToTable(dupedDataSource);
         } else if (dupedDataSource == DataPanel.BOTTOM) {
-            rm_conf.setLinkDataSource2(rm_conf.getLinkDataSource1());
+            LinkDataSource dataSource = (LinkDataSource) rm_conf.getLinkDataSource1().clone();
+            rm_conf.setLinkDataSource2(dataSource);
             dpanel.parseDataToTable(dupedDataSource);
         }
     }

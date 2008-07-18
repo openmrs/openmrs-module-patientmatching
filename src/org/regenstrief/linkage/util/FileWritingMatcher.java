@@ -6,13 +6,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;
-import org.regenstrief.linkage.analysis.EMAnalyzer;
+import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
+import org.regenstrief.linkage.io.FormPairs;
+import org.regenstrief.linkage.io.OrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceReader;
 import org.regenstrief.linkage.io.ReaderProvider;
 
@@ -73,7 +74,12 @@ public class FileWritingMatcher {
 				odsr1 = rp.getReader(rmc.getLinkDataSource1(), mc);
 				odsr2 = rp.getReader(rmc.getLinkDataSource2(), mc);*/
 				if(odsr1 != null && odsr2 != null){
-					org.regenstrief.linkage.io.OrderedDataSourceFormPairs fp = new org.regenstrief.linkage.io.OrderedDataSourceFormPairs(odsr1, odsr2, mc, rmc.getLinkDataSource1().getTypeTable());
+				    FormPairs fp = null;
+				    if (rmc.isDeduplication()) {
+				        fp = new DedupOrderedDataSourceFormPairs(odsr1, mc, rmc.getLinkDataSource1().getTypeTable());
+				    } else {
+				        fp = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rmc.getLinkDataSource1().getTypeTable());
+				    }
 					
 					ScorePair sp = new ScorePair(mc);
 					Record[] pair;

@@ -1,6 +1,6 @@
 package org.regenstrief.linkage.util;
 
-public class DataColumn {
+public class DataColumn implements Cloneable {
 	private int include_position;
 	// Original column name in a database, or its order in a CharDelimFile
 	private String column_id;
@@ -49,5 +49,16 @@ public class DataColumn {
 	public String getColumnID() {
 		return column_id;
 	}
-		
+	
+	public Object clone() {
+	    DataColumn dataColumn = null;
+        
+        try {
+            dataColumn = (DataColumn) super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        
+        return dataColumn;
+	}
 }

@@ -246,6 +246,7 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 				// will see if default blank table is loaded currently
 				if(bjt.getModel() instanceof MatchingTableModel){
 					//syncBottom();
+	                unhideColumns();
 					syncTables();
 				}
 			}
@@ -276,6 +277,7 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 			// if other half is in a table, need to sync
 			if(rm_conf.getLinkDataSource1() != null){
 				//syncBottom();
+			    unhideColumns();
 				syncTables();
 			}
 		}
@@ -333,9 +335,9 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 		mtcm.hideColumn(tc);
 		
 		// sync tables if needed
-		if(rm_conf.getLinkDataSource1() != null && rm_conf.getLinkDataSource2() != null){
-			syncTables();
-		}
+		//if(rm_conf.getLinkDataSource1() != null && rm_conf.getLinkDataSource2() != null){
+		//	syncTables();
+		//}
 	}
 	
 	private void syncTables(){
@@ -487,6 +489,14 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 		unhide_menu_items = new Vector<JMenuItem>();
 		if(jt == tjt){
 			// look at top_hidden vector to determine what to add to menu
+	        String columnName = tjt.getColumnModel().getColumn(current_col).getHeaderValue().toString();
+	        String uniqueId = rm_conf.getLinkDataSource1().getUniqueID();
+	        
+	        if (columnName.equals(uniqueId)) {
+	            checkBoxMenuItem.setSelected(true);
+	        } else {
+	            checkBoxMenuItem.setSelected(false);
+	        }
 			hidden = ((MatchingTableColumnModel)tjt.getColumnModel()).getHiddenColumns();
 			uh = unhide;
 		} else {
@@ -519,15 +529,6 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 				unhide_menu_items.add(jmi);
 			}
 		}
-
-        String columnName = tjt.getColumnModel().getColumn(current_col).getHeaderValue().toString();
-        String uniqueId = rm_conf.getLinkDataSource1().getUniqueID();
-        
-        if (columnName.equals(uniqueId)) {
-            checkBoxMenuItem.setSelected(true);
-        } else {
-            checkBoxMenuItem.setSelected(false);
-        }
         
 		// show column, get user input
 		jpm.show(me.getComponent(), me.getX(), me.getY());
@@ -672,9 +673,9 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 		mtcm.unHideColumn(col_name);
 		
 		// sync the two tables if needed
-		if(rm_conf.getLinkDataSource1() != null && rm_conf.getLinkDataSource2() != null){
-			syncTables();
-		}
+		//if(rm_conf.getLinkDataSource1() != null && rm_conf.getLinkDataSource2() != null){
+		//	syncTables();
+		//}
 		return;
 		
 	}
@@ -796,6 +797,19 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
                     lds = rm_conf.getLinkDataSource2();
                     lds.setUniqueID(null);
                 }
+            }
+        }
+    }
+    
+    private void unhideColumns() {
+        if (bjt.getColumnCount() != tjt.getColumnCount()) {
+            List<String> topHiddenColumn = ((MatchingTableColumnModel)tjt.getColumnModel()).getHiddenColumns();
+            for (String columnName : topHiddenColumn) {
+                unHideColumn(tjt, columnName);
+            }
+            List<String> bottomHiddenColumn = ((MatchingTableColumnModel)bjt.getColumnModel()).getHiddenColumns();
+            for (String columnName : bottomHiddenColumn) {
+                unHideColumn(bjt, columnName);
             }
         }
     }

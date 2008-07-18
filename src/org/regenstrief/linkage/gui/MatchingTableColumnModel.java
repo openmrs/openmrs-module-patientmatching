@@ -87,7 +87,7 @@ public class MatchingTableColumnModel extends DefaultTableColumnModel {
 		if(tc != null){
 			hidden_columns.remove(col_name);
 			DataColumn dc = lds.getDataColumn(tc.getModelIndex());
-			dc.setIncludePosition(tableColumns.size());
+			dc.setIncludePosition(tc.getModelIndex());
 			addColumn(tc);
 		}
 	}

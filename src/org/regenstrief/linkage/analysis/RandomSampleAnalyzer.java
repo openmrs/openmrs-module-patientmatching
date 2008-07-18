@@ -9,6 +9,8 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
+import org.regenstrief.linkage.io.FormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceReader;
 import org.regenstrief.linkage.io.ReaderProvider;
@@ -221,7 +223,15 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 		ReaderProvider rp = new ReaderProvider();
 		OrderedDataSourceReader reader1 = rp.getReader(lds1, mc);
 		OrderedDataSourceReader reader2 = rp.getReader(lds2, mc);
-		OrderedDataSourceFormPairs fp = new OrderedDataSourceFormPairs(reader1, reader2, mc, lds1.getTypeTable());
+		
+		FormPairs fp = null;
+		// check for dedup mode
+		if (lds1.getName().equals(lds2.getName())) {
+		    fp = new DedupOrderedDataSourceFormPairs(reader1, mc, lds1.getTypeTable());
+		} else {
+		    fp = new OrderedDataSourceFormPairs(reader1, reader2, mc, lds1.getTypeTable());
+		}
+		
 		int pair_count = 0;
 		while(fp.getNextRecordPair() != null){
 			pair_count++;

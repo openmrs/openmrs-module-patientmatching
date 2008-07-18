@@ -378,7 +378,8 @@ public class MatchingConfig implements Cloneable {
             
             config.row_options = new ArrayList<MatchingConfigRow>();
             for (MatchingConfigRow mcr : this.row_options) {
-                config.row_options.add(mcr);
+                MatchingConfigRow row = (MatchingConfigRow) mcr.clone();
+                config.row_options.add(row);
             }
             
 	    } catch (CloneNotSupportedException e) {

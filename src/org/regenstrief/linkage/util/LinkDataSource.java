@@ -8,7 +8,7 @@ package org.regenstrief.linkage.util;
 
 import java.util.*;
 
-public class LinkDataSource {
+public class LinkDataSource implements Cloneable {
 	private String source_name;
 	private String type;
 	private String access;
@@ -211,4 +211,23 @@ public class LinkDataSource {
 	public void setDataSource_ID(int ds_id) {
 		this.ds_id = ds_id;
 	}
+    
+    public Object clone() {
+        LinkDataSource linkDataSource = null;
+        
+        try {
+            linkDataSource = (LinkDataSource) super.clone();
+            
+            linkDataSource.column_settings = new ArrayList<DataColumn>();
+            for (DataColumn column: this.column_settings) {
+                DataColumn dataColumn = (DataColumn) column.clone();
+                linkDataSource.column_settings.add(dataColumn);
+            }
+            
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        
+        return linkDataSource;
+    }
 }
