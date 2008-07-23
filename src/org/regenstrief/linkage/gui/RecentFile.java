@@ -11,6 +11,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
@@ -135,6 +137,7 @@ public class RecentFile {
                 entry.setFilePath(f.getAbsolutePath());
                 entriesList.add(entry);
             }
+            Collections.reverse(entriesList);
             entries = entriesList.toArray(new RecentFileEntry[entriesList.size()]);
         } catch (FileNotFoundException e) {
             

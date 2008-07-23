@@ -1,6 +1,8 @@
 package org.regenstrief.linkage.gui;
 
+import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridLayout;
 import java.awt.Insets;
@@ -128,7 +130,7 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.insets = new Insets(0, 0, 0, 50);
         panelConfig.add(dedupeCheckBox, gridBagConstraints);
-		
+        
 		// add tabs to main_window
         JPanel panelMatching = new JPanel();
         panelMatching.setBorder(BorderFactory.createTitledBorder("Matching Parameters"));
@@ -147,9 +149,9 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 		panelMatching.add(tabs);
 		
 		Container c = main_window.getContentPane();
-		c.setLayout(new BoxLayout(c, BoxLayout.PAGE_AXIS));
-		c.add(panelConfig);
-		c.add(panelMatching);
+		c.setLayout(new BorderLayout());
+		c.add(panelConfig, BorderLayout.NORTH);
+		c.add(panelMatching, BorderLayout.CENTER);
 		main_window.pack();
 		main_window.setVisible(true);
 		
@@ -257,6 +259,7 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
                 }});
             recentFileMenu.add(menuItem);
         }
+        saveHistoryEntries();
 	}
 
     public static File getFileFromChooser(){
@@ -273,10 +276,14 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 	}
 	
 	private void exitProgram(){
-        RecentFileEntry[] entries = recentFile.getEntries();
-        RecentFile.persistEntries(entries, new File(RECENT_FILE_PATH));
+        saveHistoryEntries();
 		System.exit(0);
 	}
+
+    private void saveHistoryEntries() {
+        RecentFileEntry[] entries = recentFile.getEntries();
+        RecentFile.persistEntries(entries, new File(RECENT_FILE_PATH));
+    }
 	
 	private void saveConfig(){
 		// should clean up this and saveAsConfig later to remove redundant code;
@@ -432,6 +439,7 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 					dpanel.parseDataToTable(DataPanel.BOTTOM);
 				}
 			}
+	        saveHistoryEntries();
 			updateCheckBox();
 		}
 	}
@@ -550,6 +558,7 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
                     rm_conf.setLinkDataSource2(null);
                 }
                 dpanel.clearTable(dupedDataSource);
+                doneCheckBox.setSelected(false);
                 doneCheckBox.setEnabled(false);
                 rm_conf.setDeduplication(false);
             }

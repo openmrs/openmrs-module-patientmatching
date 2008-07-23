@@ -178,7 +178,7 @@ public class ConfigSimpleFormController extends SimpleFormController {
                     if (propertyName == null) {
                         break;
                     }
-                    if (excludedProperty.trim().isEmpty()) {
+                    if (excludedProperty.trim().length() == 0) {
                         break;
                     }
                     if (propertyName.toUpperCase().contains(excludedProperty.toUpperCase())) {
