@@ -3,12 +3,14 @@
 package org.regenstrief.linkage.gui;
 
 import java.awt.event.ActionEvent;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 
 import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
 import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.MatchingConfigRow;
 
 /**
  * Derivate of the LoggingFrame specific for the RandomSampleAnalyzer class.
@@ -62,7 +64,13 @@ public class RandomSampleLoggingFrame extends LoggingFrame {
          * replace currently processed matching config with the one that contains
          * random sampling result.
          */
-        this.config = analyzer.getAnalyzerMatchingConfig();
+        MatchingConfig analyzerConfig = analyzer.getAnalyzerMatchingConfig();
+        for(MatchingConfigRow row: analyzerConfig.getMatchingConfigRows()) {
+            String name = row.getName();
+            MatchingConfigRow guiRow = config.getMatchingConfigRowByName(name);
+            guiRow.setNonAgreement(row.getNonAgreement());
+        }
+        
         JOptionPane.showMessageDialog(
                 this, "Values copied to current session parameter.",
                 "Info", JOptionPane.INFORMATION_MESSAGE);

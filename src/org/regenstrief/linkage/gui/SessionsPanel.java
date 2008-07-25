@@ -39,7 +39,10 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.FileWritingMatcher;
@@ -51,7 +54,8 @@ import org.regenstrief.linkage.util.RecMatchConfig;
  *
  *
  */
-public class SessionsPanel extends JPanel implements ActionListener, KeyListener, ListSelectionListener, ItemListener, FocusListener{
+public class SessionsPanel extends JPanel implements ActionListener, KeyListener,
+        ListSelectionListener, ItemListener, FocusListener, TableModelListener{
 	public final String DEFAULT_NAME = "New match";
 	
 	JList runs;
@@ -438,7 +442,9 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	}
 	
 	private Component getSessionTable(){
-		session_options = new JTable(new SessionOptionsTableModel());		
+	    SessionOptionsTableModel model = new SessionOptionsTableModel();
+	    model.addTableModelListener(this);
+		session_options = new JTable(model);
 		
 		jcb = new JComboBox();
 		jcb.addItem(MatchingConfig.ALGORITHMS[0]);
@@ -486,17 +492,11 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
             thresholdTextField.setText(String.valueOf(m.getScoreThreshold()));
 		}
 		current_working_config = mc;
-		session_options.setModel(new SessionOptionsTableModel(mc));
+		SessionOptionsTableModel model = new SessionOptionsTableModel(mc);
+		model.addTableModelListener(this);
+		session_options.setModel(model);
 		TableColumn tc = session_options.getColumnModel().getColumn(6);
 		tc.setCellEditor(new DefaultCellEditor(jcb));
-	}
-	
-	private MatchingConfig getSelectedConfig(){
-		// gets the matching config object currely selected in the jlist object
-		DefaultListModel dlm = (DefaultListModel)runs.getModel();
-		MatchingConfig mc = (MatchingConfig)dlm.getElementAt(runs.getSelectedIndex());
-		
-		return mc;
 	}
 	
 	private void removeSessionConfig(MatchingConfig mc){
@@ -536,6 +536,11 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			Object to_move = dlm.remove(index);
 			dlm.add(index - 1, to_move);
 			runs.setSelectedIndex(index - 1);
+            // swap matching config
+            MatchingConfig configA = rm_conf.getMatchingConfigs().remove(index);
+            MatchingConfig configB = rm_conf.getMatchingConfigs().remove(index - 1);
+            rm_conf.getMatchingConfigs().add(index - 1, configA);
+            rm_conf.getMatchingConfigs().add(index, configB);
 		}
 	}
 	
@@ -548,6 +553,11 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			Object to_move = dlm.remove(index);
 			dlm.add(index + 1, to_move);
 			runs.setSelectedIndex(index + 1);
+            // swap matching config
+            MatchingConfig configA = rm_conf.getMatchingConfigs().remove(index);
+            MatchingConfig configB = rm_conf.getMatchingConfigs().remove(index + 1);
+            rm_conf.getMatchingConfigs().add(index, configB);
+            rm_conf.getMatchingConfigs().add(index + 1, configA);
 		}
 	}
 	
@@ -786,4 +796,26 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		    }
 		}
 	}
+
+    public void tableChanged(TableModelEvent e) {
+        /*--NOTES--*/
+        // changes to the SessionOptionsTableModel must be propagated to this method
+        // changes that need to be propagated are:
+        // - adding new columns
+        // - deleting columns
+        int rowIndex = e.getFirstRow();
+        int columnIndex = e.getColumn();
+        TableModel model = (TableModel) e.getSource();
+        if(columnIndex == 3) {
+            Boolean included = (Boolean) model.getValueAt(rowIndex, columnIndex);
+            if(included){
+                model.setValueAt(0, rowIndex, 1);
+            }
+        } else if (columnIndex == 1) {
+            Integer blockOrder = (Integer) model.getValueAt(rowIndex, columnIndex);
+            if(blockOrder > 0) {
+                model.setValueAt(new Boolean(false), rowIndex, 3);
+            }
+        }
+    }
 }
