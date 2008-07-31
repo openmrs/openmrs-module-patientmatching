@@ -44,6 +44,23 @@
             <defaultValue>void,change,create,creator</defaultValue>
             <description>All properties that contains any of this element will be excluded</description>
         </globalProperty>
+        <dwr>
+            <allow>
+                <create creator="new" javascript="DWRMatchingConfigUtilities">
+                    <param name="class" value="@MODULE_PACKAGE@.web.dwr.DWRMatchingConfigUtilities"/>
+                    <include method="getAllBlockingRuns"/>
+                    <include method="deleteBlockingRun"/>             
+                </create>
+            </allow>
+    
+            <signatures>
+                <![CDATA[
+                import @MODULE_PACKAGE@.web.dwr.DWRMatchingConfigUtilities;
+                DWRMatchingConfigUtilities.getAllBlockingRuns()
+                DWRMatchingConfigUtilities.deleteBlockingRun(String name)
+                ]]>
+            </signatures>
+        </dwr>
 
         <!-- Internationalization -->
         <!-- All message codes should start with moduleId.* -->

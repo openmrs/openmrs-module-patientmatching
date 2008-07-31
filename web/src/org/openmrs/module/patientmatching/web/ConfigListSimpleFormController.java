@@ -1,16 +1,12 @@
 package org.openmrs.module.patientmatching.web;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openmrs.util.OpenmrsUtil;
 import org.springframework.web.servlet.mvc.SimpleFormController;
 
 public class ConfigListSimpleFormController extends SimpleFormController {
@@ -24,8 +20,6 @@ public class ConfigListSimpleFormController extends SimpleFormController {
     @Override
     protected String formBackingObject(HttpServletRequest request) throws Exception {
         
-        //String text = Context.getService(HelloWorldService.class);
-        
         String text = "Not used";
         
         log.debug("Returning hello world text: " + text);
@@ -37,16 +31,10 @@ public class ConfigListSimpleFormController extends SimpleFormController {
      * @see org.springframework.web.servlet.mvc.SimpleFormController#referenceData(javax.servlet.http.HttpServletRequest)
      */
     @Override
-    protected Map<String, List<String>> referenceData(HttpServletRequest request) throws Exception {
-        // TODO Auto-generated method stub
-        File folder = OpenmrsUtil.getDirectoryInApplicationDataDirectory("patient-matching");
-        List<String> fileNamesList = new ArrayList<String>();
-        for (File file : folder.listFiles()) {
-            fileNamesList.add(file.getName());
-            log.info("Found file: " + file.getAbsolutePath());
-        }
-        Map<String, List<String>> requestMap = new HashMap<String, List<String>>();
-        requestMap.put("files", fileNamesList);
+    protected Map<String, Object> referenceData(HttpServletRequest request) throws Exception {
+        Map<String, Object> requestMap = new HashMap<String, Object>();
+        requestMap.put("files", MatchingConfigUtilities.listAvailableBlockingRuns());
+        requestMap.put("parameter", MatchingConstants.PARAM_NAME.toString());
         return requestMap;
     }
 }

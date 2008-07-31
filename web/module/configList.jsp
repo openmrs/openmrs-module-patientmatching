@@ -3,6 +3,37 @@
 <openmrs:require privilege="View Patients, View Patient Cohorts" otherwise="/login.htm" redirect="/module/patientmatching/config.list" />
 
 <%@ include file="/WEB-INF/template/header.jsp" %>
+<openmrs:htmlInclude file="/dwr/interface/DWRMatchingConfigUtilities.js"/>
+<openmrs:htmlInclude file="/dwr/engine.js"/>
+<openmrs:htmlInclude file="/dwr/util.js"/>
+
+<script type="text/javascript">
+function deleteClicked(id) {
+    if (confirm("Are you sure you want to delete \'" + id + "\'?")) {
+        DWREngine.beginBatch();
+        DWRMatchingConfigUtilities.deleteBlockingRun(id);
+        buildTable();
+        DWREngine.endBatch();
+    }
+}
+
+function buildTable() {
+    DWRMatchingConfigUtilities.getAllBlockingRuns(function writeBlockingRuns(block) {
+        DWRUtil.removeAllRows("config-list");
+        var cellFuncs = [
+            function(data) { return data; },
+            function(data) {
+                return "<a href=\"${pageContext.request.contextPath}/module/patientmatching/config.form?<c:out value="${parameter}" />=" + data + "\"><c:out value="Edit" /></a>"; },
+            function(data) {
+                return "<a href=\"javascript:;\" onClick=\"deleteClicked('" + data + "');\"><c:out value="Delete" /></a>";
+            }
+        ];
+        DWRUtil.addRows( "config-list", block, cellFuncs);
+    });
+}
+
+</script>
+
 <%@ include file="localHeader.jsp" %>
 
 <h2><spring:message code="patientmatching.config.title"/></h2>
@@ -21,21 +52,28 @@
     <form method="post">
         <table cellspacing="2">
             <tr>
-                <th><spring:message code="patientmatching.config.list.name"/></th>
-                <th><spring:message code="Operation"/></th>
+                <th align="left"><spring:message code="patientmatching.config.list.name"/></th>
+                <th colspan="2"><spring:message code="Operation"/></th>
             </tr>
+            <tbody id="config-list">
             <c:forEach items="${files}" var="file">
                 <tr>
                     <td>
                         <c:out value="${file}" />
                     </td>
                     <td align="center">
-                        <a href="${pageContext.request.contextPath}/module/patientmatching/config.form?filename=${file}">
+                        <a href="${pageContext.request.contextPath}/module/patientmatching/config.form?<c:out value="${parameter}" />=${file}">
                             <c:out value="Edit" />
+                        </a>
+                    </td>
+                    <td align="center">
+                        <a href="javascript:;" onClick="deleteClicked('<c:out value="${file}" />');">
+                            <c:out value="Delete" />
                         </a>
                     </td>
                 </tr>
             </c:forEach>
+            </tbody>
         </table>
     </form>
 </div>

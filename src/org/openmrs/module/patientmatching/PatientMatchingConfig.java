@@ -73,5 +73,9 @@ public class PatientMatchingConfig {
     public void setRandomSampleSize(int randomSampleSize) {
         this.randomSampleSize = randomSampleSize;
     }
+    
+    public String toString() {
+        return this.configName;
+    }
 
 }

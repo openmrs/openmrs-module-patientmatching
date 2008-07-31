@@ -10,7 +10,7 @@ public class ConfigEntry implements Comparable<ConfigEntry> {
     
     private String fieldName;
     
-    private boolean selected;
+    private boolean included;
     
     private boolean blocking;
 
@@ -45,15 +45,15 @@ public class ConfigEntry implements Comparable<ConfigEntry> {
     /**
      * @return the selected
      */
-    public boolean isSelected() {
-        return selected;
+    public boolean isIncluded() {
+        return included;
     }
 
     /**
      * @param selected the selected to set
      */
-    public void setSelected(boolean selected) {
-        this.selected = selected;
+    public void setIncluded(boolean included) {
+        this.included = included;
     }
 
     public int compareTo(ConfigEntry o) {
