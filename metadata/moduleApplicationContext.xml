@@ -34,5 +34,10 @@
     <bean id="matchDupes" class="@MODULE_PACKAGE@.web.AddResponseFormController">
         <property name="formView"><value>/module/@MODULE_ID@/dupesList</value></property>
     </bean>
-	
+    
+    <bean class="org.openmrs.module.patientmatching.HibernateConnection">
+      <property name="sessionFactory"><ref bean="sessionFactory"/></property>	
+		</bean>
+		
+
 </beans>
