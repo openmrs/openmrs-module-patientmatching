@@ -1,13 +1,18 @@
 package org.regenstrief.linkage.io;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifierType;
+import org.openmrs.Person;
 import org.openmrs.PersonAttributeType;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.patientmatching.PatientMatchingActivator;
@@ -40,8 +45,14 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 	List<Integer> value_set;
 	
 	public final static String ATTRIBUTE_PREFIX = "(Attribute) ";
-	public final static String IDENT_PREFIX = "(Identifier)";
+	public final static String IDENT_PREFIX = "(Identifier) ";
+	public final static String GET_ID_METHOD = "getPersonId";
+	//public final static String GET_PATIENT_ID_METHOD = "getPatientId";
+	public final static String GET_PERSON_METHOD = "getPerson";
+	public final static String GET_PATIENT_METHOD = "getPatient";
 	
+	
+	private Log log = LogFactory.getLog(this.getClass());
 	private SessionFactory sessionFactory;
 	
 	public OrderedOpenMRSReader(MatchingConfig mc, SessionFactory session_factory){
@@ -57,14 +68,20 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 		
 		for(int i = 0; i < blocking_cols.length; i++){
 			List<Object> query_values = getDemographicValues(blocking_cols[i]);
-			Iterator<Object> it = query_values.iterator();
-			List<Object> values = new ArrayList<Object>();
-			while(it.hasNext()){
-				Object obj = it.next();
-				values.add(obj);
+			if(query_values == null){
+				log.warn("unable to get blocking values for " + blocking_cols[i]);
+				
+			} else {
+				Iterator<Object> it = query_values.iterator();
+				List<Object> values = new ArrayList<Object>();
+				while(it.hasNext()){
+					Object obj = it.next();
+					values.add(obj);
+				}
+				blocking_values.add(values);
+				values_iterators.add(values.iterator());
 			}
-			blocking_values.add(values);
-			values_iterators.add(values.iterator());
+			
 		}
 		
 		// initial increment and blocking value assignment
@@ -123,7 +140,6 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 		if(value_set.size() > 0){
 			Integer id = value_set.remove(0);
 			Patient p = Context.getPatientService().getPatient(id);
-			
 			if(value_set.size() == 0){
 				// removed last ID at this point in blocking values, need to increment iterators and refill
 				// value_set
@@ -131,6 +147,7 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 					// do until IDs are set, or iterators are all incremented
 				}
 			}
+			
 			return PatientMatchingActivator.patientToRecord(p);
 		}
 		
@@ -169,7 +186,7 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 				object_name += "." + object_field[i];
 			}
 			
-			query_text = "SELECT DISTINCT o." + field + " FROM " + object_name + " o";
+			query_text = "SELECT DISTINCT o." + field + " FROM " + object_name + " o where o." + field + " IS NOT NULL";
 			Query q = sessionFactory.getCurrentSession().createQuery(query_text);
 			ret = q.list();
 		} else {
@@ -181,9 +198,9 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 					// HQL query to get all values
 					// something like 
 					// select distinct value from person_attribute where person_attribute_type_id = <id>
-					int id = pat.getPersonAttributeTypeId();
-					query_text = "SELECT DISTINCT p.value FROM PersonAttribute p WHERE p.attributeID = " + id;
+					query_text = "SELECT DISTINCT p.value FROM PersonAttribute p WHERE p.attributeType = :type AND p.value IS NOT NULL";
 					Query q = sessionFactory.getCurrentSession().createQuery(query_text);
+					q.setParameter("type", pat);
 					ret = q.list();
 				}
 			} else if(demographic.indexOf(IDENT_PREFIX) != -1){
@@ -192,9 +209,9 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 				PatientIdentifierType pit = Context.getPatientService().getPatientIdentifierType(ident);
 				if(pit != null){
 					// HQL query to get all values
-					int id = pit.getPatientIdentifierTypeId();
-					query_text = "SELECT DISTINCT p.value FROM PatientIdentifier p WHERE p.typeID = " + id;
+					query_text = "SELECT DISTINCT p.identifier FROM PatientIdentifier p WHERE p.identifierType = :type AND p.identifier IS NOT NULL";
 					Query q = sessionFactory.getCurrentSession().createQuery(query_text);
+					q.setParameter("type", pit);
 					ret = q.list();
 				}
 			}
@@ -207,9 +224,9 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 	private String stripType(String type_name){
 		// method strips the first 
 		if(type_name.indexOf(ATTRIBUTE_PREFIX) != -1){
-			return type_name.replaceFirst(ATTRIBUTE_PREFIX,"");
+			return type_name.substring(ATTRIBUTE_PREFIX.length());
 		} else if(type_name.indexOf(IDENT_PREFIX) != -1){
-			return type_name.replaceFirst(IDENT_PREFIX, "");
+			return type_name.substring(IDENT_PREFIX.length());
 		}
 		return type_name;
 	}
@@ -235,11 +252,11 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 				object_name += "." + object_field[i];
 			}
 			
-			query_text = "SELECT o.personID FROM " + object_name + " o WHERE " + field + " =:value";
+			query_text = "SELECT o FROM " + object_name + " o WHERE " + field + " =:value";
 			Query q = sessionFactory.getCurrentSession().createQuery(query_text);
-			q.setEntity("value", value);
-			ret = new ArrayList<Integer>();
-			ret.addAll(q.list());
+			q.setParameter("value", value);
+			ret = getIDs(q.list());
+			
 		} else {
 			if(demographic.indexOf(ATTRIBUTE_PREFIX) != -1){
 				// need to look at attribute type first to get the right query
@@ -250,11 +267,10 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 					// something like 
 					// select distinct value from person_attribute where person_attribute_type_id = <id>
 					int id = pat.getPersonAttributeTypeId();
-					query_text = "SELECT DISTINCT p.personID FROM PersonAttribute p WHERE p.value = :value";
+					query_text = "SELECT DISTINCT p FROM PersonAttribute p WHERE p.value = :value";
 					Query q = sessionFactory.getCurrentSession().createQuery(query_text);
-					q.setEntity("value", value);
-					ret = new ArrayList<Integer>();
-					ret.addAll(q.list());
+					q.setParameter("value", value);
+					ret = getIDs(q.list());
 				}
 			} else if(demographic.indexOf(IDENT_PREFIX) != -1){
 				// need to look at identifier types first to get right query
@@ -263,11 +279,10 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 				if(pit != null){
 					// HQL query to get all values
 					int id = pit.getPatientIdentifierTypeId();
-					query_text = "SELECT DISTINCT p.personID FROM PatientIdentifier p WHERE p.value = :value";
+					query_text = "SELECT DISTINCT p FROM PatientIdentifier p WHERE p.identifier = :value";
 					Query q = sessionFactory.getCurrentSession().createQuery(query_text);
-					q.setEntity("value", value);
-					ret = new ArrayList<Integer>();
-					ret.addAll(q.list());
+					q.setParameter("value", value);
+					ret = getIDs(q.list());
 				}
 			}
 			
@@ -276,4 +291,44 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 		return ret;
 	}
 	
+	/*
+	 * Method checks for a method that returns the person ID, patient, or person
+	 * of the object returned from a query and inserts the IDs into a list
+	 */
+	private List<Integer> getIDs(List<Object> openmrs_objects){
+		List<Integer> ret = new ArrayList<Integer>();
+		Iterator<Object> it = openmrs_objects.iterator();
+		try{
+			while(it.hasNext()){
+				Object o = it.next();
+				
+				Class cls = o.getClass();
+				Method[] methods = cls.getMethods();
+				for(int i = 0; i < methods.length; i++){
+					Method m = methods[i];
+					if(m.getName().equals(GET_ID_METHOD)){
+						Integer id = (Integer)m.invoke(o, (Object[])null);
+						ret.add(id);
+						i = methods.length;
+					} else if(m.getName().equals(GET_PERSON_METHOD)){
+						Person p = (Person)m.invoke(o, (Object[])null);
+						ret.add(p.getPersonId());
+						i = methods.length;
+					} else if(m.getName().equals(GET_PATIENT_METHOD)){
+						Patient p = (Patient)m.invoke(o, (Object[])null);
+						ret.add(p.getPatientId());
+						i = methods.length;
+					}
+				}
+			}
+		}
+		catch(IllegalAccessException iae){
+			log.warn("exception reading OpenMRS DB:  " + iae.getMessage());
+		}
+		catch(InvocationTargetException ite){
+			log.warn("exception reading OpenMRS DB:  " + ite.getMessage());
+		}
+		
+		return ret;
+	}
 }
