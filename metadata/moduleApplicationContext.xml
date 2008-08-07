@@ -31,13 +31,12 @@
         <property name="formView"><value>/module/@MODULE_ID@/scheduleList</value></property>
     </bean>
 
-    <bean id="matchDupes" class="@MODULE_PACKAGE@.web.AddResponseFormController">
+    <bean id="matchDupes" class="@MODULE_PACKAGE@.web.ReportSimpleFormController">
         <property name="formView"><value>/module/@MODULE_ID@/dupesList</value></property>
+        <property name="successView"><value>/module/@MODULE_ID@/dupesList</value></property>
     </bean>
     
     <bean class="org.openmrs.module.patientmatching.HibernateConnection">
       <property name="sessionFactory"><ref bean="sessionFactory"/></property>	
-		</bean>
-		
-
+    </bean>
 </beans>

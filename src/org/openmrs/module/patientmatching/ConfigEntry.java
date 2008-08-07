@@ -8,6 +8,8 @@ package org.openmrs.module.patientmatching;
  */
 public class ConfigEntry implements Comparable<ConfigEntry> {
     
+    private String fieldViewName;
+    
     private String fieldName;
     
     private boolean included;
@@ -54,6 +56,20 @@ public class ConfigEntry implements Comparable<ConfigEntry> {
      */
     public void setIncluded(boolean included) {
         this.included = included;
+    }
+
+    /**
+     * @return the fieldViewName
+     */
+    public String getFieldViewName() {
+        return fieldViewName;
+    }
+
+    /**
+     * @param fieldViewName the fieldViewName to set
+     */
+    public void setFieldViewName(String fieldViewName) {
+        this.fieldViewName = fieldViewName;
     }
 
     public int compareTo(ConfigEntry o) {

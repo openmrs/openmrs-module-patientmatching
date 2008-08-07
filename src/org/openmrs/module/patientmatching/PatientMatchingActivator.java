@@ -1,27 +1,29 @@
 package org.openmrs.module.patientmatching;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.aopalliance.aop.Advice;
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Logger;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
+import org.openmrs.PatientIdentifierType;
+import org.openmrs.PersonAddress;
 import org.openmrs.PersonAttribute;
 import org.openmrs.PersonAttributeType;
+import org.openmrs.PersonName;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.PatientSetService;
+import org.openmrs.api.PersonService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.Activator;
 import org.openmrs.module.patientmatching.advice.PatientMatchingAdvice;
+import org.openmrs.module.patientmatching.web.MatchingConfigUtilities;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.db.RecordDBManager;
 import org.springframework.aop.Advisor;
@@ -76,10 +78,9 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	public final static String PRIVILEGE = "View Patients";
 	public final static String PRIVILEGE2 = "View Patient Cohorts";
 	
+	protected static Log logger = LogFactory.getLog(PatientMatchingActivator.class);
 	private Log log = LogFactory.getLog(this.getClass());
 	public static String FILE_LOG = "patient_matching_file_log";
-	private Logger file_log = Logger.getLogger(FILE_LOG);
-	
 	
 	/**
 	 * Method calls the disconnect method in the LinkDBManager object.
@@ -189,7 +190,8 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	 * @param patient	the Patient object to transform
 	 * @return	a new Record object representing the Patient
 	 */
-	public static Record patientToRecord(Patient patient){
+	@SuppressWarnings("unchecked")
+    public static Record patientToRecord(Patient patient){
 		Record ret = new Record(0,"OpenMRS");
 		
 		// OpenMRS unique patient ID should be present if the patient is within
@@ -201,7 +203,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		}
 		
 		// first, try to get the "Matching Information" attribute type
-		PersonAttributeType matching_attr_type = Context.getPersonService().getPersonAttributeType(MATCHING_ATTRIBUTE);
+		PersonAttributeType matching_attr_type = Context.getPersonService().getPersonAttributeTypeByName(MATCHING_ATTRIBUTE);
 		if(matching_attr_type != null){
 			try{
 			// expected attribute with information is present, so use all the information from there
@@ -219,73 +221,40 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 				return ret;
 			}
 		} else {
-			// parse the Patient fields as best we can to get the information
-			// "mrn" - medical record number
-			
-			
-			PatientIdentifier pid = patient.getPatientIdentifier();
-			//	"ln"  - last name
-			//ret.addDemographic("ln", name.getFamilyName());
-			
-			
-			// "lny" - last name NYSIIS
-			// currently not being used
-			
-			// 	"fn"  - first name
-			//ret.addDemographic("fn", name.getGivenName());
-			
-			// 	"sex"  - sex/gender
-			ret.addDemographic("sex", patient.getGender());
-			
-			Date birthdate = patient.getBirthdate();
-			Calendar cal = new GregorianCalendar();
-			cal.setTime(birthdate);
-			// 	"mb" - month of birth
-			ret.addDemographic("mb", Integer.toString(cal.get(Calendar.MONTH)));
-			
-			// 	"db" - date of birth
-			ret.addDemographic("db", Integer.toString(cal.get(Calendar.DAY_OF_MONTH)));
-			
-			// 	"yb" - year of birth
-			ret.addDemographic("yb", Integer.toString(cal.get(Calendar.YEAR)));
-			
-			
-			// 	"city" - address city
-			//ret.addDemographic("city", address.getCityVillage());
-			
-			// 	"st" - address street
-			//String adr1 = address.getAddress1();
-			//String adr2 = address.getAddress2();
-			//if(adr2 == null){
-			//	ret.addDemographic("st", adr1);
-			//} else {
-			//	ret.addDemographic("st", adr1 + " " + adr2);
-			//}
-			
-			// 	"zip" - address zip code
-			//ret.addDemographic("zip", address.getPostalCode());
-			
-			// 	"tel" - telephone number
-			
-			
-			// 	"nkln" - next of kin last name
-			
-			
-			// 	"nkfn" - next of kin first name
-			
-			
-			// 	"drid" - Dr. ID
-			
-			
-			// 	"drfn" - Dr. first name
-			
-			
-			// 	"drln" - Dr. last name
-			
-			
+            // nothing is excluded
+            List<String> listExcludedProperties = new ArrayList<String>();
+            
+            Class[] classes = {Patient.class, PersonAddress.class, PersonName.class};
+            List<String> propertyList = new ArrayList<String>();
+            for (Class clazz : classes) {
+                propertyList.addAll(MatchingConfigUtilities.introspectBean(listExcludedProperties, clazz));
+            }
+            
+            for (String property : propertyList) {
+                String value = "";
+                try {
+                    value = BeanUtils.getProperty(patient, property);
+                } catch (Exception e) {
+                    logger.debug("Error getting the value for property: " + property, e);
+                } finally {
+                    ret.addDemographic(property, value);
+                }
+            }
+
+            PatientService patientService = Context.getPatientService();
+            List<PatientIdentifierType> patientIdentifierTypes = patientService.getAllPatientIdentifierTypes();
+            for (PatientIdentifierType patientIdentifierType : patientIdentifierTypes) {
+                PatientIdentifier identifier = patient.getPatientIdentifier(patientIdentifierType.getName());
+                ret.addDemographic("(Identifier) " + patientIdentifierType.getName(), identifier.getIdentifier());
+            }
+
+            PersonService personService = Context.getPersonService();
+            List<PersonAttributeType> personAttributeTypes = personService.getAllPersonAttributeTypes();
+            for (PersonAttributeType personAttributeType : personAttributeTypes) {
+                PersonAttribute attribute = patient.getAttribute(personAttributeType.getName());
+                ret.addDemographic("(Attribute) " + personAttributeType.getName(), attribute.getValue());
+            }
 		}
-		
-		
 		return ret;
 	}
 }

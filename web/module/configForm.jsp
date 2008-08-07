@@ -45,6 +45,7 @@
             </td>
         </tr>
     </table>
+    <!--
     <table cellspacing="2" cellpadding="2">
         <tr>
             <td colspan="2">
@@ -66,6 +67,7 @@
             </td>
         </tr>
     </table>
+    -->
     <table table cellspacing="2" cellpadding="2">
         <tr>
             <td valign="top">
@@ -92,7 +94,7 @@
                                     <tr>
                                 </c:when>
                                 <td nowrap="nowrap">
-                                    <spring:message code="${configEntry.fieldName}"/>
+                                    <spring:message code="${configEntry.fieldViewName}"/>
                                 </td>
                                 <td align="center">
                                 <spring:bind path="patientMatchingConfig.configEntries[${entriesIndex.count - 1}].included">

@@ -7,8 +7,8 @@
     </layout>
   </appender> 
   
-<logger name="patient_matching_file_log" additivity="false">
-		<level value="INFO"/>
-		<appender-ref ref="patient_matching_file_log"/>
-</logger>
+<root> 
+    <level value="INFO"/>
+	<appender-ref ref="patient_matching_file_log"/>
+<root> 
 </log4j:configuration>

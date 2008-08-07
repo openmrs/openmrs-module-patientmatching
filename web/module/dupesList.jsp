@@ -9,16 +9,27 @@
 
 <br/>
 
-<b class="boxHeader"><spring:message code="patientmatching.report.new" /></b>
+<b class="boxHeader"><spring:message code="patientmatching.report.run" /></b>
+<form method="post">
 <div class="box">
-    <form method="post">
         <table cellspacing="2">
             <tr>
-                <th colspan="2"><spring:message code="patientmatching.report.run"/></th>
+                <th colspan="2"><spring:message code="patientmatching.report.blocking"/></th>
+                <c:forEach items="${blockingRuns}" var="blockingRun" varStatus="entriesIndex">
+                  <tr>
+                    <td>
+                        <c:out value="${entriesIndex.count}" />.
+                    </td>
+                    <td>
+                        <c:out value="${blockingRun}" />.
+                    </td>
+                  <tr>
+                </c:forEach>
             </tr>
         </table>
-    </form>
 </div>
+<br/><input type="submit" value="<spring:message code="general.save" />" />
+</form>
 <br/>
 
 <%@ include file="/WEB-INF/template/footer.jsp" %>

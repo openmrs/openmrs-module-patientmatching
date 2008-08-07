@@ -28,7 +28,7 @@ public class ConfigSimpleFormController extends SimpleFormController {
 	    
         AdministrationService adminService = Context.getAdministrationService();
         String excludedProperties = adminService.getGlobalProperty(MatchingConstants.CONFIG_EXCLUDE_PROPERTIES);
-        List<String> listExcludedProperties = Arrays.asList(excludedProperties.split(","));
+        List<String> listExcludedProperties = Arrays.asList(excludedProperties.split(",", -1));
         
         log.info("Excluded Property: " + excludedProperties);
         

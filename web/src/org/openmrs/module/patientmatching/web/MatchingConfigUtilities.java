@@ -20,6 +20,7 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.patientmatching.ConfigEntry;
 import org.openmrs.module.patientmatching.PatientMatchingConfig;
 import org.openmrs.util.OpenmrsUtil;
+import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
@@ -54,6 +55,7 @@ public class MatchingConfigUtilities {
         for (PatientIdentifierType patientIdentifierType : patientIdentifierTypes) {
             ConfigEntry configEntry = new ConfigEntry();
             configEntry.setFieldName("(Identifier) " + patientIdentifierType.getName());
+            configEntry.setFieldViewName("(Identifier) " + patientIdentifierType.getName());
             configEntry.setBlocking(new Boolean(false));
             configEntry.setIncluded(new Boolean(false));
             configEntries.add(configEntry);
@@ -64,17 +66,21 @@ public class MatchingConfigUtilities {
         for (PersonAttributeType personAttributeType : personAttributeTypes) {
             ConfigEntry configEntry = new ConfigEntry();
             configEntry.setFieldName("(Attribute) " + personAttributeType.getName());
+            configEntry.setFieldViewName("(Attribute) " + personAttributeType.getName());
             configEntry.setBlocking(new Boolean(false));
             configEntry.setIncluded(new Boolean(false));
             configEntries.add(configEntry);
         }
         
         Collections.sort(configEntries);
+        for (ConfigEntry configEntry : configEntries) {
+            log.info("Entry: " + configEntry.getFieldName());
+        }
         
         patientMatchingConfig.setConfigEntries(configEntries);
         patientMatchingConfig.setConfigName("new configuration");
-        patientMatchingConfig.setUseRandomSampling(false);
-        patientMatchingConfig.setRandomSampleSize(0);
+        patientMatchingConfig.setUseRandomSampling(true);
+        patientMatchingConfig.setRandomSampleSize(100000);
         
         return patientMatchingConfig;
     }
@@ -105,6 +111,7 @@ public class MatchingConfigUtilities {
                 configEntry.setIncluded(configRow.isIncluded());
             }
             Collections.sort(patientMatchingConfig.getConfigEntries());
+            
             patientMatchingConfig.setConfigName(matchingConfig.getName());
             patientMatchingConfig.setUseRandomSampling(matchingConfig.isUsingRandomSampling());
             patientMatchingConfig.setRandomSampleSize(matchingConfig.getRandomSampleSize());
@@ -137,6 +144,7 @@ public class MatchingConfigUtilities {
         for (String fieldName : listNameProperty) {
             ConfigEntry configEntry = new ConfigEntry();
             configEntry.setFieldName(fieldName);
+            configEntry.setFieldViewName("patientmatching." + fieldName);
             configEntry.setBlocking(new Boolean(false));
             configEntry.setIncluded(new Boolean(false));
             configEntries.add(configEntry);
@@ -153,7 +161,7 @@ public class MatchingConfigUtilities {
      * @return properties list of the class excluding all properties defined in the <code>listExcludedProperties</code>
      */
     @SuppressWarnings("unchecked")
-    private static List<String> introspectBean(List<String> listExcludedProperties, Class clazz) {
+    public static List<String> introspectBean(List<String> listExcludedProperties, Class clazz) {
         PropertyDescriptor[] propertyDescriptors = PropertyUtils.getPropertyDescriptors(clazz);
 
         List<String> list = new ArrayList<String>();
@@ -176,7 +184,7 @@ public class MatchingConfigUtilities {
                 }
                 if(!exclude) {
                     if (MatchingIntrospector.isSimpleProperty(propertyDescriptor.getPropertyType())) {
-                        list.add("patientmatching." + clazz.getName() + "." + propertyDescriptor.getName());
+                        list.add(clazz.getName() + "." + propertyDescriptor.getName());
                     }
                 }
             }
@@ -196,8 +204,20 @@ public class MatchingConfigUtilities {
         if (!configFile.exists()){
             log.info("Creating new config file");
             LinkDataSource linkDataSource = new LinkDataSource("dummy", "dummy", "dummy", 1);
+            int counter = 0;
+            int includeCounter = 0;
             for(ConfigEntry configEntry: patientMatchingConfig.getConfigEntries()) {
-                linkDataSource.addNewDataColumn(configEntry.getFieldName());
+                DataColumn column = new DataColumn(String.valueOf(counter));
+                if(configEntry.isIncluded() || configEntry.isBlocking()) {
+                    column.setIncludePosition(includeCounter);
+                    includeCounter ++;
+                } else {
+                    column.setIncludePosition(DataColumn.INCLUDE_NA);
+                }
+                column.setName(configEntry.getFieldName());
+                column.setType(DataColumn.STRING_TYPE);
+                linkDataSource.addDataColumn(column);
+                counter ++;
             }
             List<MatchingConfig> matchingConfigLists = new ArrayList<MatchingConfig>();
             recMatchConfig = new RecMatchConfig(linkDataSource, linkDataSource, matchingConfigLists);
