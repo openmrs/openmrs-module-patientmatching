@@ -3,6 +3,7 @@ package org.regenstrief.linkage.analysis;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.regenstrief.linkage.MatchResult;
@@ -266,6 +267,34 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 		log.info("Estimated true matches:\t" + true_matches);
 		log.info("Estimated non matches:\t" + non_matches);
 		//***************************************
+		
+		log.info("previous score threshold:\t" + mc.getScoreThreshold());
+		// change the score threshold to one calculated from estimated true matches
+		VectorTable vt = new VectorTable(mc);
+		
+		// get sorted list of results
+		List<MatchResult> results = vt.getPossibleMatchResults();
+		Iterator<MatchResult> it = results.iterator();
+		double total = 0;
+		MatchResult total_mr = null;
+		double prev_total = 0;
+		MatchResult prev_mr = null;
+		while(it.hasNext() && total < true_matches){
+			MatchResult mr = it.next();
+			double d = mr.getTrueProbability() * total_pairs;
+			prev_total = total;
+			prev_mr = total_mr;
+			total += d;
+			total_mr = mr;
+		}
+		// choose total or prev_total, depending on which one is closer to estimated matches
+		if(Math.abs(total - true_matches) > Math.abs(prev_total - true_matches)){
+			// use previous score as threshold
+			mc.setScoreThreshold(prev_mr.getScore());
+		} else {
+			mc.setScoreThreshold(total_mr.getScore());
+		}
+		log.info("new score threshold:\t" + mc.getScoreThreshold());
 		
 		for(int i = 0; i < demographics.length; i++){
 			String demographic = demographics[i];
