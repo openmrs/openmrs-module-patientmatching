@@ -202,9 +202,10 @@ public class ScaleWeightModifier implements Modifier {
 						//score_vector.setScore(cur_demographic, score_vector.getScore(cur_demographic) * adjustment.getScalingFactor());
 						
 						
-						double scalar = Math.log(adjustment.getScalingFactor())/Math.log(2);
+						//double scalar = Math.log(adjustment.getScalingFactor())/Math.log(2);
+						double scalar = adjustment.getScalingFactor();
 						
-						ret.addDemographicScalarModifier(this, cur_demographic, scalar, ModifiedMatchResult.Operator.PLUS);
+						ret.addDemographicScalarModifier(this, cur_demographic, scalar, ModifiedMatchResult.Operator.MULTIPLY);
 					}
 				} 
 			}
