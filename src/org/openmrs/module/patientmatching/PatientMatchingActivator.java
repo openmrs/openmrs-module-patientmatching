@@ -192,7 +192,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	 */
 	@SuppressWarnings("unchecked")
     public static Record patientToRecord(Patient patient){
-		Record ret = new Record(0,"OpenMRS");
+		Record ret = new Record(patient.getPatientId(),"OpenMRS");
 		
 		// OpenMRS unique patient ID should be present if the patient is within
 		// the OpenMRS patient store, but if patient is new and being searched on
