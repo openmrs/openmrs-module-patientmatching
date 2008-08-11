@@ -15,6 +15,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.analysis.EMAnalyzer;
+import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.VectorTable;
 import org.regenstrief.linkage.io.OrderedDataSourceReader;
 import org.regenstrief.linkage.io.ReaderProvider;
@@ -71,6 +73,16 @@ public class LinkageTest {
 			OrderedDataSourceReader dsr1 = rp.getReader(rmc.getLinkDataSource1(), mc_test);
 			OrderedDataSourceReader dsr2 = rp.getReader(rmc.getLinkDataSource1(), mc_test);
 			org.regenstrief.linkage.io.OrderedDataSourceFormPairs fp = new org.regenstrief.linkage.io.OrderedDataSourceFormPairs(dsr1, dsr2, mc_test, type_table);
+			
+			// perform EM analysis
+			PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp);
+			EMAnalyzer ema = new EMAnalyzer(mc_test);
+			ema.setIterations(15);
+			pdsa.addAnalyzer(ema);
+			
+			pdsa.analyzeData();
+			
+			System.exit(0);
 			
 			// iterate through the Record pairs and print the score
 			Record[] pair;

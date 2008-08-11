@@ -97,11 +97,20 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 				// if not using random sampling then don't instantiate random sample analyzer
 				// if the value is locked then don't instantiate random sampler analyzer
 				if(mc.isUsingRandomSampling() && !mc.isLockedUValues()) {
-				    RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(rm_conf.getLinkDataSource1(), rm_conf.getLinkDataSource2(), mc);
+					// create FormPairs for rsa to use
+					OrderedDataSourceReader rsa_odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
+					OrderedDataSourceReader rsa_odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
+					FormPairs rsa_fp2 = null;
+				    if (rm_conf.isDeduplication()) {
+				        rsa_fp2 = new DedupOrderedDataSourceFormPairs(rsa_odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
+				    } else {
+				        rsa_fp2 = new OrderedDataSourceFormPairs(rsa_odsr1, rsa_odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+				    }
+				    RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(mc, rsa_fp2);
 	                pdsa.addAnalyzer(rsa);
 	                frame.addLoggingObject(rsa);
 				}
-				EMAnalyzer ema = new EMAnalyzer(rm_conf.getLinkDataSource1(), rm_conf.getLinkDataSource2(), mc);
+				EMAnalyzer ema = new EMAnalyzer(mc);
 				pdsa.addAnalyzer(ema);
 				frame.addLoggingObject(ema);
 				frame.configureLoggingFrame();
@@ -156,7 +165,15 @@ public class AnalysisPanel extends JPanel implements ActionListener{
                     
                     MatchingConfig mcCopy = (MatchingConfig) mc.clone();
                     
-                    RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(rm_conf.getLinkDataSource1(), rm_conf.getLinkDataSource2(), mcCopy);
+                    OrderedDataSourceReader rsa_odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
+					OrderedDataSourceReader rsa_odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
+					FormPairs rsa_fp2 = null;
+				    if (rm_conf.isDeduplication()) {
+				        rsa_fp2 = new DedupOrderedDataSourceFormPairs(rsa_odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
+				    } else {
+				        rsa_fp2 = new OrderedDataSourceFormPairs(rsa_odsr1, rsa_odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+				    }
+                    RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(mcCopy, rsa_fp2);
                     
                     pdsa.addAnalyzer(rsa);
                     frame.addLoggingObject(rsa);

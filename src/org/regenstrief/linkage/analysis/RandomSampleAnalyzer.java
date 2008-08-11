@@ -34,6 +34,8 @@ import org.regenstrief.linkage.util.StringMatch;
 public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingObject {
 	public static final int SAMPLE_SIZE = 100000;
 	
+	FormPairs fp;
+	
 	Random rand;
 	
 	Hashtable<Integer,List<Integer>> left_pair_entry;
@@ -51,8 +53,9 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 	 */
 	private int sampleSize;
 	
-	public RandomSampleAnalyzer(LinkDataSource lds1, LinkDataSource lds2, MatchingConfig mc){
-		super(lds1, lds2, mc);
+	public RandomSampleAnalyzer(MatchingConfig mc, FormPairs fp){
+		super(mc);
+		this.fp = fp;
 		rand = new Random();
 		
 		left_pair_entry = new Hashtable<Integer,List<Integer>>();
@@ -220,24 +223,11 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 	}
 	
 	private int countRecordPairs(){
-		ReaderProvider rp = new ReaderProvider();
-		OrderedDataSourceReader reader1 = rp.getReader(lds1, mc);
-		OrderedDataSourceReader reader2 = rp.getReader(lds2, mc);
-		
-		FormPairs fp = null;
-		// check for dedup mode
-		if (lds1.getName().equals(lds2.getName())) {
-		    fp = new DedupOrderedDataSourceFormPairs(reader1, mc, lds1.getTypeTable());
-		} else {
-		    fp = new OrderedDataSourceFormPairs(reader1, reader2, mc, lds1.getTypeTable());
-		}
 		
 		int pair_count = 0;
 		while(fp.getNextRecordPair() != null){
 			pair_count++;
 		}
-		reader1.close();
-		reader2.close();
 		
 		return pair_count;
 	}

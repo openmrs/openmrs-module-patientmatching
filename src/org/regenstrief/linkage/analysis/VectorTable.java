@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Set;
 
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.MatchVector;
@@ -32,6 +31,8 @@ public class VectorTable {
 	Hashtable<MatchVector,Double> match_specificities;
 	Hashtable<MatchVector,Double> match_sensitivities;
 	Hashtable<String,Double> u_values, m_values;
+	
+	List<MatchResult> vectors;
 	
 	public static final double MATCH_ONE = 0.999999;
 	public static final double MATCH_ZERO = 0.000001;
@@ -73,7 +74,7 @@ public class VectorTable {
 			u_values.put(mcr.getName(), new Double(u));
 		}
 		
-		List<MatchResult> vectors = getPossibleMatchingResults();
+		vectors = getPossibleMatchingResults();
 		// sort the vectors to calculate sens and spec
 		//LinkedList<MatchVector> sorted_vectors = new LinkedList<MatchVector>();
 		Collections.sort(vectors, new Comparator<MatchResult>(){
@@ -341,6 +342,10 @@ public class VectorTable {
 			}
 		}
 		return sv;
+	}
+	
+	public List<MatchResult> getPossibleMatchResults(){
+		return vectors;
 	}
 	
 	public String toString(){

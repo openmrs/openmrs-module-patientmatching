@@ -50,8 +50,8 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 	 * .vct file
 	 * 
 	 */
-	public EMAnalyzer(LinkDataSource lds1, LinkDataSource lds2, MatchingConfig mc){
-		super(lds1, lds2, mc);
+	public EMAnalyzer(MatchingConfig mc){
+		super(mc);
 		vector_count = new Hashtable<MatchVector,Integer>();
 		sp = new ScorePair(mc);
 		iterations = MAX_ITERATIONS;

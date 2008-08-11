@@ -75,7 +75,7 @@ public class ScaleWeightAnalyzerTest {
 				DataSourceReader dsr1 = rp.getReader(lds1);
 				DataSourceReader dsr2 = rp.getReader(lds2);
 								
-				org.regenstrief.linkage.io.OrderedDataSourceFormPairs fp2 = new org.regenstrief.linkage.io.OrderedDataSourceFormPairs(rp.getReader(rmc.getLinkDataSource1(), mc_test), rp.getReader(rmc.getLinkDataSource2(), mc_test), mc_test, type_table);
+				/*org.regenstrief.linkage.io.OrderedDataSourceFormPairs fp2 = new org.regenstrief.linkage.io.OrderedDataSourceFormPairs(rp.getReader(rmc.getLinkDataSource1(), mc_test), rp.getReader(rmc.getLinkDataSource2(), mc_test), mc_test, type_table);
 				EMAnalyzer ema = new EMAnalyzer(lds1, lds2, mc_test);
 				ema.setIterations(15);
 				PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
@@ -84,17 +84,17 @@ public class ScaleWeightAnalyzerTest {
 				pdsa.addAnalyzer(ema);
 				//System.out.println(mc_test);
 				//System.out.println("**********************************");
-				pdsa.analyzeData();
+				//pdsa.analyzeData();
 				//System.out.println(mc_test);
-				System.exit(0);
+				//System.exit(0);
 				
 				// print vector table information
-				BufferedWriter vout = new BufferedWriter(new FileWriter(mc_test.getName() + "_vector.txt"));
-				VectorTable vt = new VectorTable(mc_test);
-				vout.write(vt.toString());
-				vout.flush();
-				vout.close();
-				
+				//BufferedWriter vout = new BufferedWriter(new FileWriter(mc_test.getName() + "_vector.txt"));
+				//VectorTable vt = new VectorTable(mc_test);
+				//vout.write(vt.toString());
+				//vout.flush();
+				//vout.close();
+				*/
 				ScorePair sp = new ScorePair(mc_test);
 				
 				if(mc_test.get_is_scale_weight()) {
@@ -114,18 +114,17 @@ public class ScaleWeightAnalyzerTest {
 					
 					ScaleWeightModifier swm = new ScaleWeightModifier(swa1, swa2);
 					swm.initializeModifier();
-					int percent = 10;
+					int percent = 50;
 					// set requirements for all included demographics
 					List<MatchingConfigRow> scale_cols = mc_test.getScaleWeightColumns();
 					Iterator<MatchingConfigRow> it = scale_cols.iterator();
 					while(it.hasNext()){
 						MatchingConfigRow mcr = it.next();
-						swm.setPercntileRequirement(mcr.getName(), ModifySet.BELOW, percent);
-						
+						//swm.setPercntileRequirement(mcr.getName(), ModifySet.BELOW, percent);
 						
 						//swm.setAverageRequirement(ModifySet.BELOW);
 					}
-					//sp.addScoreModifier(swm);
+					sp.addScoreModifier(swm);
 					
 				}	
 				
@@ -221,6 +220,7 @@ public class ScaleWeightAnalyzerTest {
 		Enumeration<String> demographics = mr.getRecord1().getDemographics().keys();
 		Record r1 = mr.getRecord1();
 		Record r2 = mr.getRecord2();
+		s += r1.getUID() + "|" + r2.getUID() + "|";
 		while(demographics.hasMoreElements()){
 			String demographic = demographics.nextElement();
 			MatchingConfigRow mcr = mr.getMatchingConfig().getMatchingConfigRowByName(demographic);
