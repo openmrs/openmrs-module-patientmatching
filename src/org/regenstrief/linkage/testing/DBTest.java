@@ -6,9 +6,6 @@ package org.regenstrief.linkage.testing;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -16,13 +13,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.db.RecordDBManager;
-import org.regenstrief.linkage.io.DataSourceReader;
-import org.regenstrief.linkage.io.OrderedCharDelimFileReader;
-import org.regenstrief.linkage.io.OrderedDataBaseReader;
-import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.RecMatchConfig;
-import org.regenstrief.linkage.util.ScorePair;
 import org.regenstrief.linkage.util.XMLTranslator;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;

@@ -155,7 +155,8 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		
 	}
 	
-	public boolean matches(Method method, Class targetClass) {
+	@SuppressWarnings("unchecked")
+    public boolean matches(Method method, Class targetClass) {
 		String method_name = method.getName();
 		if(method_name.equals(CREATE_METHOD)){
 			return true;
@@ -245,14 +246,22 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
             List<PatientIdentifierType> patientIdentifierTypes = patientService.getAllPatientIdentifierTypes();
             for (PatientIdentifierType patientIdentifierType : patientIdentifierTypes) {
                 PatientIdentifier identifier = patient.getPatientIdentifier(patientIdentifierType.getName());
-                ret.addDemographic("(Identifier) " + patientIdentifierType.getName(), identifier.getIdentifier());
+                if (identifier != null) {
+                    ret.addDemographic("(Identifier) " + patientIdentifierType.getName(), identifier.getIdentifier());
+                } else {
+                    ret.addDemographic("(Identifier) " + patientIdentifierType.getName(), "");
+                }
             }
 
             PersonService personService = Context.getPersonService();
             List<PersonAttributeType> personAttributeTypes = personService.getAllPersonAttributeTypes();
             for (PersonAttributeType personAttributeType : personAttributeTypes) {
                 PersonAttribute attribute = patient.getAttribute(personAttributeType.getName());
-                ret.addDemographic("(Attribute) " + personAttributeType.getName(), attribute.getValue());
+                if (attribute != null) {
+                    ret.addDemographic("(Attribute) " + personAttributeType.getName(), attribute.getValue());
+                } else {
+                    ret.addDemographic("(Attribute) " + personAttributeType.getName(), "");
+                }
             }
 		}
 		return ret;

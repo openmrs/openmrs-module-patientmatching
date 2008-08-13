@@ -11,14 +11,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
-import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.ColumnSortOption;
 import org.regenstrief.linkage.util.ColumnSorter;
 import org.regenstrief.linkage.util.ColumnSwitcher;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
-import org.regenstrief.linkage.util.MatchingConfigRow;
 /**
  * Class extends CharDelimFileReader by taking a MatchingConfig object in
  * the constructor.  Information in this object determines the order to sort

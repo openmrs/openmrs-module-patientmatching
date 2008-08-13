@@ -10,7 +10,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
 import org.regenstrief.linkage.MatchFinder;
-import org.regenstrief.linkage.analysis.RecordFieldAnalyzer;
 import org.regenstrief.linkage.db.RecordDBManager;
 import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.RecMatchConfig;

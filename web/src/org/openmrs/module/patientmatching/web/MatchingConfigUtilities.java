@@ -9,6 +9,7 @@ import java.util.List;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.SessionFactory;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifierType;
 import org.openmrs.PersonAddress;
@@ -18,8 +19,15 @@ import org.openmrs.api.PatientService;
 import org.openmrs.api.PersonService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.patientmatching.ConfigEntry;
+import org.openmrs.module.patientmatching.HibernateConnection;
 import org.openmrs.module.patientmatching.PatientMatchingConfig;
 import org.openmrs.util.OpenmrsUtil;
+import org.regenstrief.linkage.analysis.EMAnalyzer;
+import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
+import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
+import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
+import org.regenstrief.linkage.io.FormPairs;
+import org.regenstrief.linkage.io.OrderedOpenMRSReader;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
@@ -205,15 +213,9 @@ public class MatchingConfigUtilities {
             log.info("Creating new config file");
             LinkDataSource linkDataSource = new LinkDataSource("dummy", "dummy", "dummy", 1);
             int counter = 0;
-            int includeCounter = 0;
             for(ConfigEntry configEntry: patientMatchingConfig.getConfigEntries()) {
                 DataColumn column = new DataColumn(String.valueOf(counter));
-                if(configEntry.isIncluded() || configEntry.isBlocking()) {
-                    column.setIncludePosition(includeCounter);
-                    includeCounter ++;
-                } else {
-                    column.setIncludePosition(DataColumn.INCLUDE_NA);
-                }
+                column.setIncludePosition(counter);
                 column.setName(configEntry.getFieldName());
                 column.setType(DataColumn.STRING_TYPE);
                 linkDataSource.addDataColumn(column);
@@ -240,6 +242,8 @@ public class MatchingConfigUtilities {
                 if (configEntry.isBlocking()) {
                     configRow.setBlockOrder(counterBlockOrder);
                     counterBlockOrder ++;
+                } else {
+                    configRow.setBlockOrder(MatchingConfigRow.DEFAULT_BLOCK_ORDER);
                 }
             }
         } else {
@@ -253,6 +257,8 @@ public class MatchingConfigUtilities {
                 if (configEntry.isBlocking()) {
                     configRow.setBlockOrder(counterBlockOrder);
                     counterBlockOrder ++;
+                } else {
+                    configRow.setBlockOrder(MatchingConfigRow.DEFAULT_BLOCK_ORDER);
                 }
                 matchingConfigRows.add(configRow);
             }
@@ -298,7 +304,62 @@ public class MatchingConfigUtilities {
             if(matchingConfig != null) {
                 matchingConfigLists.remove(matchingConfig);
             }
-            XMLTranslator.writeXMLDocToFile(XMLTranslator.toXML(recMatchConfig), configFile);
+            log.info("List Size: " + matchingConfigLists.size());
+            if (matchingConfigLists.size() > 0) {
+                XMLTranslator.writeXMLDocToFile(XMLTranslator.toXML(recMatchConfig), configFile);
+            } else {
+                log.info("Deleting file: " + configFile.getAbsolutePath());
+                configFile.delete();
+            }
         }
+    }
+
+    public static String doAnalysis() {
+        
+        HibernateConnection connection = new HibernateConnection();
+        log.info("Hibernate Connection null? " + (connection == null));
+        
+        SessionFactory sessionFactory = connection.getSessionFactory();
+        log.info("Session factory null? " + (sessionFactory == null));
+        
+        String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
+        File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
+        File configFile = new File(configFileFolder, MatchingConstants.CONFIG_FILE_NAME);
+
+        RecMatchConfig recMatchConfig = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(configFile));
+        List<MatchingConfig> matchingConfigLists = recMatchConfig.getMatchingConfigs();
+        for (MatchingConfig matchingConfig : matchingConfigLists) {
+            log.info("Creating OpenMRS Data Reader");
+            OrderedOpenMRSReader openMRSReader = new OrderedOpenMRSReader(matchingConfig, sessionFactory);
+            
+            if(openMRSReader != null) {
+                FormPairs formPairs = new DedupOrderedDataSourceFormPairs(openMRSReader,
+                                                                          matchingConfig,
+                                                                          recMatchConfig.getLinkDataSource1().getTypeTable());
+                PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(formPairs);
+                
+                log.info("Creating Analyzer");
+                RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(matchingConfig, formPairs);
+                pdsa.addAnalyzer(rsa);
+                EMAnalyzer ema = new EMAnalyzer(matchingConfig);
+                pdsa.addAnalyzer(ema);
+                pdsa.analyzeData();
+            }
+            
+            openMRSReader.close();
+        }
+        
+        StringBuffer buffer = new StringBuffer();
+        for (MatchingConfig matchingConfig : matchingConfigLists) {
+            buffer.append("Configuration name: " + matchingConfig.getName());
+            buffer.append(System.getProperty("line.separator"));
+            for (MatchingConfigRow matchingConfigRow : matchingConfig.getMatchingConfigRows()) {
+                buffer.append("Row Name: " + matchingConfigRow.getName() + "\t");
+                buffer.append("u: " + matchingConfigRow.getNonAgreement() + "\t");
+                buffer.append("u: " + matchingConfigRow.getAgreement() + "\t");
+                buffer.append(System.getProperty("line.separator"));
+            }
+        }
+        return buffer.toString();
     }
 }

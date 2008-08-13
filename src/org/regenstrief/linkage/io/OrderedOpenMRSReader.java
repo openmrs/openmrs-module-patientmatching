@@ -66,7 +66,12 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 		
 		current_blocking_values = new Object[blocking_cols.length];
 		
+		System.out.println("INSIDE TEST");
+		System.out.println("Blocking length: " + blocking_cols.length);
+		System.out.println("Blocking value: " + blocking_cols);
+		
 		for(int i = 0; i < blocking_cols.length; i++){
+		    System.out.println("Blocking: " + blocking_cols[i]);
 			List<Object> query_values = getDemographicValues(blocking_cols[i]);
 			if(query_values == null){
 				log.warn("unable to get blocking values for " + blocking_cols[i]);

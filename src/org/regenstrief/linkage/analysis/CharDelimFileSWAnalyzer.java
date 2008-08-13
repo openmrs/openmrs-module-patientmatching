@@ -1,13 +1,15 @@
 
 package org.regenstrief.linkage.analysis;
 
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.PriorityQueue;
+
 import org.regenstrief.linkage.Record;
-import org.regenstrief.linkage.io.CharDelimFileReader;
 import org.regenstrief.linkage.io.OrderedCharDelimFileReader;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
-import java.util.*;
 
 /**
  * @author scentel 

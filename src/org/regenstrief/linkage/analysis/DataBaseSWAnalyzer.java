@@ -1,10 +1,8 @@
 package org.regenstrief.linkage.analysis;
 
-import java.sql.*;
-import org.regenstrief.linkage.io.*;
+import org.regenstrief.linkage.io.DataBaseReader;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
-import org.regenstrief.linkage.util.MatchingConfig;
 
 /**
  * @author scentel

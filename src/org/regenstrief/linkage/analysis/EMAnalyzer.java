@@ -9,7 +9,6 @@ import org.apache.log4j.Logger;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.MatchVector;
 import org.regenstrief.linkage.Record;
-import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.LoggingObject;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;

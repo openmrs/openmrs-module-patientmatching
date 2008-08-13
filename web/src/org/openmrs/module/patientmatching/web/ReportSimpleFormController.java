@@ -32,9 +32,12 @@ public class ReportSimpleFormController extends SimpleFormController {
 
 	@Override
 	protected Map<String, Object> referenceData(HttpServletRequest req) throws Exception {
+	    
+        String analysisResult = MatchingConfigUtilities.doAnalysis();
 		
 		Map<String, Object> requestMap = new HashMap<String, Object>();
         requestMap.put("blockingRuns", MatchingConfigUtilities.listAvailableBlockingRuns());
+        requestMap.put("analysisResult", analysisResult);
 		
 		return requestMap;
 		

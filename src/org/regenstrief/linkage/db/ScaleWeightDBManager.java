@@ -1,8 +1,6 @@
 package org.regenstrief.linkage.db;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.DatabaseMetaData;
 import java.sql.Date;
@@ -21,19 +19,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.math.stat.descriptive.rank.Percentile;
-import org.regenstrief.linkage.analysis.DataSourceAnalysis;
-import org.regenstrief.linkage.analysis.EMAnalyzer;
-import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.ScaleWeightAnalyzer;
-import org.regenstrief.linkage.analysis.ScaleWeightModifier;
 import org.regenstrief.linkage.analysis.ScaleWeightModifier.ModifySet;
-import org.regenstrief.linkage.io.DataSourceReader;
-import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.RecMatchConfig;
-import org.regenstrief.linkage.util.ScorePair;
 import org.regenstrief.linkage.util.XMLTranslator;
 import org.regenstrief.linkage.util.MatchingConfigRow.ScaleWeightSetting;
 import org.w3c.dom.Document;

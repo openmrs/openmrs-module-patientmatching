@@ -3,7 +3,6 @@
 package org.regenstrief.linkage.gui;
 
 import java.awt.event.ActionEvent;
-import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JOptionPane;

@@ -11,7 +11,6 @@ import java.util.Hashtable;
 import java.util.List;
 
 import org.regenstrief.linkage.Record;
-import org.regenstrief.linkage.util.BlockingExclusionList;
 import org.regenstrief.linkage.util.ComparisonException;
 import org.regenstrief.linkage.util.MatchingConfig;
 

@@ -1,7 +1,6 @@
 package org.regenstrief.linkage;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.regenstrief.linkage.analysis.Modifier;

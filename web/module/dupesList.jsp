@@ -27,6 +27,16 @@
                 </c:forEach>
             </tr>
         </table>
+        <table>
+            <tr>
+                <th>Analysis Result</th>
+            </tr>
+            <tr>
+                <td>
+                    <c:out value="${analysisResult}" />.
+                </td>
+            </tr>
+        </table>
 </div>
 <br/><input type="submit" value="<spring:message code="general.save" />" />
 </form>
