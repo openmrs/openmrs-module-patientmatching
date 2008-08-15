@@ -181,47 +181,37 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 	private List<Object> getDemographicValues(String demographic){
 		List<Object> ret = null;
 		String query_text = new String();
-		// need to see if demographic refers to a data model table value, or an attribute
-		if(demographic.contains(".")){
-			// need to query the table name before the . for the field
-			String[] object_field = demographic.split("\\.");
-			String object_name = object_field[0];
-			String field = object_field[object_field.length - 1];
-			for(int i = 1; i < object_field.length - 1; i++){
-				object_name += "." + object_field[i];
-			}
-			
-			query_text = "SELECT DISTINCT o." + field + " FROM " + object_name + " o where o." + field + " IS NOT NULL";
-			Query q = sessionFactory.getCurrentSession().createQuery(query_text);
-			ret = q.list();
-		} else {
-			if(demographic.indexOf(ATTRIBUTE_PREFIX) != -1){
-				// need to look at attribute type first to get the right query
-				String attr = stripType(demographic);
-				PersonAttributeType pat = Context.getPersonService().getPersonAttributeType(attr);
+		
+		List<String> demographics = new ArrayList<String>();
+		demographics.add(demographic);
+		
+		String select_clause = getSelectDistinctValuesClause(demographics);
+		String from_clause = getFromClause(demographics);
+		String where_clause = getValuesWhereClause(demographics);
+		query_text = select_clause + " " + from_clause + " " + where_clause;
+		log.warn("getting values for " + demographic + " using query of:  " + query_text);
+		
+		Query q = sessionFactory.getCurrentSession().createQuery(query_text);
+		
+		// if list of demographics includes attributes or identifiers, need to set types in query text from method
+		for(int i = 0; i < demographics.size(); i++){
+			String dem = demographics.get(i);
+			if(dem.indexOf(ATTRIBUTE_PREFIX) != -1){
+				// set o<i>.type equal to pat
+				PersonAttributeType pat = Context.getPersonService().getPersonAttributeTypeByName(stripType(demographic));
 				if(pat != null){
-					// HQL query to get all values
-					// something like 
-					// select distinct value from person_attribute where person_attribute_type_id = <id>
-					query_text = "SELECT DISTINCT p.value FROM PersonAttribute p WHERE p.attributeType = :type AND p.value IS NOT NULL";
-					Query q = sessionFactory.getCurrentSession().createQuery(query_text);
-					q.setParameter("type", pat);
-					ret = q.list();
+					q.setParameter("val" + i, pat);
 				}
-			} else if(demographic.indexOf(IDENT_PREFIX) != -1){
-				// need to look at identifier types first to get right query
-				String ident = stripType(demographic);
-				PatientIdentifierType pit = Context.getPatientService().getPatientIdentifierType(ident);
+			} else if(dem.indexOf(IDENT_PREFIX) != -1){
+				// everything we need to query for is in PatientIdentifier
+				PatientIdentifierType pit = Context.getPatientService().getPatientIdentifierTypeByName(stripType(demographic));
 				if(pit != null){
-					// HQL query to get all values
-					query_text = "SELECT DISTINCT p.identifier FROM PatientIdentifier p WHERE p.identifierType = :type AND p.identifier IS NOT NULL";
-					Query q = sessionFactory.getCurrentSession().createQuery(query_text);
-					q.setParameter("type", pit);
-					ret = q.list();
+					q.setParameter("val" + i, pit);
 				}
 			}
-			
 		}
+		
+		ret = q.list();
 		
 		return ret;
 	}
@@ -246,54 +236,249 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 	private List<Integer> getPatientIDs(String demographic, Object value){
 		List<Integer> ret = null;
 		String query_text = new String();
-		// get patient IDs using HQL that have this value for
-		// this demographic
-		if(demographic.contains(".")){
-			// need to query the table name before the . for the field
-			String[] object_field = demographic.split("\\.");
-			String object_name = object_field[0];
-			String field = object_field[object_field.length - 1];
-			for(int i = 1; i < object_field.length - 1; i++){
-				object_name += "." + object_field[i];
-			}
-			
-			query_text = "SELECT o FROM " + object_name + " o WHERE " + field + " =:value";
-			Query q = sessionFactory.getCurrentSession().createQuery(query_text);
-			q.setParameter("value", value);
-			ret = getIDs(q.list());
-			
-		} else {
-			if(demographic.indexOf(ATTRIBUTE_PREFIX) != -1){
-				// need to look at attribute type first to get the right query
-				String attr = stripType(demographic);
-				PersonAttributeType pat = Context.getPersonService().getPersonAttributeType(attr);
-				if(pat != null){
-					// HQL query to get all values
-					// something like 
-					// select distinct value from person_attribute where person_attribute_type_id = <id>
-					int id = pat.getPersonAttributeTypeId();
-					query_text = "SELECT DISTINCT p FROM PersonAttribute p WHERE p.value = :value";
-					Query q = sessionFactory.getCurrentSession().createQuery(query_text);
-					q.setParameter("value", value);
-					ret = getIDs(q.list());
-				}
-			} else if(demographic.indexOf(IDENT_PREFIX) != -1){
-				// need to look at identifier types first to get right query
-				String ident = stripType(demographic);
-				PatientIdentifierType pit = Context.getPatientService().getPatientIdentifierType(ident);
-				if(pit != null){
-					// HQL query to get all values
-					int id = pit.getPatientIdentifierTypeId();
-					query_text = "SELECT DISTINCT p FROM PatientIdentifier p WHERE p.identifier = :value";
-					Query q = sessionFactory.getCurrentSession().createQuery(query_text);
-					q.setParameter("value", value);
-					ret = getIDs(q.list());
-				}
-			}
-			
+		
+		List<String> demographics = new ArrayList<String>();
+		List<Object> values = new ArrayList<Object>();
+		demographics.add(demographic);
+		values.add(value);
+		
+		String select_clause = getSelectIDsClause(demographics);
+		String from_clause = getFromClause(demographics);
+		String where_clause = this.getIDsWhereClause(demographics);
+		query_text = select_clause + " " + from_clause + " " + where_clause;
+		log.warn("getting ID for values " + values + " using query of:  " + query_text);
+		
+		Query q = sessionFactory.getCurrentSession().createQuery(query_text);
+		
+		// if list of demographics includes attributes or identifiers, need to set types in query text from method
+		for(int i = 0; i < values.size(); i++){
+			q.setParameter("val" + i, values.get(i));
 		}
 		
+		ret = q.list();
+		
 		return ret;
+	}
+	
+	/**
+	 * Method returns a string with the select clause of the HQL query used to get
+	 * the distinct values for the demographics
+	 * 
+	 * @param demographics
+	 * @return
+	 */
+	private String getSelectDistinctValuesClause(List<String> demographics){
+		String clause = "SELECT DISTINCT(";
+		for(int i = 0; i < demographics.size(); i++){
+			String demographic = demographics.get(i);
+			if(i > 0){
+				clause += ", ";
+			}
+			
+			if(demographic.contains(".")){
+				// only need to know the field name of the object
+				clause += "o" + i + "." + getFieldName(demographic);
+			} else {
+				if(demographic.indexOf(ATTRIBUTE_PREFIX) != -1){
+					// attribute values are stored in PersonAttribute.value
+					clause += "o" + i + ".value";
+				} else if(demographic.indexOf(IDENT_PREFIX) != -1){
+					// identifier values are stored in PatientIdentifier.identifier
+					clause += "o" + i + ".identifier";
+				}
+				
+			}
+		}
+		
+		clause += ")";
+		return clause;
+	}
+	
+	private String getSelectIDsClause(List<String> demographics){
+		return "SELECT p.patientId";
+	}
+	
+	/**
+	 * Method returns a From clause that contains the objects the HQL query will need to use
+	 * 
+	 * @param demographics
+	 * @return
+	 */
+	private String getFromClause(List<String> demographics){
+		String clause = "FROM Patient p, ";
+		for(int i = 0; i < demographics.size(); i++){
+			String demographic = demographics.get(i);
+			if(i > 0){
+				clause += ", ";
+			}
+			
+			if(demographic.contains(".")){
+				// only need to know object name to query from
+				clause += getObjectName(demographic)  + " o" + i;
+			} else {
+				if(demographic.indexOf(ATTRIBUTE_PREFIX) != -1){
+					// everything we need to query for is in PersonAttribute objects
+					clause += "PersonAttribute o" + i;
+				} else if(demographic.indexOf(IDENT_PREFIX) != -1){
+					// everything we need to query for is in PatientIdentifier
+					clause += "PatientIdentifier o" + i;
+				}
+				
+			}
+		}
+		
+		return clause;
+	}
+	
+	private String getIDsWhereClause(List<String> demographics){
+		String clause = "WHERE ";
+		
+		// need to add code relating demographic to Patient objects, since select clause
+		// explicitly asks for p.patientId
+		clause += getPatientRelation(0, demographics.get(0)) + " AND ";
+		
+		for(int i = 0; i < demographics.size(); i++){
+			String demographic = demographics.get(i);
+			if(i > 0){
+				clause += " AND ";
+				
+				// need to add code to relate objects when there are multiple ones
+				// something like PersonAddress.person = PersonAttribute.person
+				// depends on the particular demographics what it will be
+				
+			}
+			
+			if(demographic.contains(".")){
+				// only need to know object name to query from
+				clause += "o" + i + "." + getFieldName(demographic)  + " = :val" + i;
+			} else {
+				if(demographic.indexOf(ATTRIBUTE_PREFIX) != -1){
+					// everything we need to query for is in PersonAttribute objects
+					PersonAttributeType pat = Context.getPersonService().getPersonAttributeTypeByName(stripType(demographic));
+					if(pat != null){
+						clause += "o" + i + ".value = :val" + i;
+					}
+				} else if(demographic.indexOf(IDENT_PREFIX) != -1){
+					// everything we need to query for is in PatientIdentifier
+					PatientIdentifierType pit = Context.getPatientService().getPatientIdentifierTypeByName(stripType(demographic));
+					if(pit != null){
+						clause += "o" + i + ".identifier = :val" + i;
+					}
+				}
+				
+			}
+		}
+		
+		return clause;
+	}
+	
+	private String getValuesWhereClause(List<String> demographics){
+		String clause = "WHERE ";
+		for(int i = 0; i < demographics.size(); i++){
+			String demographic = demographics.get(i);
+			if(i > 0){
+				clause += " AND ";
+				
+				// need to add code to relate objects when there are multiple ones
+				// something like PersonAddress.person = PersonAttribute.person
+				// depends on the particular demographics what it will be
+			}
+			
+			if(demographic.contains(".")){
+				// only need to know object name to query from
+				clause += "o" + i + "." + getFieldName(demographic)  + " IS NOT NULL";
+			} else {
+				if(demographic.indexOf(ATTRIBUTE_PREFIX) != -1){
+					// everything we need to query for is in PersonAttribute objects
+					PersonAttributeType pat = Context.getPersonService().getPersonAttributeTypeByName(stripType(demographic));
+					if(pat != null){
+						clause += "o" + i + ".value IS NOT NULL AND o" + i + ".attributeType = :val" + i;
+					}
+				} else if(demographic.indexOf(IDENT_PREFIX) != -1){
+					// everything we need to query for is in PatientIdentifier
+					PatientIdentifierType pit = Context.getPatientService().getPatientIdentifierTypeByName(stripType(demographic));
+					if(pit != null){
+						clause += "o" + i + ".identifier IS NOT NULL AND o" + i + ".identifierType = :val" + i;
+					}
+				}
+				
+			}
+		}
+		
+		return clause;
+	}
+	
+	/**
+	 * Method returns the portion in the WHERE clause that relates the given demographic to the
+	 * Patient objects.  We need this since we only want Patient IDs (not Users or Persons) and
+	 * when querying for IDs using multiple values, we want the results to be for the same person
+	 * 
+	 * @param suffix	position of the given demographic within the list of demographics and values
+	 * @param demographic	the demographic that needs linked to Patient
+	 * @return	a String that can be place in an HQL WHERE clause that will specify equivalence of Patient and demographic
+	 */
+	private String getPatientRelation(int suffix, String demographic){
+		if(demographic.contains(".")){
+			// load class given by demographic and examine what fields it has
+			String type = getObjectName(demographic);
+			if(type.equals("Patient") || type.equals("org.openmrs.Patient")){
+				return "p = o" + suffix;
+			} else {
+				try{
+					Class c = Class.forName(type);
+					Method[] methods = c.getMethods();
+					for(int i = 0; i < methods.length; i++){
+						if(methods[i].getName().equals("getPerson")){
+							return "p = o" + suffix + ".person";
+						}
+					}
+				}
+				catch(ClassNotFoundException cnfe){
+					return "";
+				}
+			}
+		} else {
+			// if it's attribute or identifier, then it'll have a Person or Patient field
+			if(demographic.indexOf(ATTRIBUTE_PREFIX) != -1){
+				return "p = o" + suffix + ".person";
+			} else if(demographic.indexOf(IDENT_PREFIX) != -1){
+				return "p = o" + suffix + ".patient";
+			}
+		}
+	
+	return "";
+	}
+	
+	/**
+	 * Method returns the field name of a demographic using the convention for specifying an object's
+	 * field.  For example, if the demographic is "org.openmrs.Patient.gender", this this method would return
+	 * "gender"
+	 * 
+	 * @param demographic
+	 * @return	the last field of the demographic when split on "."
+	 */
+	private String getFieldName(String demographic){
+		String[] object_field = demographic.split("\\.");
+		String field = object_field[object_field.length - 1];
+		return field;
+	}
+	
+	/**
+	 * Method returns the object name of a demographic using the convention for specifying an object's
+	 * field as a demographic.  For example, if the demographic is "org.openmrs.Patient.gender", this this method would return
+	 * "org.openmrs.Patient"
+	 * 
+	 * @param demographic
+	 * @return	all but the last element when the demographic is split on "."
+	 */
+	private String getObjectName(String demographic){
+		String[] object_field = demographic.split("\\.");
+		String object_name = object_field[0];
+		for(int i = 1; i < object_field.length - 1; i++){
+			object_name += "." + object_field[i];
+		}
+		
+		return object_name;
 	}
 	
 	/*
