@@ -75,7 +75,7 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 	}
 	
 	public void analyzeRecordPair(Record[] pair){
-		if(sample1[pair_count]){
+		if(pair_count < sample1.length && sample1[pair_count]){
 			List<Integer> indexes = left_pair_entry.get(Integer.valueOf(pair_count));
 			for(int i = 0; i < indexes.size(); i++){
 				int index = indexes.get(i).intValue();
@@ -91,7 +91,7 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 			left_pair_entry.remove(Integer.valueOf(pair_count));
 		}
 		
-		if(sample2[pair_count]){
+		if(pair_count < sample2.length && sample2[pair_count]){
 			List<Integer> indexes2 = right_pair_entry.get(Integer.valueOf(pair_count));
 			for(int i = 0; i < indexes2.size(); i++){
 				int index = indexes2.get(i).intValue();
@@ -235,7 +235,7 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 	private void setIndexPairs(int max_index){
 		
 		// need to get two sets of random numbers, one for each data source
-		for(int i = 0; i < sampleSize; i++){
+		for(int i = 0; i < sampleSize && max_index > 0; i++){
 			int left_index = rand.nextInt(max_index);
 			int right_index = rand.nextInt(max_index);
 			sample1[left_index] = true;
