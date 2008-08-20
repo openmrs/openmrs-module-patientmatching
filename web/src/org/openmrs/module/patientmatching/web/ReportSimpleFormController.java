@@ -1,6 +1,7 @@
 package org.openmrs.module.patientmatching.web;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,11 +34,11 @@ public class ReportSimpleFormController extends SimpleFormController {
 	@Override
 	protected Map<String, Object> referenceData(HttpServletRequest req) throws Exception {
 	    
-        String analysisResult = MatchingConfigUtilities.doAnalysis();
+        List<String> analysisResult = MatchingConfigUtilities.doAnalysis();
 		
 		Map<String, Object> requestMap = new HashMap<String, Object>();
         requestMap.put("blockingRuns", MatchingConfigUtilities.listAvailableBlockingRuns());
-        requestMap.put("analysisResult", analysisResult);
+        requestMap.put("analysisResults", analysisResult);
 		
 		return requestMap;
 		

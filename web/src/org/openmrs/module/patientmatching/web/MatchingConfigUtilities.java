@@ -4,6 +4,7 @@ import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Hashtable;
 import java.util.List;
 
 import org.apache.commons.beanutils.PropertyUtils;
@@ -22,17 +23,22 @@ import org.openmrs.module.patientmatching.ConfigEntry;
 import org.openmrs.module.patientmatching.HibernateConnection;
 import org.openmrs.module.patientmatching.PatientMatchingConfig;
 import org.openmrs.util.OpenmrsUtil;
+import org.regenstrief.linkage.MatchResult;
+import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.analysis.EMAnalyzer;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
+import org.regenstrief.linkage.analysis.SetSimilarityAnalysis;
 import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.FormPairs;
 import org.regenstrief.linkage.io.OrderedOpenMRSReader;
+import org.regenstrief.linkage.matchresult.DedupMatchResultList;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
 import org.regenstrief.linkage.util.RecMatchConfig;
+import org.regenstrief.linkage.util.ScorePair;
 import org.regenstrief.linkage.util.XMLTranslator;
 
 //TODO: should we incorporate mode? this will depends on our assumption.
@@ -314,7 +320,7 @@ public class MatchingConfigUtilities {
         }
     }
 
-    public static String doAnalysis() {
+    public static List<String> doAnalysis() {
         
         HibernateConnection connection = new HibernateConnection();
         log.info("Hibernate Connection null? " + (connection == null));
@@ -331,15 +337,19 @@ public class MatchingConfigUtilities {
         for (MatchingConfig matchingConfig : matchingConfigLists) {
             log.info("Creating OpenMRS Data Reader");
             OrderedOpenMRSReader openMRSReader = new OrderedOpenMRSReader(matchingConfig, sessionFactory);
+            OrderedOpenMRSReader openMRSReader2 = new OrderedOpenMRSReader(matchingConfig, sessionFactory);
             
             if(openMRSReader != null) {
                 FormPairs formPairs = new DedupOrderedDataSourceFormPairs(openMRSReader,
-                                                                          matchingConfig,
-                                                                          recMatchConfig.getLinkDataSource1().getTypeTable());
+                        matchingConfig,
+                        recMatchConfig.getLinkDataSource1().getTypeTable());
+                FormPairs formPairs2 = new DedupOrderedDataSourceFormPairs(openMRSReader2,
+                        matchingConfig,
+                        recMatchConfig.getLinkDataSource1().getTypeTable());
                 PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(formPairs);
                 
                 log.info("Creating Analyzer");
-                RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(matchingConfig, formPairs);
+                RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(matchingConfig, formPairs2);
                 pdsa.addAnalyzer(rsa);
                 EMAnalyzer ema = new EMAnalyzer(matchingConfig);
                 pdsa.addAnalyzer(ema);
@@ -349,17 +359,39 @@ public class MatchingConfigUtilities {
             openMRSReader.close();
         }
         
-        StringBuffer buffer = new StringBuffer();
+        DedupMatchResultList list = new DedupMatchResultList();
         for (MatchingConfig matchingConfig : matchingConfigLists) {
-            buffer.append("Configuration name: " + matchingConfig.getName());
-            buffer.append(System.getProperty("line.separator"));
-            for (MatchingConfigRow matchingConfigRow : matchingConfig.getMatchingConfigRows()) {
-                buffer.append("Row Name: " + matchingConfigRow.getName() + "\t");
-                buffer.append("u: " + matchingConfigRow.getNonAgreement() + "\t");
-                buffer.append("u: " + matchingConfigRow.getAgreement() + "\t");
-                buffer.append(System.getProperty("line.separator"));
+            log.info("Creating OpenMRS Data Reader");
+            OrderedOpenMRSReader openMRSReader = new OrderedOpenMRSReader(matchingConfig, sessionFactory);
+            
+            if(openMRSReader != null) {
+                FormPairs formPairs = new DedupOrderedDataSourceFormPairs(openMRSReader,
+                        matchingConfig,
+                        recMatchConfig.getLinkDataSource1().getTypeTable());
+                ScorePair sp = new ScorePair(matchingConfig);
+                Record[] pair;
+                while((pair = formPairs.getNextRecordPair()) != null){
+                    MatchResult mr = sp.scorePair(pair[0], pair[1]);
+                    list.acceptMatchResult(mr);
+                }
+                list.sort();
             }
         }
-        return buffer.toString();
+        
+        SetSimilarityAnalysis ssa = new SetSimilarityAnalysis();
+        List<List<MatchResult>> groups = ssa.getSimilarSets(list.getResults());
+        List<List<Record>> records = ssa.getSimilarRecords(groups);
+        
+        List<String> buffer = new ArrayList<String>();
+        buffer.add("Possible Similar Record Sets: ");
+        for (List<Record> recordList: records) {
+            for (Record r : recordList) {
+                buffer.add("UID: " + r.getUID());
+                Hashtable<String, String> ht1 = r.getDemographics();
+                buffer.add("(Attribute) Phone : " + ht1.get("(Attribute) Phone") + "\t");
+            }
+            buffer.add("----------------------------------------");
+        }
+        return buffer;
     }
 }

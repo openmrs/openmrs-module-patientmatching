@@ -31,14 +31,16 @@
             <tr>
                 <th>Analysis Result</th>
             </tr>
-            <tr>
-                <td>
-                    <c:out value="${analysisResult}" />.
-                </td>
-            </tr>
+                <c:forEach items="${analysisResults}" var="analysisResult">
+                    <tr>
+                        <td>
+                            <c:out value="${analysisResult}" />.
+                        </td>
+                    </tr>
+                </c:forEach>
         </table>
 </div>
-<br/><input type="submit" value="<spring:message code="general.save" />" />
+<!--<br/><input type="submit" value="<spring:message code="general.save" />" />-->
 </form>
 <br/>
 

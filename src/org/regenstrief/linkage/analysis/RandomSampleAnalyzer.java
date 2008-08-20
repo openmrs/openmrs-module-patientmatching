@@ -9,12 +9,7 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.regenstrief.linkage.Record;
-import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.FormPairs;
-import org.regenstrief.linkage.io.OrderedDataSourceFormPairs;
-import org.regenstrief.linkage.io.OrderedDataSourceReader;
-import org.regenstrief.linkage.io.ReaderProvider;
-import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.LoggingObject;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;

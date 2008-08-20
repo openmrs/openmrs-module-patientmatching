@@ -287,12 +287,14 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 			total_mr = mr;
 		}
 		// choose total or prev_total, depending on which one is closer to estimated matches
-		if(Math.abs(total - true_matches) > Math.abs(prev_total - true_matches)){
-			// use previous score as threshold
-			mc.setScoreThreshold(prev_mr.getScore());
-		} else {
-			mc.setScoreThreshold(total_mr.getScore());
-		}
+        if (prev_mr != null && total_mr != null){
+            if(Math.abs(total - true_matches) > Math.abs(prev_total - true_matches)){
+                // use previous score as threshold
+                mc.setScoreThreshold(prev_mr.getScore());
+            } else {
+                mc.setScoreThreshold(total_mr.getScore());
+            }
+        }
 		log.info("new score threshold:\t" + mc.getScoreThreshold());
 		
 		for(int i = 0; i < demographics.length; i++){

@@ -75,12 +75,42 @@ public class SetSimilarityAnalysis {
 		Enumeration<List<MatchResult>> e = buckets.elements();
 		while(e.hasMoreElements()){
 			List<MatchResult> list = e.nextElement();
-			if(!ret.contains(list)){
+			if(!contains(ret, list)){
 				ret.add(list);
 			}
 		}
 		
 		return ret;
+	}
+	
+	private boolean contains(List<List<MatchResult>> parent, List<MatchResult> element) {
+	    boolean found = false;
+	    for (List<MatchResult> mList : parent) {
+	        // only check element that have equal number of element
+	        boolean equal = true;
+            if(mList.size() == element.size()) {
+                for (int i = 0; i < mList.size(); i++) {
+                    MatchResult mListResult = mList.get(i);
+                    MatchResult elementResult = element.get(i);
+                    
+                    int uid11 = mListResult.getRecord1().getUID();
+                    int uid12 = mListResult.getRecord2().getUID();
+                    
+                    int uid21 = elementResult.getRecord1().getUID();
+                    int uid22 = elementResult.getRecord2().getUID();
+                    
+                    if(!((uid11 == uid21 && uid12 == uid22) || (uid11 == uid22 && uid12 == uid21))) {
+                        equal = false;
+                        break;
+                    }
+                }
+            }
+            if (equal) {
+                found = true;
+                break;
+            }
+        }
+	    return found;
 	}
 	
 	/**
