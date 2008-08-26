@@ -234,7 +234,8 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
             for (String property : propertyList) {
                 String value = "";
                 try {
-                    value = BeanUtils.getProperty(patient, property);
+                    String classProperty = property.substring(property.lastIndexOf(".") + 1);
+                    value = BeanUtils.getProperty(patient, classProperty);
                 } catch (Exception e) {
                     logger.debug("Error getting the value for property: " + property, e);
                 } finally {

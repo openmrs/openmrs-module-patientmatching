@@ -1,11 +1,19 @@
 package org.openmrs.module.patientmatching.web;
 
 import java.beans.PropertyDescriptor;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.logging.Log;
@@ -320,7 +328,7 @@ public class MatchingConfigUtilities {
         }
     }
 
-    public static List<String> doAnalysis() {
+    public static List<Map<String, String>> doAnalysis() throws IOException {
         
         HibernateConnection connection = new HibernateConnection();
         log.info("Hibernate Connection null? " + (connection == null));
@@ -359,6 +367,7 @@ public class MatchingConfigUtilities {
             openMRSReader.close();
         }
         
+        List<String> globalIncludeColumns = new ArrayList<String>();
         DedupMatchResultList list = new DedupMatchResultList();
         for (MatchingConfig matchingConfig : matchingConfigLists) {
             log.info("Creating OpenMRS Data Reader");
@@ -376,22 +385,58 @@ public class MatchingConfigUtilities {
                 }
                 list.sort();
             }
+            List<String> blockingColumns = Arrays.asList(matchingConfig.getBlockingColumns());
+            globalIncludeColumns.addAll(blockingColumns);
+            List<String> includeColumns = Arrays.asList(matchingConfig.getIncludedColumnsNames());
+            globalIncludeColumns.addAll(includeColumns);
         }
-        
+
         SetSimilarityAnalysis ssa = new SetSimilarityAnalysis();
         List<List<MatchResult>> groups = ssa.getSimilarSets(list.getResults());
         List<List<Record>> records = ssa.getSimilarRecords(groups);
+
+        int groupId = 0;
+        String separator = "|";
+
+        SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
+        String dateString = format.format(new Date());
+
+        File reportFile = new File(configFileFolder, "dedup-report-" + dateString);
+        BufferedWriter writer = new BufferedWriter(new FileWriter(reportFile));
+
+        List<Map<String, String>> buffer = new ArrayList<Map<String, String>>();
         
-        List<String> buffer = new ArrayList<String>();
-        buffer.add("Possible Similar Record Sets: ");
+        Collections.sort(globalIncludeColumns);
+
         for (List<Record> recordList: records) {
             for (Record r : recordList) {
-                buffer.add("UID: " + r.getUID());
-                Hashtable<String, String> ht1 = r.getDemographics();
-                buffer.add("(Attribute) Phone : " + ht1.get("(Attribute) Phone") + "\t");
+                
+                Map<String, String> displayMap = new TreeMap<String, String>();
+                
+                String report = groupId + separator;
+                displayMap.put("Group Id", String.valueOf(groupId));
+                
+                report = report + r.getUID() + separator;
+                displayMap.put("UID", String.valueOf(r.getUID()));
+                
+                Hashtable<String, String> h = r.getDemographics();
+                for(String demographic: globalIncludeColumns) {
+                    report = report + h.get(demographic) + separator;
+                    if (demographic.indexOf(".") == -1) {
+                        displayMap.put(demographic, h.get(demographic));
+                    } else {
+                        displayMap.put("patientmatching." + demographic, h.get(demographic));
+                    }
+                }
+                buffer.add(displayMap);
+                report = report.substring(0, report.length() - 1);
+                writer.write(report);
+                writer.write(System.getProperty("line.separator"));
             }
-            buffer.add("----------------------------------------");
+            groupId ++;
         }
+        writer.close();
+        
         return buffer;
     }
 }

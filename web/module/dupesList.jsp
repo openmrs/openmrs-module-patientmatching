@@ -29,15 +29,50 @@
         </table>
         <table>
             <tr>
-                <th>Analysis Result</th>
+                <th colspan="2">Analysis Result</th>
             </tr>
+                <c:set var="currentGroupId" value="-9999" />
                 <c:forEach items="${analysisResults}" var="analysisResult">
+                    <c:choose>
+                        <c:when test="${currentGroupId == analysisResult['Group Id']}">
+                        </c:when>
+                        <c:otherwise>
+                            <c:set var="currentGroupId" value="${analysisResult['Group Id']}" />
+                            <tr>
+                                <td colspan="2">****************************************</td>
+                            </tr>
+                            <tr>
+                                <td>Group</td>
+                                <td><c:out value="${analysisResult['Group Id']}" /></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">&nbsp;</td>
+                            </tr>
+                        </c:otherwise>
+                    </c:choose>
                     <tr>
-                        <td>
-                            <c:out value="${analysisResult}" />.
-                        </td>
+                        <td>UID</td>
+                        <td><c:out value="${analysisResult['UID']}" /></td>
+                    </tr>
+                    <c:forEach var="item" items="${analysisResult}">
+                        <c:if test="${item.key != 'Group Id' && item.key != 'UID'}">
+                            <tr>
+                                <td>
+                                    <spring:message code="${item.key}" />
+                                </td>
+                                <td>
+                                    <c:out value="${item.value}" />.
+                                </td>
+                            </tr>
+                        </c:if>
+                    </c:forEach>
+                    <tr>
+                        <td colspan="2">&nbsp;</td>
                     </tr>
                 </c:forEach>
+            <tr>
+                <td colspan="2">****************************************</td>
+            </tr>
         </table>
 </div>
 <!--<br/><input type="submit" value="<spring:message code="general.save" />" />-->
