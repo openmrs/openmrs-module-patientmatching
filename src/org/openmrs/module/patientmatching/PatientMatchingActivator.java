@@ -225,17 +225,48 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
             // nothing is excluded
             List<String> listExcludedProperties = new ArrayList<String>();
             
-            Class[] classes = {Patient.class, PersonAddress.class, PersonName.class};
             List<String> propertyList = new ArrayList<String>();
-            for (Class clazz : classes) {
-                propertyList.addAll(MatchingConfigUtilities.introspectBean(listExcludedProperties, clazz));
-            }
+            propertyList.addAll(MatchingConfigUtilities.introspectBean(listExcludedProperties, Patient.class));
             
             for (String property : propertyList) {
                 String value = "";
                 try {
                     String classProperty = property.substring(property.lastIndexOf(".") + 1);
                     value = BeanUtils.getProperty(patient, classProperty);
+                } catch (Exception e) {
+                    logger.debug("Error getting the value for property: " + property, e);
+                } finally {
+                    ret.addDemographic(property, value);
+                }
+            }
+            
+            propertyList = new ArrayList<String>();
+            propertyList.addAll(MatchingConfigUtilities.introspectBean(listExcludedProperties, PersonName.class));
+            
+            PersonName personName = patient.getPersonName();
+            
+            for (String property : propertyList) {
+                String value = "";
+                try {
+                    String classProperty = property.substring(property.lastIndexOf(".") + 1);
+                    value = BeanUtils.getProperty(personName, classProperty);
+                } catch (Exception e) {
+                    logger.debug("Error getting the value for property: " + property, e);
+                } finally {
+                    ret.addDemographic(property, value);
+                }
+            }
+            
+            propertyList = new ArrayList<String>();
+            propertyList.addAll(MatchingConfigUtilities.introspectBean(listExcludedProperties, PersonAddress.class));
+
+            PersonAddress personAddress = patient.getPersonAddress();
+            
+            for (String property : propertyList) {
+                String value = "";
+                try {
+                    String classProperty = property.substring(property.lastIndexOf(".") + 1);
+                    value = BeanUtils.getProperty(personAddress, classProperty);
                 } catch (Exception e) {
                     logger.debug("Error getting the value for property: " + property, e);
                 } finally {

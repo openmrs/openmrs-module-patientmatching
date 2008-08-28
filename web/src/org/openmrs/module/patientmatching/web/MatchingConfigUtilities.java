@@ -13,7 +13,9 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.logging.Log;
@@ -367,7 +369,7 @@ public class MatchingConfigUtilities {
             openMRSReader.close();
         }
         
-        List<String> globalIncludeColumns = new ArrayList<String>();
+        Set<String> globalIncludeColumns = new TreeSet<String>();
         DedupMatchResultList list = new DedupMatchResultList();
         for (MatchingConfig matchingConfig : matchingConfigLists) {
             log.info("Creating OpenMRS Data Reader");
@@ -405,8 +407,6 @@ public class MatchingConfigUtilities {
         BufferedWriter writer = new BufferedWriter(new FileWriter(reportFile));
 
         List<Map<String, String>> buffer = new ArrayList<Map<String, String>>();
-        
-        Collections.sort(globalIncludeColumns);
 
         for (List<Record> recordList: records) {
             for (Record r : recordList) {
