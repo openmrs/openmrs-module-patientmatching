@@ -53,10 +53,11 @@ public class ScaleWeightDBManager extends DBManager {
 	private static final String analyses_table = "patientmatching_analysis";
 	private static final String fields_table = "patientmatching_field";
 	
-	private static final String UNION_FREQ_QUERY = "select c.token, sum(frequency) from (select token, frequency from " + fields_table + " as a, " + token_table + " as b where a.label = ? and a.column_id = b.column_id group by token, frequency ) as c group by c.token;";
+	private static final String UNION_FREQ_QUERY = "select token, frequency from " + token_table + " where column_id = ?;";
+	private static final String COL_ID_QUERY = "select column_id from " + fields_table + " where label = ?;";
 	private static final String UNION_FREQ_THRESHOLD_ABOVE_QUERY = "select token, sum from (select c.token, sum(frequency) from (select token, frequency from " + fields_table + " as a, " + token_table + " as b where a.label = ? and a.column_id = b.column_id group by token, frequency ) as c group by c.token) as d where sum > ?;";
 	private static final String UNION_FREQ_THRESHOLD_BELOW_QUERY = "select token, sum from (select c.token, sum(frequency) from (select token, frequency from " + fields_table + " as a, " + token_table + " as b where a.label = ? and a.column_id = b.column_id group by token, frequency ) as c group by c.token) as d where sum < ?;";
-	PreparedStatement union_freq_stmt, union_threshold_stmt;
+	PreparedStatement union_freq_stmt, union_threshold_stmt, col_id_stmt;
 	
 	// hashtable stores the frequencies for each demographic when the data sources
 	// in the frequency table is unioned.  Eventually, should add support for
@@ -67,10 +68,13 @@ public class ScaleWeightDBManager extends DBManager {
 	// a given demographic, percentile value, and ModifySet
 	Hashtable<String,Hashtable<Integer,Hashtable<ModifySet,List<String>>>> percentile_tokens;
 	
+	Hashtable<CountType,Hashtable<DataColumn,Hashtable<Integer,Integer>>> field_counts;
+	
 	public ScaleWeightDBManager(String driver, String url, String user, String passwd){
 		super(driver, url, user, passwd);
 		union_values = new Hashtable<String,Hashtable<String,Integer>>();
 		percentile_tokens = new Hashtable<String,Hashtable<Integer,Hashtable<ModifySet,List<String>>>>();
+		field_counts = new Hashtable<CountType,Hashtable<DataColumn,Hashtable<Integer,Integer>>>();
 	}
 
 	/**
@@ -343,10 +347,25 @@ public class ScaleWeightDBManager extends DBManager {
 	 * @return
 	 */
 	public int getCount(CountType type, DataColumn target_col, int ds_id) {
+		Hashtable<DataColumn,Hashtable<Integer,Integer>> type_table = field_counts.get(type);
+		Hashtable<Integer,Integer> column_table = null;
+		
+		if(type_table != null){
+			column_table = type_table.get(target_col);
+			if(column_table != null){
+				Integer i = column_table.get(ds_id);
+				if(i != null){
+					return i;
+				}
+			} 
+		}
+		
+		
 		PreparedStatement pstmt;
 		try {
 			if(type == CountType.NonNull) {
-				pstmt = db.prepareStatement("SELECT non_null_count FROM  " + fields_table + " WHERE datasource_id = ? AND column_id = ?");
+				//pstmt = db.prepareStatement("SELECT non_null_count FROM  " + fields_table + " WHERE datasource_id = ? AND column_id = ?");
+				pstmt = db.prepareStatement("SELECT sum(frequency) FROM  " + token_table + " WHERE datasource_id = ? AND column_id = ?");
 			} else if(type == CountType.Unique) {
 				pstmt = db.prepareStatement("SELECT unique_count FROM " + fields_table + " WHERE datasource_id = ? AND column_id = ?");
 			} else {
@@ -357,6 +376,17 @@ public class ScaleWeightDBManager extends DBManager {
 			pstmt.setString(2, target_col.getColumnID());
 			ResultSet rs = pstmt.executeQuery();
 			if(rs.next()) {
+				int i = rs.getInt(1);
+				if(type_table == null){
+					type_table = new Hashtable<DataColumn,Hashtable<Integer,Integer>>();
+					field_counts.put(type, type_table);
+				}
+				if(column_table == null){
+					column_table = new Hashtable<Integer,Integer>();
+					type_table.put(target_col, column_table);
+				}
+				
+				column_table.put(ds_id, i);
 				return rs.getInt(1);
 			}
 			// datasource does not exists
@@ -462,9 +492,10 @@ public class ScaleWeightDBManager extends DBManager {
 		Hashtable<String,Integer> ret = union_values.get(demographic);
 		
 		if(ret == null){
-			if(union_freq_stmt == null){
+			if(union_freq_stmt == null || col_id_stmt == null){
 				try{
 					union_freq_stmt = db.prepareStatement(UNION_FREQ_QUERY);
+					col_id_stmt = db.prepareStatement(COL_ID_QUERY);
 				}catch(SQLException sqle){
 					return null;
 				}
@@ -473,12 +504,21 @@ public class ScaleWeightDBManager extends DBManager {
 			ResultSet rs = null;
 			try{
 				ret = new Hashtable<String,Integer>();
-				union_freq_stmt.setString(1, demographic);
+				col_id_stmt.setString(1, demographic);
+				rs = col_id_stmt.executeQuery();
+				rs.next();
+				int col_id = rs.getInt(1);
+				union_freq_stmt.setInt(1, col_id);
 				rs = union_freq_stmt.executeQuery();
 				while(rs.next()){
 					String dem = rs.getString(1);
 					int freq = rs.getInt(2);
-					ret.put(dem, freq);
+					Integer entry = ret.get(dem);
+					if(entry == null){
+						ret.put(dem, freq);
+					} else {
+						ret.put(dem, entry + freq);
+					}
 				}
 				union_values.put(demographic, ret);
 				
@@ -502,38 +542,45 @@ public class ScaleWeightDBManager extends DBManager {
 			sum += freq;
 		}
 		double avg = sum / freqs.keySet().size();
+		if(freqs.get(value) < avg){
+			return true;
+		}
 		
-		e = freqs.keys();
+		/*e = freqs.keys();
 		while(e.hasMoreElements()){
 			String token = e.nextElement();
 			int freq = freqs.get(token);
 			if(freq > avg && token.equals(value)){
 				return true;
 			}
-		}
+		}*/
 		return false;
 	}
 	
 	public boolean belowAverageFrequency(String demographic, String value){
 		Hashtable<String,Integer> freqs = unionUniqueTokens(demographic);
 		Enumeration<String> e = freqs.keys();
-		int sum = 0;
+		double sum = 0;
 		while(e.hasMoreElements()){
 			String token = e.nextElement();
 			int freq = freqs.get(token);
 			sum += freq;
 		}
-		double avg = sum / freqs.keySet().size();
+		double avg = sum / (double)freqs.keySet().size();
+		double val_freq = freqs.get(value);
 		
-		e = freqs.keys();
+		if(val_freq < avg){
+			return true;
+		}
+		
+		/*e = freqs.keys();
 		while(e.hasMoreElements()){
 			String token = e.nextElement();
 			int freq = freqs.get(token);
-			if(freq < avg && token.equals(value)){
-				return true;
-			}
-		}
+			
+		}*/
 		return false;
+		
 	}
 	
 	public boolean inPercentileRange(String demographic, String value, int percentile, ModifySet m){

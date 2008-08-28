@@ -192,10 +192,10 @@ public class ScaleWeightModifier implements Modifier {
 					String val = mr.getRecord1().getDemographic(cur_demographic);
 					if(inScalingSet(cur_demographic, val)){
 						// Calculate scaling factor obtained from two data sources
-						DataColumn dc1 = lds1_inc_cols.get(cur_demographic);
-						DataColumn dc2 = lds2_inc_cols.get(cur_demographic);
-						int unique_union = unionUniqueTokens(dc1, dc2, lds1_id, lds2_id);
-						SWAdjustScore adjustment = SWAdjustScore.sumTwoScores(adjust1.get(cur_demographic), adjust2.get(cur_demographic), unique_union);
+						int unique_union = sw_connection.unionUniqueTokens(cur_demographic).size();
+						SWAdjustScore swas1 = adjust1.get(cur_demographic);
+						SWAdjustScore swas2 = adjust2.get(cur_demographic);
+						SWAdjustScore adjustment = SWAdjustScore.sumTwoScores(swas1, swas2, unique_union);
 						
 						// Adjust the score
 						// score_vector.setScore(cur_demographic, score_vector.getScore(cur_demographic) + log base 2(adjustment.getScalingFactor()));
