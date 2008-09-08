@@ -29,4 +29,8 @@ public abstract class FormPairs {
 	}
 	
 	public abstract Record[] getNextRecordPair();
+	
+	public MatchingConfig getMatchingConfig(){
+		return mc;
+	}
 }

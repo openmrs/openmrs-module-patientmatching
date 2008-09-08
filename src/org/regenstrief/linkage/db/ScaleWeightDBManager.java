@@ -542,7 +542,7 @@ public class ScaleWeightDBManager extends DBManager {
 			sum += freq;
 		}
 		double avg = sum / freqs.keySet().size();
-		if(freqs.get(value) < avg){
+		if(freqs.get(value) > avg){
 			return true;
 		}
 		

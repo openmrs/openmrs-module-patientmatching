@@ -54,7 +54,7 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 	
 	
 	private Log log = LogFactory.getLog(this.getClass());
-	private SessionFactory sessionFactory;
+	protected SessionFactory sessionFactory;
 	
 	public OrderedOpenMRSReader(MatchingConfig mc, SessionFactory session_factory){
 		sessionFactory = session_factory;
@@ -122,7 +122,7 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 		//	value_set.retainAll(getPatientIDs(blocking_cols[col], current_blocking_values[col]));
 		//	col++;
 		//}
-		
+		log.warn("OpenMRS reader filled with " + value_set.size() + " IDs");
 		return value_set.size();
 	}
 	

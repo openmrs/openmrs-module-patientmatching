@@ -10,6 +10,7 @@ import java.util.Random;
 import org.apache.log4j.Logger;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.io.FormPairs;
+import org.regenstrief.linkage.io.LookupFormPairs;
 import org.regenstrief.linkage.util.LoggingObject;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
@@ -58,7 +59,12 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 		record_pairs = new Hashtable<Integer,Record>();
 		demographic_agree_count = new Hashtable<String,Integer>();
 		
-		int recordPairCount = countRecordPairs();
+		int recordPairCount;
+		if(fp instanceof LookupFormPairs){
+			recordPairCount = ((LookupFormPairs)fp).size();
+		} else {
+			recordPairCount = countRecordPairs();
+		}
 		
 		sampleSize = mc.getRandomSampleSize();
 		sample1 = new boolean[recordPairCount];
@@ -70,6 +76,10 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 	}
 	
 	public void analyzeRecordPair(Record[] pair){
+		if(fp instanceof LookupFormPairs){
+			return;
+		}
+		
 		if(pair_count < sample1.length && sample1[pair_count]){
 			List<Integer> indexes = left_pair_entry.get(Integer.valueOf(pair_count));
 			for(int i = 0; i < indexes.size(); i++){
@@ -136,6 +146,7 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 	}
 	
 	public void finishAnalysis(){
+		
 		
 		// review totals and calculate u values
 		// modify the matching config object to reflect calculated values
@@ -228,11 +239,23 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 	}
 	
 	private void setIndexPairs(int max_index){
+		LookupFormPairs lfp = null;
+		if(fp instanceof LookupFormPairs){
+			lfp = (LookupFormPairs)fp;
+		}
 		
 		// need to get two sets of random numbers, one for each data source
 		for(int i = 0; i < sampleSize && max_index > 0; i++){
 			int left_index = rand.nextInt(max_index);
 			int right_index = rand.nextInt(max_index);
+			
+			if(lfp != null){
+				// since we have a LookupFormPairs, we can checkSimilarity right now
+				Record r1 = lfp.getRecordPair(left_index)[0];
+				Record r2 = lfp.getRecordPair(right_index)[1];
+				checkSimilarity(r1, r2);
+			}
+			
 			sample1[left_index] = true;
 			sample2[right_index] = true;
 			
