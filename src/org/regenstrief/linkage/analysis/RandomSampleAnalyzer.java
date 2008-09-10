@@ -1,6 +1,7 @@
 package org.regenstrief.linkage.analysis;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -240,8 +241,10 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 	
 	private void setIndexPairs(int max_index){
 		LookupFormPairs lfp = null;
+		Hashtable<Integer,List<Integer>> pairs = null;
 		if(fp instanceof LookupFormPairs){
 			lfp = (LookupFormPairs)fp;
+			pairs = new Hashtable<Integer,List<Integer>>();
 		}
 		
 		// need to get two sets of random numbers, one for each data source
@@ -250,28 +253,68 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 			int right_index = rand.nextInt(max_index);
 			
 			if(lfp != null){
-				// since we have a LookupFormPairs, we can checkSimilarity right now
-				Record r1 = lfp.getRecordPair(left_index)[0];
-				Record r2 = lfp.getRecordPair(right_index)[1];
-				checkSimilarity(r1, r2);
+				// save index pairs
+				int first_index, second_index;
+				if(left_index < right_index){
+					first_index = left_index;
+					second_index = right_index;
+				} else {
+					first_index = right_index;
+					second_index = left_index;
+				}
+				List<Integer> l = pairs.get(first_index);
+				if(l == null){
+					l = new ArrayList<Integer>();
+					pairs.put(first_index, l);
+				}
+				
+			} else {
+				// block to set indexes when we don't have a LookupFormPairs
+				sample1[left_index] = true;
+				sample2[right_index] = true;
+				
+				List<Integer> left = left_pair_entry.get(left_index);
+				if(left == null){
+					left = new ArrayList<Integer>();
+					left_pair_entry.put(left_index, left);
+				}
+				left.add(i);
+				
+				List<Integer> right = right_pair_entry.get(right_index);
+				if(right == null){
+					right = new ArrayList<Integer>();
+					right_pair_entry.put(right_index, right);
+				}
+				right.add(i);
 			}
 			
-			sample1[left_index] = true;
-			sample2[right_index] = true;
 			
-			List<Integer> left = left_pair_entry.get(left_index);
-			if(left == null){
-				left = new ArrayList<Integer>();
-				left_pair_entry.put(left_index, left);
+		}
+		
+		if(lfp != null){
+			// since we have a LookupFormPairs, we can checkSimilarity right now
+			Iterator<Integer> it = pairs.keySet().iterator();
+			Record r1;
+			while(it.hasNext()){
+				int first_index = it.next();
+				List<Integer> l = pairs.get(first_index);
+				Collections.sort(l);
+				r1 = lfp.getRecordPair(first_index)[0];
+				Iterator<Integer> it2 = l.iterator();
+				int prev_index = -1;
+				Record r2 = null;
+				while(it2.hasNext()){
+					int second_index = it2.next();
+					if(second_index != prev_index){
+						r2 = lfp.getRecordPair(second_index)[1];
+					}
+					checkSimilarity(r1, r2);
+					prev_index = second_index;
+				}
+				
 			}
-			left.add(i);
 			
-			List<Integer> right = right_pair_entry.get(right_index);
-			if(right == null){
-				right = new ArrayList<Integer>();
-				right_pair_entry.put(right_index, right);
-			}
-			right.add(i);
+			
 		}
 	}
 
