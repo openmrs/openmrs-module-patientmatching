@@ -2,14 +2,32 @@ package org.openmrs.module.patientmatching;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openmrs.Patient;
+import org.openmrs.PatientIdentifier;
+import org.openmrs.PatientIdentifierType;
+import org.openmrs.PersonAddress;
+import org.openmrs.PersonAttribute;
+import org.openmrs.PersonAttributeType;
+import org.openmrs.PersonName;
 import org.openmrs.api.AdministrationService;
+import org.openmrs.api.PatientService;
+import org.openmrs.api.PersonService;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.patientmatching.web.MatchingConfigUtilities;
 import org.regenstrief.linkage.MatchFinder;
+import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.db.RecordDBManager;
 import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.RecMatchConfig;
@@ -30,6 +48,12 @@ public class LinkDBConnections {
 	private RecordDBManager link_db;
 	private ReaderProvider rp;
 	
+	// caches patientToRecord return objects
+	private Map<Integer,Record> cache;
+	public final static int RECORD_CACHE_SIZE = 1000;
+	
+	protected static Log logger = LogFactory.getLog(LinkDBConnections.class);
+	
 	private final static LinkDBConnections INSTANCE = new LinkDBConnections();
 	
 	private LinkDBConnections(){
@@ -37,6 +61,13 @@ public class LinkDBConnections {
 		AdministrationService adminService = Context.getAdministrationService();
 		String configFilename = adminService.getGlobalProperty("patientmatching.linkConfigFile",
 				PatientMatchingActivator.CONFIG_FILE);
+		
+		// used to cache patientToRecord objects
+		cache = new LinkedHashMap<Integer,Record>(RECORD_CACHE_SIZE + 1){
+			 public boolean removeEldestEntry(Map.Entry<Integer,Record> eldest) {
+		            return size() > RECORD_CACHE_SIZE;
+		     }
+		};
 		
 		if(!parseConfig(new File(configFilename))){
 			finder = null;
@@ -131,5 +162,119 @@ public class LinkDBConnections {
 		//log.debug("file parsed");
 		return link_db.connect();
 		
+	}
+	
+	public Record patientToRecord(Patient patient){
+		// OpenMRS unique patient ID should be present if the patient is within
+		// the OpenMRS patient store, but if patient is new and being searched on
+		// before inserted, it would be null
+		Integer id = patient.getPatientId();
+		Record cache_record;
+		if((cache_record = cache.get(id)) != null){
+			return cache_record;
+		}
+		
+		Record ret = new Record(patient.getPatientId(),"OpenMRS");
+		
+		if(id != null){
+			ret.addDemographic(PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC, Integer.toString(id));
+		}
+		
+		// first, try to get the "Matching Information" attribute type
+		PersonAttributeType matching_attr_type = Context.getPersonService().getPersonAttributeTypeByName(PatientMatchingActivator.MATCHING_ATTRIBUTE);
+		if(matching_attr_type != null){
+			try{
+			// expected attribute with information is present, so use all the information from there
+			PersonAttribute matching_attr = patient.getAttribute(matching_attr_type.getPersonAttributeTypeId());
+			String matching_string = matching_attr.getValue();
+			
+			String[] demographics = matching_string.split(";");
+			for(int i = 0; i < demographics.length; i++){
+				String demographic_value = demographics[i];
+				String[] pair = demographic_value.split(":", -1);
+				ret.addDemographic(pair[0], pair[1]);
+			}
+			}
+			catch(NullPointerException npe){
+				return ret;
+			}
+		} else {
+            // nothing is excluded
+            List<String> listExcludedProperties = new ArrayList<String>();
+            
+            List<String> propertyList = new ArrayList<String>();
+            propertyList.addAll(MatchingConfigUtilities.introspectBean(listExcludedProperties, Patient.class));
+            
+            for (String property : propertyList) {
+                String value = "";
+                try {
+                    String classProperty = property.substring(property.lastIndexOf(".") + 1);
+                    value = BeanUtils.getProperty(patient, classProperty);
+                } catch (Exception e) {
+                    logger.debug("Error getting the value for property: " + property, e);
+                } finally {
+                    ret.addDemographic(property, value);
+                }
+            }
+            
+            propertyList = new ArrayList<String>();
+            propertyList.addAll(MatchingConfigUtilities.introspectBean(listExcludedProperties, PersonName.class));
+            
+            PersonName personName = patient.getPersonName();
+            
+            for (String property : propertyList) {
+                String value = "";
+                try {
+                    String classProperty = property.substring(property.lastIndexOf(".") + 1);
+                    value = BeanUtils.getProperty(personName, classProperty);
+                } catch (Exception e) {
+                    logger.debug("Error getting the value for property: " + property, e);
+                } finally {
+                    ret.addDemographic(property, value);
+                }
+            }
+            
+            propertyList = new ArrayList<String>();
+            propertyList.addAll(MatchingConfigUtilities.introspectBean(listExcludedProperties, PersonAddress.class));
+
+            PersonAddress personAddress = patient.getPersonAddress();
+            
+            for (String property : propertyList) {
+                String value = "";
+                try {
+                    String classProperty = property.substring(property.lastIndexOf(".") + 1);
+                    value = BeanUtils.getProperty(personAddress, classProperty);
+                } catch (Exception e) {
+                    logger.debug("Error getting the value for property: " + property, e);
+                } finally {
+                    ret.addDemographic(property, value);
+                }
+            }
+
+            PatientService patientService = Context.getPatientService();
+            List<PatientIdentifierType> patientIdentifierTypes = patientService.getAllPatientIdentifierTypes();
+            for (PatientIdentifierType patientIdentifierType : patientIdentifierTypes) {
+                PatientIdentifier identifier = patient.getPatientIdentifier(patientIdentifierType.getName());
+                if (identifier != null) {
+                    ret.addDemographic("(Identifier) " + patientIdentifierType.getName(), identifier.getIdentifier());
+                } else {
+                    ret.addDemographic("(Identifier) " + patientIdentifierType.getName(), "");
+                }
+            }
+
+            PersonService personService = Context.getPersonService();
+            List<PersonAttributeType> personAttributeTypes = personService.getAllPersonAttributeTypes();
+            for (PersonAttributeType personAttributeType : personAttributeTypes) {
+                PersonAttribute attribute = patient.getAttribute(personAttributeType.getName());
+                if (attribute != null) {
+                    ret.addDemographic("(Attribute) " + personAttributeType.getName(), attribute.getValue());
+                } else {
+                    ret.addDemographic("(Attribute) " + personAttributeType.getName(), "");
+                }
+            }
+		}
+		
+		cache.put(id, ret);
+		return ret;
 	}
 }
