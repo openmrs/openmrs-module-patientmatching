@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.patientmatching.PatientMatchingActivator;
+import org.openmrs.module.patientmatching.LinkDBConnections;
 import org.regenstrief.linkage.Record;
 
 /**
@@ -43,7 +43,7 @@ public class OpenMRSLookupFormPairs extends LookupFormPairs {
 	protected Record getRecordFromUID(int id, String context) {
 		Patient p = Context.getPatientService().getPatient(id);
 		if(p != null){
-			return PatientMatchingActivator.patientToRecord(p);
+			return LinkDBConnections.getInstance().patientToRecord(p);
 		} else {
 			return null;
 		}

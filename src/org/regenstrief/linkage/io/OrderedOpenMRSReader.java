@@ -15,7 +15,7 @@ import org.openmrs.PatientIdentifierType;
 import org.openmrs.Person;
 import org.openmrs.PersonAttributeType;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.patientmatching.PatientMatchingActivator;
+import org.openmrs.module.patientmatching.LinkDBConnections;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.MatchingConfig;
 
@@ -141,7 +141,7 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 				fillIDValueSet();
 			}
 			
-			return PatientMatchingActivator.patientToRecord(p);
+			return LinkDBConnections.getInstance().patientToRecord(p);
 		}
 		
 		return null;

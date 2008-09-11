@@ -9,7 +9,7 @@ import org.hibernate.SessionFactory;
 import org.openmrs.Patient;
 import org.openmrs.PersonAttributeType;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.patientmatching.PatientMatchingActivator;
+import org.openmrs.module.patientmatching.LinkDBConnections;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.MatchingConfig;
 
@@ -151,9 +151,9 @@ public class OpenMRSFormPairs extends FormPairs{
 			Record[] ret = new Record[2];
 			// convert from openmrs ID integers to Record objects
 			Patient p = Context.getPatientService().getPatient(to_return[0]);
-			ret[0] = PatientMatchingActivator.patientToRecord(p);
+			ret[0] = LinkDBConnections.getInstance().patientToRecord(p);
 			p = Context.getPatientService().getPatient(to_return[1]);
-			ret[1] = PatientMatchingActivator.patientToRecord(p);
+			ret[1] = LinkDBConnections.getInstance().patientToRecord(p);
 			
 			return ret;
 		} else {

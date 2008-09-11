@@ -80,7 +80,7 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 				log.debug("Trying to add patient to link table");
 				if(o instanceof Patient){
 					Patient just_added = (Patient)o;
-					if(link_db.addRecordToDB(PatientMatchingActivator.patientToRecord(just_added))){
+					if(link_db.addRecordToDB(LinkDBConnections.getInstance().patientToRecord(just_added))){
 						if(log.isDebugEnabled()){
 							log.debug("LinkDBManager object successfully added patient");
 						}
@@ -91,7 +91,7 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 				}
 			} else if(method_name.equals(PatientMatchingActivator.FIND_METHOD)){
 				try{
-					Record r = PatientMatchingActivator.patientToRecord(to_match);
+					Record r = LinkDBConnections.getInstance().patientToRecord(to_match);
 					MatchResult mr = matcher.findBestMatch(r);
 					if(mr != null){
 						Record rec_match = mr.getRecord2();
@@ -134,7 +134,7 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 				if(o instanceof Patient){
 					Patient just_updated = (Patient)o;
 					
-					Record ju = PatientMatchingActivator.patientToRecord(just_updated);
+					Record ju = LinkDBConnections.getInstance().patientToRecord(just_updated);
 					if(link_db.updateRecord(ju, PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC)){
 						if(log.isDebugEnabled()){
 							log.debug("Record for patient " + just_updated.getPatientId() + " updated in database");
