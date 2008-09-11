@@ -67,7 +67,11 @@ public class OpenMRSLookupFormPairs extends LookupFormPairs {
 
 	@Override
 	public Record[] getNextRecordPair() {
-		return getRecordPair(current_pair++);
+		if(current_pair < ids.size()){
+			return getRecordPair(current_pair++);
+		} else {
+			return null;
+		}
 	}
 	
 	public int size(){
