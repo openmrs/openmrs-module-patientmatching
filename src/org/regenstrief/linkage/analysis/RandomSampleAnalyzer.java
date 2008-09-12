@@ -112,10 +112,6 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 			}
 			right_pair_entry.remove(Integer.valueOf(pair_count));
 		}
-		
-		
-		
-		
 		pair_count++;
 	}
 	
@@ -147,8 +143,6 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 	}
 	
 	public void finishAnalysis(){
-		
-		
 		// review totals and calculate u values
 		// modify the matching config object to reflect calculated values
 		Iterator<String> it = demographic_agree_count.keySet().iterator();
@@ -254,20 +248,17 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 			
 			if(lfp != null){
 				// save index pairs
-				int first_index, second_index;
+				int first_index;
 				if(left_index < right_index){
 					first_index = left_index;
-					second_index = right_index;
 				} else {
 					first_index = right_index;
-					second_index = left_index;
 				}
 				List<Integer> l = pairs.get(first_index);
 				if(l == null){
 					l = new ArrayList<Integer>();
 					pairs.put(first_index, l);
 				}
-				
 			} else {
 				// block to set indexes when we don't have a LookupFormPairs
 				sample1[left_index] = true;
@@ -287,8 +278,6 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 				}
 				right.add(i);
 			}
-			
-			
 		}
 		
 		if(lfp != null){
@@ -311,10 +300,7 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 					checkSimilarity(r1, r2);
 					prev_index = second_index;
 				}
-				
 			}
-			
-			
 		}
 	}
 

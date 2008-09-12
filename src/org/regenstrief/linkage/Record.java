@@ -17,7 +17,7 @@ public class Record {
 	
 	Hashtable<String,String> demographics;
 	int uid;
-	String uid_context;
+	String uidContext;
 	
 	/**
 	 * Initializes the demographics Hashtable and stores the unique ID and ID context
@@ -26,7 +26,7 @@ public class Record {
 	public Record(int id, String context){
 		demographics = new Hashtable<String,String>();
 		uid = id;
-		uid_context = context;
+		uidContext = context;
 	}
 	
 	/**
@@ -44,7 +44,7 @@ public class Record {
 	 * @return	Context of unique ID
 	 */
 	public String getContext(){
-		return uid_context;
+		return uidContext;
 	}
 	
 	/**

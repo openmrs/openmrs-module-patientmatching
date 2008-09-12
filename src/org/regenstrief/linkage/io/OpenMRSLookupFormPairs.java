@@ -34,7 +34,7 @@ public class OpenMRSLookupFormPairs extends LookupFormPairs {
 		while((pair = fp.getNextRecordPair()) != null){
 			int[] id_pair = new int[2];
 			id_pair[0] = pair[0].getUID();
-			id_pair[2] = pair[1].getUID();
+			id_pair[1] = pair[1].getUID();
 			ids.add(id_pair);
 		}
 	}

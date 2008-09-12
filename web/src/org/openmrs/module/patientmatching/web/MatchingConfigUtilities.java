@@ -38,9 +38,9 @@ import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.analysis.EMAnalyzer;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
-import org.regenstrief.linkage.analysis.SetSimilarityAnalysis;
 import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.FormPairs;
+import org.regenstrief.linkage.io.OpenMRSLookupFormPairs;
 import org.regenstrief.linkage.io.OrderedOpenMRSReader;
 import org.regenstrief.linkage.matchresult.DedupMatchResultList;
 import org.regenstrief.linkage.util.DataColumn;
@@ -333,7 +333,7 @@ public class MatchingConfigUtilities {
     public static List<Map<String, String>> doAnalysis() throws IOException {
         
         HibernateConnection connection = new HibernateConnection();
-        log.info("Hibernate Connection null? " + (connection == null));
+        log.info("Hibernate connection null? " + (connection == null));
         
         SessionFactory sessionFactory = connection.getSessionFactory();
         log.info("Session factory null? " + (sessionFactory == null));
@@ -344,58 +344,60 @@ public class MatchingConfigUtilities {
 
         RecMatchConfig recMatchConfig = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(configFile));
         List<MatchingConfig> matchingConfigLists = recMatchConfig.getMatchingConfigs();
-        for (MatchingConfig matchingConfig : matchingConfigLists) {
-            log.info("Creating OpenMRS Data Reader");
-            OrderedOpenMRSReader openMRSReader = new OrderedOpenMRSReader(matchingConfig, sessionFactory);
-            OrderedOpenMRSReader openMRSReader2 = new OrderedOpenMRSReader(matchingConfig, sessionFactory);
-            
-            if(openMRSReader != null) {
-                FormPairs formPairs = new DedupOrderedDataSourceFormPairs(openMRSReader,
-                        matchingConfig,
-                        recMatchConfig.getLinkDataSource1().getTypeTable());
-                FormPairs formPairs2 = new DedupOrderedDataSourceFormPairs(openMRSReader2,
-                        matchingConfig,
-                        recMatchConfig.getLinkDataSource1().getTypeTable());
-                PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(formPairs);
-                
-                log.info("Creating Analyzer");
-                RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(matchingConfig, formPairs2);
-                pdsa.addAnalyzer(rsa);
-                EMAnalyzer ema = new EMAnalyzer(matchingConfig);
-                pdsa.addAnalyzer(ema);
-                pdsa.analyzeData();
-            }
-            
-            openMRSReader.close();
-        }
-        
+	    
         Set<String> globalIncludeColumns = new TreeSet<String>();
-        DedupMatchResultList list = new DedupMatchResultList();
+        DedupMatchResultList handler = new DedupMatchResultList();
+        
         for (MatchingConfig matchingConfig : matchingConfigLists) {
-            log.info("Creating OpenMRS Data Reader");
+            log.info("Creating OpenMRS data reader ...");
             OrderedOpenMRSReader openMRSReader = new OrderedOpenMRSReader(matchingConfig, sessionFactory);
             
             if(openMRSReader != null) {
+            	log.info("Creating form pairs ...");
                 FormPairs formPairs = new DedupOrderedDataSourceFormPairs(openMRSReader,
                         matchingConfig,
                         recMatchConfig.getLinkDataSource1().getTypeTable());
+                
+                OpenMRSLookupFormPairs lookupFormPairs = new OpenMRSLookupFormPairs(formPairs);
+                
+                log.info("Creating pair data source analyzer ...");
+                PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(lookupFormPairs);
+                
+                log.info("Creating random sample analyzer ...");
+                RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(matchingConfig, lookupFormPairs);
+                log.info("Adding random sample analyzer ...");
+                pdsa.addAnalyzer(rsa);
+                
+                log.info("Creating EM analyzer ...");
+                EMAnalyzer ema = new EMAnalyzer(matchingConfig);
+                log.info("Adding EM analyzer ...");
+                pdsa.addAnalyzer(ema);
+                
+                log.info("Analyzing data ...");
+                pdsa.analyzeData();
+                
+                log.info("Scoring data ...");
+                lookupFormPairs.reset();
                 ScorePair sp = new ScorePair(matchingConfig);
+                
                 Record[] pair;
-                while((pair = formPairs.getNextRecordPair()) != null){
-                    MatchResult mr = sp.scorePair(pair[0], pair[1]);
-                    list.acceptMatchResult(mr);
+				MatchResult mr;
+                int counter = 0;
+                
+                while((pair = lookupFormPairs.getNextRecordPair()) != null){
+                    mr = sp.scorePair(pair[0], pair[1]);
+                    counter ++;
+                    handler.acceptMatchResult(mr);
                 }
-                list.sort();
             }
+            
             List<String> blockingColumns = Arrays.asList(matchingConfig.getBlockingColumns());
             globalIncludeColumns.addAll(blockingColumns);
             List<String> includeColumns = Arrays.asList(matchingConfig.getIncludedColumnsNames());
             globalIncludeColumns.addAll(includeColumns);
+            
+            openMRSReader.close();
         }
-
-        SetSimilarityAnalysis ssa = new SetSimilarityAnalysis();
-        List<List<MatchResult>> groups = ssa.getSimilarSets(list.getResults());
-        List<List<Record>> records = ssa.getSimilarRecords(groups);
 
         int groupId = 0;
         String separator = "|";
@@ -408,30 +410,25 @@ public class MatchingConfigUtilities {
 
         List<Map<String, String>> buffer = new ArrayList<Map<String, String>>();
 
-        for (List<Record> recordList: records) {
-            for (Record r : recordList) {
-                
-                Map<String, String> displayMap = new TreeMap<String, String>();
-                
-                String report = groupId + separator;
-                displayMap.put("Group Id", String.valueOf(groupId));
-                
-                report = report + r.getUID() + separator;
-                displayMap.put("UID", String.valueOf(r.getUID()));
-                
-                Hashtable<String, String> h = r.getDemographics();
-                for(String demographic: globalIncludeColumns) {
-                    report = report + h.get(demographic) + separator;
-                    if (demographic.indexOf(".") == -1) {
-                        displayMap.put(demographic, h.get(demographic));
-                    } else {
-                        displayMap.put("patientmatching." + demographic, h.get(demographic));
-                    }
-                }
-                buffer.add(displayMap);
-                report = report.substring(0, report.length() - 1);
-                writer.write(report);
-                writer.write(System.getProperty("line.separator"));
+        log.info("Creating report ...");
+        
+        Map<Integer, TreeMap<Integer, Boolean>> groupedMR = handler.getGroupedMatchResult();
+        
+        for (Integer key: groupedMR.keySet()) {
+        	
+        	Record firstRecord = RecordSerializer.deserialize(String.valueOf(key));
+        	
+        	generateReport(firstRecord, globalIncludeColumns, groupId, separator,
+					writer, buffer);
+        	
+        	TreeMap<Integer, Boolean> treeMap = groupedMR.get(key);
+        	
+            for (Integer treeMapKey: treeMap.keySet()) {
+            	
+            	Record internalRecord = RecordSerializer.deserialize(String.valueOf(treeMapKey));
+            	
+            	generateReport(internalRecord, globalIncludeColumns, groupId, separator,
+						writer, buffer);
             }
             groupId ++;
         }
@@ -439,4 +436,32 @@ public class MatchingConfigUtilities {
         
         return buffer;
     }
+
+	private static void generateReport(Record r, Set<String> globalIncludeColumns,
+			int groupId, String separator, BufferedWriter writer,
+			List<Map<String, String>> buffer)
+			throws IOException {
+		
+		Map<String, String> displayMap = new TreeMap<String, String>();
+		
+		String report = groupId + separator;
+		displayMap.put("Group Id", String.valueOf(groupId));
+		
+		report = report + r.getUID() + separator;
+		displayMap.put("UID", String.valueOf(r.getUID()));
+		
+		Hashtable<String, String> h = r.getDemographics();
+		for(String demographic: globalIncludeColumns) {
+		    report = report + h.get(demographic) + separator;
+		    if (demographic.indexOf(".") == -1) {
+		        displayMap.put(demographic, h.get(demographic));
+		    } else {
+		        displayMap.put("patientmatching." + demographic, h.get(demographic));
+		    }
+		}
+		buffer.add(displayMap);
+		report = report.substring(0, report.length() - 1);
+		writer.write(report);
+		writer.write(System.getProperty("line.separator"));
+	}
 }

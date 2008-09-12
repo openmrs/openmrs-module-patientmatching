@@ -88,15 +88,18 @@ public class DedupOrderedDataSourceFormPairs extends FormPairs{
 		return true;
 	}
 	
+	protected Record[] returnedRecords;
+	
 	public Record[] getNextRecordPair(){
+		returnedRecords = null;
 		if(blocking_set.size() > 0){
-			return blocking_set.remove(0);
+			returnedRecords = blocking_set.remove(0);
 		} else if(next_blocking_record != null){
 			fillSet();
 			if(blocking_set.size() > 0){
-				return blocking_set.remove(0);
+				returnedRecords = blocking_set.remove(0);
 			}
 		}
-		return null;
+		return returnedRecords;
 	}
 }
