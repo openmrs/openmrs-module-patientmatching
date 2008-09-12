@@ -122,7 +122,7 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 		//	value_set.retainAll(getPatientIDs(blocking_cols[col], current_blocking_values[col]));
 		//	col++;
 		//}
-		log.warn("OpenMRS reader filled with " + value_set.size() + " IDs");
+		//log.warn("OpenMRS reader filled with " + value_set.size() + " IDs");
 		return value_set.size();
 	}
 	
@@ -174,7 +174,7 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 		String from_clause = getFromClause(demographics);
 		String where_clause = getValuesWhereClause(demographics);
 		query_text = select_clause + " " + from_clause + " " + where_clause;
-		log.warn("getting values for " + demographics + " using query of:  " + query_text);
+		log.info("getting values for " + demographics + " using query of:  " + query_text);
 		
 		Query q = sessionFactory.getCurrentSession().createQuery(query_text);
 		
@@ -243,7 +243,7 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 		String from_clause = getFromClause(demographics);
 		String where_clause = getIDsWhereClause(demographics);
 		query_text = select_clause + " " + from_clause + " " + where_clause;
-		log.warn("getting ID for values " + values + " using query of:  " + query_text);
+		//log.warn("getting ID for values " + values + " using query of:  " + query_text);
 		
 		Query q = sessionFactory.getCurrentSession().createQuery(query_text);
 		
