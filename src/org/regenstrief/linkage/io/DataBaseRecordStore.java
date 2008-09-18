@@ -37,7 +37,7 @@ public class DataBaseRecordStore implements RecordStore {
 	public DataBaseRecordStore(Connection db, LinkDataSource lds, String driver, String url, String user, String password){
 		db_connection = db;
 		this.lds = lds;
-		table_name = lds.getName() + "_import";
+		table_name = "import";
 		this.driver = driver;
 		this.url = url;
 		this.user = user;
@@ -58,7 +58,11 @@ public class DataBaseRecordStore implements RecordStore {
 		while(e.hasMoreElements()){
 			String column = e.nextElement();
 			insert_demographics.add(column);
-			query_text += column + "\tvarchar, ";
+			query_text += column + "\tvarchar";
+			if(e.hasMoreElements()){
+				query_text += ", ";
+			}
+
 		}
 		query_text += ")";
 		
@@ -86,6 +90,9 @@ public class DataBaseRecordStore implements RecordStore {
 			}
 			
 		}
+		column_clause += ")";
+		values_clause += ")";
+		insert_text += column_clause + " " + values_clause;
 		
 		try{
 			stmt = db_connection.prepareStatement(insert_text);
@@ -125,14 +132,13 @@ public class DataBaseRecordStore implements RecordStore {
 		try{
 			for(int i = 0; i < insert_demographics.size(); i++){
 				String demographic = insert_demographics.get(i);
-				insert_stmt.setString(i, r.getDemographic(demographic));
-				return insert_stmt.executeUpdate() > 0;
+				insert_stmt.setString(i + 1, r.getDemographic(demographic));
 			}
+			return insert_stmt.executeUpdate() > 0;
 		}
 		catch(SQLException sqle){
 			return false;
 		}
-		return false;
 	}
 
 }
