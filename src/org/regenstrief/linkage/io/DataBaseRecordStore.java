@@ -68,7 +68,7 @@ public class DataBaseRecordStore implements RecordStore {
 			String column = e.nextElement();
 			
 			// remove invalid characters from columns
-			column.replaceAll(INVALID_COLUMN_CHARS, "");
+			column = column.replaceAll(INVALID_COLUMN_CHARS, "");
 			
 			insert_demographics.add(column);
 			query_text += ", " + column + "\tvarchar(255)";
