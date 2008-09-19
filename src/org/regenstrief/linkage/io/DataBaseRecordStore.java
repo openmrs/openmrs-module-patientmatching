@@ -25,6 +25,10 @@ public class DataBaseRecordStore implements RecordStore {
 	PreparedStatement insert_stmt;
 	List<String> insert_demographics;
 	
+	int insert_count;
+	
+	public static final String UID_COLUMN = "import_uid";
+	
 	/**
 	 * 
 	 * @param db	the database connection to create the table of Records
@@ -44,6 +48,7 @@ public class DataBaseRecordStore implements RecordStore {
 		this.password = password;
 		
 		insert_demographics = new ArrayList<String>();
+		insert_count = 0;
 		
 		createTable();
 		insert_stmt = createInsertQuery();
@@ -51,26 +56,21 @@ public class DataBaseRecordStore implements RecordStore {
 	}
 	
 	protected boolean createTable(){
-		String query_text = "CREATE TABLE " + table_name + "(";
+		String query_text = "CREATE TABLE " + table_name + "(" + UID_COLUMN + "\tbigint";
 		
 		// iteratoe over lds to see what fields to expect, and set order in insert_demographics
 		Enumeration<String> e = lds.getIncludedDataColumns().keys();
 		while(e.hasMoreElements()){
 			String column = e.nextElement();
 			
-			// clean column name to something SQL allows
-			
-			
 			insert_demographics.add(column);
-			query_text += "\"" + column + "\"\tvarchar";
-			if(e.hasMoreElements()){
-				query_text += ", ";
-			}
+			query_text += ", \"" + column + "\"\tvarchar";
 
 		}
 		query_text += ")";
 		
 		try{
+			db_connection.createStatement().execute("DROP TABLE " + table_name);
 			db_connection.createStatement().execute(query_text);
 		}
 		catch(SQLException sqle){
@@ -82,17 +82,12 @@ public class DataBaseRecordStore implements RecordStore {
 	protected PreparedStatement createInsertQuery(){
 		PreparedStatement stmt = null;
 		String insert_text = "INSERT INTO " + table_name;
-		String column_clause = "(";
-		String values_clause = "VALUES (";
+		String column_clause = "(" + UID_COLUMN;
+		String values_clause = "VALUES (?";
 		for(int i = 0; i < insert_demographics.size(); i++){
 			String demographic = insert_demographics.get(i);
-			column_clause += "\"" + demographic + "\"";
-			values_clause += "?";
-			if(insert_demographics.size() > i + 1){
-				column_clause += ", ";
-				values_clause += ", ";
-			}
-			
+			column_clause += ", \"" + demographic + "\"";
+			values_clause += ", ?";
 		}
 		column_clause += ")";
 		values_clause += ")";
@@ -114,6 +109,7 @@ public class DataBaseRecordStore implements RecordStore {
 	public LinkDataSource getRecordStoreLinkDataSource() {
 		String access = driver + "," + url + "," + user + "," + password;
 		LinkDataSource ret = new LinkDataSource(table_name, "DataBase", access, 0);
+		ret.setUniqueID(UID_COLUMN);
 		for(int i = 0; i < insert_demographics.size(); i++){
 			String demographic = insert_demographics.get(i);
 			DataColumn dc = new DataColumn(demographic);
@@ -134,9 +130,10 @@ public class DataBaseRecordStore implements RecordStore {
 	 */
 	public boolean storeRecord(Record r) {
 		try{
+			insert_stmt.setInt(1, insert_count++);
 			for(int i = 0; i < insert_demographics.size(); i++){
 				String demographic = insert_demographics.get(i);
-				insert_stmt.setString(i + 1, r.getDemographic(demographic));
+				insert_stmt.setString(i + 2, r.getDemographic(demographic));
 			}
 			return insert_stmt.executeUpdate() > 0;
 		}
