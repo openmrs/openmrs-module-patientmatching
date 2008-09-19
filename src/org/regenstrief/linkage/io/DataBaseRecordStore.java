@@ -57,8 +57,12 @@ public class DataBaseRecordStore implements RecordStore {
 		Enumeration<String> e = lds.getIncludedDataColumns().keys();
 		while(e.hasMoreElements()){
 			String column = e.nextElement();
+			
+			// clean column name to something SQL allows
+			
+			
 			insert_demographics.add(column);
-			query_text += column + "\tvarchar";
+			query_text += "\"" + column + "\"\tvarchar";
 			if(e.hasMoreElements()){
 				query_text += ", ";
 			}
@@ -82,7 +86,7 @@ public class DataBaseRecordStore implements RecordStore {
 		String values_clause = "VALUES (";
 		for(int i = 0; i < insert_demographics.size(); i++){
 			String demographic = insert_demographics.get(i);
-			column_clause += demographic;
+			column_clause += "\"" + demographic + "\"";
 			values_clause += "?";
 			if(insert_demographics.size() > i + 1){
 				column_clause += ", ";
