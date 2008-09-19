@@ -1,7 +1,9 @@
 package org.regenstrief.linkage.io;
 
+import java.beans.Statement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -28,6 +30,7 @@ public class DataBaseRecordStore implements RecordStore {
 	int insert_count;
 	
 	public static final String UID_COLUMN = "import_uid";
+	public static final String INVALID_COLUMN_CHARS = "\\W";
 	
 	/**
 	 * 
@@ -50,6 +53,7 @@ public class DataBaseRecordStore implements RecordStore {
 		insert_demographics = new ArrayList<String>();
 		insert_count = 0;
 		
+		dropTableIfExists(table_name);
 		createTable();
 		insert_stmt = createInsertQuery();
 		
@@ -63,20 +67,31 @@ public class DataBaseRecordStore implements RecordStore {
 		while(e.hasMoreElements()){
 			String column = e.nextElement();
 			
+			// remove invalid characters from columns
+			column.replaceAll(INVALID_COLUMN_CHARS, "");
+			
 			insert_demographics.add(column);
-			query_text += ", \"" + column + "\"\tvarchar";
+			query_text += ", " + column + "\tvarchar(255)";
 
 		}
 		query_text += ")";
 		
 		try{
-			db_connection.createStatement().execute("DROP TABLE " + table_name);
 			db_connection.createStatement().execute(query_text);
 		}
 		catch(SQLException sqle){
 			return false;
 		}
 		return true;
+	}
+	
+	protected void dropTableIfExists(String table){
+		try{
+			db_connection.createStatement().execute("DROP TABLE " + table);
+		}
+		catch(SQLException sqle){
+			
+		}
 	}
 	
 	protected PreparedStatement createInsertQuery(){
@@ -86,7 +101,7 @@ public class DataBaseRecordStore implements RecordStore {
 		String values_clause = "VALUES (?";
 		for(int i = 0; i < insert_demographics.size(); i++){
 			String demographic = insert_demographics.get(i);
-			column_clause += ", \"" + demographic + "\"";
+			column_clause += ", " + demographic;
 			values_clause += ", ?";
 		}
 		column_clause += ")";
