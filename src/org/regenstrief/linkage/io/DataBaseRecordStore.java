@@ -27,6 +27,7 @@ public class DataBaseRecordStore implements RecordStore {
 	PreparedStatement insert_stmt;
 	List<String> insert_demographics;
 	
+	String quote_string;
 	int insert_count;
 	
 	public static final String UID_COLUMN = "import_uid";
@@ -52,6 +53,12 @@ public class DataBaseRecordStore implements RecordStore {
 		
 		insert_demographics = new ArrayList<String>();
 		insert_count = 0;
+		try{
+			quote_string = db_connection.getMetaData().getIdentifierQuoteString();
+		}
+		catch(SQLException sqle){
+			quote_string = "";
+		}
 		
 		dropTableIfExists(table_name);
 		createTable();
@@ -67,11 +74,8 @@ public class DataBaseRecordStore implements RecordStore {
 		while(e.hasMoreElements()){
 			String column = e.nextElement();
 			
-			// remove invalid characters from columns
-			column = column.replaceAll(INVALID_COLUMN_CHARS, "");
-			
 			insert_demographics.add(column);
-			query_text += ", " + column + "\tvarchar(255)";
+			query_text += ", " + quote_string + column + quote_string + "\tvarchar(255)";
 
 		}
 		query_text += ")";
@@ -101,7 +105,7 @@ public class DataBaseRecordStore implements RecordStore {
 		String values_clause = "VALUES (?";
 		for(int i = 0; i < insert_demographics.size(); i++){
 			String demographic = insert_demographics.get(i);
-			column_clause += ", " + demographic;
+			column_clause += ", " + quote_string + demographic + quote_string;
 			values_clause += ", ?";
 		}
 		column_clause += ")";

@@ -20,7 +20,7 @@ import java.util.*;
 public class DataBaseReader implements DataSourceReader {
 	protected LinkDataSource data_source;
 	
-	protected String driver, url, user, passwd, query;
+	protected String driver, url, user, passwd, query, quote_string;
 	protected Connection db;
 	protected ResultSet data;
 	protected PreparedStatement pstmt;
@@ -44,6 +44,13 @@ public class DataBaseReader implements DataSourceReader {
 		this.db = db;
 		ready = false;
 		record_count = 0;
+		
+		try{
+			quote_string = db.getMetaData().getIdentifierQuoteString();
+		}
+		catch(SQLException sqle){
+			quote_string = "";
+		}
 	}
 	
 	public int getRecordSize(){
@@ -94,10 +101,10 @@ public class DataBaseReader implements DataSourceReader {
 		}
 		
 		for(int i = 0; i < incl_cols.size() - 1; i++){
-			query += incl_cols.get(i).getColumnID() + ", ";
+			query += quote_string + incl_cols.get(i).getColumnID() + quote_string + ", ";
 		}
 		
-		query += incl_cols.get(incl_cols.size() - 1).getColumnID();
+		query += quote_string + incl_cols.get(incl_cols.size() - 1).getColumnID() + quote_string;
 		query += " FROM " + data_source.getName();
 		
 		return query;

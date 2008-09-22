@@ -48,7 +48,7 @@ public class OrderedDataBaseReader extends DataBaseReader  implements OrderedDat
 		}
 		
 		for(int i = 0; i < incl_cols.size() - 1; i++){
-			query += incl_cols.get(i).getName() + ", ";
+			query += quote_string + incl_cols.get(i).getName() + quote_string + ", ";
 		}
 		
 		query += incl_cols.get(incl_cols.size() - 1).getName();
@@ -56,7 +56,7 @@ public class OrderedDataBaseReader extends DataBaseReader  implements OrderedDat
 		query += " ORDER BY ";
 		String[] b_columns = mc.getBlockingColumns();
 		for(int i = 0; i < b_columns.length - 1; i++){
-			query += b_columns[i] + ", ";
+			query += quote_string + b_columns[i] + quote_string + ", ";
 		}
 		query += b_columns[b_columns.length - 1];
 		return query;
