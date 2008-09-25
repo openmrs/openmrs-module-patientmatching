@@ -56,6 +56,14 @@ public class LinkDBConnections {
 	
 	private final static LinkDBConnections INSTANCE = new LinkDBConnections();
 	
+	private List<PatientIdentifierType> patientIdentifierTypes;
+	private List<PersonAttributeType> personAttributeTypes;
+    private List<String> patientPropertyList;
+    private List<String> namePropertyList;
+    private List<String> addressPropertyList;
+	
+    private PersonAttributeType matching_attr_type;
+    
 	private LinkDBConnections(){
 		
 		AdministrationService adminService = Context.getAdministrationService();
@@ -74,9 +82,31 @@ public class LinkDBConnections {
 			link_db = null;
 			rp = null;
 		}
-	};
-	
-	/**
+	}
+    
+    /**
+     * This method must be called before any call to LinkDBConnection's patientToRecord method.
+     */
+    public void syncRecordDemogrpahics() {
+        PatientService patientService = Context.getPatientService();
+        PersonService personService = Context.getPersonService();
+        
+        patientIdentifierTypes = patientService.getAllPatientIdentifierTypes();
+        personAttributeTypes = personService.getAllPersonAttributeTypes();
+        
+        // nothing is excluded
+        List<String> listExcludedProperties = new ArrayList<String>();
+        
+        patientPropertyList = MatchingConfigUtilities.introspectBean(listExcludedProperties, Patient.class);
+        
+        namePropertyList = MatchingConfigUtilities.introspectBean(listExcludedProperties, PersonName.class);
+        
+        addressPropertyList = MatchingConfigUtilities.introspectBean(listExcludedProperties, PersonAddress.class);
+        
+        matching_attr_type = personService.getPersonAttributeTypeByName(PatientMatchingActivator.MATCHING_ATTRIBUTE);
+    }
+
+    /**
 	 * Method returns an object holding a MatchFinder object and
 	 * a RecordDBManager object.  The first is used to find matches, 
 	 * the second is used to add, update, or delete the records
@@ -181,7 +211,7 @@ public class LinkDBConnections {
 		}
 		
 		// first, try to get the "Matching Information" attribute type
-		PersonAttributeType matching_attr_type = Context.getPersonService().getPersonAttributeTypeByName(PatientMatchingActivator.MATCHING_ATTRIBUTE);
+		
 		if(matching_attr_type != null){
 			try{
 			// expected attribute with information is present, so use all the information from there
@@ -199,13 +229,8 @@ public class LinkDBConnections {
 				return ret;
 			}
 		} else {
-            // nothing is excluded
-            List<String> listExcludedProperties = new ArrayList<String>();
             
-            List<String> propertyList = new ArrayList<String>();
-            propertyList.addAll(MatchingConfigUtilities.introspectBean(listExcludedProperties, Patient.class));
-            
-            for (String property : propertyList) {
+            for (String property : patientPropertyList) {
                 String value = "";
                 try {
                     String classProperty = property.substring(property.lastIndexOf(".") + 1);
@@ -217,12 +242,9 @@ public class LinkDBConnections {
                 }
             }
             
-            propertyList = new ArrayList<String>();
-            propertyList.addAll(MatchingConfigUtilities.introspectBean(listExcludedProperties, PersonName.class));
-            
             PersonName personName = patient.getPersonName();
             
-            for (String property : propertyList) {
+            for (String property : namePropertyList) {
                 String value = "";
                 try {
                     String classProperty = property.substring(property.lastIndexOf(".") + 1);
@@ -233,13 +255,10 @@ public class LinkDBConnections {
                     ret.addDemographic(property, value);
                 }
             }
-            
-            propertyList = new ArrayList<String>();
-            propertyList.addAll(MatchingConfigUtilities.introspectBean(listExcludedProperties, PersonAddress.class));
 
             PersonAddress personAddress = patient.getPersonAddress();
             
-            for (String property : propertyList) {
+            for (String property : addressPropertyList) {
                 String value = "";
                 try {
                     String classProperty = property.substring(property.lastIndexOf(".") + 1);
@@ -250,26 +269,22 @@ public class LinkDBConnections {
                     ret.addDemographic(property, value);
                 }
             }
-
-            PatientService patientService = Context.getPatientService();
-            List<PatientIdentifierType> patientIdentifierTypes = patientService.getAllPatientIdentifierTypes();
+            
             for (PatientIdentifierType patientIdentifierType : patientIdentifierTypes) {
                 PatientIdentifier identifier = patient.getPatientIdentifier(patientIdentifierType.getName());
                 if (identifier != null) {
-                    ret.addDemographic("(Identifier) " + patientIdentifierType.getName(), identifier.getIdentifier());
+                    ret.addDemographic(("(Identifier) " + patientIdentifierType.getName()), identifier.getIdentifier());
                 } else {
-                    ret.addDemographic("(Identifier) " + patientIdentifierType.getName(), "");
+                    ret.addDemographic(("(Identifier) " + patientIdentifierType.getName()), "");
                 }
             }
 
-            PersonService personService = Context.getPersonService();
-            List<PersonAttributeType> personAttributeTypes = personService.getAllPersonAttributeTypes();
             for (PersonAttributeType personAttributeType : personAttributeTypes) {
                 PersonAttribute attribute = patient.getAttribute(personAttributeType.getName());
                 if (attribute != null) {
-                    ret.addDemographic("(Attribute) " + personAttributeType.getName(), attribute.getValue());
+                    ret.addDemographic(("(Attribute) " + personAttributeType.getName()), attribute.getValue());
                 } else {
-                    ret.addDemographic("(Attribute) " + personAttributeType.getName(), "");
+                    ret.addDemographic(("(Attribute) " + personAttributeType.getName()), "");
                 }
             }
 		}

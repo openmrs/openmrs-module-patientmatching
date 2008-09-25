@@ -37,7 +37,7 @@ public class OrderedDataBaseReader extends DataBaseReader  implements OrderedDat
 	 * records ordered by blocking column.
 	 */
 	public String constructQuery(){
-		String query = new String("SELECT ");
+		String query = "SELECT ";
 		incl_cols = new ArrayList<DataColumn>();
 		Iterator<DataColumn> it = data_source.getDataColumns().iterator();
 		while(it.hasNext()){
@@ -51,14 +51,15 @@ public class OrderedDataBaseReader extends DataBaseReader  implements OrderedDat
 			query += quote_string + incl_cols.get(i).getName() + quote_string + ", ";
 		}
 		
-		query += incl_cols.get(incl_cols.size() - 1).getName();
+		query += quote_string + incl_cols.get(incl_cols.size() - 1).getName() + quote_string;
 		query += " FROM " + data_source.getName();
 		query += " ORDER BY ";
 		String[] b_columns = mc.getBlockingColumns();
 		for(int i = 0; i < b_columns.length - 1; i++){
 			query += quote_string + b_columns[i] + quote_string + ", ";
 		}
-		query += b_columns[b_columns.length - 1];
+		query += quote_string + b_columns[b_columns.length - 1] + quote_string;
+		
 		return query;
 	}
 }

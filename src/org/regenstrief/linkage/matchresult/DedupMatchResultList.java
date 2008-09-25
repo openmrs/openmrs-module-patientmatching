@@ -53,9 +53,9 @@ public class DedupMatchResultList extends MatchResultList {
             if(encounteredIdPairs == null) {
             	// try the small one first
             	encounteredIdOppPairs = encounteredIdsOpp.get(new Integer(smallerId));
-            	// try the other id
             	if (encounteredIdOppPairs == null) {
             		flipped = true;
+                    // try the other id
             		encounteredIdOppPairs = encounteredIdsOpp.get(new Integer(biggerId));
             	} else {
             		encounteredIdPairs = encounteredIds.get(encounteredIdOppPairs);
@@ -66,9 +66,9 @@ public class DedupMatchResultList extends MatchResultList {
                     encounteredIds.put(new Integer(smallerId), encounteredIdPairs);
                     try {
     					if(flipped) {
-    						RecordSerializer.serialize(r1);
-    					} else {
     						RecordSerializer.serialize(r2);
+    					} else {
+    						RecordSerializer.serialize(r1);
     					}
     				} catch (IOException e) {
     					log.info("Failed to serialize record object");
@@ -81,9 +81,9 @@ public class DedupMatchResultList extends MatchResultList {
                 // this id is not found yet
                 try {
 					if(flipped) {
-						RecordSerializer.serialize(r2);
-					} else {
 						RecordSerializer.serialize(r1);
+					} else {
+						RecordSerializer.serialize(r2);
 					}
 				} catch (IOException e) {
 					log.info("Failed to serialize record object");

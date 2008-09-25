@@ -1,30 +1,18 @@
 package org.openmrs.module.patientmatching;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.aopalliance.aop.Advice;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Patient;
-import org.openmrs.PatientIdentifier;
-import org.openmrs.PatientIdentifierType;
-import org.openmrs.PersonAddress;
-import org.openmrs.PersonAttribute;
-import org.openmrs.PersonAttributeType;
-import org.openmrs.PersonName;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.PatientSetService;
-import org.openmrs.api.PersonService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.Activator;
 import org.openmrs.module.patientmatching.advice.PatientMatchingAdvice;
-import org.openmrs.module.patientmatching.web.MatchingConfigUtilities;
-import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.db.RecordDBManager;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.support.StaticMethodMatcherPointcutAdvisor;
@@ -76,11 +64,13 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	// to fix the automatic startup issue, need to get this privilege
 	// it's either "View Patients" or "View Cohorts"
 	public final static String PRIVILEGE = "View Patients";
-	public final static String PRIVILEGE2 = "View Patient Cohorts";
+    public final static String PRIVILEGE2 = "View Patient Cohorts";
+    public final static String PRIVILEGE3 = "View Identifier Types";
+    public final static String PRIVILEGE4 = "View Person Attribute Types";
 	
-	protected static Log logger = LogFactory.getLog(PatientMatchingActivator.class);
+	protected static final Log logger = LogFactory.getLog(PatientMatchingActivator.class);
 	private Log log = LogFactory.getLog(this.getClass());
-	public static String FILE_LOG = "patient_matching_file_log";
+	public static final String FILE_LOG = "patient_matching_file_log";
 	
 	/**
 	 * Method calls the disconnect method in the LinkDBManager object.
@@ -91,7 +81,9 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		RecordDBManager link_db = ldb_con.getRecDBManager();
 		link_db.disconnect();
 		Context.removeProxyPrivilege(PRIVILEGE);
-		Context.removeProxyPrivilege(PRIVILEGE2);
+        Context.removeProxyPrivilege(PRIVILEGE2);
+        Context.removeProxyPrivilege(PRIVILEGE3);
+        Context.removeProxyPrivilege(PRIVILEGE4);
 	}
 	
 	/**
@@ -103,7 +95,9 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		
 		// to fix automatic startup, get privilege
 		Context.addProxyPrivilege(PRIVILEGE);
-		Context.addProxyPrivilege(PRIVILEGE2);
+        Context.addProxyPrivilege(PRIVILEGE2);
+        Context.addProxyPrivilege(PRIVILEGE3);
+        Context.addProxyPrivilege(PRIVILEGE4);
 		
 		log.info("Starting to populate matching table");
 		if(LinkDBConnections.getInstance().getRecDBManager() != null){

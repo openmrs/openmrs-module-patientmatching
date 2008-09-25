@@ -57,7 +57,7 @@
                 <![CDATA[
                 import @MODULE_PACKAGE@.web.dwr.DWRMatchingConfigUtilities;
                 DWRMatchingConfigUtilities.getAllBlockingRuns()
-                DWRMatchingConfigUtilities.deleteBlockingRun(String name)
+                DWRMatchingConfigUtilities.deleteBlockingRun(String)
                 ]]>
             </signatures>
         </dwr>

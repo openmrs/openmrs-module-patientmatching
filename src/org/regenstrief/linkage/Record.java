@@ -15,7 +15,7 @@ import java.util.*;
  */
 public class Record {
 	
-	Hashtable<String,String> demographics;
+	private Hashtable<String,String> demographics;
 	int uid;
 	String uidContext;
 	

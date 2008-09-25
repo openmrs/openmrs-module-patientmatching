@@ -129,10 +129,15 @@ public class DataBaseRecordStore implements RecordStore {
 		String access = driver + "," + url + "," + user + "," + password;
 		LinkDataSource ret = new LinkDataSource(table_name, "DataBase", access, 0);
 		ret.setUniqueID(UID_COLUMN);
+        DataColumn dc = new DataColumn(UID_COLUMN);
+        dc.setIncludePosition(0);
+        dc.setName(UID_COLUMN);
+        dc.setType(lds.getColumnTypeByName(UID_COLUMN));
+        ret.addDataColumn(dc);
 		for(int i = 0; i < insert_demographics.size(); i++){
 			String demographic = insert_demographics.get(i);
-			DataColumn dc = new DataColumn(demographic);
-			dc.setIncludePosition(i);
+			dc = new DataColumn(demographic);
+			dc.setIncludePosition(i + 1);
 			dc.setName(demographic);
 			dc.setType(lds.getColumnTypeByName(demographic));
 			ret.addDataColumn(dc);

@@ -5,6 +5,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,14 +15,16 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.dbcp.ConnectionFactory;
+import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.SessionFactory;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifierType;
 import org.openmrs.PersonAddress;
@@ -30,7 +34,6 @@ import org.openmrs.api.PatientService;
 import org.openmrs.api.PersonService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.patientmatching.ConfigEntry;
-import org.openmrs.module.patientmatching.HibernateConnection;
 import org.openmrs.module.patientmatching.PatientMatchingConfig;
 import org.openmrs.util.OpenmrsUtil;
 import org.regenstrief.linkage.MatchResult;
@@ -38,10 +41,10 @@ import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.analysis.EMAnalyzer;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
+import org.regenstrief.linkage.io.DataBaseRecordStore;
 import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
-import org.regenstrief.linkage.io.FormPairs;
-import org.regenstrief.linkage.io.OpenMRSLookupFormPairs;
-import org.regenstrief.linkage.io.OrderedOpenMRSReader;
+import org.regenstrief.linkage.io.OpenMRSReader;
+import org.regenstrief.linkage.io.OrderedDataBaseReader;
 import org.regenstrief.linkage.matchresult.DedupMatchResultList;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
@@ -80,8 +83,8 @@ public class MatchingConfigUtilities {
             ConfigEntry configEntry = new ConfigEntry();
             configEntry.setFieldName("(Identifier) " + patientIdentifierType.getName());
             configEntry.setFieldViewName("(Identifier) " + patientIdentifierType.getName());
-            configEntry.setBlocking(new Boolean(false));
-            configEntry.setIncluded(new Boolean(false));
+            configEntry.setBlocking(false);
+            configEntry.setIncluded(false);
             configEntries.add(configEntry);
         }
         
@@ -91,15 +94,12 @@ public class MatchingConfigUtilities {
             ConfigEntry configEntry = new ConfigEntry();
             configEntry.setFieldName("(Attribute) " + personAttributeType.getName());
             configEntry.setFieldViewName("(Attribute) " + personAttributeType.getName());
-            configEntry.setBlocking(new Boolean(false));
-            configEntry.setIncluded(new Boolean(false));
+            configEntry.setBlocking(false);
+            configEntry.setIncluded(false);
             configEntries.add(configEntry);
         }
         
         Collections.sort(configEntries);
-        for (ConfigEntry configEntry : configEntries) {
-            log.info("Entry: " + configEntry.getFieldName());
-        }
         
         patientMatchingConfig.setConfigEntries(configEntries);
         patientMatchingConfig.setConfigName("new configuration");
@@ -132,7 +132,7 @@ public class MatchingConfigUtilities {
             for (ConfigEntry configEntry : patientMatchingConfig.getConfigEntries()) {
                 MatchingConfigRow configRow = matchingConfig.getMatchingConfigRowByName(configEntry.getFieldName());
                 configEntry.setBlocking(configRow.getBlockOrder() > 0);
-                configEntry.setIncluded(configRow.isIncluded());
+                configEntry.setIncluded(configRow.isIncluded() && configRow.getBlockOrder() <= 0);
             }
             Collections.sort(patientMatchingConfig.getConfigEntries());
             
@@ -169,8 +169,8 @@ public class MatchingConfigUtilities {
             ConfigEntry configEntry = new ConfigEntry();
             configEntry.setFieldName(fieldName);
             configEntry.setFieldViewName("patientmatching." + fieldName);
-            configEntry.setBlocking(new Boolean(false));
-            configEntry.setIncluded(new Boolean(false));
+            configEntry.setBlocking(false);
+            configEntry.setIncluded(false);
             configEntries.add(configEntry);
         }
         return configEntries;
@@ -254,7 +254,7 @@ public class MatchingConfigUtilities {
             int counterBlockOrder = 1;
             for(ConfigEntry configEntry: patientMatchingConfig.getConfigEntries()) {
                 MatchingConfigRow configRow = matchingConfig.getMatchingConfigRowByName(configEntry.getFieldName());
-                configRow.setInclude(configEntry.isIncluded());
+                configRow.setInclude(configEntry.isIncluded() || configEntry.isBlocking());
                 if (configEntry.isBlocking()) {
                     configRow.setBlockOrder(counterBlockOrder);
                     counterBlockOrder ++;
@@ -269,7 +269,7 @@ public class MatchingConfigUtilities {
             int counterBlockOrder = 1;
             for (ConfigEntry configEntry : patientMatchingConfig.getConfigEntries()) {
                 MatchingConfigRow configRow = new MatchingConfigRow(configEntry.getFieldName());
-                configRow.setInclude(configEntry.isIncluded());
+                configRow.setInclude(configEntry.isIncluded() || configEntry.isBlocking());
                 if (configEntry.isBlocking()) {
                     configRow.setBlockOrder(counterBlockOrder);
                     counterBlockOrder ++;
@@ -325,70 +325,114 @@ public class MatchingConfigUtilities {
                 XMLTranslator.writeXMLDocToFile(XMLTranslator.toXML(recMatchConfig), configFile);
             } else {
                 log.info("Deleting file: " + configFile.getAbsolutePath());
-                configFile.delete();
+                boolean deleted = configFile.delete();
+                if (deleted) {
+                    log.info("Config file deleted.");
+                }
             }
         }
     }
 
     public static List<Map<String, String>> doAnalysis() throws IOException {
-        
-        HibernateConnection connection = new HibernateConnection();
-        log.info("Hibernate connection null? " + (connection == null));
-        
-        SessionFactory sessionFactory = connection.getSessionFactory();
-        log.info("Session factory null? " + (sessionFactory == null));
-        
+        log.info("Starting generate report process sequence ...");
         String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
         File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
         File configFile = new File(configFileFolder, MatchingConstants.CONFIG_FILE_NAME);
-
+        
+        log.info("Reading matching config file from " + configFile.getAbsolutePath() + " ...");
         RecMatchConfig recMatchConfig = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(configFile));
         List<MatchingConfig> matchingConfigLists = recMatchConfig.getMatchingConfigs();
 	    
         Set<String> globalIncludeColumns = new TreeSet<String>();
         DedupMatchResultList handler = new DedupMatchResultList();
+
+        Properties properties = Context.getRuntimeProperties();
+        
+        String url = properties.getProperty("connection.url");
+        String user = properties.getProperty("connection.username");
+        String passwd = properties.getProperty("connection.password");
+
+        // TODO: hack code!!! need to improve this in the future release
+        String driver = "com.mysql.jdbc.Driver";
+        if(url.contains("postgres")) {
+            driver = "org.postgresql.Driver";
+        }
+        
+        try {
+            Class.forName(driver);
+        } catch (ClassNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, user, passwd);
+        
+        Connection databaseConnection = null ;
+        try {
+            databaseConnection = connectionFactory.createConnection();
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        log.info("Initiating scratch table loading ...");
+        DataBaseRecordStore recordStore = new DataBaseRecordStore(databaseConnection,
+                recMatchConfig.getLinkDataSource1(), "", "", "", "");
+        OpenMRSReader reader = new OpenMRSReader();
+        while(reader.hasNextRecord()) {
+            Record patientRecord = reader.nextRecord();
+            recordStore.storeRecord(patientRecord);
+        }
         
         for (MatchingConfig matchingConfig : matchingConfigLists) {
-            log.info("Creating OpenMRS data reader ...");
-            OrderedOpenMRSReader openMRSReader = new OrderedOpenMRSReader(matchingConfig, sessionFactory);
+            log.info("Creating analyzer form pairs ...");
+            OrderedDataBaseReader databaseReader = new OrderedDataBaseReader(
+                    recordStore.getRecordStoreLinkDataSource(), databaseConnection, matchingConfig);
+            DedupOrderedDataSourceFormPairs formPairs = new DedupOrderedDataSourceFormPairs(databaseReader,
+                    matchingConfig,
+                    recMatchConfig.getLinkDataSource1().getTypeTable());
             
-            if(openMRSReader != null) {
-            	log.info("Creating form pairs ...");
-                FormPairs formPairs = new DedupOrderedDataSourceFormPairs(openMRSReader,
-                        matchingConfig,
-                        recMatchConfig.getLinkDataSource1().getTypeTable());
-                
-                OpenMRSLookupFormPairs lookupFormPairs = new OpenMRSLookupFormPairs(formPairs);
-                
-                log.info("Creating pair data source analyzer ...");
-                PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(lookupFormPairs);
-                
-                log.info("Creating random sample analyzer ...");
-                RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(matchingConfig, lookupFormPairs);
-                log.info("Adding random sample analyzer ...");
-                pdsa.addAnalyzer(rsa);
-                
-                log.info("Creating EM analyzer ...");
-                EMAnalyzer ema = new EMAnalyzer(matchingConfig);
-                log.info("Adding EM analyzer ...");
-                pdsa.addAnalyzer(ema);
-                
-                log.info("Analyzing data ...");
-                pdsa.analyzeData();
-                
-                log.info("Scoring data ...");
-                lookupFormPairs.reset();
-                ScorePair sp = new ScorePair(matchingConfig);
-                
-                Record[] pair;
-				MatchResult mr;
-                int counter = 0;
-                
-                while((pair = lookupFormPairs.getNextRecordPair()) != null){
-                    mr = sp.scorePair(pair[0], pair[1]);
-                    counter ++;
-                    handler.acceptMatchResult(mr);
-                }
+            log.info("Creating pair data source analyzer ..."); 
+            PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(formPairs);
+            
+            log.info("Creating random sample analyzer ...");
+            OrderedDataBaseReader databaseReaderRandom = new OrderedDataBaseReader(
+                    recordStore.getRecordStoreLinkDataSource(), databaseConnection, matchingConfig);
+            DedupOrderedDataSourceFormPairs formPairsRandom = new DedupOrderedDataSourceFormPairs(
+                    databaseReaderRandom,
+                    matchingConfig,
+                    recMatchConfig.getLinkDataSource1().getTypeTable());
+            RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(matchingConfig, formPairsRandom);
+            
+            log.info("Adding random sample analyzer ...");
+            pdsa.addAnalyzer(rsa);
+            
+            log.info("Creating EM analyzer ...");
+            EMAnalyzer ema = new EMAnalyzer(matchingConfig);
+            
+            log.info("Adding EM analyzer ...");
+            pdsa.addAnalyzer(ema);
+            
+            log.info("Analyzing data ...");
+            pdsa.analyzeData();
+            
+            log.info("Scoring data ...");
+            OrderedDataBaseReader databaseReaderScore = new OrderedDataBaseReader(
+                    recordStore.getRecordStoreLinkDataSource(), databaseConnection, matchingConfig);
+            DedupOrderedDataSourceFormPairs formPairsScoring = new DedupOrderedDataSourceFormPairs(
+                    databaseReaderScore,
+                    matchingConfig,
+                    recMatchConfig.getLinkDataSource1().getTypeTable());
+            ScorePair sp = new ScorePair(matchingConfig);
+            
+            Record[] pair;
+            MatchResult mr;
+            int counter = 0;
+            
+            while((pair = formPairsScoring.getNextRecordPair()) != null){
+                mr = sp.scorePair(pair[0], pair[1]);
+                counter ++;
+                handler.acceptMatchResult(mr);
             }
             
             List<String> blockingColumns = Arrays.asList(matchingConfig.getBlockingColumns());
@@ -396,13 +440,13 @@ public class MatchingConfigUtilities {
             List<String> includeColumns = Arrays.asList(matchingConfig.getIncludedColumnsNames());
             globalIncludeColumns.addAll(includeColumns);
             
-            openMRSReader.close();
+            databaseReader.close();
         }
 
         int groupId = 0;
         String separator = "|";
 
-        SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
+        SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy--hh-mm-ss");
         String dateString = format.format(new Date());
 
         File reportFile = new File(configFileFolder, "dedup-report-" + dateString);
@@ -423,9 +467,9 @@ public class MatchingConfigUtilities {
         	
         	TreeMap<Integer, Boolean> treeMap = groupedMR.get(key);
         	
-            for (Integer treeMapKey: treeMap.keySet()) {
+            for (Map.Entry<Integer, Boolean> treeMapKey: treeMap.entrySet()) {
             	
-            	Record internalRecord = RecordSerializer.deserialize(String.valueOf(treeMapKey));
+            	Record internalRecord = RecordSerializer.deserialize(String.valueOf(treeMapKey.getKey()));
             	
             	generateReport(internalRecord, globalIncludeColumns, groupId, separator,
 						writer, buffer);
@@ -433,6 +477,14 @@ public class MatchingConfigUtilities {
             groupId ++;
         }
         writer.close();
+        
+        if (databaseConnection != null) {
+            try {
+                databaseConnection.close();
+            } catch (SQLException e) {
+                log.info("Failed to close deduplication database connection.");
+            }
+        }
         
         return buffer;
     }

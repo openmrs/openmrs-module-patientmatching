@@ -10,5 +10,5 @@
 <root> 
     <level value="INFO"/>
 	<appender-ref ref="patient_matching_file_log"/>
-<root> 
+</root> 
 </log4j:configuration>

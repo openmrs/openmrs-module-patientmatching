@@ -88,7 +88,7 @@ public class ScoreVector {
 	}
 	
 	public String toString(){
-		String ret = new String();
+		String ret = "";
 		Iterator<String> it = score_table.keySet().iterator();
 		while(it.hasNext()){
 			String demographic = it.next();

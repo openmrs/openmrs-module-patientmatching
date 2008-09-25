@@ -34,7 +34,7 @@ public class ConfigListSimpleFormController extends SimpleFormController {
     protected Map<String, Object> referenceData(HttpServletRequest request) throws Exception {
         Map<String, Object> requestMap = new HashMap<String, Object>();
         requestMap.put("files", MatchingConfigUtilities.listAvailableBlockingRuns());
-        requestMap.put("parameter", MatchingConstants.PARAM_NAME.toString());
+        requestMap.put("parameter", MatchingConstants.PARAM_NAME);
         return requestMap;
     }
 }

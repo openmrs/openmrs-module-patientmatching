@@ -67,6 +67,8 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 			recordPairCount = countRecordPairs();
 		}
 		
+		System.out.println("record count: " + recordPairCount);
+		
 		sampleSize = mc.getRandomSampleSize();
 		sample1 = new boolean[recordPairCount];
 		sample2 = new boolean[recordPairCount];
