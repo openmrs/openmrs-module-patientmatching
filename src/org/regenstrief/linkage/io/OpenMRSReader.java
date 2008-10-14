@@ -1,10 +1,10 @@
 package org.regenstrief.linkage.io;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.openmrs.Patient;
@@ -14,21 +14,47 @@ import org.regenstrief.linkage.Record;
 
 public class OpenMRSReader implements DataSourceReader {
     @SuppressWarnings("unchecked")
-    private Iterator patientsIterator;
-    protected final Log log = LogFactory.getLog(this.getClass());
+    private List patients;
     
+    private int pageNumber = 0;
+
+    private final int PAGING_SIZE = 100;
+
+    protected final Log log = LogFactory.getLog(this.getClass());
+
+    private Criteria criteria;
+
+    private Session session;
+
     /**
      * 
      */
     @SuppressWarnings("unchecked")
     public OpenMRSReader() {
-        Session session = createHibernateSession();
+    	session = createHibernateSession();
         //TODO: possibility of out of memory exception because all record will be
         // loaded to memory immediately
-        List patients = session.createCriteria(Patient.class).list();
-        patientsIterator = patients.iterator();
-        
-        LinkDBConnections.getInstance().syncRecordDemogrpahics();
+    	log.info("Getting all patient records ...");
+    	patients = createCriteria(PAGING_SIZE, pageNumber).list();
+
+    	log.info("Getting data for patient records ...");
+    	LinkDBConnections.getInstance().syncRecordDemogrpahics();
+    	
+    	log.info("Finish intialization ...");
+    }
+
+    private Criteria createCriteria(int size, int pageNumber){
+    	session.flush();
+    	session.clear();
+    	criteria = session.createCriteria(Patient.class);
+    	//        criteria.setFetchMode("identifiers", FetchMode.JOIN);
+    	//        criteria.setFetchMode("addresses", FetchMode.JOIN);
+    	//        criteria.setFetchMode("names", FetchMode.JOIN);
+    	//        criteria.setFetchMode("attributes", FetchMode.JOIN);
+
+    	criteria.setMaxResults(size);
+    	criteria.setFirstResult(pageNumber * size);
+    	return criteria;
     }
     
     private Session createHibernateSession() {
@@ -46,8 +72,10 @@ public class OpenMRSReader implements DataSourceReader {
      * @see org.regenstrief.linkage.io.DataSourceReader#close()
      */
     public boolean close() {
-        patientsIterator = null;
-        return (patientsIterator == null);
+    	session.flush();
+    	session.clear();
+    	patients = null;
+    	return (patients == null);
     }
 
     /**
@@ -63,7 +91,12 @@ public class OpenMRSReader implements DataSourceReader {
      * @see org.regenstrief.linkage.io.DataSourceReader#hasNextRecord()
      */
     public boolean hasNextRecord() {
-        return patientsIterator.hasNext();
+    	if(patients.size() == 0) {
+    		pageNumber ++;
+    		patients = createCriteria(PAGING_SIZE, pageNumber).list();
+    	}
+
+    	return (patients.size() > 0);
     }
 
     /**
@@ -72,8 +105,8 @@ public class OpenMRSReader implements DataSourceReader {
      */
     public Record nextRecord() {
         Record r = null;
-        if(patientsIterator != null && hasNextRecord()) {
-            Patient p = (Patient) patientsIterator.next();
+        if(patients != null && hasNextRecord()) {
+        	Patient p = (Patient) patients.remove(0);
             r = LinkDBConnections.getInstance().patientToRecord(p);
         }
         return r;
@@ -85,14 +118,9 @@ public class OpenMRSReader implements DataSourceReader {
      */
     @SuppressWarnings("unchecked")
     public boolean reset() {
-        Session session = createHibernateSession();
+        List patients = createCriteria(PAGING_SIZE, 0).list();
         
-        List patients = session.createCriteria(Patient.class).list();
-        patientsIterator = patients.iterator();
-        
-        LinkDBConnections.getInstance().syncRecordDemogrpahics();
-        
-        return (patientsIterator != null);
+        return (patients != null);
     }
 
 }
