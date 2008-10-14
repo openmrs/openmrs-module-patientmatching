@@ -64,6 +64,8 @@ public class LinkDBConnections {
 	
     private PersonAttributeType matching_attr_type;
     
+    private boolean running_dedup;
+    
 	private LinkDBConnections(){
 		
 		AdministrationService adminService = Context.getAdministrationService();
@@ -76,6 +78,8 @@ public class LinkDBConnections {
 		            return size() > RECORD_CACHE_SIZE;
 		     }
 		};
+		
+		running_dedup = false;
 		
 		if(!parseConfig(new File(configFilename))){
 			finder = null;
@@ -124,6 +128,27 @@ public class LinkDBConnections {
 	 */
 	public MatchFinder getFinder(){
 		return finder;
+	}
+	
+	/**
+	 * Method sets the flag indication that a deduplication process is running to false
+	 */
+	public synchronized void releaseLock(){
+		running_dedup = false;
+	}
+	
+	/**
+	 * Method tries to set the flag indicating a deduplication process is running
+	 * 
+	 * @return		true if the lock was set, false if a deduplication is already running and lock is unavailable
+	 */
+	public synchronized boolean getLock(){
+		if(!running_dedup){
+			running_dedup = true;
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	/**
