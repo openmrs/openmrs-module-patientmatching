@@ -205,6 +205,10 @@ public class DataBaseReader implements DataSourceReader {
 				pstmt.close();
 			}
 			
+			if(data != null){
+				data.close();
+			}
+			
 			if(db != null){
 				db.close();
 			}
