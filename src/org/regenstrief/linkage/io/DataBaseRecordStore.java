@@ -1,9 +1,7 @@
 package org.regenstrief.linkage.io;
 
-import java.beans.Statement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -166,4 +164,18 @@ public class DataBaseRecordStore implements RecordStore {
 		}
 	}
 
+	public boolean close() {
+        try{
+            if(insert_stmt != null){
+                insert_stmt.clearParameters();
+                insert_stmt.close();
+            }
+            if(db_connection != null){
+                db_connection.close();
+            }
+            return true;
+        } catch(SQLException sqle){
+            return false;
+        }
+    }
 }

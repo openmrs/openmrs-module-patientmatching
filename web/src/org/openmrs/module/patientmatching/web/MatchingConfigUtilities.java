@@ -44,7 +44,8 @@ import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
 import org.regenstrief.linkage.io.DataBaseRecordStore;
 import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.OpenMRSReader;
-import org.regenstrief.linkage.io.OrderedDataBaseReader;
+import org.regenstrief.linkage.io.OrderedDataSourceReader;
+import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.matchresult.DedupMatchResultList;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
@@ -60,6 +61,10 @@ import org.regenstrief.linkage.util.XMLTranslator;
 // then we need mode
 public class MatchingConfigUtilities {
     protected static final Log log = LogFactory.getLog(MatchingConfigUtilities.class);
+    
+    private static final String NO_PROCESS = "Deduplication in progress ...";
+    
+    private static String status = NO_PROCESS;
     /**
      * Create a blank <code>PatientMatchingConfig</code> object.
      * 
@@ -307,6 +312,25 @@ public class MatchingConfigUtilities {
         return blockingRuns;
     }
     
+    public static final List<String> listAvailableReport() {
+        log.info("Listing all available report");
+        List<String> reports = new ArrayList<String>();
+        
+        String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
+        File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
+        
+        File[] files = configFileFolder.listFiles();
+        for (File file : files) {
+			if(file.getName().startsWith("dedup")) {
+				reports.add(file.getName());
+			}
+		}
+        
+        Collections.sort(reports);
+        
+        return reports;
+    }
+    
     public static final void deleteBlockingRun(String name) {
         log.info("Deleting blocking run with name: " + name);
         String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
@@ -333,12 +357,14 @@ public class MatchingConfigUtilities {
         }
     }
 
-    public static List<Map<String, String>> doAnalysis() throws IOException {
+    public static void doAnalysis() throws IOException {
+    	status = "Starting generate report process sequence ...";
         log.info("Starting generate report process sequence ...");
         String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
         File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
         File configFile = new File(configFileFolder, MatchingConstants.CONFIG_FILE_NAME);
         
+        status = "Reading matching config file from " + configFile.getAbsolutePath() + " ...";
         log.info("Reading matching config file from " + configFile.getAbsolutePath() + " ...");
         RecMatchConfig recMatchConfig = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(configFile));
         List<MatchingConfig> matchingConfigLists = recMatchConfig.getMatchingConfigs();
@@ -358,67 +384,77 @@ public class MatchingConfigUtilities {
             driver = "org.postgresql.Driver";
         }
         
+        Connection databaseConnection = null ;
         try {
             Class.forName(driver);
+            
+            ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, user, passwd);
+            databaseConnection = connectionFactory.createConnection();
         } catch (ClassNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        }
-        
-        ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, user, passwd);
-        
-        Connection databaseConnection = null ;
-        try {
-            databaseConnection = connectionFactory.createConnection();
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        
+
+        status = "Initiating scratch table loading ...";
         log.info("Initiating scratch table loading ...");
         DataBaseRecordStore recordStore = new DataBaseRecordStore(databaseConnection,
-                recMatchConfig.getLinkDataSource1(), "", "", "", "");
+                recMatchConfig.getLinkDataSource1(), driver, url, user, passwd);
         OpenMRSReader reader = new OpenMRSReader();
         while(reader.hasNextRecord()) {
             Record patientRecord = reader.nextRecord();
             recordStore.storeRecord(patientRecord);
         }
         
+        recordStore.close();
+        reader.close();
+        
+        ReaderProvider rp = new ReaderProvider();
         for (MatchingConfig matchingConfig : matchingConfigLists) {
+            status = "Creating analyzer form pairs ...";
             log.info("Creating analyzer form pairs ...");
-            OrderedDataBaseReader databaseReader = new OrderedDataBaseReader(
-                    recordStore.getRecordStoreLinkDataSource(), databaseConnection, matchingConfig);
+            OrderedDataSourceReader databaseReader = rp.getReader(recordStore.getRecordStoreLinkDataSource(), matchingConfig);
             DedupOrderedDataSourceFormPairs formPairs = new DedupOrderedDataSourceFormPairs(databaseReader,
                     matchingConfig,
                     recMatchConfig.getLinkDataSource1().getTypeTable());
-            
-            log.info("Creating pair data source analyzer ..."); 
+
+            status = "Creating pair data source analyzer ..."; 
+            log.info("Creating pair data source analyzer ...");
             PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(formPairs);
-            
+
+            status = "Creating random sample analyzer ...";
             log.info("Creating random sample analyzer ...");
-            OrderedDataBaseReader databaseReaderRandom = new OrderedDataBaseReader(
-                    recordStore.getRecordStoreLinkDataSource(), databaseConnection, matchingConfig);
+            OrderedDataSourceReader databaseReaderRandom = rp.getReader(recordStore.getRecordStoreLinkDataSource(), matchingConfig);
             DedupOrderedDataSourceFormPairs formPairsRandom = new DedupOrderedDataSourceFormPairs(
                     databaseReaderRandom,
                     matchingConfig,
                     recMatchConfig.getLinkDataSource1().getTypeTable());
             RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(matchingConfig, formPairsRandom);
-            
+            databaseReaderRandom.close();
+
+            status = "Adding random sample analyzer ...";
             log.info("Adding random sample analyzer ...");
             pdsa.addAnalyzer(rsa);
-            
+
+            status = "Creating EM analyzer ...";
             log.info("Creating EM analyzer ...");
             EMAnalyzer ema = new EMAnalyzer(matchingConfig);
-            
+
+            status = "Adding EM analyzer ...";
             log.info("Adding EM analyzer ...");
             pdsa.addAnalyzer(ema);
-            
+
+            status = "Analyzing data ...";
             log.info("Analyzing data ...");
             pdsa.analyzeData();
             
+            databaseReader.close();
+
+            status = "Scoring data ...";
             log.info("Scoring data ...");
-            OrderedDataBaseReader databaseReaderScore = new OrderedDataBaseReader(
-                    recordStore.getRecordStoreLinkDataSource(), databaseConnection, matchingConfig);
+            OrderedDataSourceReader databaseReaderScore = rp.getReader(recordStore.getRecordStoreLinkDataSource(), matchingConfig);
             DedupOrderedDataSourceFormPairs formPairsScoring = new DedupOrderedDataSourceFormPairs(
                     databaseReaderScore,
                     matchingConfig,
@@ -435,25 +471,26 @@ public class MatchingConfigUtilities {
                 handler.acceptMatchResult(mr);
             }
             
+            databaseReaderScore.close();
+            
             List<String> blockingColumns = Arrays.asList(matchingConfig.getBlockingColumns());
             globalIncludeColumns.addAll(blockingColumns);
             List<String> includeColumns = Arrays.asList(matchingConfig.getIncludedColumnsNames());
             globalIncludeColumns.addAll(includeColumns);
-            
-            databaseReader.close();
         }
 
         int groupId = 0;
         String separator = "|";
 
-        SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy--hh-mm-ss");
+        SimpleDateFormat format = new SimpleDateFormat("MM-dd-yyyy--hh-mm-ss");
         String dateString = format.format(new Date());
 
         File reportFile = new File(configFileFolder, "dedup-report-" + dateString);
         BufferedWriter writer = new BufferedWriter(new FileWriter(reportFile));
 
-        List<Map<String, String>> buffer = new ArrayList<Map<String, String>>();
+//        List<Map<String, String>> buffer = new ArrayList<Map<String, String>>();
 
+        status = "Creating report ...";
         log.info("Creating report ...");
         
         Map<Integer, TreeMap<Integer, Boolean>> groupedMR = handler.getGroupedMatchResult();
@@ -462,8 +499,7 @@ public class MatchingConfigUtilities {
         	
         	Record firstRecord = RecordSerializer.deserialize(String.valueOf(key));
         	
-        	generateReport(firstRecord, globalIncludeColumns, groupId, separator,
-					writer, buffer);
+        	generateReport(firstRecord, globalIncludeColumns, groupId, separator, writer);
         	
         	TreeMap<Integer, Boolean> treeMap = groupedMR.get(key);
         	
@@ -471,49 +507,47 @@ public class MatchingConfigUtilities {
             	
             	Record internalRecord = RecordSerializer.deserialize(String.valueOf(treeMapKey.getKey()));
             	
-            	generateReport(internalRecord, globalIncludeColumns, groupId, separator,
-						writer, buffer);
+            	generateReport(internalRecord, globalIncludeColumns, groupId, separator, writer);
             }
             groupId ++;
         }
         writer.close();
         
-        if (databaseConnection != null) {
-            try {
-                databaseConnection.close();
-            } catch (SQLException e) {
-                log.info("Failed to close deduplication database connection.");
-            }
-        }
-        
-        return buffer;
+//        return buffer;
     }
 
 	private static void generateReport(Record r, Set<String> globalIncludeColumns,
-			int groupId, String separator, BufferedWriter writer,
-			List<Map<String, String>> buffer)
+			int groupId, String separator, BufferedWriter writer)
 			throws IOException {
 		
-		Map<String, String> displayMap = new TreeMap<String, String>();
+//		Map<String, String> displayMap = new TreeMap<String, String>();
 		
 		String report = groupId + separator;
-		displayMap.put("Group Id", String.valueOf(groupId));
+//		displayMap.put("Group Id", String.valueOf(groupId));
 		
 		report = report + r.getUID() + separator;
-		displayMap.put("UID", String.valueOf(r.getUID()));
+//		displayMap.put("UID", String.valueOf(r.getUID()));
 		
 		Hashtable<String, String> h = r.getDemographics();
 		for(String demographic: globalIncludeColumns) {
 		    report = report + h.get(demographic) + separator;
-		    if (demographic.indexOf(".") == -1) {
-		        displayMap.put(demographic, h.get(demographic));
-		    } else {
-		        displayMap.put("patientmatching." + demographic, h.get(demographic));
-		    }
+//		    if (demographic.indexOf(".") == -1) {
+//		        displayMap.put(demographic, h.get(demographic));
+//		    } else {
+//		        displayMap.put("patientmatching." + demographic, h.get(demographic));
+//		    }
 		}
-		buffer.add(displayMap);
+//		buffer.add(displayMap);
 		report = report.substring(0, report.length() - 1);
 		writer.write(report);
 		writer.write(System.getProperty("line.separator"));
+	}
+	
+	public static String getStatus() {
+		return status;
+	}
+	
+	public static void setStatus(String s) {
+		status = s;
 	}
 }

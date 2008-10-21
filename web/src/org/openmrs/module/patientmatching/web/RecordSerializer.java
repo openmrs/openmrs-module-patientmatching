@@ -25,10 +25,12 @@ public class RecordSerializer {
         File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
         File serialFile = new File(configFileFolder, filename);
         
-		String xml = stream.toXML(record);
-        BufferedWriter writer = new BufferedWriter(new FileWriter(serialFile));
-        writer.write(xml);
-        writer.close();
+        if (!serialFile.exists()) {
+    		String xml = stream.toXML(record);
+            BufferedWriter writer = new BufferedWriter(new FileWriter(serialFile));
+            writer.write(xml);
+            writer.close();
+        }
 	}
 	
 	public static Record deserialize(String xmlName) throws IOException {

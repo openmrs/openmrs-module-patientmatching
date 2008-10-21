@@ -49,7 +49,9 @@
                 <create creator="new" javascript="DWRMatchingConfigUtilities">
                     <param name="class" value="@MODULE_PACKAGE@.web.dwr.DWRMatchingConfigUtilities"/>
                     <include method="getAllBlockingRuns"/>
-                    <include method="deleteBlockingRun"/>             
+                    <include method="deleteBlockingRun"/>
+                    <include method="doAnalysis"/>
+                    <include method="getStatus"/>
                 </create>
             </allow>
     
@@ -58,6 +60,8 @@
                 import @MODULE_PACKAGE@.web.dwr.DWRMatchingConfigUtilities;
                 DWRMatchingConfigUtilities.getAllBlockingRuns()
                 DWRMatchingConfigUtilities.deleteBlockingRun(String)
+                DWRMatchingConfigUtilities.doAnalysis()
+                DWRMatchingConfigUtilities.getStatus()
                 ]]>
             </signatures>
         </dwr>

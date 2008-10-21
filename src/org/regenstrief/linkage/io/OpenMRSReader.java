@@ -18,7 +18,7 @@ public class OpenMRSReader implements DataSourceReader {
     
     private int pageNumber = 0;
 
-    private final int PAGING_SIZE = 100;
+    private final int PAGING_SIZE = 10000;
 
     protected final Log log = LogFactory.getLog(this.getClass());
 
