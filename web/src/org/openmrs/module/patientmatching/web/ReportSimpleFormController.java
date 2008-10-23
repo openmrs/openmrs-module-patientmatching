@@ -35,7 +35,9 @@ public class ReportSimpleFormController extends SimpleFormController {
 		Map<String, Object> requestMap = new HashMap<String, Object>();
         requestMap.put("blockingRuns", MatchingConfigUtilities.listAvailableBlockingRuns());
         requestMap.put("reportResults", MatchingConfigUtilities.listAvailableReport());
-		
+        requestMap.put("defaultStatus", MatchingConfigUtilities.NO_PROCESS);
+        requestMap.put("premStatus", MatchingConfigUtilities.PREM_PROCESS);
+        requestMap.put("endStatus", MatchingConfigUtilities.END_PROCESS);
 		return requestMap;
 		
 	}
@@ -54,7 +56,4 @@ public class ReportSimpleFormController extends SimpleFormController {
         model.put("blockingRuns", MatchingConfigUtilities.listAvailableBlockingRuns());
         return new ModelAndView(getSuccessView(), model);
     }
-	
-	
-	
 }

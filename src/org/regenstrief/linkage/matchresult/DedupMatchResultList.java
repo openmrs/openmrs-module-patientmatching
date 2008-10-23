@@ -2,13 +2,16 @@
  */
 package org.regenstrief.linkage.matchresult;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.module.patientmatching.web.MatchingConstants;
 import org.openmrs.module.patientmatching.web.RecordSerializer;
+import org.openmrs.util.OpenmrsUtil;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;
 
@@ -26,6 +29,13 @@ public class DedupMatchResultList extends MatchResultList {
         super();
         encounteredIds = new TreeMap<Integer, TreeMap<Integer, Boolean>>();
         encounteredIdsOpp = new TreeMap<Integer, Integer>();
+        
+		String configLocation = MatchingConstants.SERIAL_FOLDER_NAME;
+        File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
+        boolean deleted = configFileFolder.delete();
+        if (deleted) {
+        	log.info("Deleted record serialization folder ...");
+        }
     }
 
     /**

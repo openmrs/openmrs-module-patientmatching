@@ -23,7 +23,8 @@ function buildTable() {
         var cellFuncs = [
             function(data) { return data; },
             function(data) {
-                return "<a href=\"${pageContext.request.contextPath}/module/patientmatching/config.form?<c:out value="${parameter}" />=" + data + "\"><c:out value="Edit" /></a>"; },
+                return "<a href=\"${pageContext.request.contextPath}/module/patientmatching/config.form?<c:out value="${parameter}" />=" + data + "\"><c:out value="Edit" /></a>";
+            },
             function(data) {
                 return "<a href=\"javascript:;\" onClick=\"deleteClicked('" + data + "');\"><c:out value="Delete" /></a>";
             }
@@ -56,7 +57,7 @@ function buildTable() {
                 <th colspan="2"><spring:message code="Operation"/></th>
             </tr>
             <tbody id="config-list">
-            <c:forEach items="${files}" var="file">
+            <c:forEach items="${files}" var="file" varStatus="entriesIndex">
                 <tr>
                     <td>
                         <c:out value="${file}" />
