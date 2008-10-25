@@ -32,9 +32,9 @@ function deleteFile(file) {
 
 function viewFile(file) {
         clearTimeout(s);
-        alert("Viewing option are going to be implemented in the future.
-               \nFor now please check your server for the report.
-               \nThe report file name is \'" + file + "\'");
+        alert("Viewing option are going to be implemented in the future." +
+               "\nFor now please check your server for the report." +
+               "\nThe report file name is \'" + file + "\'");
         updateTimer();
 
 //    if (confirm("Are you sure you want to delete \'" + file + "\'?")) {

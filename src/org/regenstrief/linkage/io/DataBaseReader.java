@@ -65,14 +65,16 @@ public class DataBaseReader implements DataSourceReader {
 	 * and this class's constructor must be called before the object is assigned in the subclass.  
 	 */
 	protected void getResultSet(){
-		
+		//TODO: MySQL way to stream result set is using:
+		//    - ResultSet.TYPE_FORWARD_ONLY + setFetchSize(Integer.MIN_VALUE)
+		//Pay attention when using other database
 		try{
 			if(!ready){
 				ready = true;
 				query = constructQuery();
-				pstmt = db.prepareStatement(query,ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
+				pstmt = db.prepareStatement(query,ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
 			}
-			
+			pstmt.setFetchSize(Integer.MIN_VALUE);
 			data = pstmt.executeQuery();
 			if(data.next()){
 				parseDataBaseRow();

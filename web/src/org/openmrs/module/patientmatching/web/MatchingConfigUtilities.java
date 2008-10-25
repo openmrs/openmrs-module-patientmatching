@@ -417,6 +417,16 @@ public class MatchingConfigUtilities {
         
         ReaderProvider rp = new ReaderProvider();
         for (MatchingConfig matchingConfig : matchingConfigLists) {
+            status = "Creating random sample analyzer for " + matchingConfig.getName() + " ...";
+            log.info("Creating random sample analyzer ...");
+            OrderedDataSourceReader databaseReaderRandom = rp.getReader(recordStore.getRecordStoreLinkDataSource(), matchingConfig);
+            DedupOrderedDataSourceFormPairs formPairsRandom = new DedupOrderedDataSourceFormPairs(
+                    databaseReaderRandom,
+                    matchingConfig,
+                    recMatchConfig.getLinkDataSource1().getTypeTable());
+            RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(matchingConfig, formPairsRandom);
+            databaseReaderRandom.close();
+            
             status = "Creating analyzer form pairs for " + matchingConfig.getName() + " ...";
             log.info("Creating analyzer form pairs ...");
             OrderedDataSourceReader databaseReader = rp.getReader(recordStore.getRecordStoreLinkDataSource(), matchingConfig);
@@ -427,16 +437,6 @@ public class MatchingConfigUtilities {
             status = "Creating pair data source analyzer for " + matchingConfig.getName() + " ..."; 
             log.info("Creating pair data source analyzer ...");
             PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(formPairs);
-
-            status = "Creating random sample analyzer for " + matchingConfig.getName() + " ...";
-            log.info("Creating random sample analyzer ...");
-            OrderedDataSourceReader databaseReaderRandom = rp.getReader(recordStore.getRecordStoreLinkDataSource(), matchingConfig);
-            DedupOrderedDataSourceFormPairs formPairsRandom = new DedupOrderedDataSourceFormPairs(
-                    databaseReaderRandom,
-                    matchingConfig,
-                    recMatchConfig.getLinkDataSource1().getTypeTable());
-            RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(matchingConfig, formPairsRandom);
-            databaseReaderRandom.close();
 
             status = "Adding random sample analyzer for " + matchingConfig.getName() + " ...";
             log.info("Adding random sample analyzer ...");
@@ -486,7 +486,7 @@ public class MatchingConfigUtilities {
         int groupId = 0;
         String separator = "|";
 
-        SimpleDateFormat format = new SimpleDateFormat("MM-dd-yyyy--hh-mm-ss");
+        SimpleDateFormat format = new SimpleDateFormat("MM-dd-yyyy--HH-mm-ss");
         String dateString = format.format(new Date());
 
         File reportFile = new File(configFileFolder, "dedup-report-" + dateString);

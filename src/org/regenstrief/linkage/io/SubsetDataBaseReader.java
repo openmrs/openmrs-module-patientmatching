@@ -35,11 +35,14 @@ public class SubsetDataBaseReader extends OrderedDataBaseReader implements Subse
 	}
 	
 	protected void getResultSet(){
+		//TODO: MySQL way to stream result set is using:
+		//    - ResultSet.TYPE_FORWARD_ONLY + setFetchSize(Integer.MIN_VALUE)
+		//Pay attention when using other database
 		try{
 			if(!ready){
 				ready = true;
 				query = constructQuery();
-				pstmt = db.prepareStatement(query,ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
+				pstmt = db.prepareStatement(query,ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
 				
 				// extra for loop in order to set ?'s in the query string
 				for(int i = 0; i < blocking_values.size(); i++){
@@ -51,6 +54,7 @@ public class SubsetDataBaseReader extends OrderedDataBaseReader implements Subse
 				}
 				
 			}
+			pstmt.setFetchSize(Integer.MIN_VALUE);
 			//log.error("preparing query of " + pstmt);
 			data = pstmt.executeQuery();
 			if(data.next()){
