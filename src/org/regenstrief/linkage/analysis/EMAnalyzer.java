@@ -121,7 +121,14 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 			} else {
 				uest.put(demographics[i], new Double(INIT_UEST));
 			}
-			log.info("Initializing demographic: " + demographics[i] + " u = " + uest.get(demographics[i]) + " and m = " + mest.get(demographics[i]));
+			StringBuffer logBuffer = new StringBuffer();
+			logBuffer.append("Initializing demographic: ")
+			         .append(demographics[i])
+			         .append(" u = ")
+			         .append(uest.get(demographics[i]))
+			         .append(" and m = ")
+			         .append(mest.get(demographics[i]));
+			log.info(logBuffer.toString());
 			msum.put(demographics[i], new Double(0));
 			usum.put(demographics[i], new Double(0));
 		}

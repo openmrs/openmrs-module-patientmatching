@@ -25,6 +25,9 @@ import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.Environment;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifierType;
 import org.openmrs.PersonAddress;
@@ -33,7 +36,9 @@ import org.openmrs.PersonName;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.PersonService;
 import org.openmrs.api.context.Context;
+import org.openmrs.api.db.hibernate.HibernateSessionFactoryBean;
 import org.openmrs.module.patientmatching.ConfigEntry;
+import org.openmrs.module.patientmatching.HibernateConnection;
 import org.openmrs.module.patientmatching.PatientMatchingConfig;
 import org.openmrs.util.OpenmrsUtil;
 import org.regenstrief.linkage.MatchResult;
@@ -375,18 +380,15 @@ public class MatchingConfigUtilities {
 	    
         Set<String> globalIncludeColumns = new TreeSet<String>();
         DedupMatchResultList handler = new DedupMatchResultList();
-
-        Properties properties = Context.getRuntimeProperties();
         
-        String url = properties.getProperty("connection.url");
-        String user = properties.getProperty("connection.username");
-        String passwd = properties.getProperty("connection.password");
-
-        // TODO: hack code!!! need to improve this in the future release
-        String driver = "com.mysql.jdbc.Driver";
-        if(url.contains("postgres")) {
-            driver = "org.postgresql.Driver";
-        }
+        HibernateSessionFactoryBean bean = new HibernateSessionFactoryBean() ;
+        Configuration cfg = bean.newConfiguration();
+        Properties c = cfg.getProperties();
+        
+        String url = c.getProperty("hibernate.connection.url");
+        String user = c.getProperty("hibernate.connection.username");
+        String passwd = c.getProperty("hibernate.connection.password");
+        String driver = c.getProperty("hibernate.connection.driver_class");
         
         Connection databaseConnection = null ;
         try {
@@ -521,14 +523,16 @@ public class MatchingConfigUtilities {
 			int groupId, String separator, BufferedWriter writer)
 			throws IOException {
 		
-		String report = groupId + separator;
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(groupId).append(separator);
 		
-		report = report + r.getUID() + separator;
+		buffer.append(r.getUID()).append(separator);
 		
 		Hashtable<String, String> h = r.getDemographics();
 		for(String demographic: globalIncludeColumns) {
-		    report = report + h.get(demographic) + separator;
+		    buffer.append(h.get(demographic)).append(separator);
 		}
+		String report = buffer.toString();
 		report = report.substring(0, report.length() - 1);
 		writer.write(report);
 		writer.write(System.getProperty("line.separator"));

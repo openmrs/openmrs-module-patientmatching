@@ -65,7 +65,12 @@ public class DataBaseRecordStore implements RecordStore {
 	}
 	
 	protected boolean createTable(){
-		String query_text = "CREATE TABLE " + table_name + "(" + UID_COLUMN + "\tbigint";
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("CREATE TABLE ")
+		      .append(table_name)
+		      .append("(")
+		      .append(UID_COLUMN)
+		      .append("\tbigint");
 		
 		// iteratoe over lds to see what fields to expect, and set order in insert_demographics
 		Enumeration<String> e = lds.getIncludedDataColumns().keys();
@@ -73,15 +78,20 @@ public class DataBaseRecordStore implements RecordStore {
 			String column = e.nextElement();
 			
 			insert_demographics.add(column);
-			query_text += ", " + quote_string + column + quote_string + "\tvarchar(255)";
+			buffer.append(", ")
+			      .append(quote_string)
+			      .append(column)
+			      .append(quote_string)
+			      .append("\tvarchar(255)");
 
 		}
-		query_text += ")";
+		buffer.append(")");
 		
 		try{
-			db_connection.createStatement().execute(query_text);
+			db_connection.createStatement().execute(buffer.toString());
 		}
 		catch(SQLException sqle){
+			sqle.printStackTrace();
 			return false;
 		}
 		return true;
@@ -92,28 +102,34 @@ public class DataBaseRecordStore implements RecordStore {
 			db_connection.createStatement().execute("DROP TABLE " + table);
 		}
 		catch(SQLException sqle){
-			
+			sqle.printStackTrace();
 		}
 	}
 	
 	protected PreparedStatement createInsertQuery(){
 		PreparedStatement stmt = null;
-		String insert_text = "INSERT INTO " + table_name;
-		String column_clause = "(" + UID_COLUMN;
-		String values_clause = "VALUES (?";
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("INSERT INTO ").append(table_name);
+		
+		StringBuffer bufferColumn = new StringBuffer();
+		bufferColumn.append("(").append(UID_COLUMN);
+		
+		StringBuffer bufferValues = new StringBuffer();
+		bufferValues.append("VALUES (?");
 		for(int i = 0; i < insert_demographics.size(); i++){
 			String demographic = insert_demographics.get(i);
-			column_clause += ", " + quote_string + demographic + quote_string;
-			values_clause += ", ?";
+			bufferColumn.append(", ").append(quote_string).append(demographic).append(quote_string);
+			bufferValues.append(", ?");
 		}
-		column_clause += ")";
-		values_clause += ")";
-		insert_text += column_clause + " " + values_clause;
+		bufferColumn.append(")");
+		bufferValues.append(")");
+		buffer.append(bufferColumn).append(" ").append(bufferValues);
 		
 		try{
-			stmt = db_connection.prepareStatement(insert_text);
+			stmt = db_connection.prepareStatement(buffer.toString());
 		}
 		catch(SQLException sqle){
+			sqle.printStackTrace();
 			return null;
 		}
 		return stmt;
@@ -124,7 +140,15 @@ public class DataBaseRecordStore implements RecordStore {
 	 * created from the database table
 	 */
 	public LinkDataSource getRecordStoreLinkDataSource() {
-		String access = driver + "," + url + "," + user + "," + password;
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(driver)
+		      .append(",")
+		      .append(url)
+		      .append(",")
+		      .append(user)
+		      .append(",")
+		      .append(password);
+		String access = buffer.toString();
 		LinkDataSource ret = new LinkDataSource(table_name, "DataBase", access, 0);
 		ret.setUniqueID(UID_COLUMN);
         DataColumn dc = new DataColumn(UID_COLUMN);
@@ -160,6 +184,7 @@ public class DataBaseRecordStore implements RecordStore {
 			return insert_stmt.executeUpdate() > 0;
 		}
 		catch(SQLException sqle){
+			sqle.printStackTrace();
 			return false;
 		}
 	}
@@ -175,6 +200,7 @@ public class DataBaseRecordStore implements RecordStore {
             }
             return true;
         } catch(SQLException sqle){
+			sqle.printStackTrace();
             return false;
         }
     }

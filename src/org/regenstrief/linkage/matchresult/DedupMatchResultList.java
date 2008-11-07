@@ -32,9 +32,22 @@ public class DedupMatchResultList extends MatchResultList {
         
 		String configLocation = MatchingConstants.SERIAL_FOLDER_NAME;
         File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
+        
+        cleanUpFolder(configFileFolder);
         boolean deleted = configFileFolder.delete();
         if (deleted) {
         	log.info("Deleted record serialization folder ...");
+        }
+    }
+    
+    public void cleanUpFolder(File folder) {
+        File[] files = folder.listFiles();
+        for (File file : files) {
+            if(file.isDirectory()) {
+                cleanUpFolder(file);
+            } else {
+                file.delete();
+            }
         }
     }
 
