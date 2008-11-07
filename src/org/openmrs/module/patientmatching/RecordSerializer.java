@@ -1,4 +1,4 @@
-package org.openmrs.module.patientmatching.web;
+package org.openmrs.module.patientmatching;
 
 import java.io.BufferedWriter;
 import java.io.File;

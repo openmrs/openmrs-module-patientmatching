@@ -1,4 +1,4 @@
-package org.openmrs.module.patientmatching.web;
+package org.openmrs.module.patientmatching;
 
 import java.beans.PropertyDescriptor;
 import java.io.BufferedWriter;
@@ -37,9 +37,6 @@ import org.openmrs.api.PatientService;
 import org.openmrs.api.PersonService;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.hibernate.HibernateSessionFactoryBean;
-import org.openmrs.module.patientmatching.ConfigEntry;
-import org.openmrs.module.patientmatching.HibernateConnection;
-import org.openmrs.module.patientmatching.PatientMatchingConfig;
 import org.openmrs.util.OpenmrsUtil;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;

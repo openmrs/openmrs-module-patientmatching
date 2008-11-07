@@ -1,7 +1,7 @@
 /**
  * Auto generated file comment
  */
-package org.openmrs.module.patientmatching.web;
+package org.openmrs.module.patientmatching;
 
 import java.util.Date;
 import java.util.HashMap;

@@ -12,6 +12,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.patientmatching.MatchingConfigUtilities;
+import org.openmrs.module.patientmatching.MatchingConstants;
 import org.openmrs.module.patientmatching.PatientMatchingConfig;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;

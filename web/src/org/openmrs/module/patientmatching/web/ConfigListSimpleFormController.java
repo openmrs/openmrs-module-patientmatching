@@ -7,6 +7,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.module.patientmatching.MatchingConfigUtilities;
+import org.openmrs.module.patientmatching.MatchingConstants;
 import org.springframework.web.servlet.mvc.SimpleFormController;
 
 public class ConfigListSimpleFormController extends SimpleFormController {

@@ -6,8 +6,8 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.module.patientmatching.LinkDBConnections;
-import org.openmrs.module.patientmatching.web.MatchingConfigUtilities;
-import org.openmrs.module.patientmatching.web.MatchingConstants;
+import org.openmrs.module.patientmatching.MatchingConfigUtilities;
+import org.openmrs.module.patientmatching.MatchingConstants;
 import org.openmrs.util.OpenmrsUtil;
 
 public class DWRMatchingConfigUtilities {

@@ -25,7 +25,6 @@ import org.openmrs.api.AdministrationService;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.PersonService;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.patientmatching.web.MatchingConfigUtilities;
 import org.regenstrief.linkage.MatchFinder;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.db.RecordDBManager;

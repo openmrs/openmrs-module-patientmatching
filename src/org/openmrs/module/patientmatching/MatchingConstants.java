@@ -1,4 +1,4 @@
-package org.openmrs.module.patientmatching.web;
+package org.openmrs.module.patientmatching;
 
 public interface MatchingConstants {
     String CONFIG_FOLDER_NAME = "patient-matching";

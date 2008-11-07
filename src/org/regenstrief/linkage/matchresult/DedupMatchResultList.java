@@ -9,8 +9,8 @@ import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openmrs.module.patientmatching.web.MatchingConstants;
-import org.openmrs.module.patientmatching.web.RecordSerializer;
+import org.openmrs.module.patientmatching.MatchingConstants;
+import org.openmrs.module.patientmatching.RecordSerializer;
 import org.openmrs.util.OpenmrsUtil;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;
