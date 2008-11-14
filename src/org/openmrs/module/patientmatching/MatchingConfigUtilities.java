@@ -386,6 +386,7 @@ public class MatchingConfigUtilities {
         String user = c.getProperty("hibernate.connection.username");
         String passwd = c.getProperty("hibernate.connection.password");
         String driver = c.getProperty("hibernate.connection.driver_class");
+        log.info("URL: " + url);
         
         Connection databaseConnection = null ;
         try {

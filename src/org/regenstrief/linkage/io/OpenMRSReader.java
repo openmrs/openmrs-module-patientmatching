@@ -1,5 +1,6 @@
 package org.regenstrief.linkage.io;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -7,6 +8,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Projections;
 import org.openmrs.Patient;
 import org.openmrs.module.patientmatching.HibernateConnection;
 import org.openmrs.module.patientmatching.LinkDBConnections;
@@ -35,25 +37,21 @@ public class OpenMRSReader implements DataSourceReader {
         //TODO: possibility of out of memory exception because all record will be
         // loaded to memory immediately
     	log.info("Getting all patient records ...");
-    	patients = createCriteria(PAGING_SIZE, pageNumber).list();
+    	updatePatientList();
 
     	log.info("Getting data for patient records ...");
-    	LinkDBConnections.getInstance().syncRecordDemogrpahics();
+    	LinkDBConnections.getInstance().syncRecordDemographics();
     	
     	log.info("Finish intialization ...");
     }
-
-    private Criteria createCriteria(int size, int pageNumber){
+    
+    private Criteria createCriteria(){
     	session.flush();
     	session.clear();
     	criteria = session.createCriteria(Patient.class);
-    	//        criteria.setFetchMode("identifiers", FetchMode.JOIN);
-    	//        criteria.setFetchMode("addresses", FetchMode.JOIN);
-    	//        criteria.setFetchMode("names", FetchMode.JOIN);
-    	//        criteria.setFetchMode("attributes", FetchMode.JOIN);
 
-    	criteria.setMaxResults(size);
-    	criteria.setFirstResult(pageNumber * size);
+    	criteria.setMaxResults(PAGING_SIZE);
+    	criteria.setFirstResult(pageNumber * PAGING_SIZE);
     	return criteria;
     }
     
@@ -65,6 +63,56 @@ public class OpenMRSReader implements DataSourceReader {
         log.info("Session factory null? " + (sessionFactory == null));
         
         return sessionFactory.getCurrentSession();
+    }
+    
+    private void updatePatientList() {
+        if (patients == null) {
+            patients = new ArrayList();
+        }
+    	
+        try {
+            patients = createCriteria().list();
+        } catch (Exception e) {
+            log.info("Exception caught during fetching OpenMRS data ...");
+            log.info("Root cause: " + e.getMessage());
+            log.info("Falling back to alternative plan ...");
+            session.flush();
+            session.clear();
+            patients.clear();
+
+            Integer count = (Integer) session
+                                .createCriteria(Patient.class)
+                                .setProjection(Projections.projectionList()
+                                        .add(Projections.count("patientId")))
+                                .uniqueResult();
+
+            if (count > PAGING_SIZE) {
+                count = PAGING_SIZE;
+            }
+
+            for (int i = 0; i < count; i++) {
+                try {
+                    Patient p = (Patient) session
+                                    .createCriteria(Patient.class)
+                                    .setMaxResults(1)
+                                    .setFirstResult(pageNumber * PAGING_SIZE + i)
+                                    .uniqueResult();
+                    patients.add(p);
+                } catch (Exception ex) {
+                    Integer id = (Integer) session
+                                    .createCriteria(Patient.class)
+                                    .setMaxResults(1)
+                                    .setFirstResult(pageNumber * PAGING_SIZE + i)
+                                    .setProjection(Projections.projectionList()
+                                            .add(Projections.property("patientId")))
+                                    .uniqueResult();
+                    log.info("Fail to load patient with id " + id + "...");
+                    log.info("Root cause: " + ex.getMessage());
+                    log.info("Skipping to the next patient ...");
+                }
+            }
+            log.info("Fall back plan success ...");
+        }
     }
 
     /**
@@ -93,7 +141,7 @@ public class OpenMRSReader implements DataSourceReader {
     public boolean hasNextRecord() {
     	if(patients.size() == 0) {
     		pageNumber ++;
-    		patients = createCriteria(PAGING_SIZE, pageNumber).list();
+    		updatePatientList();
     	}
 
     	return (patients.size() > 0);
@@ -118,7 +166,9 @@ public class OpenMRSReader implements DataSourceReader {
      */
     @SuppressWarnings("unchecked")
     public boolean reset() {
-        List patients = createCriteria(PAGING_SIZE, 0).list();
+    	pageNumber = 0;
+    	
+    	updatePatientList();
         
         return (patients != null);
     }

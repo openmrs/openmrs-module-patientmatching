@@ -90,7 +90,7 @@ public class LinkDBConnections {
     /**
      * This method must be called before any call to LinkDBConnection's patientToRecord method.
      */
-    public void syncRecordDemogrpahics() {
+    public void syncRecordDemographics() {
         PatientService patientService = Context.getPatientService();
         PersonService personService = Context.getPersonService();
         
