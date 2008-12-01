@@ -8,4 +8,6 @@ public interface MatchingConstants {
     String CONFIG_EXCLUDE_PROPERTIES = "patientmatching.excludedProperties";
     
     String PARAM_NAME = "config";
+    
+    String PARAM_REPORT="report";
 }

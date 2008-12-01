@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.module.patientmatching.MatchingConfigUtilities;
+import org.openmrs.module.patientmatching.MatchingConstants;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.SimpleFormController;
@@ -34,6 +35,7 @@ public class ReportSimpleFormController extends SimpleFormController {
 	@Override
 	protected Map<String, Object> referenceData(HttpServletRequest req) throws Exception {
 		Map<String, Object> requestMap = new HashMap<String, Object>();
+		requestMap.put("reportParam", MatchingConstants.PARAM_REPORT);
         requestMap.put("blockingRuns", MatchingConfigUtilities.listAvailableBlockingRuns());
         requestMap.put("reportResults", MatchingConfigUtilities.listAvailableReport());
         requestMap.put("defaultStatus", MatchingConfigUtilities.NO_PROCESS);

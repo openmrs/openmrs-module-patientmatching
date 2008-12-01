@@ -55,6 +55,8 @@
                     <include method="deleteReportFile"/>
                     <include method="getStatus"/>
                     <include method="setStatus"/>
+                    <include method="getNextPage"/>
+                    <include method="getPrevPage"/>
                 </create>
             </allow>
     
@@ -68,6 +70,8 @@
                 DWRMatchingConfigUtilities.deleteReportFile(String)
                 DWRMatchingConfigUtilities.getStatus()
                 DWRMatchingConfigUtilities.setStatus(String)
+                DWRMatchingConfigUtilities.getNextPage()
+                DWRMatchingConfigUtilities.getPrevPage()
                 ]]>
             </signatures>
         </dwr>

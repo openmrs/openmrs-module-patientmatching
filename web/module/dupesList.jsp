@@ -32,9 +32,9 @@ function deleteFile(file) {
 
 function viewFile(file) {
         clearTimeout(s);
-        alert("Viewing option are going to be implemented in the future." +
-               "\nFor now please check your server for the report." +
-               "\nThe report file name is \'" + file + "\'");
+        window.open("${pageContext.request.contextPath}/module/patientmatching/report.form?<c:out value="${reportParam}" />=" + file,
+                    "Report",
+                    "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=no,copyhistory=no");
         updateTimer();
 
 //    if (confirm("Are you sure you want to delete \'" + file + "\'?")) {
@@ -144,7 +144,22 @@ function buildTable() {
             function(data) { return "<a href=\"javascript:;\" onClick=\"viewFile('" + data + "')\">View</a>"; },
             function(data) { return "<a href=\"javascript:;\" onClick=\"deleteFile('" + data + "')\">Delete</a>"; }
         ];
-        DWRUtil.addRows( "report-list", reports, cellFuncs);
+        DWRUtil.addRows( "report-list", reports, cellFuncs, {
+            rowCreator:function(options) {
+                var row = document.createElement("tr");
+                var index = options.rowIndex;
+                if (index % 2)
+                    row.className = "oddRow";
+                else
+                    row.className = "evenRow";
+                return row;
+            },
+            cellCreator:function(options) {
+                var td = document.createElement("td");
+                return td;
+            },
+            escapeHtml:false
+        });
     });
 }
 
@@ -158,7 +173,7 @@ window.onload = updateTimer();
 <b class="boxHeader"><spring:message code="patientmatching.report.run" /></b>
 <form method="post">
     <div class="box">
-        <table cellspacing="2">
+        <table cellspacing="2" cellpadding="2">
             <tr>
                 <th colspan="2">
                     <spring:message code="patientmatching.report.blocking"/>
@@ -176,7 +191,7 @@ window.onload = updateTimer();
             </c:forEach>
         </table>
         
-        <table cellspacing="2">
+        <table cellspacing="2" cellpadding="2">
             <tr id="noRunReport">
                 <td colspan="2">
                     <span style="font-weight: bold;">
@@ -197,7 +212,7 @@ window.onload = updateTimer();
             </tr>
         </table>
         
-        <table cellspacing="2">
+        <table cellspacing="2" cellpadding="2">
             <tr>
                 <td>
                     <span style="font-weight: bold;">
@@ -230,7 +245,9 @@ window.onload = updateTimer();
             </tr>
         </table>
         
-        <table cellspacing="2">
+        <b class="boxHeader">Available Reports</b>
+        <div class="box">
+        <table cellspacing="2" cellpadding="2">
             <tr>
                 <th>
                     Analysis Reports
@@ -245,7 +262,8 @@ window.onload = updateTimer();
             
             <tbody id="report-list">
             <c:forEach items="${reportResults}" var="reportResult" varStatus="entriesIndex">
-            <tr>
+            <tr <c:if test="${entriesIndex.count % 2 == 0}">class="oddRow"</c:if>
+                <c:if test="${entriesIndex.count % 2 != 0}">class="evenRow"</c:if>>
                 <td>
                     <c:out value="${reportResult}" />
                 </td>
@@ -267,6 +285,7 @@ window.onload = updateTimer();
             </tbody>
             
         </table>
+        </div>
     
     </div>
 </form>

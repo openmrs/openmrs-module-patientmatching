@@ -29,7 +29,22 @@ function buildTable() {
                 return "<a href=\"javascript:;\" onClick=\"deleteClicked('" + data + "');\"><c:out value="Delete" /></a>";
             }
         ];
-        DWRUtil.addRows( "config-list", block, cellFuncs);
+        DWRUtil.addRows( "config-list", block, cellFuncs, {
+            rowCreator:function(options) {
+                var row = document.createElement("tr");
+                var index = options.rowIndex;
+                if (index % 2)
+                    row.className = "oddRow";
+                else
+                    row.className = "evenRow";
+                return row;
+            },
+            cellCreator:function(options) {
+                var td = document.createElement("td");
+                return td;
+            },
+            escapeHtml:false
+        });
     });
 }
 
@@ -51,14 +66,15 @@ function buildTable() {
 <b class="boxHeader"><spring:message code="patientmatching.config.list.available" /></b>
 <div class="box">
     <form method="post">
-        <table cellspacing="2">
+        <table  cellspacing="2" cellpadding="2">
             <tr>
                 <th align="left"><spring:message code="patientmatching.config.list.name"/></th>
                 <th colspan="2"><spring:message code="Operation"/></th>
             </tr>
             <tbody id="config-list">
             <c:forEach items="${files}" var="file" varStatus="entriesIndex">
-                <tr>
+                <tr <c:if test="${entriesIndex.count % 2 == 0}">class="oddRow"</c:if>
+                    <c:if test="${entriesIndex.count % 2 != 0}">class="evenRow"</c:if>>
                     <td>
                         <c:out value="${file}" />
                     </td>

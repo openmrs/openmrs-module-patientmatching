@@ -34,9 +34,11 @@
 <b class="boxHeader"><spring:message code="patientmatching.config.new"/></b>
 <div class="box">
     <table cellspacing="2" cellpadding="2">
-        <tr>
-            <td><spring:message code="patientmatching.config.new.name"/></td>
+        <tr class="oddRow">
             <td>
+                <span style="padding-left: 5px; font-weight: bold;"><spring:message code="patientmatching.config.new.name"/></span>
+            </td>
+            <td style="vertical-align: middle">
             <spring:bind path="patientMatchingConfig.configName">
                 <input type="text" 
                     name="${status.expression}" id="${status.expression}"
@@ -68,11 +70,11 @@
         </tr>
     </table>
     -->
-    <table table cellspacing="2" cellpadding="2">
+    <table cellspacing="2" cellpadding="2">
         <tr>
             <td valign="top">
                 <b class="boxHeader"><spring:message code="patientmatching.config.new.availableField"/></b>
-                <div class="box">
+                <div class="box" style="padding-right: 10px;">
                     <table cellspacing="2" cellpadding="2">
                         <tr>
                             <th><spring:message code="patientmatching.config.new.fieldName"/></th>
@@ -86,12 +88,12 @@
                             <th><spring:message code="patientmatching.config.new.fieldName"/></th>
                             <th><spring:message code="patientmatching.config.new.fieldNameInclude"/></th>
                             <th><spring:message code="patientmatching.config.new.fieldNameBlocking"/></th>
-                            <th>&nbsp;</th>
                         </tr>
                         <c:forEach items="${patientMatchingConfig.configEntries}" var="configEntry" varStatus="entriesIndex">
                             <c:choose>
                                 <c:when test="${(entriesIndex.count - 1) % 3 == 0}">
-                                    <tr>
+                                    <tr <c:if test="${entriesIndex.count % 2 == 0}">class="oddRow"</c:if>
+                                        <c:if test="${entriesIndex.count % 2 != 0}">class="evenRow"</c:if>>
                                 </c:when>
                                 <td nowrap="nowrap">
                                     <spring:message code="${configEntry.fieldViewName}"/>
@@ -116,7 +118,9 @@
                                         <c:if test="${status.value}">checked</c:if>/>
                                 </spring:bind>
                                 </td>
-                                <td>&nbsp;</td>
+                                <c:if test="${(entriesIndex.count - 1) % 3 < 2}">
+                                    <td>&nbsp;</td>
+                                </c:if>
                                 <c:when test="${(entriesIndex.count - 1) % 3 == 2}">
                                     </tr>
                                 </c:when>

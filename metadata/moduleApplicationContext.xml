@@ -12,6 +12,7 @@
                 <prop key="/module/@MODULE_ID@/config.form">configForm</prop>
                 <prop key="/module/@MODULE_ID@/schedule.list">matchSchedule</prop>
                 <prop key="/module/@MODULE_ID@/dupes.list">matchDupes</prop>
+                <prop key="/module/@MODULE_ID@/report.form">reportDupes</prop>
 			</props>
 		</property>
 	</bean>
@@ -27,13 +28,18 @@
         <property name="formView"><value>/module/@MODULE_ID@/configList</value></property>
     </bean>
 
-    <bean id="matchSchedule" class="@MODULE_PACKAGE@.web.AddResponseFormController">
+    <bean id="matchSchedule" class="@MODULE_PACKAGE@.web.ScheduleSimpleFormController">
         <property name="formView"><value>/module/@MODULE_ID@/scheduleList</value></property>
     </bean>
 
     <bean id="matchDupes" class="@MODULE_PACKAGE@.web.ReportSimpleFormController">
         <property name="formView"><value>/module/@MODULE_ID@/dupesList</value></property>
         <property name="successView"><value>/module/@MODULE_ID@/dupesList</value></property>
+    </bean>
+
+    <bean id="reportDupes" class="@MODULE_PACKAGE@.web.ReportFormSimpleFormController">
+        <property name="formView"><value>/module/@MODULE_ID@/reportForm</value></property>
+        <property name="successView"><value>/module/@MODULE_ID@/reportForm</value></property>
     </bean>
     
     <bean class="org.openmrs.module.patientmatching.HibernateConnection">
