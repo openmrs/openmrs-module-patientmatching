@@ -46,8 +46,7 @@ public class OpenMRSReader implements DataSourceReader {
     }
     
     private Criteria createCriteria(){
-    	session.flush();
-    	session.clear();
+        session.clear();
     	criteria = session.createCriteria(Patient.class);
 
     	criteria.setMaxResults(PAGING_SIZE);
@@ -65,6 +64,7 @@ public class OpenMRSReader implements DataSourceReader {
         return sessionFactory.getCurrentSession();
     }
     
+    @SuppressWarnings("unchecked")
     private void updatePatientList() {
         if (patients == null) {
             patients = new ArrayList();
@@ -76,15 +76,21 @@ public class OpenMRSReader implements DataSourceReader {
             log.info("Exception caught during fetching OpenMRS data ...");
             log.info("Root cause: " + e.getMessage());
             log.info("Falling back to alternative plan ...");
-            session.flush();
             session.clear();
             patients.clear();
 
-            Integer count = (Integer) session
+            Integer counter = (Integer) session
                                 .createCriteria(Patient.class)
+                                .setFirstResult(pageNumber * PAGING_SIZE)
                                 .setProjection(Projections.projectionList()
                                         .add(Projections.count("patientId")))
                                 .uniqueResult();
+            
+            int count = 0;
+            
+            if (counter != null) {
+                count = counter.intValue();
+            }
 
             if (count > PAGING_SIZE) {
                 count = PAGING_SIZE;
@@ -120,8 +126,8 @@ public class OpenMRSReader implements DataSourceReader {
      * @see org.regenstrief.linkage.io.DataSourceReader#close()
      */
     public boolean close() {
-    	session.flush();
-    	session.clear();
+        session.clear();
+        session.close();
     	patients = null;
     	return (patients == null);
     }
