@@ -13,6 +13,7 @@ import org.openmrs.api.PatientSetService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.Activator;
 import org.openmrs.module.patientmatching.advice.PatientMatchingAdvice;
+import org.openmrs.util.OpenmrsConstants;
 import org.regenstrief.linkage.db.RecordDBManager;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.support.StaticMethodMatcherPointcutAdvisor;
@@ -61,13 +62,6 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	public final static String MATCHING_ATTRIBUTE = "Other Matching Information";
 	public final static String LINK_TABLE_KEY_DEMOGRAPHIC = "openmrs_id";
 	
-	// to fix the automatic startup issue, need to get this privilege
-	// it's either "View Patients" or "View Cohorts"
-	public final static String PRIVILEGE = "View Patients";
-    public final static String PRIVILEGE2 = "View Patient Cohorts";
-    public final static String PRIVILEGE3 = "View Identifier Types";
-    public final static String PRIVILEGE4 = "View Person Attribute Types";
-	
 	protected static final Log logger = LogFactory.getLog(PatientMatchingActivator.class);
 	private Log log = LogFactory.getLog(this.getClass());
 	public static final String FILE_LOG = "patient_matching_file_log";
@@ -80,10 +74,6 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		LinkDBConnections ldb_con = LinkDBConnections.getInstance();
 		RecordDBManager link_db = ldb_con.getRecDBManager();
 		link_db.disconnect();
-		Context.removeProxyPrivilege(PRIVILEGE);
-        Context.removeProxyPrivilege(PRIVILEGE2);
-        Context.removeProxyPrivilege(PRIVILEGE3);
-        Context.removeProxyPrivilege(PRIVILEGE4);
 	}
 	
 	/**
@@ -93,19 +83,28 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	public void startup() {
 		log.info("Starting Patient Matching Module");
 		
-		// to fix automatic startup, get privilege
-		Context.addProxyPrivilege(PRIVILEGE);
-        Context.addProxyPrivilege(PRIVILEGE2);
-        Context.addProxyPrivilege(PRIVILEGE3);
-        Context.addProxyPrivilege(PRIVILEGE4);
-		
-		log.info("Starting to populate matching table");
-		if(LinkDBConnections.getInstance().getRecDBManager() != null){
-			populateMatchingTable();
-			log.info("Matching table populated");
-		} else {
-			log.warn("Error parsing config file and creating linkage objects");
+		try{
+			// get privileges
+			Context.addProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PATIENTS);
+	        Context.addProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PATIENT_COHORTS);
+	        Context.addProxyPrivilege(OpenmrsConstants.PRIV_VIEW_IDENTIFIER_TYPES);
+	        Context.addProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PERSON_ATTRIBUTE_TYPES);
+			
+			log.info("Starting to populate matching table");
+			if(LinkDBConnections.getInstance().getRecDBManager() != null){
+				populateMatchingTable();
+				log.info("Matching table populated");
+			} else {
+				log.warn("Error parsing config file and creating linkage objects");
+			}
 		}
+		finally{
+			Context.removeProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PATIENTS);
+	        Context.removeProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PATIENT_COHORTS);
+	        Context.removeProxyPrivilege(OpenmrsConstants.PRIV_VIEW_IDENTIFIER_TYPES);
+	        Context.removeProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PERSON_ATTRIBUTE_TYPES);
+		}
+		
 		
 	}
 	
