@@ -63,11 +63,7 @@ public class OpenMRSReader implements DataSourceReader {
     
     private Session createHibernateSession() {
         HibernateConnection connection = new HibernateConnection();
-        log.info("Hibernate connection null? " + (connection == null));
-        
         SessionFactory sessionFactory = connection.getSessionFactory();
-        log.info("Session factory null? " + (sessionFactory == null));
-        
         return sessionFactory.getCurrentSession();
     }
     
@@ -165,6 +161,8 @@ public class OpenMRSReader implements DataSourceReader {
                     patients.add(objList.toArray());
                 } catch (HibernateException hex) {
                     log.info("Exception caught during iterating patient ... Skipping ...");
+                    log.info("Cause: " + e.getCause());
+                    log.info("Message: " + e.getMessage());
                 }
             }
         }
