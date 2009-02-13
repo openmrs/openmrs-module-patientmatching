@@ -2,7 +2,7 @@ package org.openmrs.module.patientmatching;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,6 +85,8 @@ public class LinkDBConnections {
 			link_db = null;
 			rp = null;
 		}
+		
+		syncRecordDemographics();
 	}
     
     /**
@@ -98,7 +100,10 @@ public class LinkDBConnections {
         personAttributeTypes = personService.getAllPersonAttributeTypes();
         
         // nothing is excluded
-        List<String> listExcludedProperties = new ArrayList<String>();
+        AdministrationService adminService = Context.getAdministrationService();
+        String excluded = adminService.getGlobalProperty("patientmatching.excludedProperties", "");
+        String[] excludedArray = excluded.split(",");
+        List<String> listExcludedProperties = Arrays.asList(excludedArray);
         
         patientPropertyList = MatchingConfigUtilities.introspectBean(listExcludedProperties, Patient.class);
         
@@ -107,6 +112,78 @@ public class LinkDBConnections {
         addressPropertyList = MatchingConfigUtilities.introspectBean(listExcludedProperties, PersonAddress.class);
         
         matching_attr_type = personService.getPersonAttributeTypeByName(PatientMatchingActivator.MATCHING_ATTRIBUTE);
+    }
+
+    /**
+     * @return the patientIdentifierTypes
+     */
+    public List<PatientIdentifierType> getPatientIdentifierTypes() {
+        return patientIdentifierTypes;
+    }
+
+    /**
+     * @param patientIdentifierTypes the patientIdentifierTypes to set
+     */
+    public void setPatientIdentifierTypes(
+            List<PatientIdentifierType> patientIdentifierTypes) {
+        this.patientIdentifierTypes = patientIdentifierTypes;
+    }
+
+    /**
+     * @return the personAttributeTypes
+     */
+    public List<PersonAttributeType> getPersonAttributeTypes() {
+        return personAttributeTypes;
+    }
+
+    /**
+     * @param personAttributeTypes the personAttributeTypes to set
+     */
+    public void setPersonAttributeTypes(
+            List<PersonAttributeType> personAttributeTypes) {
+        this.personAttributeTypes = personAttributeTypes;
+    }
+
+    /**
+     * @return the patientPropertyList
+     */
+    public List<String> getPatientPropertyList() {
+        return patientPropertyList;
+    }
+
+    /**
+     * @param patientPropertyList the patientPropertyList to set
+     */
+    public void setPatientPropertyList(List<String> patientPropertyList) {
+        this.patientPropertyList = patientPropertyList;
+    }
+
+    /**
+     * @return the namePropertyList
+     */
+    public List<String> getNamePropertyList() {
+        return namePropertyList;
+    }
+
+    /**
+     * @param namePropertyList the namePropertyList to set
+     */
+    public void setNamePropertyList(List<String> namePropertyList) {
+        this.namePropertyList = namePropertyList;
+    }
+
+    /**
+     * @return the addressPropertyList
+     */
+    public List<String> getAddressPropertyList() {
+        return addressPropertyList;
+    }
+
+    /**
+     * @param addressPropertyList the addressPropertyList to set
+     */
+    public void setAddressPropertyList(List<String> addressPropertyList) {
+        this.addressPropertyList = addressPropertyList;
     }
 
     /**
@@ -316,4 +393,42 @@ public class LinkDBConnections {
 		cache.put(id, ret);
 		return ret;
 	}
+
+    public Record objectsToRecord(Object[] objs) {
+        
+        Integer patientId = (Integer) objs[0];
+        Record record = new Record(patientId, "OpenMRS");
+        
+        int fieldCounter = 1;
+
+        for (String patientProperty: getPatientPropertyList()) {
+            String classProperty = patientProperty.substring(patientProperty.lastIndexOf(".") + 1);
+            if (!classProperty.equals("patientId")) {
+                record.addDemographic(patientProperty, String.valueOf(objs[fieldCounter]));
+                fieldCounter ++;
+            }
+        }
+        
+        for (String nameProperty: getNamePropertyList()) {
+            record.addDemographic(nameProperty, String.valueOf(objs[fieldCounter]));
+            fieldCounter ++;
+        }
+        
+        for (String addressProperty: getAddressPropertyList()) {
+            record.addDemographic(addressProperty, String.valueOf(objs[fieldCounter]));
+            fieldCounter ++;
+        }
+        
+        for (PatientIdentifierType patientIdentifierType : patientIdentifierTypes) {
+            record.addDemographic(("(Identifier) " + patientIdentifierType.getName()), String.valueOf(objs[fieldCounter]));
+            fieldCounter ++;
+        }
+
+        for (PersonAttributeType personAttributeType : personAttributeTypes) {
+            record.addDemographic(("(Attribute) " + personAttributeType.getName()), String.valueOf(objs[fieldCounter]));
+            fieldCounter ++;
+        }
+        
+        return record;
+    }
 }
