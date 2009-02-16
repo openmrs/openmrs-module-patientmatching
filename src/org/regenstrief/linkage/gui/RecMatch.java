@@ -411,7 +411,7 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 				if(lds != null){
 					lds.setDataSource_ID(0);
 					if(lds.getType().equals("CharDelimFile")){
-						CharDelimLDSInspector cdldsi = new CharDelimLDSInspector();
+						CharDelimLDSInspector cdldsi = new CharDelimLDSInspector(lds.getFileHeaderLine());
 						cdldsi.setDefaultDataColumns(lds);
 					}
 					if(lds.getType().equals("DataBase")){
@@ -426,7 +426,7 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 				if(lds != null){
 					lds.setDataSource_ID(0);
 					if(lds.getType().equals("CharDelimFile")){
-						CharDelimLDSInspector cdldsi = new CharDelimLDSInspector();
+						CharDelimLDSInspector cdldsi = new CharDelimLDSInspector(lds.getFileHeaderLine());
 						cdldsi.setDefaultDataColumns(lds);
 					}
 					if(lds.getType().equals("DataBase")){

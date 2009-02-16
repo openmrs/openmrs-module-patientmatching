@@ -9,6 +9,7 @@ import java.io.File;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -37,6 +38,7 @@ public class LinkDataSourceChooser implements ActionListener{
 	JPasswordField passwd;
 	JButton ok, cancel, choose_file;
 	JDialog dialog;
+	JCheckBox header;
 	
 	// variables to save for creating the return object
 	String name;
@@ -120,6 +122,12 @@ public class LinkDataSourceChooser implements ActionListener{
 		line.add(delim);
 		ret.add(line);
 		
+		line = new JPanel();
+		line.add(new JLabel("Has file header:"));
+		header = new JCheckBox();
+		line.add(header);
+		ret.add(line);
+		
 		return ret;
 	}
 	
@@ -137,6 +145,9 @@ public class LinkDataSourceChooser implements ActionListener{
 		}
 		
 		lds = new LinkDataSource(name, type, access, id);
+		if(header.isSelected()){
+			lds.setFileHeaderLine(true);
+		}
 	}
 	
 	public void actionPerformed(ActionEvent ae){

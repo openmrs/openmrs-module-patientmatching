@@ -59,6 +59,11 @@ public class MatchingTableModel extends AbstractTableModel {
 		}
 		
 		int read_lines = 0;
+		if(lds.getFileHeaderLine()){
+			if(dsr.hasNextRecord()){
+				dsr.nextRecord();
+			}
+		}
 		while(dsr.hasNextRecord() && read_lines < DataPanel.ROWS_IN_TABLE){
 			Record r = dsr.nextRecord();
 			for(int i = 0; i < dc_names.length; i++){

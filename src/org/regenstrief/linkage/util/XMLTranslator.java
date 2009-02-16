@@ -170,6 +170,7 @@ public class XMLTranslator {
 		ret.setAttribute("type", lds.getType());
 		ret.setAttribute("access", lds.getAccess());
 		ret.setAttribute("id", "" + lds.getDataSource_ID());
+		ret.setAttribute("header", "" + lds.getFileHeaderLine());
 		
 		if(lds.getUniqueID() != null){
 			ret.setAttribute("id_field", lds.getUniqueID());
@@ -380,6 +381,7 @@ public class XMLTranslator {
 		String name = lds.getAttributes().getNamedItem("name").getTextContent();
 		String type = lds.getAttributes().getNamedItem("type").getTextContent();
 		String access = lds.getAttributes().getNamedItem("access").getTextContent();
+		String header = lds.getAttributes().getNamedItem("header").getTextContent();
 		String id_field = null;
 		if(lds.getAttributes().getNamedItem("id_field") != null){
 			 id_field = lds.getAttributes().getNamedItem("id_field").getTextContent();
@@ -388,6 +390,9 @@ public class XMLTranslator {
 			int ds_id = Integer.parseInt(lds.getAttributes().getNamedItem("id").getTextContent());
 			LinkDataSource ret = new LinkDataSource(name, type, access, ds_id);
 			ret.setUniqueID(id_field);
+			if(header.equals("true")){
+				ret.setFileHeaderLine(true);
+			}
 			for(int i = 0; i < lds.getChildNodes().getLength(); i++){
 				Node child = lds.getChildNodes().item(i);
 				if(child.getNodeName().equals("column")){

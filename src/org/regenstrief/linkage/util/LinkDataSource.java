@@ -14,6 +14,7 @@ public class LinkDataSource implements Cloneable {
 	private String access;
 	private String unique_id_field;
 	private int ds_id;
+	private boolean file_header_line;
 	
 	public static final int UNKNOWN_REC_COUNT = -1;
 	public static final int UNKNOWN_DS_ID = -1;
@@ -26,6 +27,7 @@ public class LinkDataSource implements Cloneable {
 		this.access = access;
 		column_settings = new ArrayList<DataColumn>();
 		ds_id = id;
+		file_header_line = false;
 	}
 		
 	/*
@@ -40,6 +42,14 @@ public class LinkDataSource implements Cloneable {
 			ret[i] = getDisplayPositionByName(names[i]);
 		}
 		return ret;
+	}
+	
+	public boolean getFileHeaderLine(){
+		return file_header_line;
+	}
+	
+	public void setFileHeaderLine(boolean has_header_line){
+		file_header_line = has_header_line;
 	}
 	
 	public String getUniqueID(){

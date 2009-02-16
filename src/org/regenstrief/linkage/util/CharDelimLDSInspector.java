@@ -18,8 +18,10 @@ import java.io.IOException;
 
 public class CharDelimLDSInspector implements LinkDataSourceInspector{
 	
-	public CharDelimLDSInspector(){
-		
+	boolean has_header;
+	
+	public CharDelimLDSInspector(boolean header){
+		has_header = header;
 	}
 	
 	public void setDefaultDataColumns(LinkDataSource lds){
@@ -37,7 +39,11 @@ public class CharDelimLDSInspector implements LinkDataSourceInspector{
 				DataColumn dc = new DataColumn(Integer.toString(i));
 				dc.setIncludePosition(i);
 				dc.setType(DataColumn.STRING_TYPE);
-				dc.setName("Column" + i);
+				if(has_header){
+					dc.setName(fields[i]);
+				} else {
+					dc.setName("Column" + i);
+				}
 				lds.addDataColumn(dc);
 			}
 		}
