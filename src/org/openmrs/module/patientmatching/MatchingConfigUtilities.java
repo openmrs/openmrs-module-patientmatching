@@ -14,10 +14,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.commons.beanutils.PropertyUtils;
@@ -389,14 +387,11 @@ public class MatchingConfigUtilities {
         Connection databaseConnection = null ;
         try {
             Class.forName(driver);
-            
             ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, user, passwd);
             databaseConnection = connectionFactory.createConnection();
         } catch (ClassNotFoundException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
@@ -493,21 +488,18 @@ public class MatchingConfigUtilities {
         status = "Creating report ...";
         log.info("Creating report ...");
         
-        Map<Integer, TreeMap<Integer, Boolean>> groupedMR = handler.getGroupedMatchResult();
+        handler.flattenPairIdList();
+        List<Set<Integer>> groupedId = handler.getFlattenedPairIds();
         
-        for (Integer key: groupedMR.keySet()) {
-        	
-        	Record firstRecord = RecordSerializer.deserialize(String.valueOf(key));
-        	
-        	generateReport(firstRecord, globalIncludeColumns, groupId, separator, writer);
-        	
-        	TreeMap<Integer, Boolean> treeMap = groupedMR.get(key);
-        	
-            for (Map.Entry<Integer, Boolean> treeMapKey: treeMap.entrySet()) {
-            	
-            	Record internalRecord = RecordSerializer.deserialize(String.valueOf(treeMapKey.getKey()));
-            	
-            	generateReport(internalRecord, globalIncludeColumns, groupId, separator, writer);
+        for (Set<Integer> set : groupedId) {
+            for (Integer integer : set) {
+                try {
+                    Record internalRecord = RecordSerializer.deserialize(String.valueOf(integer));
+                    generateReport(internalRecord, globalIncludeColumns, groupId, separator, writer);
+                } catch (IOException e) {
+                    log.info("Exception caught during the deserializing and writing report for id " + integer + "...");
+                    log.info("Skipping to the next record...");
+                }
             }
             groupId ++;
         }
