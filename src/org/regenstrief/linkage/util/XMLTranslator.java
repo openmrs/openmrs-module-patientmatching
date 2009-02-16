@@ -381,7 +381,11 @@ public class XMLTranslator {
 		String name = lds.getAttributes().getNamedItem("name").getTextContent();
 		String type = lds.getAttributes().getNamedItem("type").getTextContent();
 		String access = lds.getAttributes().getNamedItem("access").getTextContent();
-		String header = lds.getAttributes().getNamedItem("header").getTextContent();
+		String header = "false";
+		if(lds.getAttributes().getNamedItem("header") != null){
+			header = lds.getAttributes().getNamedItem("header").getTextContent();
+		}
+		
 		String id_field = null;
 		if(lds.getAttributes().getNamedItem("id_field") != null){
 			 id_field = lds.getAttributes().getNamedItem("id_field").getTextContent();
