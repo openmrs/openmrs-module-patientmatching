@@ -1,10 +1,10 @@
 package org.openmrs.module.patientmatching;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 
 import org.openmrs.util.OpenmrsUtil;
 import org.regenstrief.linkage.Record;
@@ -14,7 +14,7 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
 
 public class RecordSerializer {
 	
-	private static XStream stream = new XStream(new DomDriver());
+	private static XStream stream = new XStream(new DomDriver("UTF-8"));
 	
 	private static Record record;
 	
@@ -26,10 +26,8 @@ public class RecordSerializer {
         File serialFile = new File(configFileFolder, filename);
         
         if (!serialFile.exists()) {
-    		String xml = stream.toXML(record);
-            BufferedWriter writer = new BufferedWriter(new FileWriter(serialFile));
-            writer.write(xml);
-            writer.close();
+            FileOutputStream outputStream = new FileOutputStream(serialFile);
+    		stream.toXML(record, outputStream);
         }
 	}
 	
