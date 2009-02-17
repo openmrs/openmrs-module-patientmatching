@@ -7,7 +7,6 @@
 	<classpathentry kind="lib" path="lib/j2ee.jar"/>
 	<classpathentry kind="lib" path="lib/simmetrics_jar_v1_6_2_d07_02_07.jar"/>
 	<classpathentry kind="lib" path="lib-common/commons-logging-1.0.4.jar"/>
-	<classpathentry kind="lib" path="lib/simmetrics_jar_v1_4_d03_03_06.jar"/>
 	<classpathentry kind="lib" path="lib-common/log4j-1.2.13.jar"/>
 	<classpathentry kind="lib" path="lib-common/mysql-connector-java-3.1.10-bin.jar"/>
 	<classpathentry kind="lib" path="lib-common/web-openmrs-api-1.2.12.3789.jar"/>
@@ -16,7 +15,6 @@
 	<classpathentry kind="lib" path="lib-common/spring-2.5.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-math-1.2.jar"/>
 	<classpathentry kind="lib" path="lib-common/servlet-api.jar"/>
-	<classpathentry kind="lib" path="lib-common/spring-2.0.jar"/>
 	<classpathentry kind="lib" path="lib-common/hibernate3.jar"/>
 	<classpathentry kind="lib" path="lib/commons-beanutils.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.jar"/>
