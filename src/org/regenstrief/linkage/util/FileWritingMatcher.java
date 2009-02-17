@@ -43,6 +43,7 @@ public class FileWritingMatcher {
 			DataColumn dc = lds.getDataColumnByIncludePosition(i);
 			order[i] = dc.getName();
 		}
+		String id_field = lds.getUniqueID();
 		
 		
 		try{
@@ -93,7 +94,7 @@ public class FileWritingMatcher {
 					Iterator<MatchResult> it2 = results.iterator();
 					while(it2.hasNext()){
 						MatchResult mr = it2.next();
-						fout.write(getOutputLine(mr, order) + "\n");
+						fout.write(getOutputLine(mr, order, id_field) + "\n");
 					}
 					
 					// write to an xml file also, to test this new format
@@ -119,19 +120,21 @@ public class FileWritingMatcher {
 		return f;
 	}
 	
-	private static String getOutputLine(MatchResult mr, String[] order){
+	private static String getOutputLine(MatchResult mr, String[] order, String id_field){
 		String s = new String();
 		s += mr.getScore();
 		//Enumeration<String> demographics = mr.getRecord1().getDemographics().keys();
 		Record r1 = mr.getRecord1();
 		Record r2 = mr.getRecord2();
+		s += "|" + r1.getUID() + "|" + r2.getUID();
 		//while(demographics.hasMoreElements()){
 		for(int i = 0; i < order.length; i++){
 			String demographic = order[i];
 			MatchingConfigRow mcr = mr.getMatchingConfig().getMatchingConfigRowByName(demographic);
-			//if(mcr.isIncluded() || mcr.getBlockOrder() > 0){
+			if(!mcr.getName().equals(id_field)){
 				s += "|" + r1.getDemographic(demographic) + "|" + r2.getDemographic(demographic);
-			//}
+			}
+			
 		}
 		return s;
 	}
