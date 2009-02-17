@@ -72,6 +72,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
     private JTextField randomSampleTextField;
     private JLabel randomSampleSizeLabel;
     private JTextField thresholdTextField;
+    private JCheckBox cbWriteXML;
 	
 	public SessionsPanel(RecMatchConfig rmc){
 		//super();
@@ -195,6 +196,8 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
          * ******************/
         JPanel linkagePanel = new JPanel();
         linkagePanel.setBorder(BorderFactory.createTitledBorder("Linkage Process"));
+        
+        cbWriteXML = new JCheckBox("Include XML When Writing Output");
         
         JButton run_link = new JButton();
         run_link.addActionListener(this);
@@ -381,10 +384,21 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         linkagePanel.setLayout(new GridBagLayout());
 
         gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.anchor = GridBagConstraints.CENTER;
         gridBagConstraints.weightx = 0.7;
         gridBagConstraints.insets = new Insets(0, 5, 5, 100);
+        linkagePanel.add(cbWriteXML, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = GridBagConstraints.CENTER;
+        gridBagConstraints.weightx = 0.7;
+        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
         linkagePanel.add(run_link, gridBagConstraints);
 
         gridBagConstraints = new GridBagConstraints();
@@ -634,13 +648,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 				int ret = out_chooser.showDialog(this, "Choose output file");
 				File out, match_file;
 				if(ret == JFileChooser.APPROVE_OPTION){
-					int choice = JOptionPane.showConfirmDialog(this,"Write XML output file?  Writing the XML output file can consume a lot of memory, and if the VM is not initialized with enough, it can fail","XML Output File",JOptionPane.YES_NO_OPTION);
-					boolean write_xml;
-					if(choice == JOptionPane.YES_OPTION){
-						write_xml = true;
-					} else {
-						write_xml = false;
-					}
+					boolean write_xml = cbWriteXML.isSelected();
 					out = out_chooser.getSelectedFile();
 					match_file = FileWritingMatcher.writeMatchResults(rm_conf, out, write_xml);
 				} else {
