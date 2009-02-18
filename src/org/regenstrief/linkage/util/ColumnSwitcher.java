@@ -18,6 +18,7 @@ public class ColumnSwitcher{
 	private int[] order;
 	
 	private boolean add_id_column;
+	private boolean read_header_line;
 	
 	public ColumnSwitcher(File old_file, File new_file, int[] order, char sep){
 		sep_char = sep;
@@ -31,12 +32,20 @@ public class ColumnSwitcher{
 		add_id_column = add_id;
 	}
 	
+	public void setReadHeaderLine(boolean has_header){
+		read_header_line = true;
+	}
+	
 	public boolean switchColumns() throws IOException{
 		boolean ret = false;
 		BufferedReader in = new BufferedReader(new FileReader(original));
 		BufferedWriter out = new BufferedWriter(new FileWriter(results));
 		String line;
 		String[] split_line;
+		
+		if(read_header_line){
+			in.readLine();
+		}
 		
 		int line_count = 0;
 		while((line = in.readLine()) != null){
