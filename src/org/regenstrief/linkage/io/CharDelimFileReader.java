@@ -47,9 +47,9 @@ public class CharDelimFileReader implements DataSourceReader{
 		// determine if unique ID column needs to be added
 		if(lds.getUniqueID() == null){
 			addIDColumn(lds);
-			switched_file = switchColumns(raw_file, true);
+			switched_file = switchColumns(raw_file, true, lds.getFileHeaderLine());
 		} else {
-			switched_file = switchColumns(raw_file, false);
+			switched_file = switchColumns(raw_file, false, lds.getFileHeaderLine());
 		}
 		
 		raw_file_sep = lds.getAccess().charAt(0);
@@ -93,7 +93,7 @@ public class CharDelimFileReader implements DataSourceReader{
 	 * @param f	the file to modify
 	 * @return	the resulting file
 	 */
-	protected File switchColumns(File f, boolean add_id){
+	protected File switchColumns(File f, boolean add_id, boolean header_line){
 		List<DataColumn> dcs1 = data_source.getDataColumns();
 		int[] order1 = new int[data_source.getIncludeCount()];
 		
@@ -112,6 +112,7 @@ public class CharDelimFileReader implements DataSourceReader{
 		try{
 			ColumnSwitcher cs = new ColumnSwitcher(f, switched, order1, data_source.getAccess().charAt(0));
 			cs.setAddIDColumn(add_id);
+			cs.setReadHeaderLine(header_line);
 			cs.switchColumns();
 		}
 		catch(IOException ioe){
