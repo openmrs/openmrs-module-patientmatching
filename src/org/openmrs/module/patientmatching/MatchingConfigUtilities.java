@@ -491,6 +491,20 @@ public class MatchingConfigUtilities {
         handler.flattenPairIdList();
         List<Set<Integer>> groupedId = handler.getFlattenedPairIds();
         
+        StringBuffer sb = new StringBuffer();
+        sb.append("Group Id|");
+        sb.append("Unique Id|");
+        for (String include : globalIncludeColumns) {
+            if (include.indexOf("(") < 0) {
+                sb.append("patientmatching.");
+            }
+            sb.append(include).append(separator);
+        }
+        String headerLine = sb.toString();
+        headerLine = headerLine.substring(0, headerLine.length() - 1);
+        writer.write(headerLine);
+        writer.write(System.getProperty("line.separator"));
+        
         for (Set<Integer> set : groupedId) {
             for (Integer integer : set) {
                 try {

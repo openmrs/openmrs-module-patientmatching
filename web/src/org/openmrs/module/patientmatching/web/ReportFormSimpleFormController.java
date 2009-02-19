@@ -38,18 +38,23 @@ public class ReportFormSimpleFormController extends SimpleFormController {
 		String filename = req.getParameter(MatchingConstants.PARAM_REPORT);
         
         MatchingReportReader reader = new MatchingReportReader(filename);
-        reader.fetchInitialContent();
         
+        // must call getHeader first to skip first line
+        map.put("reportHeader", reader.getHeader());
+        
+        // then get the first page content
+        reader.fetchContent(reader.getCurrentPage());
+        map.put("report", reader.getCurrentContent());
+        
+        map.put("useMinimalHeader", true);
+        
+        // then store all values to session to be used in the future
         HttpSession session = req.getSession();
-        
         session.setAttribute("reportFilename", filename);
-        
         session.setAttribute("reportPagePosition", reader.getPagePos());
         session.setAttribute("reportCurrentPage", reader.getCurrentPage());
         session.setAttribute("isReportEOF", reader.isEof());
-		
-		map.put("report", reader.getCurrentContent());
-		map.put("useMinimalHeader", true);
+        
 		return map;
 		
 	}

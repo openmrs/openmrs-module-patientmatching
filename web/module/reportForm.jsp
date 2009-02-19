@@ -100,6 +100,13 @@
 <b class="boxHeader"><spring:message code="patientmatching.report.run" /></b>
 <div class="box">
         <table cellspacing="2" cellpadding="2">
+            <tr>
+                <c:forEach items="${reportHeader}" var="headerCell">
+                    <td>
+                        <spring:message code="${headerCell}"/>
+                    </td>
+                </c:forEach>
+            </tr>
             <tbody id="report-list">
             
             <c:set var="group" value="-999" scope="page" />

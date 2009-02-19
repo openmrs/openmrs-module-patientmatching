@@ -127,7 +127,7 @@ public class DWRMatchingConfigUtilities {
         
         MatchingReportReader reader = new MatchingReportReader(currentPage, eof, pagePos, filename);
         try {
-            if(currentPage > 0) {
+            if(currentPage > 1) {
                 reader.fetchContent(currentPage - 1);
             } else {
                 reader.fetchContent(currentPage);

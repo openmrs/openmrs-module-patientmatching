@@ -20,6 +20,8 @@ public class MatchingReportReader {
     
     private int currentPage;
     
+    private List<String> header;
+    
     private List<List<String>> currentContent;
     
     private File reportFile;
@@ -45,52 +47,79 @@ public class MatchingReportReader {
         setReportFile(filename);
     }
 
+    /**
+     * @return the eof
+     */
+    public boolean isEof() {
+        return eof;
+    }
+
+    /**
+     * @param eof the eof to set
+     */
+    public void setEof(boolean eof) {
+        this.eof = eof;
+    }
+
+    /**
+     * @return the pagePos
+     */
     public List<Long> getPagePos() {
         return pagePos;
     }
 
+    /**
+     * @param pagePos the pagePos to set
+     */
+    public void setPagePos(List<Long> pagePos) {
+        this.pagePos = pagePos;
+    }
+    
+    /**
+     * @return the currentPage
+     */
     public int getCurrentPage() {
         return currentPage;
     }
 
-    public List<List<String>> getCurrentContent() {
-        return currentContent;
+    /**
+     * @param currentPage the currentPage to set
+     */
+    public void setCurrentPage(int currentPage) {
+        this.currentPage = currentPage;
     }
 
-    public boolean isEof() {
-        return eof;
+    /**
+     * @return the header line 
+     * @throws IOException
+     */
+    public List<String> getHeader() throws IOException {
+        RandomAccessFile raf = new RandomAccessFile(reportFile, "r");
+        
+        String s = null;
+        header = new ArrayList<String>();
+        s = raf.readLine();
+        String[] split = s.split("[|]");
+        List<String> list = Arrays.asList(split);
+        header.addAll(list);
+        
+        currentPage = 1;
+        
+        pagePos.add(raf.getFilePointer());
+        return header;
+    }
+
+    /**
+     * @return the current page report content
+     */
+    public List<List<String>> getCurrentContent() {
+        return currentContent;
     }
     
     private void setReportFile(String filename) {
         String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
         File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
         reportFile = new File(configFileFolder, filename);
-    }
-
-    public void fetchInitialContent() throws IOException {
-        RandomAccessFile raf = new RandomAccessFile(reportFile, "r");
-        
-        int counter = 0;
-        String s = null;
-        while((s = raf.readLine()) != null) {
-            String[] split = s.split("[|]");
-            List<String> list = Arrays.asList(split);
-            currentContent.add(list);
-            counter ++;
-            if (counter >= REPORT_PAGE_SIZE) {
-                break;
-            }
-        }
-        
-        if (s == null) {
-            eof = true;
-        }
-        
-        currentPage = 0;
-        
-        pagePos.add(raf.getFilePointer());
-        
-        raf.close();
     }
     
     public void fetchContent(int page) throws IOException {
@@ -102,9 +131,11 @@ public class MatchingReportReader {
         
         int counter = 0;
         String s = null;
+        String[] split = null;
+        List<String> list = null;
         while((s = raf.readLine()) != null) {
-            String[] split = s.split("[|]");
-            List<String> list = Arrays.asList(split);
+            split = s.split("[|]");
+            list = Arrays.asList(split);
             currentContent.add(list);
             counter ++;
             if (counter >= REPORT_PAGE_SIZE) {
