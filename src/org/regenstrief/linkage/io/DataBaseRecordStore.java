@@ -176,7 +176,8 @@ public class DataBaseRecordStore implements RecordStore {
 	 */
 	public boolean storeRecord(Record r) {
 		try{
-			insert_stmt.setInt(1, insert_count++);
+			insert_stmt.setInt(1, r.getUID());
+			insert_count++;
 			for(int i = 0; i < insert_demographics.size(); i++){
 				String demographic = insert_demographics.get(i);
 				insert_stmt.setString(i + 2, r.getDemographic(demographic));
