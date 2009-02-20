@@ -68,6 +68,7 @@ public class DedupOrderedDataSourceFormPairs extends FormPairs{
 			String comp_demographic = comp_columns[i];
 			String val1 = r1.getDemographic(comp_demographic);
 			String val2 = r2.getDemographic(comp_demographic);
+			int block_chars = mc.getMatchingConfigRowByName(comp_demographic).getBlockChars();
 			if(type_table.get(comp_demographic) == DataColumn.NUMERIC_TYPE){
 				try{
 					double d1 = Double.parseDouble(val1);
@@ -80,6 +81,12 @@ public class DedupOrderedDataSourceFormPairs extends FormPairs{
 					return false;
 				}
 			} else {
+				if(val1.length() > block_chars){
+					val1 = val1.substring(0, block_chars);
+				}
+				if(val2.length() > block_chars){
+					val2 = val2.substring(0, block_chars);
+				}
 				if(!val1.equals(val2)){
 					return false;
 				}

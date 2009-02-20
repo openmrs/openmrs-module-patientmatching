@@ -179,7 +179,8 @@ public class OrderedDataSourceFormPairs extends FormPairs{
 						return GREATER_THAN;
 					}
 				}
-				ret = compareString(str1, str2, type_table.get(comp).intValue());
+				int blocking_chars = mc.getMatchingConfigRowByName(comp).getBlockChars();
+				ret = compareString(str1, str2, type_table.get(comp).intValue(), blocking_chars);
 			}
 			catch(ComparisonException ce){
 				//System.err.println("comparison exception with " + rec1 + " and " + rec2);
@@ -196,7 +197,7 @@ public class OrderedDataSourceFormPairs extends FormPairs{
 	 * If the type is numeric, cast to a double and compare, else use the
 	 * String object's comparison to determine equivalence.
 	 */
-	private int compareString(String str1, String str2, int type) throws ComparisonException{
+	private int compareString(String str1, String str2, int type, int n) throws ComparisonException{
 		int ret;
 		double d1, d2;
 		
@@ -225,6 +226,13 @@ public class OrderedDataSourceFormPairs extends FormPairs{
 				ret = GREATER_THAN;
 			}
 		} else if(type == MatchingConfig.STRING_TYPE){
+			// if strings are longer than n, then need to get substrings
+			if(str1.length() > n){
+				str1 = str1.substring(0, n);
+			}
+			if(str2.length() > n){
+				str2 = str2.substring(0, n);
+			}
 			int comp = str1.compareToIgnoreCase(str2);
 			if(comp < 0){
 				ret = LESS_THAN;
@@ -239,4 +247,5 @@ public class OrderedDataSourceFormPairs extends FormPairs{
 		
 		return ret;
 	}
+	
 }
