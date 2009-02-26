@@ -81,6 +81,9 @@ public class DedupOrderedDataSourceFormPairs extends FormPairs{
 					return false;
 				}
 			} else {
+				if(val1.equals("") || val2.equals("")){
+					return false;
+				}
 				if(val1.length() > block_chars){
 					val1 = val1.substring(0, block_chars);
 				}

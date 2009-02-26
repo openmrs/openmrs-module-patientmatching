@@ -210,13 +210,15 @@ public class OrderedDataSourceFormPairs extends FormPairs{
 				d1 = Double.parseDouble(str1);
 			}
 			catch(NumberFormatException nfe){
-				throw new ComparisonException("Number format exception");
+				//throw new ComparisonException("Number format exception");
+				return LESS_THAN;
 			}
 			try{
 				d2 = Double.parseDouble(str2);
 			}
 			catch(NumberFormatException nfe){
-				throw new ComparisonException("Number format exception");
+				//throw new ComparisonException("Number format exception");
+				return GREATER_THAN;
 			}
 			if(d1 < d2){
 				ret = LESS_THAN;
