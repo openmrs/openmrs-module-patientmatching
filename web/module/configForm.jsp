@@ -39,7 +39,7 @@
                 <span style="padding-left: 5px; font-weight: bold;"><spring:message code="patientmatching.config.new.name"/></span>
             </td>
             <td style="vertical-align: middle">
-            <spring:bind path="patientMatchingConfig.configName">
+            <spring:bind path="patientMatchingConfiguration.configurationName">
                 <input type="text" 
                     name="${status.expression}" id="${status.expression}"
                     value="${status.value}" size="40" />
@@ -51,7 +51,7 @@
     <table cellspacing="2" cellpadding="2">
         <tr>
             <td colspan="2">
-            <spring:bind path="patientMatchingConfig.useRandomSampling">
+            <spring:bind path="patientMatchingConfiguration.usingRandomSample">
                 <input type="hidden" name="_<c:out value="${status.expression}"/>">
                 <input type="checkbox" name="<c:out value="${status.expression}"/>" value="true"
                     <c:if test="${status.value}">checked</c:if>/>
@@ -61,7 +61,7 @@
         <tr>
             <td><spring:message code="patientmatching.config.new.randomSampleSize"/></td>
             <td>
-            <spring:bind path="patientMatchingConfig.randomSampleSize">
+            <spring:bind path="patientMatchingConfiguration.randomSampleSize">
                 <input type="text" 
                     name="${status.expression}" id="${status.expression}"
                     value="${status.value}" size="10" />
@@ -89,7 +89,7 @@
                             <th><spring:message code="patientmatching.config.new.fieldNameInclude"/></th>
                             <th><spring:message code="patientmatching.config.new.fieldNameBlocking"/></th>
                         </tr>
-                        <c:forEach items="${patientMatchingConfig.configEntries}" var="configEntry" varStatus="entriesIndex">
+                        <c:forEach items="${patientMatchingConfiguration.configurationEntries}" var="configEntry" varStatus="entriesIndex">
                             <c:choose>
                                 <c:when test="${(entriesIndex.count - 1) % 3 == 0}">
                                     <tr <c:if test="${entriesIndex.count % 2 == 0}">class="oddRow"</c:if>
@@ -99,7 +99,7 @@
                                     <spring:message code="${configEntry.fieldViewName}"/>
                                 </td>
                                 <td align="center">
-                                <spring:bind path="patientMatchingConfig.configEntries[${entriesIndex.count - 1}].included">
+                                <spring:bind path="patientMatchingConfiguration.configurationEntries[${entriesIndex.count - 1}].included">
                                     <input type="hidden" name="_<c:out value="${status.expression}"/>">
                                     <input type="checkbox"
                                         name="<c:out value="${status.expression}"/>" value="true"
@@ -109,7 +109,7 @@
                                 </spring:bind>
                                 </td>
                                 <td align="center">
-                                <spring:bind path="patientMatchingConfig.configEntries[${entriesIndex.count - 1}].blocking">
+                                <spring:bind path="patientMatchingConfiguration.configurationEntries[${entriesIndex.count - 1}].blocking">
                                     <input type="hidden" name="_<c:out value="${status.expression}"/>">
                                     <input type="checkbox"
                                         name="<c:out value="${status.expression}"/>" value="true"

@@ -18,7 +18,7 @@
 	</bean>
 
     <bean id="configForm" class="@MODULE_PACKAGE@.web.ConfigurationSimpleFormController">
-        <property name="commandName"><value>patientMatchingConfig</value></property>
+        <property name="commandName"><value>patientMatchingConfiguration</value></property>
         <property name="commandClass"><value>@MODULE_PACKAGE@.PatientMatchingConfiguration</value></property>
         <property name="formView"><value>/module/@MODULE_ID@/configForm</value></property>
         <property name="successView"><value>redirect:/module/@MODULE_ID@/config.list</value></property>

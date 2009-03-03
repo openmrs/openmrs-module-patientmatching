@@ -34,15 +34,15 @@ public class ConfigurationSimpleFormController extends SimpleFormController {
         
         log.info("Excluded Property: " + excludedProperties);
         
-        PatientMatchingConfiguration config = null;
+        PatientMatchingConfiguration configuration = null;
         
 	    if (name != null) {
-            config = MatchingConfigurationUtils.createPatientMatchingConfig(name, listExcludedProperties);
+            configuration = MatchingConfigurationUtils.createPatientMatchingConfig(name, listExcludedProperties);
 	    } else {
-	        config = MatchingConfigurationUtils.createPatientMatchingConfig(listExcludedProperties);
+	        configuration = MatchingConfigurationUtils.createPatientMatchingConfig(listExcludedProperties);
 	    }
-	    log.info("Config Name: " + config.toString());
-		return config;
+	    log.info("Config Name: " + configuration.toString());
+		return configuration;
 		
 	}
 
@@ -54,8 +54,8 @@ public class ConfigurationSimpleFormController extends SimpleFormController {
     protected ModelAndView onSubmit(HttpServletRequest request,
             HttpServletResponse response, Object command, BindException errors)
             throws Exception {
-        PatientMatchingConfiguration patientMatchingConfig = (PatientMatchingConfiguration) command;
-        MatchingConfigurationUtils.savePatientMatchingConfig(patientMatchingConfig);
+        PatientMatchingConfiguration patientMatchingConfiguration = (PatientMatchingConfiguration) command;
+        MatchingConfigurationUtils.savePatientMatchingConfig(patientMatchingConfiguration);
         
         Map<String, String> model = new HashMap<String, String>();
         return new ModelAndView(getSuccessView(), model);
