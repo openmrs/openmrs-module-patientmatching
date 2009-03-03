@@ -17,14 +17,14 @@
 		</property>
 	</bean>
 
-    <bean id="configForm" class="@MODULE_PACKAGE@.web.ConfigSimpleFormController">
+    <bean id="configForm" class="@MODULE_PACKAGE@.web.ConfigurationSimpleFormController">
         <property name="commandName"><value>patientMatchingConfig</value></property>
-        <property name="commandClass"><value>@MODULE_PACKAGE@.PatientMatchingConfig</value></property>
+        <property name="commandClass"><value>@MODULE_PACKAGE@.PatientMatchingConfiguration</value></property>
         <property name="formView"><value>/module/@MODULE_ID@/configForm</value></property>
         <property name="successView"><value>redirect:/module/@MODULE_ID@/config.list</value></property>
     </bean>
 
-    <bean id="matchConfig" class="@MODULE_PACKAGE@.web.ConfigListSimpleFormController">
+    <bean id="matchConfig" class="@MODULE_PACKAGE@.web.ConfigurationListSimpleFormController">
         <property name="formView"><value>/module/@MODULE_ID@/configList</value></property>
     </bean>
 

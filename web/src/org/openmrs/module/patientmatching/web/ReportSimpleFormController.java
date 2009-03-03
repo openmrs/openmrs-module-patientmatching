@@ -8,8 +8,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openmrs.module.patientmatching.MatchingConfigUtilities;
+import org.openmrs.module.patientmatching.MatchingConfigurationUtils;
 import org.openmrs.module.patientmatching.MatchingConstants;
+import org.openmrs.module.patientmatching.MatchingReportUtils;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.SimpleFormController;
@@ -36,11 +37,11 @@ public class ReportSimpleFormController extends SimpleFormController {
 	protected Map<String, Object> referenceData(HttpServletRequest req) throws Exception {
 		Map<String, Object> requestMap = new HashMap<String, Object>();
 		requestMap.put("reportParam", MatchingConstants.PARAM_REPORT);
-        requestMap.put("blockingRuns", MatchingConfigUtilities.listAvailableBlockingRuns());
-        requestMap.put("reportResults", MatchingConfigUtilities.listAvailableReport());
-        requestMap.put("defaultStatus", MatchingConfigUtilities.NO_PROCESS);
-        requestMap.put("premStatus", MatchingConfigUtilities.PREM_PROCESS);
-        requestMap.put("endStatus", MatchingConfigUtilities.END_PROCESS);
+        requestMap.put("blockingRuns", MatchingConfigurationUtils.listAvailableBlockingRuns());
+        requestMap.put("reportResults", MatchingReportUtils.listAvailableReport());
+        requestMap.put("defaultStatus", MatchingReportUtils.NO_PROCESS);
+        requestMap.put("premStatus", MatchingReportUtils.PREM_PROCESS);
+        requestMap.put("endStatus", MatchingReportUtils.END_PROCESS);
 		return requestMap;
 		
 	}
@@ -56,7 +57,7 @@ public class ReportSimpleFormController extends SimpleFormController {
         log.info("Creating new patient matching report");
         
         Map<String, Object> model = new HashMap<String, Object>();
-        model.put("blockingRuns", MatchingConfigUtilities.listAvailableBlockingRuns());
+        model.put("blockingRuns", MatchingConfigurationUtils.listAvailableBlockingRuns());
         return new ModelAndView(getSuccessView(), model);
     }
 }

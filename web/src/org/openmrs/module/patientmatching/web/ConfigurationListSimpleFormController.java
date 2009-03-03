@@ -7,11 +7,11 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openmrs.module.patientmatching.MatchingConfigUtilities;
+import org.openmrs.module.patientmatching.MatchingConfigurationUtils;
 import org.openmrs.module.patientmatching.MatchingConstants;
 import org.springframework.web.servlet.mvc.SimpleFormController;
 
-public class ConfigListSimpleFormController extends SimpleFormController {
+public class ConfigurationListSimpleFormController extends SimpleFormController {
 	
     /** Logger for this class and subclasses */
     protected final Log log = LogFactory.getLog(getClass());
@@ -35,7 +35,7 @@ public class ConfigListSimpleFormController extends SimpleFormController {
     @Override
     protected Map<String, Object> referenceData(HttpServletRequest request) throws Exception {
         Map<String, Object> requestMap = new HashMap<String, Object>();
-        requestMap.put("files", MatchingConfigUtilities.listAvailableBlockingRuns());
+        requestMap.put("files", MatchingConfigurationUtils.listAvailableBlockingRuns());
         requestMap.put("parameter", MatchingConstants.PARAM_NAME);
         return requestMap;
     }

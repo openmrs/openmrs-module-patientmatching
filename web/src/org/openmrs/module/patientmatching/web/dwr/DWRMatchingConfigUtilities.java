@@ -1,3 +1,6 @@
+/**
+ * 
+ */
 package org.openmrs.module.patientmatching.web.dwr;
 
 import java.io.File;
@@ -10,51 +13,73 @@ import javax.servlet.http.HttpSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.module.patientmatching.LinkDBConnections;
-import org.openmrs.module.patientmatching.MatchingConfigUtilities;
+import org.openmrs.module.patientmatching.MatchingConfigurationUtils;
 import org.openmrs.module.patientmatching.MatchingConstants;
 import org.openmrs.module.patientmatching.MatchingReportReader;
+import org.openmrs.module.patientmatching.MatchingReportUtils;
 import org.openmrs.util.OpenmrsUtil;
 
 import uk.ltd.getahead.dwr.WebContext;
 import uk.ltd.getahead.dwr.WebContextFactory;
 
+/**
+ * Utility class that will be available to the DWR javascript call from the 
+ * module web page. All methods in this class must be registered in module
+ * config file to make it available as javascript call.
+ */
 public class DWRMatchingConfigUtilities {
 
     protected final Log log = LogFactory.getLog(getClass());
     
+    /**
+     * @see MatchingConfigurationUtils#listAvailableBlockingRuns()
+     */
     public List<String> getAllBlockingRuns() {
-        return MatchingConfigUtilities.listAvailableBlockingRuns();
+        return MatchingConfigurationUtils.listAvailableBlockingRuns();
     }
     
+    /**
+     * @see MatchingReportUtils#listAvailableReport()
+     */
     public List<String> getAllReports() {
-        return MatchingConfigUtilities.listAvailableReport();
+        return MatchingReportUtils.listAvailableReport();
     }
     
+    /**
+     * @see MatchingConfigurationUtils#deleteBlockingRun(String)
+     */
     public void deleteBlockingRun(String name) {
         log.info("DWRMatchingConfigUtilities: deleting blocking run");
-        MatchingConfigUtilities.deleteBlockingRun(name);
+        MatchingConfigurationUtils.deleteBlockingRun(name);
     }
     
+    /**
+     * @see MatchingReportUtils#doAnalysis()
+     */
     public void doAnalysis() {
         log.info("DWRMatchingConfigUtilities: running analysis process");
         try {
         	if(LinkDBConnections.getInstance().getLock()) {
-        		MatchingConfigUtilities.doAnalysis();
+        		MatchingReportUtils.doAnalysis();
         		LinkDBConnections.getInstance().releaseLock();
         	}
 		} catch (Exception e) {
 			LinkDBConnections.getInstance().releaseLock();
-			MatchingConfigUtilities.setStatus(MatchingConfigUtilities.PREM_PROCESS);
+			MatchingReportUtils.setStatus(MatchingReportUtils.PREM_PROCESS);
 			log.info("Exception caught during the analysis process ...");
 			e.printStackTrace();
 		} catch (Throwable t) {
 			LinkDBConnections.getInstance().releaseLock();
-			MatchingConfigUtilities.setStatus(MatchingConfigUtilities.PREM_PROCESS);
+			MatchingReportUtils.setStatus(MatchingReportUtils.PREM_PROCESS);
 			log.info("Throwable object caught during the analysis process ...");
 			t.printStackTrace();
 		}
     }
     
+    /**
+     * Delete a particular report file from the server using DWR call
+     * @param filename report file that will be deleted
+     */
     public void deleteReportFile(String filename) {
         log.info("DWRMatchingConfigUtilities: deleting file " + filename);
 		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
@@ -67,14 +92,28 @@ public class DWRMatchingConfigUtilities {
         }
     }
     
+    /**
+     * Get the current status of the creating report process using DWR call
+     * @see MatchingReportUtils#getStatus()
+     */
     public String getStatus() {
-    	return MatchingConfigUtilities.getStatus();
+    	return MatchingReportUtils.getStatus();
     }
     
+    /**
+     * Set the current status of the creating report process using DWR call
+     * @see MatchingReportUtils#setStatus(String)
+     */
     public void setStatus(String status) {
-    	MatchingConfigUtilities.setStatus(status);
+    	MatchingReportUtils.setStatus(status);
     }
     
+    /**
+     * Get the report block for a particular page out of the report file using
+     * DWR call.
+     * 
+     * @return content of the next page in the report file
+     */
     @SuppressWarnings("unchecked")
     public List<List<String>> getNextPage() {
         WebContext context = WebContextFactory.get();
@@ -109,6 +148,12 @@ public class DWRMatchingConfigUtilities {
         return currentContent;
     }
     
+    /**
+     * Get the report block for a particular page out of the report file using
+     * DWR call.
+     * 
+     * @return content of the previous page in the report file
+     */
     @SuppressWarnings("unchecked")
     public List<List<String>> getPrevPage() {
         WebContext context = WebContextFactory.get();

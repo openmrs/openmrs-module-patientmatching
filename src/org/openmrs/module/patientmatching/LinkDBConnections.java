@@ -105,11 +105,11 @@ public class LinkDBConnections {
         String[] excludedArray = excluded.split(",");
         List<String> listExcludedProperties = Arrays.asList(excludedArray);
         
-        patientPropertyList = MatchingConfigUtilities.introspectBean(listExcludedProperties, Patient.class);
+        patientPropertyList = MatchingUtils.introspectBean(listExcludedProperties, Patient.class);
         
-        namePropertyList = MatchingConfigUtilities.introspectBean(listExcludedProperties, PersonName.class);
+        namePropertyList = MatchingUtils.introspectBean(listExcludedProperties, PersonName.class);
         
-        addressPropertyList = MatchingConfigUtilities.introspectBean(listExcludedProperties, PersonAddress.class);
+        addressPropertyList = MatchingUtils.introspectBean(listExcludedProperties, PersonAddress.class);
         
         matching_attr_type = personService.getPersonAttributeTypeByName(PatientMatchingActivator.MATCHING_ATTRIBUTE);
     }

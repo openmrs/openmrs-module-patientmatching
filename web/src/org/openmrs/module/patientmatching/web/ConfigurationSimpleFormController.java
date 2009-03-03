@@ -12,20 +12,20 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.patientmatching.MatchingConfigUtilities;
+import org.openmrs.module.patientmatching.MatchingConfigurationUtils;
 import org.openmrs.module.patientmatching.MatchingConstants;
-import org.openmrs.module.patientmatching.PatientMatchingConfig;
+import org.openmrs.module.patientmatching.PatientMatchingConfiguration;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.SimpleFormController;
 
-public class ConfigSimpleFormController extends SimpleFormController {
+public class ConfigurationSimpleFormController extends SimpleFormController {
 	
     /** Logger for this class and subclasses */
     protected final Log log = LogFactory.getLog(getClass());
 
 	@Override
-	protected PatientMatchingConfig formBackingObject(HttpServletRequest request) throws Exception {
+	protected PatientMatchingConfiguration formBackingObject(HttpServletRequest request) throws Exception {
 	    String name = request.getParameter(MatchingConstants.PARAM_NAME);
 	    
         AdministrationService adminService = Context.getAdministrationService();
@@ -34,12 +34,12 @@ public class ConfigSimpleFormController extends SimpleFormController {
         
         log.info("Excluded Property: " + excludedProperties);
         
-        PatientMatchingConfig config = null;
+        PatientMatchingConfiguration config = null;
         
 	    if (name != null) {
-            config = MatchingConfigUtilities.createPatientMatchingConfig(name, listExcludedProperties);
+            config = MatchingConfigurationUtils.createPatientMatchingConfig(name, listExcludedProperties);
 	    } else {
-	        config = MatchingConfigUtilities.createPatientMatchingConfig(listExcludedProperties);
+	        config = MatchingConfigurationUtils.createPatientMatchingConfig(listExcludedProperties);
 	    }
 	    log.info("Config Name: " + config.toString());
 		return config;
@@ -54,8 +54,8 @@ public class ConfigSimpleFormController extends SimpleFormController {
     protected ModelAndView onSubmit(HttpServletRequest request,
             HttpServletResponse response, Object command, BindException errors)
             throws Exception {
-        PatientMatchingConfig patientMatchingConfig = (PatientMatchingConfig) command;
-        MatchingConfigUtilities.savePatientMatchingConfig(patientMatchingConfig);
+        PatientMatchingConfiguration patientMatchingConfig = (PatientMatchingConfiguration) command;
+        MatchingConfigurationUtils.savePatientMatchingConfig(patientMatchingConfig);
         
         Map<String, String> model = new HashMap<String, String>();
         return new ModelAndView(getSuccessView(), model);
