@@ -1,6 +1,9 @@
 package org.regenstrief.linkage;
 
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -14,11 +17,11 @@ import java.util.List;
 
 public class SameEntityRecordGroup {
 	private int group_id;
-	private Hashtable<Record, RecordLink> group_links;
+	private Hashtable<Record, List<RecordLink>> group_links;
 	
 	public SameEntityRecordGroup(int id){
 		group_id = id;
-		group_links = new Hashtable<Record, RecordLink>();
+		group_links = new Hashtable<Record, List<RecordLink>>();
 	}
 	
 	/**
@@ -37,15 +40,25 @@ public class SameEntityRecordGroup {
 	 * @param rl	the second Record of the pair
 	 */
 	public void addRecordToGroup(Record r, RecordLink rl){
-		group_links.put(r, rl);
+		List<RecordLink> record_links = group_links.get(r);
+		if(record_links == null){
+			record_links = new ArrayList<RecordLink>();
+			group_links.put(r, record_links);
+		}
+		
+		if(!record_links.contains(rl)){
+			record_links.add(rl);
+		}
 	}
 	
 	/**
 	 * Method returns a list of Records in the group that all represent the same thing
-	 * @return	the list of Records in the group
+	 * @return	a list of Records in the group
 	 */
 	public List<Record> getGroupRecords(){
-		return null;
+		List<Record> ret = new ArrayList<Record>();
+		ret.addAll(group_links.keySet());
+		return ret;
 	}
 	
 	/**
@@ -54,9 +67,22 @@ public class SameEntityRecordGroup {
 	 * and it should be possible to go from any Record in the group to any other by following RecordLink
 	 * pairs.  In other words A,B and B,C and C,D are valid RecordLinks to have, but having just
 	 * A,B and C,D should not happen.
-	 * @return	the list of RecordLinks describing relationships between Records in the group
+	 * @return	a list of RecordLinks describing relationships between Records in the group
 	 */
 	public List<RecordLink> getGroupLinks(){
-		return null;
+		List<RecordLink> ret = new ArrayList<RecordLink>();
+		Enumeration<List<RecordLink>> e = group_links.elements();
+		while(e.hasMoreElements()){
+			List<RecordLink> entry = e.nextElement();
+			Iterator<RecordLink> it = entry.iterator();
+			while(it.hasNext()){
+				RecordLink link = it.next();
+				if(!ret.contains(link)){
+					ret.add(link);
+				}
+			}
+		}
+		
+		return ret;
 	}
 }

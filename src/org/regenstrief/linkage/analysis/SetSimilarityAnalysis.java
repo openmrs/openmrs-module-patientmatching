@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.RecordLink;
+import org.regenstrief.linkage.SameEntityRecordGroup;
 
 /**
  * Class written to group like Records together.  If Records A, B, C, and D
@@ -31,50 +33,83 @@ import org.regenstrief.linkage.Record;
 public class SetSimilarityAnalysis {
 	
 	/**
+	 * Method returns the RecordLink objects in groups based on transitive analysis
+	 * 
+	 * @param link	a list of links between Records
+	 * @return	a list of SameEntityGroups where each group of RecordLinks refers to the same entity
+	 */
+	/*
+	 * Currently, code just calls the old method getSimilarSets
+	 */
+	public List<SameEntityRecordGroup> getRecordGroups(List<RecordLink> links){
+		List<SameEntityRecordGroup> ret = null;
+		List<List<RecordLink>> grouped_lists = getSimilarSets(links);
+		if(grouped_lists != null){
+			ret = new ArrayList<SameEntityRecordGroup>();
+		} else {
+			return null;
+		}
+		int group_id = 0;
+		Iterator<List<RecordLink>> it = grouped_lists.iterator();
+		while(it.hasNext()){
+			List<RecordLink> entity_links = it.next();
+			SameEntityRecordGroup serg = new SameEntityRecordGroup(group_id++);
+			Iterator<RecordLink> it_rl = entity_links.iterator();
+			while(it_rl.hasNext()){
+				RecordLink rl = it_rl.next();
+				serg.addRecordToGroup(rl.getRecord1(), rl);
+				serg.addRecordToGroup(rl.getRecord2(), rl);
+			}
+			ret.add(serg);
+		}
+		return ret;
+	}
+	
+	/**
 	 * Method returns the argument list separated out into sub lists
 	 * based on similarity between both Records in the MatchResult objects
 	 * 
-	 * @param results	a single list of all the MatchResult objects
+	 * @param links	a single list of all the MatchResult objects
 	 * @return	a sublists of results, where all MatchResult objects in a sublist have Records in common
 	 */
-	public List<List<MatchResult>> getSimilarSets(List<MatchResult> results){
+	public List<List<RecordLink>> getSimilarSets(List<RecordLink> links){
 		/*
 		 * Method not currently implemented, just copies results to ret
 		 */
 		
-		List<List<MatchResult>> ret = new ArrayList<List<MatchResult>>();
-		Hashtable<String,List<MatchResult>> buckets = new Hashtable<String,List<MatchResult>>();
+		List<List<RecordLink>> ret = new ArrayList<List<RecordLink>>();
+		Hashtable<String,List<RecordLink>> buckets = new Hashtable<String,List<RecordLink>>();
 		
-		Iterator<MatchResult> it = results.iterator();
+		Iterator<RecordLink> it = links.iterator();
 		while(it.hasNext()){
-			MatchResult mr = it.next();
-			Record r1 = mr.getRecord1();
-			Record r2 = mr.getRecord2();
+			RecordLink rl = it.next();
+			Record r1 = rl.getRecord1();
+			Record r2 = rl.getRecord2();
 			String key1 = r1.getContext() + Integer.toString(r1.getUID());
 			String key2 = r1.getContext() + Integer.toString(r2.getUID());
-			List<MatchResult> bucket1 = buckets.get(key1);
-			List<MatchResult> bucket2 = buckets.get(key2);
+			List<RecordLink> bucket1 = buckets.get(key1);
+			List<RecordLink> bucket2 = buckets.get(key2);
 			if(bucket1 == null && bucket2 == null){
-				List<MatchResult> bucket = new ArrayList<MatchResult>();
-				bucket.add(mr);
+				List<RecordLink> bucket = new ArrayList<RecordLink>();
+				bucket.add(rl);
 				buckets.put(key1, bucket);
 				buckets.put(key2, bucket);
 			} else if(bucket1 != null){
-				bucket1.add(mr);
+				bucket1.add(rl);
 				if(bucket2 == null){
 					buckets.put(key2, bucket1);
 				}
 			} else if(bucket2 != null){
-				bucket2.add(mr);
+				bucket2.add(rl);
 				if(bucket1 == null){
 					buckets.put(key1, bucket2);
 				}
 			}
 		}
 		
-		Enumeration<List<MatchResult>> e = buckets.elements();
+		Enumeration<List<RecordLink>> e = buckets.elements();
 		while(e.hasMoreElements()){
-			List<MatchResult> list = e.nextElement();
+			List<RecordLink> list = e.nextElement();
 			if(!contains(ret, list)){
 				ret.add(list);
 			}
@@ -83,15 +118,15 @@ public class SetSimilarityAnalysis {
 		return ret;
 	}
 	
-	private boolean contains(List<List<MatchResult>> parent, List<MatchResult> element) {
+	private boolean contains(List<List<RecordLink>> parent, List<RecordLink> element) {
 	    boolean found = false;
-	    for (List<MatchResult> mList : parent) {
+	    for (List<RecordLink> mList : parent) {
 	        // only check element that have equal number of element
 	        boolean equal = true;
             if(mList.size() == element.size()) {
                 for (int i = 0; i < mList.size(); i++) {
-                    MatchResult mListResult = mList.get(i);
-                    MatchResult elementResult = element.get(i);
+                	RecordLink mListResult = mList.get(i);
+                	RecordLink elementResult = element.get(i);
                     
                     int uid11 = mListResult.getRecord1().getUID();
                     int uid12 = mListResult.getRecord2().getUID();
@@ -113,55 +148,5 @@ public class SetSimilarityAnalysis {
 	    return found;
 	}
 	
-	/**
-	 * Method performs the same grouping as getSimilarSets(List<MatchResult> results), but
-	 * it takes a threshold that MatchResult objects must meet before being inserted into
-	 * the return object
-	 * 
-	 * @param results	a single list of all the MatchResult objects
-	 * @param threshold	a score requirement for a MatchResult to be copied into the return object
-	 * @return	a sublists of results, where all MatchResult objects in a sublist have Records in common and meet the threshold
-	 */
-	public List<List<MatchResult>> getSimilarSets(List<MatchResult> results, double threshold){
-		List<MatchResult> true_matches = new ArrayList<MatchResult>();
-		Iterator<MatchResult> it = results.iterator();
-		while(it.hasNext()){
-			MatchResult mr = it.next();
-			if(mr.getScore() > threshold){
-				true_matches.add(mr);
-			}
-		}
-		
-		return getSimilarSets(true_matches);
-	}
 	
-	/**
-	 * Method flattens the results of getSimilarSets methods and just returns
-	 * lists of Records without matching performance information
-	 * 
-	 * @param match_result_sets	lists of lists of MatchResult objects
-	 * @return	lists of Records, each list having Records determined to be the same entity
-	 */
-	public List<List<Record>> getSimilarRecords(List<List<MatchResult>> match_result_sets){
-		Iterator<List<MatchResult>> it = match_result_sets.iterator();
-		List<List<Record>> ret = new ArrayList<List<Record>>();
-		
-		while(it.hasNext()){
-			List<MatchResult> set = it.next();
-			List<Record> current_records = new ArrayList<Record>();
-			Iterator<MatchResult> it2 = set.iterator();
-			while(it2.hasNext()){
-				MatchResult mr = it2.next();
-				if(!current_records.contains(mr.getRecord1())){
-					current_records.add(mr.getRecord1());
-				}
-				if(!current_records.contains(mr.getRecord2())){
-					current_records.add(mr.getRecord2());
-				}
-			}
-			ret.add(current_records);
-		}
-		
-		return ret;
-	}
 }

@@ -17,11 +17,10 @@ import org.regenstrief.linkage.util.StringMatch;
  * TODO: Implement hashCode()
  */
 
-public class MatchResult implements Comparable{
+public class MatchResult extends RecordLink implements Comparable{
 	protected double score, incl_score, true_prob, false_prob, sensitivity, specificity;
 	protected MatchVector match_vct;
 	protected ScoreVector score_vct;
-	protected Record r1, r2;
 	protected MatchingConfig mc;
 	
 	/**
@@ -29,6 +28,7 @@ public class MatchResult implements Comparable{
 	 *
 	 */
 	public MatchResult(double score, double incl_score, double true_prob, double false_prob, double sensitivity, double specificity, MatchVector match_vct, ScoreVector score_vct, Record r1, Record r2, MatchingConfig mc){
+		super(r1, r2);
 		this.score = score;
 		this.incl_score = incl_score;
 		this.true_prob = true_prob;
@@ -38,8 +38,7 @@ public class MatchResult implements Comparable{
 		this.match_vct = match_vct;
 		this.score_vct = score_vct;
 		this.mc = mc;
-		this.r1 = r1;
-		this.r2 = r2;
+		
 	}
 	
 	/**
@@ -61,14 +60,6 @@ public class MatchResult implements Comparable{
 	
 	public double getFalseProbability(){
 		return false_prob;
-	}
-	
-	public Record getRecord1(){
-		return r1;
-	}
-	
-	public Record getRecord2(){
-		return r2;
 	}
 	
 	/**

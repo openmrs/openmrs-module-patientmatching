@@ -7,7 +7,7 @@ package org.regenstrief.linkage;
  */
 
 public abstract class RecordLink {
-	Record r1, r2;
+	protected Record r1, r2;
 	
 	public RecordLink(Record r1, Record r2){
 		this.r1 = r1;
