@@ -650,7 +650,8 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 				if(ret == JFileChooser.APPROVE_OPTION){
 					boolean write_xml = cbWriteXML.isSelected();
 					out = out_chooser.getSelectedFile();
-					match_file = FileWritingMatcher.writeMatchResults(rm_conf, out, write_xml);
+					// need to change last argument below to reflect user's choice in a checkbox
+					match_file = FileWritingMatcher.writeMatchResults(rm_conf, out, write_xml, false);
 				} else {
 					match_file = FileWritingMatcher.writeMatchResults(rm_conf);
 				}

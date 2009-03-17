@@ -11,6 +11,9 @@ import java.util.List;
 
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.RecordLink;
+import org.regenstrief.linkage.SameEntityRecordGroup;
+import org.regenstrief.linkage.analysis.SetSimilarityAnalysis;
 import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.FormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceFormPairs;
@@ -31,10 +34,10 @@ public class FileWritingMatcher {
 	public static final String OUT_FILE = "linkage.out";
 	
 	public static File writeMatchResults(RecMatchConfig rmc){
-		return writeMatchResults(rmc, new File(OUT_FILE), true);
+		return writeMatchResults(rmc, new File(OUT_FILE), true, false);
 	}
 	
-	public static File writeMatchResults(RecMatchConfig rmc, File f, boolean write_xml){
+	public static File writeMatchResults(RecMatchConfig rmc, File f, boolean write_xml, boolean group_analysis){
 		
 		// set output order based on include position in lds
 		LinkDataSource lds = rmc.getLinkDataSource1();
@@ -50,6 +53,12 @@ public class FileWritingMatcher {
 			//BufferedWriter fout = new BufferedWriter(new FileWriter(f));
 			
 			ReaderProvider rp = new ReaderProvider();
+			
+			// if diong a group analysis, then create list for all RecordLink objects from blocking runs
+			List<RecordLink> all_links = null;
+			if(group_analysis){
+				all_links = new ArrayList<RecordLink>();
+			}
 			
 			// iterate over each MatchingConfig
 			List<MatchingConfig> mcs = rmc.getMatchingConfigs();
@@ -105,10 +114,49 @@ public class FileWritingMatcher {
 						MatchResultsXML.resultsToXML(results, xml_out);
 					}
 					
+					if(all_links != null){
+						all_links.addAll(results);
+					}
+					
 				}
 				
 				fout.flush();
 				fout.close();
+			}
+			
+			if(group_analysis){
+				// run group analysis and write results to files
+				SetSimilarityAnalysis ssa = new SetSimilarityAnalysis();
+				List<SameEntityRecordGroup> groups = ssa.getRecordGroups(all_links);
+				
+				File groups_out = new File(f.getPath() + "_groups.txt");
+				BufferedWriter fout = new BufferedWriter(new FileWriter(groups_out));
+				
+				// iterate over members of groups List
+				Iterator<SameEntityRecordGroup> groups_it = groups.iterator();
+				while(groups_it.hasNext()){
+					SameEntityRecordGroup entity = groups_it.next();
+					int group_id = entity.getGroupID();
+					
+					List<RecordLink> links = entity.getGroupLinks();
+					Iterator<RecordLink> group_links_it = links.iterator();
+					while(group_links_it.hasNext()){
+						RecordLink link = group_links_it.next();
+						if(link instanceof MatchResult){
+							MatchResult mr = (MatchResult)link;
+							String link_output_line = Integer.toString(group_id) + "|" + getOutputLine(mr, order, id_field);
+							fout.write(link_output_line + "\n");
+						}
+					}
+				}
+				fout.flush();
+				fout.close();
+				
+				// write xml file if xml output is checked
+				if(write_xml){
+					File groups_xml_out = new File(f.getPath() + "_groups.xml");
+					MatchResultsXML.groupsToXML(groups, groups_xml_out);
+				}
 			}
 			
 		}

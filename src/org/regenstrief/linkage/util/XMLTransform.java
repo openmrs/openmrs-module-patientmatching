@@ -45,7 +45,7 @@ public class XMLTransform {
 	}
 	
 	public static void main(String[] args){
-		File input = new File("test_output_2.xml");
+		File input = new File("test out2.xml");
 		File xslt = new File("test_xslt.xsl");
 		File out = new File("test_output.html");
 		
