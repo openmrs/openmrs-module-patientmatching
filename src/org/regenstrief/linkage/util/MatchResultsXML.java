@@ -113,10 +113,10 @@ public class MatchResultsXML {
 						hd.characters(spec_chars, 0, spec_chars.length);
 						hd.endElement("","", "specificity");
 						hd.startElement("", "", "rec1_ID", atts);
-						hd.characters(rec1_id, 0, spec_chars.length);
+						hd.characters(rec1_id, 0, rec1_id.length);
 						hd.endElement("","", "rec1_ID");
 						hd.startElement("", "", "rec2_ID", atts);
-						hd.characters(rec2_id, 0, spec_chars.length);
+						hd.characters(rec2_id, 0, rec2_id.length);
 						hd.endElement("","", "rec2_ID");
 						
 						
