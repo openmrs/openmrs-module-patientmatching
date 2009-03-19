@@ -73,6 +73,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
     private JLabel randomSampleSizeLabel;
     private JTextField thresholdTextField;
     private JCheckBox cbWriteXML;
+    private JCheckBox cbGrouping;
 	
 	public SessionsPanel(RecMatchConfig rmc){
 		//super();
@@ -198,6 +199,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         linkagePanel.setBorder(BorderFactory.createTitledBorder("Linkage Process"));
         
         cbWriteXML = new JCheckBox("Include XML When Writing Output");
+        cbGrouping = new JCheckBox("Perform Grouping When Writing Output");
         
         JButton run_link = new JButton();
         run_link.addActionListener(this);
@@ -386,26 +388,29 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = GridBagConstraints.CENTER;
-        gridBagConstraints.weightx = 0.7;
-        gridBagConstraints.insets = new Insets(0, 5, 5, 100);
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(0, 5, 0, 5);
         linkagePanel.add(cbWriteXML, gridBagConstraints);
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = GridBagConstraints.CENTER;
-        gridBagConstraints.weightx = 0.7;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(0, 5, 0, 5);
+        linkagePanel.add(cbGrouping, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.insets = new Insets(0, 5, 5, 5);
         linkagePanel.add(run_link, gridBagConstraints);
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new Insets(0, 10, 5, 10);
+        gridBagConstraints.gridheight = 4;
+        gridBagConstraints.anchor = GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new Insets(0, 0, 0, 0);
         mainPanelSessions.add(linkagePanel, gridBagConstraints);
         /*
          * End of Linkage Process Section
@@ -646,20 +651,23 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			} else if(source.getText().equals("Run Linkage Process")){
 				JFileChooser out_chooser = new JFileChooser();
 				int ret = out_chooser.showDialog(this, "Choose output file");
-				File out, match_file;
+				File out = null;
+				File match_file = null;
 				if(ret == JFileChooser.APPROVE_OPTION){
 					boolean write_xml = cbWriteXML.isSelected();
+					boolean groupAnalysis = cbGrouping.isSelected();
 					out = out_chooser.getSelectedFile();
-					// need to change last argument below to reflect user's choice in a checkbox
-					match_file = FileWritingMatcher.writeMatchResults(rm_conf, out, write_xml, false);
-				} else {
-					match_file = FileWritingMatcher.writeMatchResults(rm_conf);
-				}
-				
-				if(match_file == null){
-					JOptionPane.showMessageDialog(this, "Error writing match result file", "Error", JOptionPane.ERROR_MESSAGE);
-				} else {
-					JOptionPane.showMessageDialog(this, "Matching results written to " + match_file, "Matching Successful", JOptionPane.INFORMATION_MESSAGE);
+					match_file = FileWritingMatcher.writeMatchResults(rm_conf, out, write_xml, groupAnalysis);
+	                
+	                if(match_file == null){
+	                    JOptionPane.showMessageDialog(this,
+	                            "Error writing match result file",
+	                            "Error", JOptionPane.ERROR_MESSAGE);
+	                } else {
+	                    JOptionPane.showMessageDialog(this,
+	                            "Matching results written to " + match_file,
+	                            "Matching Successful", JOptionPane.INFORMATION_MESSAGE);
+	                }
 				}
 			} else if(source.getText().equals("Remove")){
 				Object o = runs.getSelectedValue();
