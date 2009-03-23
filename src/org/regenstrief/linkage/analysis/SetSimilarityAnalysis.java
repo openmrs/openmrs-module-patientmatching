@@ -96,14 +96,18 @@ public class SetSimilarityAnalysis {
 				buckets.put(key2, bucket);
 			} else if(bucket1 != null){
 				bucket1.add(rl);
-				if(bucket2 == null){
-					buckets.put(key2, bucket1);
+				if(bucket2 != null){
+					bucket1.addAll(bucket2);
+					buckets.remove(key2);
 				}
+				buckets.put(key2, bucket1);
 			} else if(bucket2 != null){
 				bucket2.add(rl);
-				if(bucket1 == null){
-					buckets.put(key1, bucket2);
+				if(bucket1 != null){
+					bucket2.addAll(bucket1);
+					buckets.remove(key1);
 				}
+				buckets.put(key1, bucket2);
 			}
 		}
 		
@@ -119,10 +123,10 @@ public class SetSimilarityAnalysis {
 	}
 	
 	private boolean contains(List<List<RecordLink>> parent, List<RecordLink> element) {
-	    boolean found = false;
+		boolean found = false;
 	    for (List<RecordLink> mList : parent) {
 	        // only check element that have equal number of element
-	        boolean equal = true;
+	        boolean equal = false;
             if(mList.size() == element.size()) {
                 for (int i = 0; i < mList.size(); i++) {
                 	RecordLink mListResult = mList.get(i);
@@ -135,10 +139,10 @@ public class SetSimilarityAnalysis {
                     int uid22 = elementResult.getRecord2().getUID();
                     
                     if(!((uid11 == uid21 && uid12 == uid22) || (uid11 == uid22 && uid12 == uid21))) {
-                        equal = false;
                         break;
                     }
                 }
+                equal = true;
             }
             if (equal) {
                 found = true;
