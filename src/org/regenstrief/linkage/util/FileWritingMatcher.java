@@ -96,6 +96,13 @@ public class FileWritingMatcher {
 					while((pair = fp.getNextRecordPair()) != null){
 						MatchResult mr = sp.scorePair(pair[0], pair[1]);
 						results.add(mr);
+						
+						// add to grouping list, if needed
+						if(all_links != null){
+							if(mr.getScore() >= mc.getScoreThreshold()){
+								all_links.add(mr);
+							}
+						}
 					}
 					
 					// sort results list, then print to fout
@@ -114,9 +121,6 @@ public class FileWritingMatcher {
 						MatchResultsXML.resultsToXML(results, xml_out);
 					}
 					
-					if(all_links != null){
-						all_links.addAll(results);
-					}
 					
 				}
 				

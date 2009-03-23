@@ -45,9 +45,9 @@ public class XMLTransform {
 	}
 	
 	public static void main(String[] args){
-		File input = new File("test out2.xml");
-		File xslt = new File("test_xslt.xsl");
-		File out = new File("test_output.html");
+		File input = new File("db_test.xml");
+		File xslt = new File("db_demographics_xslt.xsl");
+		File out = new File("test_output.txt");
 		
 		Document input_dom = XMLTranslator.getXMLDocFromFile(input);
 		
