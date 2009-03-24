@@ -126,23 +126,22 @@ public class SetSimilarityAnalysis {
 		boolean found = false;
 	    for (List<RecordLink> mList : parent) {
 	        // only check element that have equal number of element
-	        boolean equal = false;
+	        boolean equal = true;
             if(mList.size() == element.size()) {
                 for (int i = 0; i < mList.size(); i++) {
                 	RecordLink mListResult = mList.get(i);
                 	RecordLink elementResult = element.get(i);
-                    
                     int uid11 = mListResult.getRecord1().getUID();
                     int uid12 = mListResult.getRecord2().getUID();
                     
                     int uid21 = elementResult.getRecord1().getUID();
                     int uid22 = elementResult.getRecord2().getUID();
                     
-                    if(!((uid11 == uid21 && uid12 == uid22) || (uid11 == uid22 && uid12 == uid21))) {
-                        break;
-                    }
+                   equal = equal && ((uid11 == uid21 && uid12 == uid22) || (uid11 == uid22 && uid12 == uid21));
+                   if(!equal){
+                	   break;
+                   }
                 }
-                equal = true;
             }
             if (equal) {
                 found = true;
