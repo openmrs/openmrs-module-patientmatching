@@ -100,8 +100,8 @@ public class MatchResultsXML {
 						char[] score_chars = Double.toString(mr.getScore()).toCharArray();
 						char[] sens_chars = Double.toString(mr.getSensitivity()).toCharArray();
 						char[] spec_chars = Double.toString(mr.getSpecificity()).toCharArray();
-						char[] rec1_id = Integer.toString(mr.getRecord1().getUID()).toCharArray();
-						char[] rec2_id = Integer.toString(mr.getRecord2().getUID()).toCharArray();
+						char[] rec1_id = Long.toString(mr.getRecord1().getUID()).toCharArray();
+						char[] rec2_id = Long.toString(mr.getRecord2().getUID()).toCharArray();
 						
 						hd.startElement("", "", "score", atts);
 						hd.characters(score_chars, 0, score_chars.length);
@@ -314,8 +314,8 @@ public class MatchResultsXML {
 				char[] score_chars = Double.toString(mr.getScore()).toCharArray();
 				char[] sens_chars = Double.toString(mr.getSensitivity()).toCharArray();
 				char[] spec_chars = Double.toString(mr.getSpecificity()).toCharArray();
-				char[] rec1_id = Integer.toString(mr.getRecord1().getUID()).toCharArray();
-				char[] rec2_id = Integer.toString(mr.getRecord2().getUID()).toCharArray();
+				char[] rec1_id = Long.toString(mr.getRecord1().getUID()).toCharArray();
+				char[] rec2_id = Long.toString(mr.getRecord2().getUID()).toCharArray();
 				
 				hd.startElement("", "", "score", atts);
 				hd.characters(score_chars, 0, score_chars.length);

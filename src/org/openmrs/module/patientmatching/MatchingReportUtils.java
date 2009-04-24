@@ -194,7 +194,7 @@ public class MatchingReportUtils {
         MatchingConfigurationUtils.log.info("Creating report ...");
         
         handler.flattenPairIdList();
-        List<Set<Integer>> groupedId = handler.getFlattenedPairIds();
+        List<Set<Long>> groupedId = handler.getFlattenedPairIds();
         
         StringBuffer sb = new StringBuffer();
         sb.append("Group Id|");
@@ -210,8 +210,8 @@ public class MatchingReportUtils {
         writer.write(headerLine);
         writer.write(System.getProperty("line.separator"));
         
-        for (Set<Integer> set : groupedId) {
-            for (Integer integer : set) {
+        for (Set<Long> set : groupedId) {
+            for (Long integer : set) {
                 try {
                     Record internalRecord = RecordSerializer.deserialize(String.valueOf(integer));
                     MatchingReportUtils.generateReport(internalRecord, globalIncludeColumns, groupId, separator, writer);

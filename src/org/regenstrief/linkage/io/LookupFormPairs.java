@@ -28,6 +28,6 @@ public abstract class LookupFormPairs extends FormPairs {
 	
 	public abstract Record[] getRecordPair(int index);
 	
-	protected abstract Record getRecordFromUID(int ID, String context);
+	protected abstract Record getRecordFromUID(long ID, String context);
 
 }

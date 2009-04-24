@@ -16,7 +16,7 @@ import java.util.*;
 public class Record {
 	
 	private Hashtable<String,String> demographics;
-	int uid;
+	long uid;
 	String uidContext;
 	
 	/**
@@ -34,7 +34,7 @@ public class Record {
 	 * 
 	 * @return	the Record's unique ID
 	 */
-	public int getUID(){
+	public long getUID(){
 		return uid;
 	}
 	

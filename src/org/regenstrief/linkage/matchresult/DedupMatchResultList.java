@@ -25,16 +25,16 @@ public class DedupMatchResultList extends MatchResultList {
     
     private List<RecordPairId> pairIdList;
     
-    private List<Set<Integer>> flattenedPairIds;
+    private List<Set<Long>> flattenedPairIds;
     
-    private Set<Integer> serializedRecord;
+    private Set<Long> serializedRecord;
     
     public DedupMatchResultList() {
         super();
         
         pairIdList = new ArrayList<RecordPairId>();
-        flattenedPairIds = new ArrayList<Set<Integer>>();
-        serializedRecord = new TreeSet<Integer>();
+        flattenedPairIds = new ArrayList<Set<Long>>();
+        serializedRecord = new TreeSet<Long>();
         
 		String configLocation = MatchingConstants.SERIAL_FOLDER_NAME;
         File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
@@ -108,7 +108,7 @@ public class DedupMatchResultList extends MatchResultList {
      */
     public void flattenPairIdList() {
         for (int i = 0; i < pairIdList.size(); i++) {
-            Set<Integer> set = new TreeSet<Integer>();
+            Set<Long> set = new TreeSet<Long>();
             RecordPairId currentId = pairIdList.get(i);
             if (!currentId.isProcessed()) {
                 set.add(currentId.getFirstRecordId());
@@ -143,28 +143,28 @@ public class DedupMatchResultList extends MatchResultList {
     /**
      * @return the flattenedPairIds
      */
-    public List<Set<Integer>> getFlattenedPairIds() {
+    public List<Set<Long>> getFlattenedPairIds() {
         return flattenedPairIds;
     }
 
     /**
      * @param flattenedPairIds the flattenedPairIds to set
      */
-    public void setFlattenedPairIds(List<Set<Integer>> flattenedPairIds) {
+    public void setFlattenedPairIds(List<Set<Long>> flattenedPairIds) {
         this.flattenedPairIds = flattenedPairIds;
     }
 
     /**
      * @return the serializedRecord
      */
-    public Set<Integer> getSerializedRecord() {
+    public Set<Long> getSerializedRecord() {
         return serializedRecord;
     }
 
     /**
      * @param serializedRecord the serializedRecord to set
      */
-    public void setSerializedRecord(Set<Integer> serializedRecord) {
+    public void setSerializedRecord(Set<Long> serializedRecord) {
         this.serializedRecord = serializedRecord;
     }
 }

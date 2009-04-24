@@ -21,12 +21,12 @@ public class RecordPairId {
     /**
      * first record id of the pair
      */
-	private Integer firstRecordId;
+	private Long firstRecordId;
 	
 	/**
 	 * second record id of the pair
 	 */
-	private Integer secondRecordId;
+	private Long secondRecordId;
 	
 	/**
 	 * flag denoting whether this record pair has been 
@@ -37,28 +37,28 @@ public class RecordPairId {
     /**
      * @return the firstRecordId
      */
-    public Integer getFirstRecordId() {
+    public Long getFirstRecordId() {
         return firstRecordId;
     }
 
     /**
      * @param firstRecordId the firstRecordId to set
      */
-    public void setFirstRecordId(Integer firstRecordId) {
+    public void setFirstRecordId(Long firstRecordId) {
         this.firstRecordId = firstRecordId;
     }
 
     /**
      * @return the secondRecordId
      */
-    public Integer getSecondRecordId() {
+    public Long getSecondRecordId() {
         return secondRecordId;
     }
 
     /**
      * @param secondRecordId the secondRecordId to set
      */
-    public void setSecondRecordId(Integer secondRecordId) {
+    public void setSecondRecordId(Long secondRecordId) {
         this.secondRecordId = secondRecordId;
     }
 
@@ -82,7 +82,7 @@ public class RecordPairId {
      * @param i the id to be checked
      * @return true if the id is found
      */
-    private boolean contains(Integer i) {
+    private boolean contains(Long i) {
     	if (firstRecordId.equals(i) || secondRecordId.equals(i)) {
     		return true;
     	} else {
@@ -109,7 +109,7 @@ public class RecordPairId {
      * @param r1
      * @param r2
      */
-    public RecordPairId(Integer firstRecordId, Integer secondRecordId) {
+    public RecordPairId(Long firstRecordId, Long secondRecordId) {
         this.firstRecordId = firstRecordId;
         this.secondRecordId = secondRecordId;
         processed = false;

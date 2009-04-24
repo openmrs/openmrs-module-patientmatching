@@ -85,8 +85,8 @@ public class SetSimilarityAnalysis {
 			RecordLink rl = it.next();
 			Record r1 = rl.getRecord1();
 			Record r2 = rl.getRecord2();
-			String key1 = r1.getContext() + Integer.toString(r1.getUID());
-			String key2 = r1.getContext() + Integer.toString(r2.getUID());
+			String key1 = r1.getContext() + Long.toString(r1.getUID());
+			String key2 = r1.getContext() + Long.toString(r2.getUID());
 			List<RecordLink> bucket1 = buckets.get(key1);
 			List<RecordLink> bucket2 = buckets.get(key2);
 			if(bucket1 == null && bucket2 == null){
@@ -131,11 +131,11 @@ public class SetSimilarityAnalysis {
                 for (int i = 0; i < mList.size(); i++) {
                 	RecordLink mListResult = mList.get(i);
                 	RecordLink elementResult = element.get(i);
-                    int uid11 = mListResult.getRecord1().getUID();
-                    int uid12 = mListResult.getRecord2().getUID();
+                    long uid11 = mListResult.getRecord1().getUID();
+                    long uid12 = mListResult.getRecord2().getUID();
                     
-                    int uid21 = elementResult.getRecord1().getUID();
-                    int uid22 = elementResult.getRecord2().getUID();
+                    long uid21 = elementResult.getRecord1().getUID();
+                    long uid22 = elementResult.getRecord2().getUID();
                     
                    equal = equal && ((uid11 == uid21 && uid12 == uid22) || (uid11 == uid22 && uid12 == uid21));
                    if(!equal){
