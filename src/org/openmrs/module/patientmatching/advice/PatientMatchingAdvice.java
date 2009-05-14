@@ -144,6 +144,21 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 					}
 					
 					
+				} else if(method_name.equals(PatientMatchingActivator.MERGE_METHOD)){
+					// when merging, need to remove the not preferred patient from scratch table
+					// update the preferred patient to reflect the data from the merge
+					Patient preferred = to_match;
+					Patient not_preferred = (Patient)args[1];
+					
+					link_db.deleteRecord(LinkDBConnections.getInstance().patientToRecord(not_preferred), PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC);
+					Record pref = LinkDBConnections.getInstance().patientToRecord(preferred);
+					if(link_db.updateRecord(pref, PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC)){
+						if(log.isDebugEnabled()){
+							log.debug("Record for patient " +preferred.getPatientId() + " merged in matching database");
+						}
+					} else {
+						log.warn("Merge of Patient " + preferred.getPatientId() + " in link db failed");
+					}
 				}
 				
 				
