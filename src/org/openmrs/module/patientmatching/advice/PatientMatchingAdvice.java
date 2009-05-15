@@ -89,7 +89,7 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 					}
 					
 				}
-			} else if(method_name.equals(PatientMatchingActivator.FIND_METHOD)){
+			} else if(method_name.equals(PatientMatchingActivator.FIND_METHOD) || method_name.equals(PatientMatchingActivator.GET_PATIENT_METHOD)){
 				try{
 					Record r = LinkDBConnections.getInstance().patientToRecord(to_match);
 					MatchResult mr = matcher.findBestMatch(r);

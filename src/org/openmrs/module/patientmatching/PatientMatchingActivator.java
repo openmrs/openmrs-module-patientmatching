@@ -57,11 +57,14 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	public static final String CREATE_METHOD = "createPatient";
 	public static final String UPDATE_METHOD = "updatePatient";
 	public static final String FIND_METHOD = "findPatient";
+	public static final String GET_PATIENT_METHOD = "getPatientByExample";
 	public static final String MERGE_METHOD = "mergePatient";
 	
 	public final static String CONFIG_FILE = "link_config.xml";
 	public final static String MATCHING_ATTRIBUTE = "Other Matching Information";
 	public final static String LINK_TABLE_KEY_DEMOGRAPHIC = "openmrs_id";
+	
+	public static final int DEFAULT_RECORD_MATCHING_ID = 0;
 	
 	protected static final Log logger = LogFactory.getLog(PatientMatchingActivator.class);
 	private Log log = LogFactory.getLog(this.getClass());

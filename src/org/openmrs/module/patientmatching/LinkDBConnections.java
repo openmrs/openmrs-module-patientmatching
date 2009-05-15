@@ -300,6 +300,9 @@ public class LinkDBConnections {
 		// the OpenMRS patient store, but if patient is new and being searched on
 		// before inserted, it would be null
 		Integer id = patient.getPatientId();
+		if(id == null){
+			id = new Integer(PatientMatchingActivator.DEFAULT_RECORD_MATCHING_ID);
+		}
 		Record cache_record;
 		if((cache_record = cache.get(id)) != null){
 			return cache_record;
