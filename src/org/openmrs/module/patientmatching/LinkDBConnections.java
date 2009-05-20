@@ -304,11 +304,11 @@ public class LinkDBConnections {
 			id = new Integer(PatientMatchingActivator.DEFAULT_RECORD_MATCHING_ID);
 		}
 		Record cache_record;
-		if((cache_record = cache.get(id)) != null){
+		if(id != PatientMatchingActivator.DEFAULT_RECORD_MATCHING_ID && (cache_record = cache.get(id)) != null){
 			return cache_record;
 		}
 		
-		Record ret = new Record(patient.getPatientId(),"OpenMRS");
+		Record ret = new Record(id,"OpenMRS");
 		
 		if(id != null){
 			ret.addDemographic(PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC, Integer.toString(id));
