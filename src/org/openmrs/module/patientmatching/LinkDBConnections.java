@@ -310,9 +310,7 @@ public class LinkDBConnections {
 		
 		Record ret = new Record(id,"OpenMRS");
 		
-		if(id != null){
-			ret.addDemographic(PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC, Integer.toString(id));
-		}
+		ret.addDemographic(PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC, Integer.toString(id));
 		
 		// first, try to get the "Matching Information" attribute type
 		
