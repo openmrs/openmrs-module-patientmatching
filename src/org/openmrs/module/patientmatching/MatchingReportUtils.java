@@ -104,6 +104,7 @@ public class MatchingReportUtils {
         MatchingConfigurationUtils.log.info("Initiating scratch table ...");
         DataBaseRecordStore recordStore = new DataBaseRecordStore(databaseConnection,
                 recMatchConfig.getLinkDataSource1(), driver, url, user, passwd);
+        recordStore.clearRecords();
         OpenMRSReader reader = new OpenMRSReader();
         while(reader.hasNextRecord()) {
             Record patientRecord = reader.nextRecord();

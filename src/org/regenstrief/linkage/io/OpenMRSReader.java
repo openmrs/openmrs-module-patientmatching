@@ -81,7 +81,7 @@ public class OpenMRSReader implements DataSourceReader {
             List<PatientIdentifierType> idTypes = LinkDBConnections.getInstance().getPatientIdentifierTypes();
             List<PersonAttributeType> attTypes = LinkDBConnections.getInstance().getPersonAttributeTypes();
             
-            String sqlPatientId = "select patient.patientId from Patient as patient order by patient.patientId asc";
+            String sqlPatientId = "select patient.patientId from Patient as patient  where patient.voided = false order by patient.patientId asc";
             Query queryPatientId = createHibernateSession().createQuery(sqlPatientId)
                                 .setMaxResults(PAGING_SIZE).setFirstResult(PAGING_SIZE * pageNumber);
             Iterator patientIds = queryPatientId.iterate();

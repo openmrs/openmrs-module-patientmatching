@@ -3,6 +3,7 @@ package org.regenstrief.linkage.io;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -62,6 +63,20 @@ public class DataBaseRecordStore implements RecordStore {
 		createTable();
 		insert_stmt = createInsertQuery();
 		
+	}
+	
+	public boolean clearRecords(){
+		String delete_query = "DELETE FROM " + table_name;
+		try{
+			Statement s = db_connection.createStatement();
+			s.execute(delete_query);
+			s.close();
+		}
+		catch(SQLException sqle){
+			sqle.printStackTrace();
+			return false;
+		}
+		return true;
 	}
 	
 	protected boolean createTable(){
