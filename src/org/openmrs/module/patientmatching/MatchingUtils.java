@@ -77,8 +77,7 @@ public class MatchingUtils {
             ConfigurationEntry configurationEntry = new ConfigurationEntry();
             configurationEntry.setFieldName(fieldName);
             configurationEntry.setFieldViewName("patientmatching." + fieldName);
-            configurationEntry.setBlocking(false);
-            configurationEntry.setIncluded(false);
+            configurationEntry.setIgnored();
             configurationEntries.add(configurationEntry);
         }
         return configurationEntries;

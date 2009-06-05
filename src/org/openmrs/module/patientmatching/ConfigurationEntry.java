@@ -20,7 +20,7 @@ package org.openmrs.module.patientmatching;
  *    to request the message property <code>patientmatching.birthDate</code> to Spring
  *    rather than just <code>birthDate</code>.
  *    
- * In order to avoid confussion on what to use, we divide this to two separate <code>fieldViewName</code>
+ * In order to avoid confusion on what to use, we divide this to two separate <code>fieldViewName</code>
  * and <code>fieldName</code>.
  * 
  */
@@ -39,16 +39,13 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
     private String fieldName;
     
     /**
-     * Flag to define whether this particular field will be included in the
-     * analysis for matching process or not
+     * Whether this particular field will be ignored, included, or blocking in the
+     * analysis for matching process
      */
-    private boolean included;
-    
-    /**
-     * Flag to define whether this particular field will be the blocking field
-     * or not
-     */
-    private boolean blocking;
+    private String inclusion;
+    private final String IGNORED = "IGNORED";
+    private final String INCLUDED = "INCLUDED";
+    private final String BLOCKING = "BLOCKING";
 
     /**
      * Default no argument constructor
@@ -58,23 +55,55 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
     }
     
     /**
+	 * @return the inclusion
+	 */
+	public String getInclusion() {
+		return inclusion;
+	}
+
+	/**
+	 * @param inclusion the inclusion to set
+	 */
+	public void setInclusion(String inclusion) {
+		this.inclusion = inclusion;
+	}
+
+	/**
+     * Return whether this particular field is to be ignored. Correspond to the "BlockOrder" element of the "row" element.
+     * 
+     * @return the ignored
+     */
+    public boolean isIgnored() {
+    	return inclusion == IGNORED;
+    }
+    
+    /**
+     * Mark as ignored field. Correspond to the "BlockOrder" element of the "row" element.
+     * 
+     * @see ConfigurationEntry#isIgnored()
+     */
+    public void setIgnored() {
+    	inclusion = IGNORED;
+    }
+    
+    /**
      * Return whether this particular field is a blocking field. Correspond to
      * the "BlockOrder" element of the "row" element.
      * 
      * @return the blocking
      */
     public boolean isBlocking() {
-        return blocking;
+        return inclusion == BLOCKING;
     }
 
     /**
-     * Change the current field blocking flag status. Correspond to the 
+     * Mark as blocking field. Correspond to the 
      * "BlockOrder" element of the "row" element.
      * 
-     * @param blocking the blocking to set
+     * @see ConfigurationEntry#isIncluded()
      */
-    public void setBlocking(boolean blocking) {
-        this.blocking = blocking;
+    public void setBlocking() {
+    	inclusion = BLOCKING;
     }
 
     /**
@@ -102,23 +131,22 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
     }
 
     /**
-     * Return flag to determine whether this field will be included in the
+     * Whether or not this field will be included in the
      * matching analysis process.
      * 
      * @return the selected
      */
     public boolean isIncluded() {
-        return included;
+        return inclusion == INCLUDED;
     }
 
     /**
-     * Change the included flag for the current field.
+     * Mark as included field.
      * 
      * @see ConfigurationEntry#isIncluded()
-     * @param selected the selected to set
      */
-    public void setIncluded(boolean included) {
-        this.included = included;
+    public void setIncluded() {
+        inclusion = INCLUDED;
     }
 
     /**

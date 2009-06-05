@@ -72,8 +72,7 @@ public class MatchingConfigurationUtils {
             ConfigurationEntry configurationEntry = new ConfigurationEntry();
             configurationEntry.setFieldName("(Identifier) " + patientIdentifierType.getName());
             configurationEntry.setFieldViewName("(Identifier) " + patientIdentifierType.getName());
-            configurationEntry.setBlocking(false);
-            configurationEntry.setIncluded(false);
+            configurationEntry.setIgnored();
             configurationEntries.add(configurationEntry);
         }
         
@@ -83,8 +82,7 @@ public class MatchingConfigurationUtils {
             ConfigurationEntry configurationEntry = new ConfigurationEntry();
             configurationEntry.setFieldName("(Attribute) " + personAttributeType.getName());
             configurationEntry.setFieldViewName("(Attribute) " + personAttributeType.getName());
-            configurationEntry.setBlocking(false);
-            configurationEntry.setIncluded(false);
+            configurationEntry.setIgnored();
             configurationEntries.add(configurationEntry);
         }
         
@@ -121,8 +119,12 @@ public class MatchingConfigurationUtils {
             
             for (ConfigurationEntry configEntry : patientMatchingConfig.getConfigurationEntries()) {
                 MatchingConfigRow configRow = matchingConfig.getMatchingConfigRowByName(configEntry.getFieldName());
-                configEntry.setBlocking(configRow.getBlockOrder() > 0);
-                configEntry.setIncluded(configRow.isIncluded() && configRow.getBlockOrder() <= 0);
+                if (configRow.getBlockOrder() > 0) {
+                	configEntry.setBlocking();
+                }
+                if (configRow.isIncluded() && configRow.getBlockOrder() <= 0) {
+                	configEntry.setIncluded();
+                }
             }
             Collections.sort(patientMatchingConfig.getConfigurationEntries());
             
