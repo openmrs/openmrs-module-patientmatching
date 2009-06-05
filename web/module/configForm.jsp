@@ -28,6 +28,7 @@
             }
         }
     }
+
 </script>
 
 <form method="post">
@@ -78,14 +79,17 @@
                     <table cellspacing="2" cellpadding="2">
                         <tr>
                             <th><spring:message code="patientmatching.config.new.fieldName"/></th>
+                            <th><spring:message code="patientmatching.config.new.fieldNameIgnore"/></th>
                             <th><spring:message code="patientmatching.config.new.fieldNameInclude"/></th>
                             <th><spring:message code="patientmatching.config.new.fieldNameBlocking"/></th>
                             <th>&nbsp;</th>
                             <th><spring:message code="patientmatching.config.new.fieldName"/></th>
+                            <th><spring:message code="patientmatching.config.new.fieldNameIgnore"/></th>
                             <th><spring:message code="patientmatching.config.new.fieldNameInclude"/></th>
                             <th><spring:message code="patientmatching.config.new.fieldNameBlocking"/></th>
                             <th>&nbsp;</th>
                             <th><spring:message code="patientmatching.config.new.fieldName"/></th>
+                            <th><spring:message code="patientmatching.config.new.fieldNameIgnore"/></th>
                             <th><spring:message code="patientmatching.config.new.fieldNameInclude"/></th>
                             <th><spring:message code="patientmatching.config.new.fieldNameBlocking"/></th>
                         </tr>
@@ -97,27 +101,24 @@
                                 </c:when>
                                 <td nowrap="nowrap">
                                     <spring:message code="${configEntry.fieldViewName}"/>
+                                </td>                     
+                                <spring:bind path="patientMatchingConfiguration.configurationEntries[${entriesIndex.count - 1}].inclusion">
+                                <td align="center">
+                                    <input type="radio"
+                                        name="<c:out value="${status.expression}"/>" value="IGNORED"
+                                        <c:if test='${status.value == "IGNORED"}'>checked</c:if>/>
                                 </td>
                                 <td align="center">
-                                <spring:bind path="patientMatchingConfiguration.configurationEntries[${entriesIndex.count - 1}].included">
-                                    <input type="hidden" name="_<c:out value="${status.expression}"/>">
-                                    <input type="checkbox"
-                                        name="<c:out value="${status.expression}"/>" value="true"
-                                        id="<c:out value="${status.expression}"/>"
-                                        onClick="selectOnly('<c:out value="${status.expression}"/>')"
-                                        <c:if test="${status.value}">checked</c:if>/>
-                                </spring:bind>
+                                    <input type="radio"
+                                        name="<c:out value="${status.expression}"/>" value="INCLUDED"
+                                        <c:if test='${status.value == "INCLUDED"}'>checked</c:if>/>
                                 </td>
                                 <td align="center">
-                                <spring:bind path="patientMatchingConfiguration.configurationEntries[${entriesIndex.count - 1}].blocking">
-                                    <input type="hidden" name="_<c:out value="${status.expression}"/>">
-                                    <input type="checkbox"
-                                        name="<c:out value="${status.expression}"/>" value="true"
-                                        id="<c:out value="${status.expression}"/>"
-                                        onClick="selectOnly('<c:out value="${status.expression}"/>')"
-                                        <c:if test="${status.value}">checked</c:if>/>
-                                </spring:bind>
+                                    <input type="radio"
+                                        name="<c:out value="${status.expression}"/>" value="BLOCKING"
+                                        <c:if test='${status.value == "BLOCKING"}'>checked</c:if>/>
                                 </td>
+                                </spring:bind>                               
                                 <c:if test="${(entriesIndex.count - 1) % 3 < 2}">
                                     <td>&nbsp;</td>
                                 </c:if>
@@ -127,6 +128,24 @@
                             </c:choose>
                         </c:forEach>
                     </table>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td valign="top">
+                <b class="boxHeader"><spring:message code="patientmatching.config.new.inclusionLevels"/></b>
+                <div class="box" style="padding-right: 10px;">
+					<ul>
+						<li>
+							<b><spring:message code="patientmatching.config.new.fieldNameIgnore"/></b>: <spring:message code="patientmatching.config.new.fieldNameIgnore.description"/>
+						</li>
+						<li>
+							<b><spring:message code="patientmatching.config.new.fieldNameInclude"/></b>: <spring:message code="patientmatching.config.new.fieldNameInclude.description"/>
+						</li>
+						<li>
+							<b><spring:message code="patientmatching.config.new.fieldNameBlocking"/></b>: <spring:message code="patientmatching.config.new.fieldNameBlocking.description"/>
+						</li>
+					</ul>
                 </div>
             </td>
         </tr>
