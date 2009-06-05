@@ -195,7 +195,7 @@ window.onload = updateTimer();
             <tr id="noRunReport">
                 <td colspan="2">
                     <span style="font-weight: bold;">
-                        [Run Report]
+                        [<spring:message code="patientmatching.report.run"/>]
                         <span style="font-style: italic;">
                             Dedup is running
                         </span>
@@ -205,10 +205,10 @@ window.onload = updateTimer();
             
             <tr id="runReport">
                 <td colspan="2">
-                    <a href="javascript:;" onClick="runReport();">
-                        <span style="font-weight: bold;">Run Report</span>
-                    </a>
-                </td>
+					<button onClick="runReport();">
+						<spring:message code="patientmatching.report.run" />
+					</button>
+				</td>
             </tr>
         </table>
         
