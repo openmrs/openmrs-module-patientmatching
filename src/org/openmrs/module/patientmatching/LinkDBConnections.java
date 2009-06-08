@@ -48,8 +48,8 @@ public class LinkDBConnections {
 	private ReaderProvider rp;
 	
 	// caches patientToRecord return objects
-	private Map<Integer,Record> cache;
-	public final static int RECORD_CACHE_SIZE = 1000;
+	//private Map<Integer,Record> cache;
+	//public final static int RECORD_CACHE_SIZE = 1000;
 	
 	protected static Log logger = LogFactory.getLog(LinkDBConnections.class);
 	
@@ -72,11 +72,11 @@ public class LinkDBConnections {
 				PatientMatchingActivator.CONFIG_FILE);
 		
 		// used to cache patientToRecord objects
-		cache = new LinkedHashMap<Integer,Record>(RECORD_CACHE_SIZE + 1){
+		/*cache = new LinkedHashMap<Integer,Record>(RECORD_CACHE_SIZE + 1){
 			 public boolean removeEldestEntry(Map.Entry<Integer,Record> eldest) {
 		            return size() > RECORD_CACHE_SIZE;
 		     }
-		};
+		};*/
 		
 		running_dedup = false;
 		
@@ -303,10 +303,10 @@ public class LinkDBConnections {
 		if(id == null){
 			id = new Integer(PatientMatchingActivator.DEFAULT_RECORD_MATCHING_ID);
 		}
-		Record cache_record;
+		/*Record cache_record;
 		if(id != PatientMatchingActivator.DEFAULT_RECORD_MATCHING_ID && (cache_record = cache.get(id)) != null){
 			return cache_record;
-		}
+		}*/
 		
 		Record ret = new Record(id,"OpenMRS");
 		
@@ -391,7 +391,7 @@ public class LinkDBConnections {
             }
 		}
 		
-		cache.put(id, ret);
+		//cache.put(id, ret);
 		return ret;
 	}
 

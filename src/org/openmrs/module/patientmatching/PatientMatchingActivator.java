@@ -59,6 +59,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	public static final String FIND_METHOD = "findPatient";
 	public static final String GET_PATIENT_METHOD = "getPatientByExample";
 	public static final String MERGE_METHOD = "mergePatient";
+	public static final String SAVE_METHOD = "savePatient";
 	
 	public final static String CONFIG_FILE = "link_config.xml";
 	public final static String MATCHING_ATTRIBUTE = "Other Matching Information";
