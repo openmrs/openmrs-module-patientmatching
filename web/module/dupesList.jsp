@@ -60,11 +60,12 @@ function showRunReport(show) {
 }
 
 function updateTimer() {
-    var reTxt=new RegExp("\\d+");
+    var reTxt = new RegExp("\\d+");
     
     var timeVar = document.getElementById("serverTimer");
     
     if (timeVar != null) {
+        var refreshPeriod = 5; // in seconds
         var timeText = timeVar.innerHTML;
 
         var updateTime = timeText.match(reTxt);
@@ -72,7 +73,7 @@ function updateTimer() {
 
         if (updateTime == 0) {
             updateStatus();
-            updateTime = 30;
+            updateTime = refreshPeriod;
         } else {
             updateTime = updateTime - 1;
             timeText.innerHTML = updateTime;
@@ -80,7 +81,8 @@ function updateTimer() {
         
         timeVar.innerHTML = pieces[0] + updateTime + pieces[1];
     } else {
-        updateStatus();
+        // patientmatching.report.serverTimer has been commented out below; just update
+       	updateStatus();
     }
     s = setTimeout("updateTimer()", 1000);
 }
@@ -206,7 +208,7 @@ window.onload = updateTimer();
             <tr id="runReport">
                 <td colspan="2">
 					<button onClick="runReport();">
-						<spring:message code="patientmatching.report.run" />
+						<spring:message code="patientmatching.report.run"/>
 					</button>
 				</td>
             </tr>
@@ -230,13 +232,15 @@ window.onload = updateTimer();
                 </td>
             </tr>
             
+            <!--
             <tr>
                 <td>
                     <span style="font-style: italic; font-weight: bold;" id="serverTimer">
-                        Contacting server in 30s
+                        <spring:message code="patientmatching.report.serverTimer"/>
                     </span>
                 </td>
             </tr>
+            -->
             
             <tr>
                 <td>
