@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-    <!DOCTYPE module PUBLIC "-//OpenMRS//DTD OpenMRS Config 1.0//EN" "http://resources.openmrs.org/doctype/config-1.0.dtd">
-
-    <module configVersion="1.0">
+<!DOCTYPE module PUBLIC "-//OpenMRS//DTD OpenMRS Config 1.0//EN" "http://resources.openmrs.org/doctype/config-1.0.dtd">
+<module configVersion="1.0">
 
         <!-- Base Module Properties -->
         <id>patientmatching</id>
@@ -9,9 +8,7 @@
         <version>1.2.2</version>
         <package>org.openmrs.module.@MODULE_ID@</package>
         <author>James Egg</author>
-        <description>
-            Patient matching module uses an external database for probabalistic patient matching
-        </description>
+        <description>Patient matching module uses an external database for probabilistic patient matching</description>
 
         <activator>@MODULE_PACKAGE@.PatientMatchingActivator</activator>
 
