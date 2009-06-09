@@ -162,6 +162,12 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 			return true;
 		} else if(method_name.equals(FIND_METHOD)){
 			return true;
+		} else if(method_name.equals(SAVE_METHOD)){
+			return true;
+		} else if(method_name.equals(MERGE_METHOD)){
+			return true;
+		} else if(method_name.equals(GET_PATIENT_METHOD)){
+			return true;
 		}
 		return false;
 	}
