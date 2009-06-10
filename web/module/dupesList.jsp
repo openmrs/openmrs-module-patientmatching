@@ -64,8 +64,9 @@ function updateTimer() {
     
     var timeVar = document.getElementById("serverTimer");
     
+    var refreshPeriod = 5; // in seconds
     if (timeVar != null) {
-        var refreshPeriod = 5; // in seconds
+        
         var timeText = timeVar.innerHTML;
 
         var updateTime = timeText.match(reTxt);
@@ -80,11 +81,11 @@ function updateTimer() {
         }
         
         timeVar.innerHTML = pieces[0] + updateTime + pieces[1];
+        s = setTimeout("updateTimer()", 1000);
     } else {
-        // patientmatching.report.serverTimer has been commented out below; just update
-       	updateStatus();
-    }
-    s = setTimeout("updateTimer()", 1000);
+		updateStatus();
+        s = setTimeout("updateTimer()", refreshPeriod*1000);
+    }    
 }
 
 function updateStatus() {
@@ -199,7 +200,7 @@ window.onload = updateTimer();
                     <span style="font-weight: bold;">
                         [<spring:message code="patientmatching.report.run"/>]
                         <span style="font-style: italic;">
-                            Dedup is running
+                            <spring:message code="patientmatching.report.running"/>
                         </span>
                     </span>
                 </td>
@@ -218,7 +219,7 @@ window.onload = updateTimer();
             <tr>
                 <td>
                     <span style="font-weight: bold;">
-                        Currently:
+                        <spring:message code="patientmatching.report.status"/>
                     </span>
                 </td>
             </tr>
