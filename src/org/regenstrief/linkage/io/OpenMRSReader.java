@@ -192,7 +192,7 @@ public class OpenMRSReader implements DataSourceReader {
         isPatient = false;
         String sql = "select patient.patientId, " + select +
                             " from Patient as patient join patient.names as name join patient.addresses as address " +
-                            " where patient.patientId = :patientId" +
+                            " where patient.patientId = :patientId and name.voided = false and address.voided = false" +
                             " order by patient.patientId asc, name.preferred asc, address.preferred asc";
         return sql;
     }
