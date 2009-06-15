@@ -104,13 +104,13 @@ public class MatchingConfigurationUtils {
      * @param name the blocking run name
      * @return <code>PatientMatchingObject</code> representing the selected blocking run
      */
-    public static final PatientMatchingConfiguration createPatientMatchingConfig(String name, List<String> listExcludedProperties) {
+    public static final PatientMatchingConfiguration loadPatientMatchingConfig(String name, List<String> listExcludedProperties) {
         String configurationFolder = MatchingConstants.CONFIG_FOLDER_NAME;
         File configurationFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configurationFolder);
         File configurationFile = new File(configurationFileFolder, MatchingConstants.CONFIG_FILE_NAME);
         
         PatientMatchingConfiguration patientMatchingConfig = createPatientMatchingConfig(listExcludedProperties);
-        log.info("Creating blank PatientMatchingConfig with name: " + name);
+        log.info("Loading PatientMatchingConfig with name: " + name);
         
         if (configurationFile.exists()) {
             RecMatchConfig recMatchConfig = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(configurationFile));
@@ -119,11 +119,11 @@ public class MatchingConfigurationUtils {
             
             for (ConfigurationEntry configEntry : patientMatchingConfig.getConfigurationEntries()) {
                 MatchingConfigRow configRow = matchingConfig.getMatchingConfigRowByName(configEntry.getFieldName());
+                if (configRow.isIncluded()) {
+                	configEntry.setIncluded();
+                }
                 if (configRow.getBlockOrder() > 0) {
                 	configEntry.setBlocking();
-                }
-                if (configRow.isIncluded() && configRow.getBlockOrder() <= 0) {
-                	configEntry.setIncluded();
                 }
             }
             Collections.sort(patientMatchingConfig.getConfigurationEntries());
@@ -208,8 +208,10 @@ public class MatchingConfigurationUtils {
                 if (configEntry.isBlocking()) {
                     configRow.setBlockOrder(counterBlockOrder);
                     counterBlockOrder ++;
+                    //log.info("saving -- " + patientMatchingConfig.getConfigurationName() + ": blocking field " + configEntry.getFieldName());
                 } else {
                     configRow.setBlockOrder(MatchingConfigRow.DEFAULT_BLOCK_ORDER);
+                    //log.info(patientMatchingConfig.getConfigurationName() + ": ignore field " + configEntry.getFieldName());
                 }
             }
         } else {

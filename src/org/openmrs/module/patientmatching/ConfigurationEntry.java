@@ -55,17 +55,17 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
     }
     
     /**
-	 * @return the inclusion
+	 * @return the inclusion level
 	 */
 	public String getInclusion() {
 		return inclusion;
 	}
 
 	/**
-	 * @param inclusion the inclusion to set
+	 * @param level the inclusion level to set
 	 */
-	public void setInclusion(String inclusion) {
-		this.inclusion = inclusion;
+	public void setInclusion(String level) {
+		this.inclusion = level;
 	}
 
 	/**
@@ -74,7 +74,7 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
      * @return the ignored
      */
     public boolean isIgnored() {
-    	return inclusion == IGNORED;
+    	return inclusion.compareTo(IGNORED) == 0;
     }
     
     /**
@@ -83,7 +83,7 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
      * @see ConfigurationEntry#isIgnored()
      */
     public void setIgnored() {
-    	inclusion = IGNORED;
+    	this.inclusion = IGNORED;
     }
     
     /**
@@ -93,7 +93,7 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
      * @return the blocking
      */
     public boolean isBlocking() {
-        return inclusion == BLOCKING;
+        return inclusion.compareTo(BLOCKING) == 0;
     }
 
     /**
@@ -103,7 +103,7 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
      * @see ConfigurationEntry#isIncluded()
      */
     public void setBlocking() {
-    	inclusion = BLOCKING;
+    	this.inclusion = BLOCKING;
     }
 
     /**
@@ -137,7 +137,7 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
      * @return the selected
      */
     public boolean isIncluded() {
-        return inclusion == INCLUDED;
+        return inclusion.compareTo(INCLUDED) == 0;
     }
 
     /**
@@ -146,7 +146,7 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
      * @see ConfigurationEntry#isIncluded()
      */
     public void setIncluded() {
-        inclusion = INCLUDED;
+        this.inclusion = INCLUDED;
     }
 
     /**

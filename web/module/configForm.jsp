@@ -105,17 +105,20 @@
                                 <spring:bind path="patientMatchingConfiguration.configurationEntries[${entriesIndex.count - 1}].inclusion">
                                 <td align="center">
                                     <input type="radio"
-                                        name="<c:out value="${status.expression}"/>" value="IGNORED"
+                                        name="<c:out value="${status.expression}"/>" 
+                                        value="IGNORED"
                                         <c:if test='${status.value == "IGNORED"}'>checked</c:if>/>
                                 </td>
                                 <td align="center">
                                     <input type="radio"
-                                        name="<c:out value="${status.expression}"/>" value="INCLUDED"
+                                        name="<c:out value="${status.expression}"/>" 
+                                        value="INCLUDED"
                                         <c:if test='${status.value == "INCLUDED"}'>checked</c:if>/>
                                 </td>
                                 <td align="center">
                                     <input type="radio"
-                                        name="<c:out value="${status.expression}"/>" value="BLOCKING"
+                                        name="<c:out value="${status.expression}"/>"
+                                        value="BLOCKING"
                                         <c:if test='${status.value == "BLOCKING"}'>checked</c:if>/>
                                 </td>
                                 </spring:bind>                               

@@ -37,7 +37,7 @@ public class ConfigurationSimpleFormController extends SimpleFormController {
         PatientMatchingConfiguration configuration = null;
         
 	    if (name != null) {
-            configuration = MatchingConfigurationUtils.createPatientMatchingConfig(name, listExcludedProperties);
+            configuration = MatchingConfigurationUtils.loadPatientMatchingConfig(name, listExcludedProperties);
 	    } else {
 	        configuration = MatchingConfigurationUtils.createPatientMatchingConfig(listExcludedProperties);
 	    }
@@ -49,13 +49,20 @@ public class ConfigurationSimpleFormController extends SimpleFormController {
     /**
      * @see org.springframework.web.servlet.mvc.SimpleFormController#onSubmit(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.lang.Object, org.springframework.validation.BindException)
      */
-    @SuppressWarnings("unchecked")
     @Override
     protected ModelAndView onSubmit(HttpServletRequest request,
             HttpServletResponse response, Object command, BindException errors)
             throws Exception {
-        PatientMatchingConfiguration patientMatchingConfiguration = (PatientMatchingConfiguration) command;
-        MatchingConfigurationUtils.savePatientMatchingConfig(patientMatchingConfiguration);
+        PatientMatchingConfiguration patientMatchingConfig = (PatientMatchingConfiguration) command;
+        log.info("Saving patient matching config: " + patientMatchingConfig.getConfigurationName());
+
+        /*
+        for(ConfigurationEntry configEntry: patientMatchingConfig.getConfigurationEntries()) {
+            log.info("response -- " + patientMatchingConfig.getConfigurationName() + ": " + configEntry.getFieldName() + ": " + configEntry.getInclusion() + "(blocking=" + new Boolean(configEntry.getInclusion() == "BLOCKING").toString() + ")");
+        }
+        */
+        
+        MatchingConfigurationUtils.savePatientMatchingConfig(patientMatchingConfig);
         
         Map<String, String> model = new HashMap<String, String>();
         return new ModelAndView(getSuccessView(), model);
