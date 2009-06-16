@@ -1,19 +1,20 @@
-<%@ include file="/WEB-INF/template/include.jsp" %>
+<%@ include file="/WEB-INF/template/include.jsp"%>
 
-<openmrs:require privilege="View Patients, View Patient Cohorts" otherwise="/login.htm" redirect="/module/patientmatching/dupes.list" />
+<openmrs:require privilege="View Patients, View Patient Cohorts"
+	otherwise="/login.htm" redirect="/module/patientmatching/dupes.list" />
 
-<%@ include file="/WEB-INF/template/header.jsp" %>
-<%@ include file="localHeader.jsp" %>
-<openmrs:htmlInclude file="/dwr/interface/DWRMatchingConfigUtilities.js"/>
-<openmrs:htmlInclude file="/dwr/engine.js"/>
-<openmrs:htmlInclude file="/dwr/util.js"/>
+<%@ include file="/WEB-INF/template/header.jsp"%>
+<%@ include file="localHeader.jsp"%>
+<openmrs:htmlInclude file="/dwr/interface/DWRMatchingConfigUtilities.js" />
+<openmrs:htmlInclude file="/dwr/engine.js" />
+<openmrs:htmlInclude file="/dwr/util.js" />
 
 <script type="text/javascript">
 
 var s = 0;
 
 function runReport() {
-    if (confirm("Are you sure you want to generate new report?")) {
+    if (confirm("Are you sure you want to generate a new report?")) {
         showRunReport(false);
         DWRMatchingConfigUtilities.doAnalysis();
     }
@@ -59,14 +60,13 @@ function showRunReport(show) {
     }
 }
 
-function updateTimer() {
+function updateTimer() {	
     var reTxt = new RegExp("\\d+");
     
     var timeVar = document.getElementById("serverTimer");
     
     var refreshPeriod = 5; // in seconds
     if (timeVar != null) {
-        
         var timeText = timeVar.innerHTML;
 
         var updateTime = timeText.match(reTxt);
@@ -95,7 +95,7 @@ function updateStatus() {
                 && data != '<c:out value="${premStatus}" />'
                 && data != '<c:out value="${endStatus}" />') {
             showRunReport(false);
-            
+
             var currData = statusLocation.innerHTML;
             
             var dataDotPos = data.indexOf(".");
@@ -110,7 +110,7 @@ function updateStatus() {
             subbedCurrData = currData.substring(0, currDataDotPos);
             
             if (subbedData == subbedCurrData) {
-                if (totalDot > 10) {
+                if (totalDot >= 3) {
                     currData = subbedData;
                 } else {
                     currData = currData + ".";
@@ -169,71 +169,56 @@ function buildTable() {
 window.onload = updateTimer();
 </script>
 
-<h2><spring:message code="patientmatching.report.title"/></h2>
+<h2><spring:message code="patientmatching.report.title" /></h2>
 
-<br/>
+<br />
 
-<b class="boxHeader"><spring:message code="patientmatching.report.run" /></b>
+<b class="boxHeader"><spring:message
+	code="patientmatching.report.run" /></b>
 <form method="post">
-    <div class="box">
-        <table cellspacing="2" cellpadding="2">
-            <tr>
-                <th colspan="2">
-                    <spring:message code="patientmatching.report.blocking"/>
-                </th>
-            </tr>
-            <c:forEach items="${blockingRuns}" var="blockingRun" varStatus="entriesIndex">
-            <tr>
-                <td>
-                    <c:out value="${entriesIndex.count}" />.
-                </td>
-                <td>
-                    <c:out value="${blockingRun}" />.
-                </td>
-            </tr>
-            </c:forEach>
-        </table>
-        
-        <table cellspacing="2" cellpadding="2">
-            <tr id="noRunReport">
-                <td colspan="2">
-                    <span style="font-weight: bold;">
-                        [<spring:message code="patientmatching.report.run"/>]
-                        <span style="font-style: italic;">
-                            <spring:message code="patientmatching.report.running"/>
-                        </span>
-                    </span>
-                </td>
-            </tr>
-            
-            <tr id="runReport">
-                <td colspan="2">
-					<button onClick="runReport();">
-						<spring:message code="patientmatching.report.run"/>
-					</button>
-				</td>
-            </tr>
-        </table>
-        
-        <table cellspacing="2" cellpadding="2">
-            <tr>
-                <td>
-                    <span style="font-weight: bold;">
-                        <spring:message code="patientmatching.report.status"/>
-                    </span>
-                </td>
-            </tr>
-            
-            <tr>
-                <td>
-                    &nbsp;&nbsp;&nbsp;&nbsp;
-                    <span style="font-weight: bold;" id="reportStatus">
-                        &nbsp;
-                    </span>
-                </td>
-            </tr>
-            
-            <!--
+<div class="box">
+<table cellspacing="2" cellpadding="2">
+	<tr>
+		<th colspan="2"><spring:message
+			code="patientmatching.report.blocking" /></th>
+	</tr>
+	<c:forEach items="${blockingRuns}" var="blockingRun"
+		varStatus="entriesIndex">
+		<tr>
+			<td><c:out value="${entriesIndex.count}" />.</td>
+			<td><c:out value="${blockingRun}" />.</td>
+		</tr>
+	</c:forEach>
+</table>
+
+<table cellspacing="2" cellpadding="2">
+	<tr id="noRunReport">
+		<td colspan="2"><span style="font-weight: bold;"> [<spring:message
+			code="patientmatching.report.run" />] <span
+			style="font-style: italic;"> <spring:message
+			code="patientmatching.report.running" /> </span> </span></td>
+	</tr>
+
+	<tr id="runReport">
+		<td colspan="2">
+		<button onClick="runReport();"><spring:message
+			code="patientmatching.report.run" /></button>
+		</td>
+	</tr>
+</table>
+
+<table cellspacing="2" cellpadding="2">
+	<tr>
+		<td><span style="font-weight: bold;"> <spring:message
+			code="patientmatching.report.status" /> </span></td>
+	</tr>
+
+	<tr>
+		<td>&nbsp;&nbsp;&nbsp;&nbsp; <span id="reportStatus">
+		&nbsp; </span></td>
+	</tr>
+
+	<!--
             <tr>
                 <td>
                     <span style="font-style: italic; font-weight: bold;" id="serverTimer">
@@ -242,58 +227,43 @@ window.onload = updateTimer();
                 </td>
             </tr>
             -->
-            
-            <tr>
-                <td>
-                    &nbsp;
-                </td>
-            </tr>
-        </table>
-        
-        <b class="boxHeader">Available Reports</b>
-        <div class="box">
-        <table cellspacing="2" cellpadding="2">
-            <tr>
-                <th>
-                    Analysis Reports
-                </th>
-                <th>
-                    &nbsp;&nbsp;&nbsp;&nbsp;
-                </th>
-                <th colspan="2">
-                    Select Action
-                </th>
-            </tr>
-            
-            <tbody id="report-list">
-            <c:forEach items="${reportResults}" var="reportResult" varStatus="entriesIndex">
-            <tr <c:if test="${entriesIndex.count % 2 == 0}">class="oddRow"</c:if>
-                <c:if test="${entriesIndex.count % 2 != 0}">class="evenRow"</c:if>>
-                <td>
-                    <c:out value="${reportResult}" />
-                </td>
-                <td>
-                    &nbsp;&nbsp;&nbsp;&nbsp;
-                </td>
-                <td>
-                    <a href="javascript:;" onClick="viewFile('<c:out value="${reportResult}" />');">
-                        View
-                    </a>
-                </td>
-                <td>
-                    <a href="javascript:;" onClick="deleteFile('<c:out value="${reportResult}" />');">
-                        Delete
-                    </a>
-                </td>
-            </tr>
-            </c:forEach>
-            </tbody>
-            
-        </table>
-        </div>
-    
-    </div>
-</form>
-<br/>
 
-<%@ include file="/WEB-INF/template/footer.jsp" %>
+	<tr>
+		<td>&nbsp;</td>
+	</tr>
+</table>
+
+<b class="boxHeader">Available Reports</b>
+<div class="box">
+<table cellspacing="2" cellpadding="2">
+	<tr>
+		<th>Analysis Reports</th>
+		<th>&nbsp;&nbsp;&nbsp;&nbsp;</th>
+		<th colspan="2">Select Action</th>
+	</tr>
+
+	<tbody id="report-list">
+		<c:forEach items="${reportResults}" var="reportResult"
+			varStatus="entriesIndex">
+			<tr <c:if test="${entriesIndex.count % 2 == 0}">class="oddRow"</c:if>
+				<c:if test="${entriesIndex.count % 2 != 0}">class="evenRow"</c:if>>
+				<td><c:out value="${reportResult}" /></td>
+				<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+				<td><a href="javascript:;"
+					onClick="viewFile('<c:out value="${reportResult}" />');"> View
+				</a></td>
+				<td><a href="javascript:;"
+					onClick="deleteFile('<c:out value="${reportResult}" />');">
+				Delete </a></td>
+			</tr>
+		</c:forEach>
+	</tbody>
+
+</table>
+</div>
+
+</div>
+</form>
+<br />
+
+<%@ include file="/WEB-INF/template/footer.jsp"%>

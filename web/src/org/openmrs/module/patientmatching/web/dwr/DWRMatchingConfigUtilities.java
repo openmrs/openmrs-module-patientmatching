@@ -23,169 +23,180 @@ import uk.ltd.getahead.dwr.WebContext;
 import uk.ltd.getahead.dwr.WebContextFactory;
 
 /**
- * Utility class that will be available to the DWR javascript call from the 
+ * Utility class that will be available to the DWR javascript call from the
  * module web page. All methods in this class must be registered in module
  * config file to make it available as javascript call.
  */
 public class DWRMatchingConfigUtilities {
 
-    protected final Log log = LogFactory.getLog(getClass());
-    
-    /**
-     * @see MatchingConfigurationUtils#listAvailableBlockingRuns()
-     */
-    public List<String> getAllBlockingRuns() {
-        return MatchingConfigurationUtils.listAvailableBlockingRuns();
-    }
-    
-    /**
-     * @see MatchingReportUtils#listAvailableReport()
-     */
-    public List<String> getAllReports() {
-        return MatchingReportUtils.listAvailableReport();
-    }
-    
-    /**
-     * @see MatchingConfigurationUtils#deleteBlockingRun(String)
-     */
-    public void deleteBlockingRun(String name) {
-        log.info("DWRMatchingConfigUtilities: deleting blocking run");
-        MatchingConfigurationUtils.deleteBlockingRun(name);
-    }
-    
-    /**
-     * @see MatchingReportUtils#doAnalysis()
-     */
-    public void doAnalysis() {
-        log.info("DWRMatchingConfigUtilities: running analysis process");
-        try {
-        	if(LinkDBConnections.getInstance().getLock()) {
-        		MatchingReportUtils.doAnalysis();
-        		LinkDBConnections.getInstance().releaseLock();
-        	}
+	protected final Log log = LogFactory.getLog(getClass());
+
+	/**
+	 * @see MatchingConfigurationUtils#listAvailableBlockingRuns()
+	 */
+	public List<String> getAllBlockingRuns() {
+		return MatchingConfigurationUtils.listAvailableBlockingRuns();
+	}
+
+	/**
+	 * @see MatchingReportUtils#listAvailableReport()
+	 */
+	public List<String> getAllReports() {
+		return MatchingReportUtils.listAvailableReport();
+	}
+
+	/**
+	 * @see MatchingConfigurationUtils#deleteBlockingRun(String)
+	 */
+	public void deleteBlockingRun(String name) {
+		log.info("DWRMatchingConfigUtilities: deleting blocking run");
+		MatchingConfigurationUtils.deleteBlockingRun(name);
+	}
+
+	/**
+	 * @see MatchingReportUtils#doAnalysis()
+	 */
+	public void doAnalysis() {
+		log.info("DWRMatchingConfigUtilities: running analysis process");
+		try {
+			if (LinkDBConnections.getInstance().getLock()) {
+				MatchingReportUtils.doAnalysis();
+				LinkDBConnections.getInstance().releaseLock();
+			}
 		} catch (Exception e) {
 			LinkDBConnections.getInstance().releaseLock();
 			MatchingReportUtils.setStatus(MatchingReportUtils.PREM_PROCESS);
 			log.info("Exception caught during the analysis process ...");
-			e.printStackTrace();
+			log.error(e.getStackTrace().toString());
 		} catch (Throwable t) {
 			LinkDBConnections.getInstance().releaseLock();
 			MatchingReportUtils.setStatus(MatchingReportUtils.PREM_PROCESS);
 			log.info("Throwable object caught during the analysis process ...");
-			t.printStackTrace();
+			log.error(t.getStackTrace().toString());
 		}
-    }
-    
-    /**
-     * Delete a particular report file from the server using DWR call
-     * @param filename report file that will be deleted
-     */
-    public void deleteReportFile(String filename) {
-        log.info("DWRMatchingConfigUtilities: deleting file " + filename);
+	}
+
+	/**
+	 * Delete a particular report file from the server using DWR call
+	 * 
+	 * @param filename
+	 *            report file that will be deleted
+	 */
+	public void deleteReportFile(String filename) {
+		log.info("DWRMatchingConfigUtilities: deleting file " + filename);
 		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
-        File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
-        File reportFile = new File(configFileFolder, filename);
-        log.info("Report file to be deleted: " + reportFile.getAbsolutePath());
-        boolean deleted = reportFile.delete();
-        if (deleted) {
-            log.info("Config file deleted.");
-        }
-    }
-    
-    /**
-     * Get the current status of the creating report process using DWR call
-     * @see MatchingReportUtils#getStatus()
-     */
-    public String getStatus() {
-    	return MatchingReportUtils.getStatus();
-    }
-    
-    /**
-     * Set the current status of the creating report process using DWR call
-     * @see MatchingReportUtils#setStatus(String)
-     */
-    public void setStatus(String status) {
-    	MatchingReportUtils.setStatus(status);
-    }
-    
-    /**
-     * Get the report block for a particular page out of the report file using
-     * DWR call.
-     * 
-     * @return content of the next page in the report file
-     */
-    @SuppressWarnings("unchecked")
-    public List<List<String>> getNextPage() {
-        WebContext context = WebContextFactory.get();
-        HttpSession session = context.getSession();
-        String filename = (String) session.getAttribute("reportFilename");
-        List<Long> pagePos = (List<Long>) session.getAttribute("reportPagePosition");
-        int currentPage = (Integer) session.getAttribute("reportCurrentPage");
-        boolean eof = (Boolean) session.getAttribute("isReportEOF");
-        
-        List<List<String>> currentContent = new ArrayList<List<String>>();
-        // init with error message
-        List<String> s = new ArrayList<String>();
-        s.add("Unable to get the report data, please retry or re-open the report page");
-        currentContent.add(s);
-        
-        MatchingReportReader reader = new MatchingReportReader(currentPage, eof, pagePos, filename);
-        try {
-            if(eof) {
-                reader.fetchContent(currentPage);
-            } else {
-                reader.fetchContent(currentPage + 1);
-            }
-            // only update the value when succeed
-            session.setAttribute("reportPagePosition", reader.getPagePos());
-            session.setAttribute("reportCurrentPage", reader.getCurrentPage());
-            session.setAttribute("isReportEOF", reader.isEof());
-            // this will replace error message if the process is done
-            currentContent = reader.getCurrentContent();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return currentContent;
-    }
-    
-    /**
-     * Get the report block for a particular page out of the report file using
-     * DWR call.
-     * 
-     * @return content of the previous page in the report file
-     */
-    @SuppressWarnings("unchecked")
-    public List<List<String>> getPrevPage() {
-        WebContext context = WebContextFactory.get();
-        HttpSession session = context.getSession();
-        String filename = (String) session.getAttribute("reportFilename");
-        List<Long> pagePos = (List<Long>) session.getAttribute("reportPagePosition");
-        int currentPage = (Integer) session.getAttribute("reportCurrentPage");
-        // pressing previous button always makes the eof false
-        boolean eof = false;
-        
-        List<List<String>> currentContent = new ArrayList<List<String>>();
-        // init with error message
-        List<String> s = new ArrayList<String>();
-        s.add("Unable to get the report data, please retry or re-open the report page");
-        currentContent.add(s);
-        
-        MatchingReportReader reader = new MatchingReportReader(currentPage, eof, pagePos, filename);
-        try {
-            if(currentPage > 1) {
-                reader.fetchContent(currentPage - 1);
-            } else {
-                reader.fetchContent(currentPage);
-            }
-            // only update the value when succeed
-            session.setAttribute("reportPagePosition", reader.getPagePos());
-            session.setAttribute("reportCurrentPage", reader.getCurrentPage());
-            session.setAttribute("isReportEOF", reader.isEof());
-            // this will replace error message if the process is done
-            currentContent = reader.getCurrentContent();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return currentContent;
-    }
+		File configFileFolder = OpenmrsUtil
+				.getDirectoryInApplicationDataDirectory(configLocation);
+		File reportFile = new File(configFileFolder, filename);
+		log.info("Report file to be deleted: " + reportFile.getAbsolutePath());
+		boolean deleted = reportFile.delete();
+		if (deleted) {
+			log.info("Config file deleted.");
+		}
+	}
+
+	/**
+	 * Get the current status of the creating report process using DWR call
+	 * 
+	 * @see MatchingReportUtils#getStatus()
+	 */
+	public String getStatus() {
+		return MatchingReportUtils.getStatus();
+	}
+
+	/**
+	 * Set the current status of the creating report process using DWR call
+	 * 
+	 * @see MatchingReportUtils#setStatus(String)
+	 */
+	public void setStatus(String status) {
+		MatchingReportUtils.setStatus(status);
+	}
+
+	/**
+	 * Get the report block for a particular page out of the report file using
+	 * DWR call.
+	 * 
+	 * @return content of the next page in the report file
+	 */
+	@SuppressWarnings("unchecked")
+	public List<List<String>> getNextPage() {
+		WebContext context = WebContextFactory.get();
+		HttpSession session = context.getSession();
+		String filename = (String) session.getAttribute("reportFilename");
+		List<Long> pagePos = (List<Long>) session
+				.getAttribute("reportPagePosition");
+		int currentPage = (Integer) session.getAttribute("reportCurrentPage");
+		boolean eof = (Boolean) session.getAttribute("isReportEOF");
+
+		List<List<String>> currentContent = new ArrayList<List<String>>();
+		// init with error message
+		List<String> s = new ArrayList<String>();
+		s
+				.add("Unable to get the report data, please retry or re-open the report page");
+		currentContent.add(s);
+
+		MatchingReportReader reader = new MatchingReportReader(currentPage,
+				eof, pagePos, filename);
+		try {
+			if (eof) {
+				reader.fetchContent(currentPage);
+			} else {
+				reader.fetchContent(currentPage + 1);
+			}
+			// only update the value when succeed
+			session.setAttribute("reportPagePosition", reader.getPagePos());
+			session.setAttribute("reportCurrentPage", reader.getCurrentPage());
+			session.setAttribute("isReportEOF", reader.isEof());
+			// this will replace error message if the process is done
+			currentContent = reader.getCurrentContent();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return currentContent;
+	}
+
+	/**
+	 * Get the report block for a particular page out of the report file using
+	 * DWR call.
+	 * 
+	 * @return content of the previous page in the report file
+	 */
+	@SuppressWarnings("unchecked")
+	public List<List<String>> getPrevPage() {
+		WebContext context = WebContextFactory.get();
+		HttpSession session = context.getSession();
+		String filename = (String) session.getAttribute("reportFilename");
+		List<Long> pagePos = (List<Long>) session
+				.getAttribute("reportPagePosition");
+		int currentPage = (Integer) session.getAttribute("reportCurrentPage");
+		// pressing previous button always makes the eof false
+		boolean eof = false;
+
+		List<List<String>> currentContent = new ArrayList<List<String>>();
+		// init with error message
+		List<String> s = new ArrayList<String>();
+		s
+				.add("Unable to get the report data, please retry or re-open the report page");
+		currentContent.add(s);
+
+		MatchingReportReader reader = new MatchingReportReader(currentPage,
+				eof, pagePos, filename);
+		try {
+			if (currentPage > 1) {
+				reader.fetchContent(currentPage - 1);
+			} else {
+				reader.fetchContent(currentPage);
+			}
+			// only update the value when succeed
+			session.setAttribute("reportPagePosition", reader.getPagePos());
+			session.setAttribute("reportCurrentPage", reader.getCurrentPage());
+			session.setAttribute("isReportEOF", reader.isEof());
+			// this will replace error message if the process is done
+			currentContent = reader.getCurrentContent();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return currentContent;
+	}
 }
