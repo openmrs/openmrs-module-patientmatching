@@ -89,7 +89,7 @@ public class MatchingConfigurationUtils {
         Collections.sort(configurationEntries);
         
         patientMatchingConfig.setConfigurationEntries(configurationEntries);
-        patientMatchingConfig.setConfigurationName("new configuration");
+        patientMatchingConfig.setConfigurationName("new strategy");
         patientMatchingConfig.setUsingRandomSample(true);
         patientMatchingConfig.setRandomSampleSize(100000);
         
