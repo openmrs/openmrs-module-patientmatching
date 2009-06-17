@@ -54,6 +54,7 @@
                     <include method="setStatus"/>
                     <include method="getNextPage"/>
                     <include method="getPrevPage"/>
+                    <include method="resetStep"/>
                 </create>
             </allow>
     
@@ -69,6 +70,7 @@
                 DWRMatchingConfigUtilities.setStatus(String)
                 DWRMatchingConfigUtilities.getNextPage()
                 DWRMatchingConfigUtilities.getPrevPage()
+                DWRMatchingConfigUtilities.resetStep()
                 ]]>
             </signatures>
         </dwr>

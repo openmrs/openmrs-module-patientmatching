@@ -48,9 +48,9 @@ public class MatchingReportUtils {
 	 * Initial status of creating report process. The following are three main
 	 * status of the process.
 	 */
-	public static final String NO_PROCESS = "No running process ";
-	public static final String END_PROCESS = "Report processing done; please reload page to view available reports ...";
-	public static final String PREM_PROCESS = "Prematurely terminated process ...";
+	public static final String NO_PROCESS = "No running process";
+	public static final String END_PROCESS = "Report finished";
+	public static final String PREM_PROCESS = "Prematurely terminated process";
 
 	/**
 	 * Field that need to be checked to see the current status of the creating
@@ -62,16 +62,25 @@ public class MatchingReportUtils {
 	 * List of steps in the reporting process.
 	 */
 	public static final String[] steps = { MatchingReportUtils.NO_PROCESS,
-			"Starting generate report process sequence",
-			"Reading configuration file", "Initiating scratch table",
-			"Creating random sample analyzer",
-			"Creating analyzer form pairs",
-			"Creating pair data source analyzer",
-			"Adding random sample analyzer", "Creating EM analyzer",
-			"Adding EM analyzer", "Analyzing data", "Scoring data",
-			"Creating report", MatchingReportUtils.END_PROCESS };
+			"Read configuration file", "Create scratch table",
+			"Create random sample analyzer",
+			"Create analyzer form pairs",
+			"Create pair data source analyzer",
+			"Create expectation maximization (EM) analyzer",
+			"Analyze pairs", 
+			"Score pairs",
+			"Write report", MatchingReportUtils.END_PROCESS };
 
 	private static int currentStep = 0;
+	
+	/**
+	 * 
+	 * Resets to first step.
+	 *
+	 */
+	public static void resetStep() {
+		MatchingReportUtils.currentStep = 0;
+	}
 	
 	/**
 	 * 
@@ -94,7 +103,6 @@ public class MatchingReportUtils {
 	 * @throws IOException
 	 */
 	public static void doAnalysis() throws IOException {
-		MatchingReportUtils.nextStep();
 		MatchingConfigurationUtils.log
 				.info("Starting generate report process sequence");
 
@@ -182,7 +190,6 @@ public class MatchingReportUtils {
 					.info("Creating pair data source analyzer");
 			PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(formPairs);
 
-			MatchingReportUtils.nextStep();
 			MatchingConfigurationUtils.log
 					.info("Adding random sample analyzer");
 			pdsa.addAnalyzer(rsa);
@@ -191,7 +198,6 @@ public class MatchingReportUtils {
 			MatchingConfigurationUtils.log.info("Creating EM analyzer");
 			EMAnalyzer ema = new EMAnalyzer(matchingConfig);
 
-			MatchingReportUtils.nextStep();
 			MatchingConfigurationUtils.log.info("Adding EM analyzer");
 			pdsa.addAnalyzer(ema);
 

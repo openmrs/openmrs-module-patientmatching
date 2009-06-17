@@ -17,6 +17,7 @@ function runReport() {
     if (confirm("Are you sure you want to generate a new report?")) {
         showRunReport(false);
         DWRMatchingConfigUtilities.doAnalysis();
+        showRunReport(false);
     }
 }
 
@@ -50,13 +51,10 @@ function viewFile(file) {
 }
 
 function showRunReport(show) {
-    var noRunReport = document.getElementById("noRunReport");
     var runReport = document.getElementById("runReport");
-    if(show) {
-        noRunReport.style.display = "none";
+    if (show) {
         runReport.style.display = "block";
     } else {
-        noRunReport.style.display = "block";
         runReport.style.display = "none";
     }
 }
@@ -91,31 +89,21 @@ function updateTimer() {
 
 function updateStatus() {
     DWRMatchingConfigUtilities.getStatus(function updateString(data) {
-        var statusLocation = document.getElementById("reportStatus");
-        if (data != '<c:out value="${defaultStatus}" />'
-                && data != '<c:out value="${premStatus}" />'
-                && data != '<c:out value="${endStatus}" />') {
-            showRunReport(false);
-
-            strikeUpToStep(getStepNumberByName(data)); // mark in checklist
-        } else {
-            if (data == '<c:out value="${endStatus}" />') {
-                clearTimeout(s);
-                DWREngine.beginBatch();
-                
-                buildTable();
-                
-                var status = '<c:out value="${defaultStatus}" />';
-                DWRMatchingConfigUtilities.setStatus(status);
-                
-                DWREngine.endBatch();
-                updateTimer();
-            }
+		if (data == '<c:out value="${endStatus}"/>') {
+            clearTimeout(s);
             
-            statusLocation.innerHTML = data;
-            strikeUpToStep(getStepNumberByName(data));
+            DWREngine.beginBatch();          
+            buildTable();
+            DWREngine.endBatch();
+
+            var status = '<c:out value="${defaultStatus}"/>';
+            DWRMatchingConfigUtilities.setStatus(status);
+            
+            updateTimer();
+            
             showRunReport(true);
         }
+		strikeUpToStep(getStepNumberByName(data)); // mark in checklist
     });
 }
 
@@ -194,21 +182,30 @@ window.onload = updateTimer();
 		<th colspan="2"><spring:message
 			code="patientmatching.report.blocking" /></th>
 	</tr>
-	<c:forEach items="${blockingRuns}" var="blockingRun"
-		varStatus="entriesIndex">
-		<tr>
-			<td><c:out value="${entriesIndex.count}" />.</td>
-			<td><c:out value="${blockingRun}" />.</td>
-		</tr>
-	</c:forEach>
+	<tr>
+		<td colspan="2">
+		<ol>
+			<c:forEach items="${blockingRuns}" var="blockingRun"
+				varStatus="entriesIndex">
+				<li><c:out value="${blockingRun}" /></li>
+			</c:forEach>
+		</ol>
+		</td>
+	</tr>
 </table>
 
 <table cellspacing="2" cellpadding="2">
-	<tr id="noRunReport">
-		<td colspan="2"><span style="font-weight: bold;"> [<spring:message
-			code="patientmatching.report.run" />] <span
-			style="font-style: italic;"> <spring:message
-			code="patientmatching.report.running" /> </span> </span></td>
+	<tr>
+		<td colspan="2"><span style="font-weight: bold;"> <spring:message
+			code="patientmatching.report.checklist" /></span>
+
+		<ul>
+			<c:forEach items="${stepList}" var="step" varStatus="entriesIndex">
+				<li><span id="step${entriesIndex.count}"><c:out
+					value="${step}" /></span></li>
+			</c:forEach>
+		</ul>
+		</td>
 	</tr>
 
 	<tr id="runReport">
@@ -220,32 +217,6 @@ window.onload = updateTimer();
 </table>
 
 <table cellspacing="2" cellpadding="2">
-	<tr>
-		<td><span style="font-weight: bold;"> <spring:message
-			code="patientmatching.report.status" /> </span></td>
-	</tr>
-	
-	<tr>
-		<td>&nbsp;&nbsp;&nbsp;&nbsp; <span id="reportStatus">
-		&nbsp; </span></td>
-	</tr>
-	
-	<tr>
-		<td><span style="font-weight: bold;">
-		<spring:message code="patientmatching.report.checklist"/></span></td>
-	</tr>
-	
-	<tr>
-		<td>
-		<ul>
-		<c:forEach items="${stepList}" var="step" varStatus="entriesIndex">
-			<li>
-			<span id="step${entriesIndex.count}"><c:out value="${step}"/></span>
-			</li>
-		</c:forEach>
-		</ul>
-		</td>
-	</tr>
 
 	<!--
             <tr>

@@ -52,6 +52,14 @@ public class DWRMatchingConfigUtilities {
 		log.info("DWRMatchingConfigUtilities: deleting blocking run");
 		MatchingConfigurationUtils.deleteBlockingRun(name);
 	}
+	
+	/**
+	 * @see MatchingReportUtils#resetStep()
+	 */
+	public void resetStep() {
+		log.info("DWRMatchingConfigUtilities: resetting to first step");
+		MatchingReportUtils.resetStep();
+	}
 
 	/**
 	 * @see MatchingReportUtils#doAnalysis()

@@ -57,7 +57,9 @@ public class ReportSimpleFormController extends SimpleFormController {
         log.info("Creating new patient matching report");
         
         Map<String, Object> model = new HashMap<String, Object>();
+        model.put("reportParam", MatchingConstants.PARAM_REPORT);
         model.put("blockingRuns", MatchingConfigurationUtils.listAvailableBlockingRuns());
+        model.put("reportResults", MatchingReportUtils.listAvailableReport());
         model.put("defaultStatus", MatchingReportUtils.NO_PROCESS);
         model.put("premStatus", MatchingReportUtils.PREM_PROCESS);
         model.put("endStatus", MatchingReportUtils.END_PROCESS);
