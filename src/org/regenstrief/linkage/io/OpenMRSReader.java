@@ -36,6 +36,8 @@ public class OpenMRSReader implements DataSourceReader {
     private int pageNumber;
     
     private boolean isPatient;
+    
+    private boolean expand_patient;
 
     /**
      * 
@@ -45,11 +47,16 @@ public class OpenMRSReader implements DataSourceReader {
         patients = new ArrayList();
         pageNumber = 0;
         isPatient = true;
+        expand_patient = true;
         
     	log.info("Getting all patient records ...");
     	updatePatientList();
     	
     	log.info("Finish intialization ...");
+    }
+    
+    public void setExpandPatient(boolean expand){
+    	expand_patient = expand;
     }
     
     private Criteria createCriteria(){
@@ -86,83 +93,75 @@ public class OpenMRSReader implements DataSourceReader {
                                 .setMaxResults(PAGING_SIZE).setFirstResult(PAGING_SIZE * pageNumber);
             Iterator patientIds = queryPatientId.iterate();
             
-            Integer prevPatientId = null;
             Integer currPatientId = null;
-            
             while (patientIds.hasNext()) {
                 try {
                     currPatientId = (Integer) patientIds.next();
-                    
                     Query query = createHibernateSession().createQuery(sql)
                                             .setParameter("patientId", currPatientId, Hibernate.INTEGER);
-                    
                     Iterator patientIter = query.iterate();
-                    
                     List<Object> objList = new ArrayList<Object>();
                     
-                    if (!patientIter.hasNext()) {
-                        // if we can't get any patient data, then just continue to next patient
-                        continue;
+                    int max_rows = 1;
+                    if(expand_patient){
+                    	max_rows = Integer.MAX_VALUE;
                     }
-                    
-                    while (patientIter.hasNext()) {
-                      Object[] objects = (Object[]) patientIter.next();
-                      // take only the first patient record and then skip the next one
-                      // this is done to get only record with preferred name and address
-                      // see the query: sort by preferred field on name and address
-                      if (currPatientId.equals(prevPatientId)) {
-                          continue;
-                      } else {
-                          objList.addAll(Arrays.asList(objects));
-                      }
-                      prevPatientId = currPatientId;
-                      currPatientId = (Integer) objects[0];
+                    int patient_rows = 0;
+                    while (patientIter.hasNext() && patient_rows < max_rows) {
+                    	Object[] objects = (Object[]) patientIter.next();
+                    	objList.clear();
+                    	objList.addAll(Arrays.asList(objects));
+                    	
+                    	currPatientId = (Integer) objects[0];
+
+                    	String sqlIdentitifier = "select patient.patientId, id.identifier, idType.name from Patient as patient join patient.identifiers as id " +
+                    	"join id.identifierType as idType where patient.patientId = :patientId order by patient.patientId asc, idType.name asc";
+                    	Query queryIdentifier = createHibernateSession().createQuery(sqlIdentitifier)
+                    	.setParameter("patientId", currPatientId, Hibernate.INTEGER);
+                    	Iterator iterIdentifier = queryIdentifier.iterate();
+
+                    	Map<String, String> mapId = new HashMap<String, String>();
+                    	while (iterIdentifier.hasNext()) {
+                    		Object[] oId = (Object[]) iterIdentifier.next();
+                    		mapId.put(String.valueOf(oId[2]), String.valueOf(oId[1]));
+                    	}
+                    	for (PatientIdentifierType idType : idTypes) {
+                    		String value = mapId.get(idType.getName());
+                    		if (value != null) {
+                    			objList.add(value);
+                    		} else {
+                    			objList.add("");
+                    		}
+                    	}
+
+                    	String sqlAttribute = "select patient.patientId, attr.value, attrType.name from Patient as patient join patient.attributes as attr " +
+                    	"join attr.attributeType as attrType where patient.patientId = :patientId order by patient.patientId asc, attrType.name asc";
+                    	Query queryAttribute = createHibernateSession().createQuery(sqlAttribute)
+                    	.setParameter("patientId", currPatientId, Hibernate.INTEGER);
+                    	Iterator iterAttribute = queryAttribute.iterate();
+
+                    	Map<String, String> mapAtt = new HashMap<String, String>();
+                    	while (iterAttribute.hasNext()) {
+                    		Object[] oAtt = (Object[]) iterAttribute.next();
+                    		mapAtt.put(String.valueOf(oAtt[2]), String.valueOf(oAtt[1]));
+                    	}
+                    	for (PersonAttributeType attType : attTypes) {
+                    		String value = mapAtt.get(attType.getName());
+                    		if (value != null) {
+                    			objList.add(value);
+                    		} else {
+                    			objList.add("");
+                    		}
+                    	}
+                    	patients.add(objList.toArray());
+                    	patient_rows++;
                     }
-                    
-                    String sqlIdentitifier = "select patient.patientId, id.identifier, idType.name from Patient as patient join patient.identifiers as id " +
-                            "join id.identifierType as idType where patient.patientId = :patientId order by patient.patientId asc, idType.name asc";
-                    Query queryIdentifier = createHibernateSession().createQuery(sqlIdentitifier)
-                            .setParameter("patientId", currPatientId, Hibernate.INTEGER);
-                    Iterator iterIdentifier = queryIdentifier.iterate();
-                    
-                    Map<String, String> mapId = new HashMap<String, String>();
-                    while (iterIdentifier.hasNext()) {
-                        Object[] oId = (Object[]) iterIdentifier.next();
-                        mapId.put(String.valueOf(oId[2]), String.valueOf(oId[1]));
-                    }
-                    for (PatientIdentifierType idType : idTypes) {
-                        String value = mapId.get(idType.getName());
-                        if (value != null) {
-                            objList.add(value);
-                        } else {
-                            objList.add("");
-                        }
-                    }
-                    
-                    String sqlAttribute = "select patient.patientId, attr.value, attrType.name from Patient as patient join patient.attributes as attr " +
-                            "join attr.attributeType as attrType where patient.patientId = :patientId order by patient.patientId asc, attrType.name asc";
-                    Query queryAttribute = createHibernateSession().createQuery(sqlAttribute)
-                            .setParameter("patientId", currPatientId, Hibernate.INTEGER);
-                    Iterator iterAttribute = queryAttribute.iterate();
-                    
-                    Map<String, String> mapAtt = new HashMap<String, String>();
-                    while (iterAttribute.hasNext()) {
-                        Object[] oAtt = (Object[]) iterAttribute.next();
-                        mapAtt.put(String.valueOf(oAtt[2]), String.valueOf(oAtt[1]));
-                    }
-                    for (PersonAttributeType attType : attTypes) {
-                        String value = mapAtt.get(attType.getName());
-                        if (value != null) {
-                            objList.add(value);
-                        } else {
-                            objList.add("");
-                        }
-                    }
-                    patients.add(objList.toArray());
+
+
                 } catch (HibernateException hex) {
-                    log.info("Exception caught during iterating patient ... Skipping ...");
-                    log.info("Cause: " + e.getCause());
-                    log.info("Message: " + e.getMessage());
+                	log.info("Exception caught during iterating patient ... Skipping ...");
+                	log.info("Cause: " + e.getCause());
+                	log.info("Message: " + e.getMessage());
                 }
             }
         }
