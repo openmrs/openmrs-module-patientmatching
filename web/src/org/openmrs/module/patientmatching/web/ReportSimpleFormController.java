@@ -42,6 +42,7 @@ public class ReportSimpleFormController extends SimpleFormController {
         requestMap.put("defaultStatus", MatchingReportUtils.NO_PROCESS);
         requestMap.put("premStatus", MatchingReportUtils.PREM_PROCESS);
         requestMap.put("endStatus", MatchingReportUtils.END_PROCESS);
+        requestMap.put("stepList", MatchingReportUtils.listSteps());
 		return requestMap;
 		
 	}
@@ -53,11 +54,14 @@ public class ReportSimpleFormController extends SimpleFormController {
     protected ModelAndView onSubmit(HttpServletRequest request,
             HttpServletResponse response, Object command, BindException errors)
             throws Exception {
-        // TODO Auto-generated method stub
         log.info("Creating new patient matching report");
         
         Map<String, Object> model = new HashMap<String, Object>();
         model.put("blockingRuns", MatchingConfigurationUtils.listAvailableBlockingRuns());
+        model.put("defaultStatus", MatchingReportUtils.NO_PROCESS);
+        model.put("premStatus", MatchingReportUtils.PREM_PROCESS);
+        model.put("endStatus", MatchingReportUtils.END_PROCESS);
+        model.put("stepList", MatchingReportUtils.listSteps());
         return new ModelAndView(getSuccessView(), model);
     }
 }

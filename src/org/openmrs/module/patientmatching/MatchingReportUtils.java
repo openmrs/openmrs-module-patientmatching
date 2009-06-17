@@ -62,16 +62,30 @@ public class MatchingReportUtils {
 	 * List of steps in the reporting process.
 	 */
 	public static final String[] steps = { MatchingReportUtils.NO_PROCESS,
-			"Starting generate report process sequence ...",
-			"Reading configuration file ...", "Initiating scratch table ...",
-			"Creating random sample analyzer ...",
-			"Creating analyzer form pairs ... ...",
-			"Creating pair data source analyzer ...",
-			"Adding random sample analyzer ...", "Creating EM analyzer ...",
-			"Adding EM analyzer ...", "Analyzing data ...", "Scoring data ...",
-			"Creating report ...", MatchingReportUtils.END_PROCESS };
+			"Starting generate report process sequence",
+			"Reading configuration file", "Initiating scratch table",
+			"Creating random sample analyzer",
+			"Creating analyzer form pairs",
+			"Creating pair data source analyzer",
+			"Adding random sample analyzer", "Creating EM analyzer",
+			"Adding EM analyzer", "Analyzing data", "Scoring data",
+			"Creating report", MatchingReportUtils.END_PROCESS };
 
 	private static int currentStep = 0;
+	
+	/**
+	 * 
+	 * Get the list of steps (statuses) that the analysis has to go through
+	 * 
+	 * @return list of steps
+	 */
+	public static List<String> listSteps() {
+		List<String> stepList = new ArrayList<String>();
+		for (String step : MatchingReportUtils.steps) {
+			stepList.add(step);
+		}
+		return stepList;
+	}
 
 	/**
 	 * Main method to generate new report for the entire blocking run available
@@ -82,7 +96,7 @@ public class MatchingReportUtils {
 	public static void doAnalysis() throws IOException {
 		MatchingReportUtils.nextStep();
 		MatchingConfigurationUtils.log
-				.info("Starting generate report process sequence ...");
+				.info("Starting generate report process sequence");
 
 		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
 		File configFileFolder = OpenmrsUtil
@@ -93,7 +107,7 @@ public class MatchingReportUtils {
 		MatchingReportUtils.nextStep();
 		MatchingConfigurationUtils.log
 				.info("Reading matching config file from "
-						+ configFile.getAbsolutePath() + " ...");
+						+ configFile.getAbsolutePath());
 		RecMatchConfig recMatchConfig = XMLTranslator
 				.createRecMatchConfig(XMLTranslator
 						.getXMLDocFromFile(configFile));
@@ -126,7 +140,7 @@ public class MatchingReportUtils {
 		}
 
 		MatchingReportUtils.nextStep();
-		MatchingConfigurationUtils.log.info("Initiating scratch table ...");
+		MatchingConfigurationUtils.log.info("Initiating scratch table");
 		DataBaseRecordStore recordStore = new DataBaseRecordStore(
 				databaseConnection, recMatchConfig.getLinkDataSource1(),
 				driver, url, user, passwd);
@@ -144,7 +158,7 @@ public class MatchingReportUtils {
 		for (MatchingConfig matchingConfig : matchingConfigLists) {
 			MatchingReportUtils.nextStep();
 			MatchingConfigurationUtils.log
-					.info("Creating random sample analyzer ...");
+					.info("Creating random sample analyzer");
 			OrderedDataSourceReader databaseReaderRandom = rp.getReader(
 					recordStore.getRecordStoreLinkDataSource(), matchingConfig);
 			DedupOrderedDataSourceFormPairs formPairsRandom = new DedupOrderedDataSourceFormPairs(
@@ -156,7 +170,7 @@ public class MatchingReportUtils {
 
 			MatchingReportUtils.nextStep();
 			MatchingConfigurationUtils.log
-					.info("Creating analyzer form pairs ...");
+					.info("Creating analyzer form pairs");
 			OrderedDataSourceReader databaseReader = rp.getReader(recordStore
 					.getRecordStoreLinkDataSource(), matchingConfig);
 			DedupOrderedDataSourceFormPairs formPairs = new DedupOrderedDataSourceFormPairs(
@@ -165,30 +179,30 @@ public class MatchingReportUtils {
 
 			MatchingReportUtils.nextStep();
 			MatchingConfigurationUtils.log
-					.info("Creating pair data source analyzer ...");
+					.info("Creating pair data source analyzer");
 			PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(formPairs);
 
 			MatchingReportUtils.nextStep();
 			MatchingConfigurationUtils.log
-					.info("Adding random sample analyzer ...");
+					.info("Adding random sample analyzer");
 			pdsa.addAnalyzer(rsa);
 
 			MatchingReportUtils.nextStep();
-			MatchingConfigurationUtils.log.info("Creating EM analyzer ...");
+			MatchingConfigurationUtils.log.info("Creating EM analyzer");
 			EMAnalyzer ema = new EMAnalyzer(matchingConfig);
 
 			MatchingReportUtils.nextStep();
-			MatchingConfigurationUtils.log.info("Adding EM analyzer ...");
+			MatchingConfigurationUtils.log.info("Adding EM analyzer");
 			pdsa.addAnalyzer(ema);
 
 			MatchingReportUtils.nextStep();
-			MatchingConfigurationUtils.log.info("Analyzing data ...");
+			MatchingConfigurationUtils.log.info("Analyzing data");
 			pdsa.analyzeData();
 
 			databaseReader.close();
 
 			MatchingReportUtils.nextStep();
-			MatchingConfigurationUtils.log.info("Scoring data ...");
+			MatchingConfigurationUtils.log.info("Scoring data");
 			OrderedDataSourceReader databaseReaderScore = rp.getReader(
 					recordStore.getRecordStoreLinkDataSource(), matchingConfig);
 			DedupOrderedDataSourceFormPairs formPairsScoring = new DedupOrderedDataSourceFormPairs(
@@ -227,7 +241,7 @@ public class MatchingReportUtils {
 		BufferedWriter writer = new BufferedWriter(new FileWriter(reportFile));
 
 		MatchingReportUtils.nextStep();
-		MatchingConfigurationUtils.log.info("Creating report ...");
+		MatchingConfigurationUtils.log.info("Creating report");
 
 		handler.flattenPairIdList();
 		List<Set<Long>> groupedId = handler.getFlattenedPairIds();
@@ -256,7 +270,7 @@ public class MatchingReportUtils {
 				} catch (IOException e) {
 					MatchingConfigurationUtils.log
 							.info("Exception caught during the deserializing and writing report for id "
-									+ integer + "...");
+									+ integer);
 					MatchingConfigurationUtils.log
 							.info("Skipping to the next record...");
 				}

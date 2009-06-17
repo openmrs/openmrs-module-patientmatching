@@ -37,7 +37,8 @@ function viewFile(file) {
                     "Report",
                     "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=no,copyhistory=no");
         updateTimer();
-
+        
+        strikeUpToStep(getStepNumberByName("Adding EM analyzer ..."));
 //    if (confirm("Are you sure you want to delete \'" + file + "\'?")) {
 //        clearTimeout(s);
 //        DWREngine.beginBatch();
@@ -96,29 +97,7 @@ function updateStatus() {
                 && data != '<c:out value="${endStatus}" />') {
             showRunReport(false);
 
-            var currData = statusLocation.innerHTML;
-            
-            var dataDotPos = data.indexOf(".");
-            var subbedData = data.substring(0, dataDotPos);
-            
-            var currDataDotPos = currData.indexOf(".");
-            if (currDataDotPos < 0) {
-                currDataDotPos = currData.length;
-            }
-            var totalDot = currData.length - currDataDotPos;
-            
-            subbedCurrData = currData.substring(0, currDataDotPos);
-            
-            if (subbedData == subbedCurrData) {
-                if (totalDot >= 3) {
-                    currData = subbedData;
-                } else {
-                    currData = currData + ".";
-                }
-            } else {
-                currData = subbedData;
-            }
-            statusLocation.innerHTML = currData;
+            strikeUpToStep(getStepNumberByName(data)); // mark in checklist
         } else {
             if (data == '<c:out value="${endStatus}" />') {
                 clearTimeout(s);
@@ -132,10 +111,43 @@ function updateStatus() {
                 DWREngine.endBatch();
                 updateTimer();
             }
+            
             statusLocation.innerHTML = data;
+            strikeUpToStep(getStepNumberByName(data));
             showRunReport(true);
         }
     });
+}
+
+function strikeStep(n) {
+	step = document.getElementById("step" + n);
+	step.innerHTML = "<span style=\"color: green;\">" + step.innerHTML + "</span>";
+}
+
+function strikeUpToStep(n) {
+	for (var i=1; i<=n; i++) {
+		strikeStep(i);
+	}
+}
+
+function trim(str) {
+	return str.replace(/^\s+|\s+$/g, '');
+}
+
+function trimPeriods(str) {
+	return str.replace(/[.]/g, '');
+}
+
+function getStepNumberByName(name) {
+	var maxNumSteps = 100;
+	for (var i=1; i<=maxNumSteps; i++) {
+		step = document.getElementById("step" + i);
+		if (trim(trimPeriods(step.innerHTML)) == trim(trimPeriods(name))) {
+			return i;
+		}
+	}
+
+	return -1;
 }
 
 function buildTable() {
@@ -212,10 +224,27 @@ window.onload = updateTimer();
 		<td><span style="font-weight: bold;"> <spring:message
 			code="patientmatching.report.status" /> </span></td>
 	</tr>
-
+	
 	<tr>
 		<td>&nbsp;&nbsp;&nbsp;&nbsp; <span id="reportStatus">
 		&nbsp; </span></td>
+	</tr>
+	
+	<tr>
+		<td><span style="font-weight: bold;">
+		<spring:message code="patientmatching.report.checklist"/></span></td>
+	</tr>
+	
+	<tr>
+		<td>
+		<ul>
+		<c:forEach items="${stepList}" var="step" varStatus="entriesIndex">
+			<li>
+			<span id="step${entriesIndex.count}"><c:out value="${step}"/></span>
+			</li>
+		</c:forEach>
+		</ul>
+		</td>
 	</tr>
 
 	<!--
