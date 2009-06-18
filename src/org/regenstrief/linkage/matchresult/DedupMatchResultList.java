@@ -3,7 +3,7 @@
 package org.regenstrief.linkage.matchresult;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -80,8 +80,10 @@ public class DedupMatchResultList extends MatchResultList {
                     RecordSerializer.serialize(r1);
                     serializedRecord.add(r1.getUID());
                     r1SerializedBefore = false;
-                } catch (IOException e) {
-                    log.info("Failed to serialize record with id " + r1.getUID() + "...");
+                } catch (FileNotFoundException e) {
+                    log.info("FileNotFoundException: Unable to serialize record with id " + r1.getUID() + ". Check file permissions in serial directory.");
+                } catch (SecurityException e) {
+                	log.info("SecurityException: Unable to serialize record with id " + r1.getUID() + ". Check file permissions in serial directory.");
                 }
             }
             if(!serializedRecord.contains(r2.getUID())) {
@@ -89,8 +91,10 @@ public class DedupMatchResultList extends MatchResultList {
                     RecordSerializer.serialize(r2);
                     serializedRecord.add(r2.getUID());
                     r2SerializedBefore = false;
-                } catch (IOException e) {
-                    log.info("Failed to serialize record with id " + r1.getUID() + "...");
+                } catch (FileNotFoundException e) {
+                	log.info("FileNotFoundException: Unable to serialize record with id " + r2.getUID() + ". Check file permissions in serial directory.");
+                } catch(SecurityException e) {
+                	log.info("SecurityException: Unable to serialize record with id " + r1.getUID() + ". Check file permissions in serial directory.");
                 }
             }
 

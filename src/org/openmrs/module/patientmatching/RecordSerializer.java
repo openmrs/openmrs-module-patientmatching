@@ -2,6 +2,7 @@ package org.openmrs.module.patientmatching;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -45,7 +46,7 @@ public class RecordSerializer {
 	 * @param record that will be serialized
 	 * @throws IOException
 	 */
-	public static void serialize(Record record) throws IOException {
+	public static void serialize(Record record) throws FileNotFoundException, SecurityException {
 		String filename = String.valueOf(record.getUID());
 		
 		String configLocation = MatchingConstants.SERIAL_FOLDER_NAME;
@@ -68,7 +69,7 @@ public class RecordSerializer {
 	 * @return <code>Record</code> object constructed from the xml file
 	 * @throws IOException
 	 */
-	public static Record deserialize(String xmlName) throws IOException {
+	public static Record deserialize(String xmlName) throws FileNotFoundException, SecurityException {
 		String configLocation = MatchingConstants.SERIAL_FOLDER_NAME;
         File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
         File serialFile = new File(configFileFolder, xmlName);
