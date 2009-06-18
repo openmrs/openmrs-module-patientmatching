@@ -54,6 +54,10 @@ import org.springframework.aop.support.StaticMethodMatcherPointcutAdvisor;
  */
 public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor implements Activator, Advisor{
 	
+	/**
+	 * generated serial version uid
+	 */
+	private static final long serialVersionUID = 3883294318400519194L;
 	public static final String CREATE_METHOD = "createPatient";
 	public static final String UPDATE_METHOD = "updatePatient";
 	public static final String FIND_METHOD = "findPatient";
