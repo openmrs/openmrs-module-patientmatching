@@ -90,7 +90,7 @@ public class MatchFinder {
 	 * @param test	the Record object to evaluate matches against
 	 * @return	a list of records from the matching database that are similar to test
 	 */
-	public List<MatchResult> findMatch(Record test) throws UnMatchableRecordException {
+	public synchronized List<MatchResult> findMatch(Record test) throws UnMatchableRecordException {
 		// check that Record test is valid
 		if(record_analyzer != null){
 			int analysis_result = record_analyzer.analyzeRecordFields(test);
