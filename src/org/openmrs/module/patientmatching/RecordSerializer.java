@@ -46,7 +46,7 @@ public class RecordSerializer {
 	 * @param record that will be serialized
 	 * @throws IOException
 	 */
-	public static void serialize(Record record) throws FileNotFoundException, SecurityException {
+	public static void serialize(Record record) throws FileNotFoundException, SecurityException, IOException {
 		String filename = String.valueOf(record.getUID());
 		
 		String configLocation = MatchingConstants.SERIAL_FOLDER_NAME;
@@ -56,7 +56,8 @@ public class RecordSerializer {
         // only serialize if the same record have not been serialized before
         if (!serialFile.exists()) {
             FileOutputStream outputStream = new FileOutputStream(serialFile);
-    		stream.toXML(record, outputStream);
+            stream.toXML(record, outputStream);
+            outputStream.close();
         }
 	}
 	

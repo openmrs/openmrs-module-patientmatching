@@ -4,6 +4,7 @@ package org.regenstrief.linkage.matchresult;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -81,9 +82,11 @@ public class DedupMatchResultList extends MatchResultList {
                     serializedRecord.add(r1.getUID());
                     r1SerializedBefore = false;
                 } catch (FileNotFoundException e) {
-                    log.info("FileNotFoundException: Unable to serialize record with id " + r1.getUID() + ". Check file permissions in serial directory.");
+                    log.info("FileNotFoundException: Unable to serialize record with id " + r1.getUID() + ": " + e.getMessage());
                 } catch (SecurityException e) {
-                	log.info("SecurityException: Unable to serialize record with id " + r1.getUID() + ". Check file permissions in serial directory.");
+                	log.info("SecurityException: Unable to serialize record with id " + r1.getUID() + ": " + e.getMessage());
+                } catch (IOException e) {
+                	log.info("IOException: Error in closing serialized record with id " + r1.getUID() + ": " + e.getMessage());
                 }
             }
             if(!serializedRecord.contains(r2.getUID())) {
@@ -92,9 +95,11 @@ public class DedupMatchResultList extends MatchResultList {
                     serializedRecord.add(r2.getUID());
                     r2SerializedBefore = false;
                 } catch (FileNotFoundException e) {
-                	log.info("FileNotFoundException: Unable to serialize record with id " + r2.getUID() + ". Check file permissions in serial directory.");
+                	log.info("FileNotFoundException: Unable to serialize record with id " + r2.getUID() + ": " + e.getMessage());
                 } catch(SecurityException e) {
-                	log.info("SecurityException: Unable to serialize record with id " + r1.getUID() + ". Check file permissions in serial directory.");
+                	log.info("SecurityException: Unable to serialize record with id " + r2.getUID() + ": " + e.getMessage());
+                } catch (IOException e) {
+                	log.info("IOException: Error in closing serialized record with id " + r2.getUID() + ": " + e.getMessage());
                 }
             }
 
