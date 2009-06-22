@@ -231,9 +231,9 @@ window.onload = updateTimer();
 <div class="box">
 <table cellspacing="2" cellpadding="2">
 	<tr>
-		<th>Analysis Reports</th>
+		<th>Report</th>
 		<th>&nbsp;&nbsp;&nbsp;&nbsp;</th>
-		<th colspan="2">Select Action</th>
+		<th colspan="2">Operation</th>
 	</tr>
 
 	<tbody id="report-list">
