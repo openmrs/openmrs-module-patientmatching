@@ -40,14 +40,6 @@ function viewFile(file) {
                     "Report",
                     "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=no,copyhistory=no");
         updateTimer();
-//    if (confirm("Are you sure you want to delete \'" + file + "\'?")) {
-//        clearTimeout(s);
-//        DWREngine.beginBatch();
-//        DWRMatchingConfigUtilities.deleteReportFile(file);
-//        buildTable();
-//        DWREngine.endBatch();
-//        updateTimer();
-//    }
 }
 
 function showRunReport(show) {
