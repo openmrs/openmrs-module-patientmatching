@@ -31,6 +31,8 @@ function deleteFile(file) {
         buildTable();
         DWREngine.endBatch();
         updateTimer();
+
+        location.reload();
     }
 }
 
