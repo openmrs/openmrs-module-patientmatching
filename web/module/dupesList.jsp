@@ -15,6 +15,8 @@ var s = 0;
 
 function runReport() {
     if (confirm("Are you sure you want to generate a new report?")) {
+        location.reload(); // to reset the checklist
+        
         showRunReport(false);
         DWRMatchingConfigUtilities.doAnalysis();
         showRunReport(false);
@@ -38,8 +40,6 @@ function viewFile(file) {
                     "Report",
                     "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=no,copyhistory=no");
         updateTimer();
-        
-        strikeUpToStep(getStepNumberByName("Adding EM analyzer ..."));
 //    if (confirm("Are you sure you want to delete \'" + file + "\'?")) {
 //        clearTimeout(s);
 //        DWREngine.beginBatch();
@@ -98,11 +98,13 @@ function updateStatus() {
 
             var status = '<c:out value="${defaultStatus}"/>';
             DWRMatchingConfigUtilities.setStatus(status);
+            DWRMatchingConfigUtilities.resetStep();
             
             updateTimer();
             
             showRunReport(true);
         }
+
 		strikeUpToStep(getStepNumberByName(data)); // mark in checklist
     });
 }
