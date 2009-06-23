@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -132,6 +133,16 @@ public class DedupMatchResultList extends MatchResultList {
                 }
                 flattenedPairIds.add(set);
             }
+        }
+        
+        // if records are expanded so multiple IDs might appear and be paired, then
+        // it's possible that a set of IDs might just have one ID; these need to be removed
+        Iterator<Set<Long>> it = flattenedPairIds.iterator();
+        while(it.hasNext()){
+        	Set<Long> entity = it.next();
+        	if(entity.size() == 1){
+        		it.remove();
+        	}
         }
     }
 
