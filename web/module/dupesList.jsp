@@ -11,6 +11,7 @@
 
 <script type="text/javascript">
 
+var n_steps = 11; // hard-coded for now; unlikely to change
 var s = 0;
 
 function runReport() {
@@ -25,23 +26,21 @@ function runReport() {
 
 function deleteFile(file) {
     if (confirm("Are you sure you want to delete \'" + file + "\'?")) {
-        clearTimeout(s);
         DWREngine.beginBatch();
         DWRMatchingConfigUtilities.deleteReportFile(file);
         buildTable();
         DWREngine.endBatch();
-        updateTimer();
+        updateStatus();
 
         //location.reload();
     }
 }
 
 function viewFile(file) {
-        clearTimeout(s);
         window.open("${pageContext.request.contextPath}/module/patientmatching/report.form?<c:out value="${reportParam}" />=" + file,
                     "Report",
                     "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=no,copyhistory=no");
-        updateTimer();
+        updateStatus();
 }
 
 function showRunReport(show) {
@@ -53,7 +52,7 @@ function showRunReport(show) {
     }
 }
 
-function updateTimer() {	
+function updateTimer() { // deprecated
     var reTxt = new RegExp("\\d+");
     
     var timeVar = document.getElementById("serverTimer");
@@ -82,25 +81,23 @@ function updateTimer() {
 }
 
 function updateStatus() {
-    DWRMatchingConfigUtilities.getStatus(function updateString(data) {
-		if (data == '<c:out value="${endStatus}"/>') {
-            clearTimeout(s);
-            
+	var refreshPeriod = 5; // in seconds
+	DWRMatchingConfigUtilities.getStep(function updateChecklist(nStr) {
+		n = parseInt(nStr)+1; // add one to correspond to the step ids in the HTML
+		if (n == n_steps) {
             DWREngine.beginBatch();          
             buildTable();
             DWREngine.endBatch();
 
-            var status = '<c:out value="${defaultStatus}"/>';
-            DWRMatchingConfigUtilities.setStatus(status);
             DWRMatchingConfigUtilities.resetStep();
-            
-            updateTimer();
-            
-            showRunReport(true);
-        }
 
-		strikeUpToStep(getStepNumberByName(data)); // mark in checklist
-    });
+            strikeUpToStep(1);
+		} else {
+			strikeUpToStep(n);
+		}
+	});
+
+    s = setTimeout('updateStatus()', refreshPeriod*1000);
 }
 
 function strikeStep(n) {
@@ -108,9 +105,19 @@ function strikeStep(n) {
 	step.innerHTML = "<span style=\"color: green;\">" + step.innerHTML + "</span>";
 }
 
+function unstrikeStep(n) {
+	step = document.getElementById("step" + n);
+	step.innerHTML = step.innerHTML.replace(/<\/?[^>]+(>|$)/g, ''); // strip the highlighting tags
+}
+
 function strikeUpToStep(n) {
+	// strike everything up to n
 	for (var i=1; i<=n; i++) {
 		strikeStep(i);
+	}
+	// and unstrike everything that follows
+	for (var i=n+1; i<=n_steps; i++) {
+		unstrikeStep(i);
 	}
 }
 
@@ -162,7 +169,7 @@ function buildTable() {
     });
 }
 
-window.onload = updateTimer();
+window.onload = updateStatus();
 </script>
 
 <h2><spring:message code="patientmatching.report.title" /></h2>

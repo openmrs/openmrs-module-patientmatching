@@ -80,6 +80,11 @@ public class MatchingReportUtils {
 	 */
 	public static void resetStep() {
 		MatchingReportUtils.currentStep = 0;
+		MatchingReportUtils.setStatus(MatchingReportUtils.NO_PROCESS);
+	}
+	
+	public static int getStep() {
+		return MatchingReportUtils.currentStep;
 	}
 	
 	/**

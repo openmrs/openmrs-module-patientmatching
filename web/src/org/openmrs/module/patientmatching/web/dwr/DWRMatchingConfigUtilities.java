@@ -60,7 +60,16 @@ public class DWRMatchingConfigUtilities {
 		log.info("DWRMatchingConfigUtilities: resetting to first step");
 		MatchingReportUtils.resetStep();
 	}
-
+	
+	/**
+	 * @see MatchingReportUtils#getStep()
+	 */
+	public String getStep() {
+		int step = MatchingReportUtils.getStep();
+		log.info("DWRMatchingConfigUtilities: returning step " + new Integer(step));
+		return new Integer(step).toString();
+	}
+	
 	/**
 	 * @see MatchingReportUtils#doAnalysis()
 	 */
