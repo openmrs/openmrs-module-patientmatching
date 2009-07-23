@@ -84,6 +84,7 @@ function updateStatus() {
 	var refreshPeriod = 5; // in seconds
 	DWRMatchingConfigUtilities.getStep(function updateChecklist(nStr) {
 		n = parseInt(nStr)+1; // add one to correspond to the step ids in the HTML
+		strikeUpToStep(n);
 		if (n == n_steps) {
             DWREngine.beginBatch();          
             buildTable();
@@ -92,8 +93,6 @@ function updateStatus() {
             DWRMatchingConfigUtilities.resetStep();
 
             strikeUpToStep(1);
-		} else {
-			strikeUpToStep(n);
 		}
 	});
 
