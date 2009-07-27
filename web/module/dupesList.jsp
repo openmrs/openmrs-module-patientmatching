@@ -16,11 +16,7 @@ var s = 0;
 
 function runReport() {
     if (confirm("Are you sure you want to generate a new report?")) {
-<<<<<<< .mine
-        // location.reload(); // to reset the checklist
-=======
         //location.reload(); // to reset the checklist
->>>>>>> .r9428
         
         showRunReport(false);
         DWRMatchingConfigUtilities.doAnalysis();
@@ -36,11 +32,7 @@ function deleteFile(file) {
         DWREngine.endBatch();
         updateStatus();
 
-<<<<<<< .mine
-        // location.reload();
-=======
         //location.reload();
->>>>>>> .r9428
     }
 }
 
