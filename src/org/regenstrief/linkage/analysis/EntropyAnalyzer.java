@@ -12,9 +12,12 @@ import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
 
 /**
+ * 
+ * Unused -- serves as an example for writing Analyzers.
+ * 
  * Class calculates the entropy of the fields of the given Records.  It initializes
- * a hash table to keep track of frequencies and when the Record streem is
- * finished, calculates the values
+ * a hash table to keep track of frequencies and when the Record stream is
+ * finished, calculates the values.
  *
  */
 
@@ -91,7 +94,7 @@ public class EntropyAnalyzer extends DataSourceAnalyzer implements Modifier {
 				}
 			}
 			
-			System.out.println("column/demographic " + current_demographic + " has entroy of: " + entropy);
+			System.out.println("column/demographic " + current_demographic + " has entropy of: " + entropy);
 		}
 		
 		// return some sort of analysis result object
