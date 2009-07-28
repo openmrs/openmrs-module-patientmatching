@@ -8,20 +8,23 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import org.regenstrief.linkage.analysis.DataSourceAnalysis;
 import org.regenstrief.linkage.analysis.EMAnalyzer;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
+import org.regenstrief.linkage.analysis.NullAnalyzer;
 import org.regenstrief.linkage.analysis.VectorTable;
 import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.FormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceReader;
 import org.regenstrief.linkage.io.ReaderProvider;
+import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.RecMatchConfig;
 
 /**
- * Class displays different analysis options available in the record linkaeg GUI
+ * Class displays different analysis options available in the record linkage GUI
  * 
  * @author jegg
  *
@@ -30,9 +33,9 @@ import org.regenstrief.linkage.util.RecMatchConfig;
 public class AnalysisPanel extends JPanel implements ActionListener{
 	RecMatchConfig rm_conf;
 	
-	private JButton randomButton;
+	private JButton random_button;
 	
-	private JButton the_button, vector_button;
+	private JButton em_button, vector_button, summary_button;
 	
 	public AnalysisPanel(RecMatchConfig rmc){
 		super();
@@ -46,17 +49,21 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 	
 	private void createAnalysisPanel(){
 		//this.setLayout(new BorderLayout());
-	    randomButton = new JButton("Perform Random Sampling");
-        this.add(randomButton);
-        randomButton.addActionListener(this);
+	    random_button = new JButton("Perform Random Sampling");
+        this.add(random_button);
+        random_button.addActionListener(this);
         
-		the_button = new JButton("Perform EM Analysis");
-		this.add(the_button);
-		the_button.addActionListener(this);
+		em_button = new JButton("Perform EM Analysis");
+		this.add(em_button);
+		em_button.addActionListener(this);
 		
 		vector_button = new JButton("View score tables");
 		this.add(vector_button);
 		vector_button.addActionListener(this);
+		
+		summary_button = new JButton("Perform Summary Analysis");
+		this.add(summary_button);
+		summary_button.addActionListener(this);
 	}
 	
 	private void runEMAnalysis(){
@@ -131,12 +138,54 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 	}
 	
 	public void actionPerformed(ActionEvent ae){
-		if(ae.getSource() == the_button){
+		if(ae.getSource() == em_button){
 			runEMAnalysis();
 		} else if(ae.getSource() == vector_button){
 			displayVectorTables();
-		} else if(ae.getSource() == randomButton) {
+		} else if(ae.getSource() == random_button) {
 		    performRandomSampling();
+		} else if(ae.getSource() == summary_button) {
+			performSummaryStatistics();
+		}
+	}
+	
+	private void performSummaryStatistics() {
+		ReaderProvider rp = new ReaderProvider();
+		List<MatchingConfig> mcs = rm_conf.getMatchingConfigs();
+		Iterator<MatchingConfig> it = mcs.iterator();
+		while(it.hasNext()){
+			MatchingConfig mc = it.next();
+			
+			LinkDataSource lds1 = rm_conf.getLinkDataSource1();
+			LinkDataSource lds2 = rm_conf.getLinkDataSource2();
+			
+			OrderedDataSourceReader odsr1 = rp.getReader(lds1, mc);
+			OrderedDataSourceReader odsr2 = rp.getReader(lds2, mc);
+
+			if(lds1 != null && lds2 != null){
+				// compute summary statistics
+                LoggingFrame frame = new LoggingFrame(mc.getName());
+				DataSourceAnalysis dsa1 = new DataSourceAnalysis(odsr1);
+				DataSourceAnalysis dsa2 = new DataSourceAnalysis(odsr2);
+
+				// Null - compute the number of null elements for each demographic
+				NullAnalyzer na1 = new NullAnalyzer(lds1, mc);
+				NullAnalyzer na2 = new NullAnalyzer(lds2, mc);
+				
+				dsa1.addAnalyzer(na1);
+				dsa2.addAnalyzer(na2);
+				/* TODO: add logger to NullAnalyzer
+				frame.addLoggingObject(na1);
+				frame.addLoggingObject(na2);
+				*/ 
+				
+				// Finish by configuring the frame and looping through all Analyzers
+				frame.configureLoggingFrame();
+				dsa1.analyzeData();
+				dsa2.analyzeData();
+			}
+			odsr1.close();
+			odsr2.close();
 		}
 	}
 
