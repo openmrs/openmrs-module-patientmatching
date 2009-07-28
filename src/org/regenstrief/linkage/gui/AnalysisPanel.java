@@ -61,7 +61,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		this.add(vector_button);
 		vector_button.addActionListener(this);
 		
-		summary_button = new JButton("Perform Summary Analysis");
+		summary_button = new JButton("Perform Summary Statistic Analyses");
 		this.add(summary_button);
 		summary_button.addActionListener(this);
 	}
