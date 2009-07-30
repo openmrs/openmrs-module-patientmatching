@@ -16,7 +16,7 @@ import org.regenstrief.linkage.util.MatchingConfigRow;
  * given stream of Records in one pass.
  * 
  */
-public class NullAnalyzer extends DataSourceAnalyzer implements Modifier {
+public class NullAnalyzer extends DataSourceAnalyzer {
 	private Hashtable<String,Integer> freq_table;
 	
 	public NullAnalyzer(LinkDataSource lds, MatchingConfig mc) {
@@ -56,30 +56,6 @@ public class NullAnalyzer extends DataSourceAnalyzer implements Modifier {
 	@Override
 	public boolean isAnalyzedDemographic(MatchingConfigRow mcr) {
 		return false;
-	}
-
-	/**
-	 * @see org.regenstrief.linkage.analysis.Modifier#getModifiedMatchResult(org.regenstrief.linkage.MatchResult,
-	 *      org.regenstrief.linkage.util.MatchingConfig)
-	 */
-	public ModifiedMatchResult getModifiedMatchResult(MatchResult mr,
-			MatchingConfig mc) {
-		return null;
-	}
-
-	/**
-	 * @see org.regenstrief.linkage.analysis.Modifier#getModifierName()
-	 */
-	public String getModifierName() {
-		log.info("returning modifier name");
-		return "Null";
-	}
-
-	/**
-	 * @see org.regenstrief.linkage.analysis.Modifier#initializeModifier()
-	 */
-	public void initializeModifier() {
-		log.info("initializing modifier");
 	}
 
 	/**
