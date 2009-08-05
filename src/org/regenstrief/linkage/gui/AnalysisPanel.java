@@ -14,6 +14,7 @@ import org.regenstrief.linkage.analysis.EntropyAnalyzer;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
 import org.regenstrief.linkage.analysis.NullAnalyzer;
+import org.regenstrief.linkage.analysis.UniqueAnalyzer;
 import org.regenstrief.linkage.analysis.VectorTable;
 import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.FormPairs;
@@ -32,6 +33,8 @@ import org.regenstrief.linkage.util.RecMatchConfig;
  */
 
 public class AnalysisPanel extends JPanel implements ActionListener{
+	private static final long serialVersionUID = -6402375274052004924L;
+
 	RecMatchConfig rm_conf;
 	
 	private JButton random_button;
@@ -186,6 +189,13 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 				
 				dsa1.addAnalyzer(ea1);
 				dsa2.addAnalyzer(ea2);
+				
+				// Unique - compute the number of unique values of a demographic
+				UniqueAnalyzer ua1 = new UniqueAnalyzer(lds1, mc);
+				UniqueAnalyzer ua2 = new UniqueAnalyzer(lds2, mc);
+				
+				dsa1.addAnalyzer(ua1);
+				dsa2.addAnalyzer(ua2);
 				
 				// Finish by configuring the frame and looping through all Analyzers
 				frame.configureLoggingFrame();

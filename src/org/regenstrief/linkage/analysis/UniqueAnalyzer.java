@@ -1,5 +1,6 @@
 package org.regenstrief.linkage.analysis;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.TreeMap;
 
@@ -10,16 +11,18 @@ import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
 
 /**
- * Calculates the number of null (i.e. empty string) values in each field of the
- * given stream of Records in one pass.
+ * Calculates the number of unique values in each field of the given stream of
+ * Records in one pass.
  * 
  */
-public class NullAnalyzer extends DataSourceAnalyzer {
-	private TreeMap<String,Integer> freq_table;
-	
-	public NullAnalyzer(LinkDataSource lds, MatchingConfig mc) {
+public class UniqueAnalyzer extends DataSourceAnalyzer {
+	private TreeMap<String, Integer> freq_table;
+	private HashSet<String> known_values;
+
+	public UniqueAnalyzer(LinkDataSource lds, MatchingConfig mc) {
 		super(lds, mc);
-		freq_table = new TreeMap<String,Integer>();
+		freq_table = new TreeMap<String, Integer>();
+		known_values = new HashSet<String>();
 	}
 
 	/**
@@ -27,14 +30,14 @@ public class NullAnalyzer extends DataSourceAnalyzer {
 	 */
 	@Override
 	public void analyzeRecord(Record rec) {
-		//log.info("analyzing record...");
+		// log.info("analyzing record...");
 		Iterator<String> it = rec.getDemographics().keySet().iterator();
-		while(it.hasNext()) {
+		while (it.hasNext()) {
 			String demographic = it.next();
-			//log.info("  demographic: " + demographic);
-			boolean is_null = rec.isDemographicNull(demographic);
-			if (is_null) {
-				log.info("found null item in Record " + new Long(rec.getUID()) + ", demographic " + demographic);
+			// log.info("  demographic: " + demographic);
+			String value = rec.getDemographic(demographic);
+			if (!known_values.contains(value)) {
+				// log.info("found new item in Record " + new Long(rec.getUID()) + ", demographic " + demographic);
 				Integer count = freq_table.get(demographic);
 				if (count == null) {
 					// haven't seen this demographic before, set to 1
@@ -44,6 +47,8 @@ public class NullAnalyzer extends DataSourceAnalyzer {
 					++count;
 					freq_table.put(demographic, count);
 				}
+				
+				known_values.add(value);
 			}
 		}
 	}
@@ -60,15 +65,17 @@ public class NullAnalyzer extends DataSourceAnalyzer {
 	 * @see org.regenstrief.linkage.analysis.Analyzer#finishAnalysis()
 	 */
 	public void finishAnalysis() {
-		log.info("nullanalyzer finishing analysis");
+		log.info("uniqueanalyzer finishing analysis");
 		Iterator<String> demographic_it = freq_table.keySet().iterator();
-		while(demographic_it.hasNext()){
+		while (demographic_it.hasNext()) {
 			String current_demographic = demographic_it.next();
-			
-			log.info("column/demographic " + current_demographic + " has null count of: " + freq_table.get(current_demographic));
+
+			log.info("column/demographic " + current_demographic
+					+ " has this many unique values: "
+					+ freq_table.get(current_demographic));
 		}
 	}
-	
+
 	/**
 	 * Inherited from DataSourceAnalyzer.
 	 * 

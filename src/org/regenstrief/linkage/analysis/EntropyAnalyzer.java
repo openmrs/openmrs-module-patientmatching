@@ -1,15 +1,10 @@
 package org.regenstrief.linkage.analysis;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.TreeMap;
-import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.regenstrief.linkage.MatchResult;
-import org.regenstrief.linkage.ModifiedMatchResult;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
