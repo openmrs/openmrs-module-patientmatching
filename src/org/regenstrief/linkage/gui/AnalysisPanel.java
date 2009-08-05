@@ -10,6 +10,7 @@ import javax.swing.JPanel;
 
 import org.regenstrief.linkage.analysis.DataSourceAnalysis;
 import org.regenstrief.linkage.analysis.EMAnalyzer;
+import org.regenstrief.linkage.analysis.EntropyAnalyzer;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
 import org.regenstrief.linkage.analysis.NullAnalyzer;
@@ -178,6 +179,13 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 				frame.addLoggingObject(na1);
 				frame.addLoggingObject(na2);
 				*/ 
+				
+				// Entropy - compute the entropy of a demographic
+				EntropyAnalyzer ea1 = new EntropyAnalyzer(lds1, mc);
+				EntropyAnalyzer ea2 = new EntropyAnalyzer(lds2, mc);
+				
+				dsa1.addAnalyzer(ea1);
+				dsa2.addAnalyzer(ea2);
 				
 				// Finish by configuring the frame and looping through all Analyzers
 				frame.configureLoggingFrame();

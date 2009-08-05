@@ -1,7 +1,11 @@
 package org.regenstrief.linkage.analysis;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.TreeMap;
+import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.regenstrief.linkage.MatchResult;
@@ -13,8 +17,6 @@ import org.regenstrief.linkage.util.MatchingConfigRow;
 
 /**
  * 
- * Unused -- serves as an example for writing Analyzers.
- * 
  * Class calculates the entropy of the fields of the given Records.  It initializes
  * a hash table to keep track of frequencies and when the Record stream is
  * finished, calculates the values.
@@ -23,12 +25,12 @@ import org.regenstrief.linkage.util.MatchingConfigRow;
 
 public class EntropyAnalyzer extends DataSourceAnalyzer implements Modifier {
 	// of the format table{demographic} -> table{token} -> count
-	private Hashtable<String,Hashtable<String,Integer>> freq_table;
+	private TreeMap<String,Hashtable<String,Integer>> freq_table;
 	private int total_records;
 	
 	public EntropyAnalyzer(LinkDataSource lds, MatchingConfig mc){
 		super(lds, mc);
-		freq_table = new Hashtable<String,Hashtable<String,Integer>>();
+		freq_table = new TreeMap<String,Hashtable<String,Integer>>();
 		total_records = 0;
 	}
 	
@@ -77,6 +79,7 @@ public class EntropyAnalyzer extends DataSourceAnalyzer implements Modifier {
 	 * Record objects
 	 */
 	public void finishAnalysis() {
+		log.info("entropyanalyzer finishing analysis");
 		Iterator<String> demographic_it = freq_table.keySet().iterator();
 		double entropy;
 		while(demographic_it.hasNext()){
@@ -94,10 +97,8 @@ public class EntropyAnalyzer extends DataSourceAnalyzer implements Modifier {
 				}
 			}
 			
-			System.out.println("column/demographic " + current_demographic + " has entropy of: " + entropy);
+			log.info("column/demographic " + current_demographic + " has entropy of: " + entropy);
 		}
-		
-		// return some sort of analysis result object
 	}
 	
 	public void initializeModifier(){

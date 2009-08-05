@@ -4,8 +4,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
-import org.regenstrief.linkage.MatchResult;
-import org.regenstrief.linkage.ModifiedMatchResult;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
@@ -62,7 +60,7 @@ public class NullAnalyzer extends DataSourceAnalyzer {
 	 * @see org.regenstrief.linkage.analysis.Analyzer#finishAnalysis()
 	 */
 	public void finishAnalysis() {
-		log.info("finishing analysis");
+		log.info("nullanalyzer finishing analysis");
 		Iterator<String> demographic_it = freq_table.keySet().iterator();
 		while(demographic_it.hasNext()){
 			String current_demographic = demographic_it.next();
