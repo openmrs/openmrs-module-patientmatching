@@ -23,7 +23,7 @@ import org.regenstrief.linkage.util.MatchingConfigRow;
  *
  */
 
-public class EntropyAnalyzer extends DataSourceAnalyzer implements Modifier {
+public class EntropyAnalyzer extends DataSourceAnalyzer {
 	// of the format table{demographic} -> table{token} -> count
 	private TreeMap<String,Hashtable<String,Integer>> freq_table;
 	private int total_records;
@@ -40,10 +40,6 @@ public class EntropyAnalyzer extends DataSourceAnalyzer implements Modifier {
 	
 	public boolean isAnalyzedDemographic(MatchingConfigRow mcr){
 		return false;
-	}
-	
-	public String getModifierName(){
-		return "Entropy";
 	}
 	
 	public void analyzeRecord(Record rec){
@@ -99,13 +95,5 @@ public class EntropyAnalyzer extends DataSourceAnalyzer implements Modifier {
 			
 			log.info("column/demographic " + current_demographic + " has entropy of: " + entropy);
 		}
-	}
-	
-	public void initializeModifier(){
-		
-	}
-	
-	public ModifiedMatchResult getModifiedMatchResult(MatchResult mr, MatchingConfig mc){
-		return null;
 	}
 }
