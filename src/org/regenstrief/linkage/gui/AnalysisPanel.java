@@ -8,6 +8,7 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import org.regenstrief.linkage.analysis.AverageFrequencyAnalyzer;
 import org.regenstrief.linkage.analysis.DataSourceAnalysis;
 import org.regenstrief.linkage.analysis.EMAnalyzer;
 import org.regenstrief.linkage.analysis.EntropyAnalyzer;
@@ -178,7 +179,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 				
 				dsa1.addAnalyzer(na1);
 				dsa2.addAnalyzer(na2);
-				/* TODO: add logger to NullAnalyzer
+				/*
 				frame.addLoggingObject(na1);
 				frame.addLoggingObject(na2);
 				*/ 
@@ -196,6 +197,13 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 				
 				dsa1.addAnalyzer(ua1);
 				dsa2.addAnalyzer(ua2);
+				
+				// Average Frequency - compute the average frequency of values in a demographic
+				AverageFrequencyAnalyzer afa1 = new AverageFrequencyAnalyzer(lds1, mc);
+				AverageFrequencyAnalyzer afa2 = new AverageFrequencyAnalyzer(lds2, mc);
+				
+				dsa1.addAnalyzer(afa1);
+				dsa2.addAnalyzer(afa2);
 				
 				// Finish by configuring the frame and looping through all Analyzers
 				frame.configureLoggingFrame();
