@@ -21,6 +21,10 @@ public class NullAnalyzer extends DataSourceAnalyzer {
 		super(lds, mc);
 		freq_table = new TreeMap<String,Integer>();
 	}
+	
+	public TreeMap<String, Integer> getResults() {
+		return freq_table;
+	}
 
 	/**
 	 * @see org.regenstrief.linkage.analysis.DataSourceAnalyzer#analyzeRecord(org.regenstrief.linkage.Record)

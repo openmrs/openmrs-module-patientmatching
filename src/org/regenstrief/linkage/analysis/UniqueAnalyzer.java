@@ -24,6 +24,10 @@ public class UniqueAnalyzer extends DataSourceAnalyzer {
 		freq_table = new TreeMap<String, Integer>();
 		known_values = new HashSet<String>();
 	}
+	
+	public TreeMap<String, Integer> getResults() {
+		return freq_table;
+	}
 
 	/**
 	 * @see org.regenstrief.linkage.analysis.DataSourceAnalyzer#analyzeRecord(org.regenstrief.linkage.Record)

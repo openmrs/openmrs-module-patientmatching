@@ -12,6 +12,7 @@ import org.regenstrief.linkage.analysis.AverageFrequencyAnalyzer;
 import org.regenstrief.linkage.analysis.DataSourceAnalysis;
 import org.regenstrief.linkage.analysis.EMAnalyzer;
 import org.regenstrief.linkage.analysis.EntropyAnalyzer;
+import org.regenstrief.linkage.analysis.MaximumEntropyAnalyzer;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
 import org.regenstrief.linkage.analysis.NullAnalyzer;
@@ -199,11 +200,18 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 				dsa2.addAnalyzer(ua2);
 				
 				// Average Frequency - compute the average frequency of values in a demographic
-				AverageFrequencyAnalyzer afa1 = new AverageFrequencyAnalyzer(lds1, mc);
-				AverageFrequencyAnalyzer afa2 = new AverageFrequencyAnalyzer(lds2, mc);
+				AverageFrequencyAnalyzer afa1 = new AverageFrequencyAnalyzer(lds1, mc, ua1.getResults());
+				AverageFrequencyAnalyzer afa2 = new AverageFrequencyAnalyzer(lds2, mc, ua2.getResults());
 				
 				dsa1.addAnalyzer(afa1);
 				dsa2.addAnalyzer(afa2);
+				
+				// Maximum Entropy - compute the maximum entropy of a demographic
+				MaximumEntropyAnalyzer mea1 = new MaximumEntropyAnalyzer(lds1, mc, afa1.getResults(), ua1.getResults());
+				MaximumEntropyAnalyzer mea2 = new MaximumEntropyAnalyzer(lds2, mc, afa2.getResults(), ua2.getResults());
+				
+				dsa1.addAnalyzer(mea1);
+				dsa2.addAnalyzer(mea2);
 				
 				// Finish by configuring the frame and looping through all Analyzers
 				frame.configureLoggingFrame();
