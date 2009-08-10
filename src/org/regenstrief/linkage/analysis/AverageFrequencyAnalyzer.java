@@ -15,14 +15,18 @@ import org.regenstrief.linkage.util.MatchingConfigRow;
  * 
  */
 public class AverageFrequencyAnalyzer extends DataSourceAnalyzer {
-	private TreeMap<String, Integer> freq_table;
-	private HashSet<String> known_values;
+	private TreeMap<String, Integer> unique_freq_table;
+	private TreeMap<String, Double> result_table;
 	private int total_records;
 
-	public AverageFrequencyAnalyzer(LinkDataSource lds, MatchingConfig mc) {
+	public AverageFrequencyAnalyzer(LinkDataSource lds, MatchingConfig mc, TreeMap<String, Integer> computed_unique_freq_table) {
 		super(lds, mc);
-		freq_table = new TreeMap<String, Integer>();
-		known_values = new HashSet<String>();
+		unique_freq_table = computed_unique_freq_table;
+		result_table = new TreeMap<String, Double>();
+	}
+	
+	public TreeMap<String, Double> getResults() {
+		return result_table;
 	}
 
 	/**
@@ -30,27 +34,7 @@ public class AverageFrequencyAnalyzer extends DataSourceAnalyzer {
 	 */
 	@Override
 	public void analyzeRecord(Record rec) {
-		// log.info("analyzing record...");
-		Iterator<String> it = rec.getDemographics().keySet().iterator();
-		while (it.hasNext()) {
-			String demographic = it.next();
-			// log.info("  demographic: " + demographic);
-			String value = rec.getDemographic(demographic);
-			if (!known_values.contains(value)) {
-				// log.info("found new item in Record " + new Long(rec.getUID()) + ", demographic " + demographic);
-				Integer count = freq_table.get(demographic);
-				if (count == null) {
-					// haven't seen this demographic before, set to 1
-					freq_table.put(demographic, new Integer(1));
-				} else {
-					// have seen it -- increment by 1
-					++count;
-					freq_table.put(demographic, count);
-				}
-				
-				known_values.add(value);
-			}
-		}
+		// already have everything we need from UniqueAnalyzer
 		
 		++total_records;
 	}
@@ -68,14 +52,15 @@ public class AverageFrequencyAnalyzer extends DataSourceAnalyzer {
 	 */
 	public void finishAnalysis() {
 		log.info("averagefrequencyanalyzer finishing analysis");
-		Iterator<String> demographic_it = freq_table.keySet().iterator();
+		Iterator<String> demographic_it = unique_freq_table.keySet().iterator();
 		while (demographic_it.hasNext()) {
 			String current_demographic = demographic_it.next();
 
-			Double favg = new Double(total_records) / freq_table.get(current_demographic);
+			Double favg = new Double(total_records) / unique_freq_table.get(current_demographic);
 			log.info("column/demographic " + current_demographic
 					+ " has average frequency: "
 					+ favg);
+			result_table.put(current_demographic, favg);
 		}
 	}
 
