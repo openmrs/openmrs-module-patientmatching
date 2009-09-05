@@ -16,9 +16,7 @@ var s = 0;
 
 function runReport() {
     if (confirm("Are you sure you want to generate a new report?")) {
-        showRunReport(false);
         DWRMatchingConfigUtilities.doAnalysis();
-        showRunReport(false);
     }
 }
 
