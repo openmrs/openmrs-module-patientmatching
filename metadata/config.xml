@@ -66,12 +66,12 @@
                 DWRMatchingConfigUtilities.getAllReports()
                 DWRMatchingConfigUtilities.deleteBlockingRun(String)
                 DWRMatchingConfigUtilities.doAnalysis()
+                DWRMatchingConfigUtilities.resetStep()
                 DWRMatchingConfigUtilities.deleteReportFile(String)
                 DWRMatchingConfigUtilities.getStatus()
                 DWRMatchingConfigUtilities.setStatus(String)
                 DWRMatchingConfigUtilities.getNextPage()
                 DWRMatchingConfigUtilities.getPrevPage()
-                DWRMatchingConfigUtilities.resetStep()
                 DWRMatchingConfigUtilities.getStep()
                 ]]>
             </signatures>

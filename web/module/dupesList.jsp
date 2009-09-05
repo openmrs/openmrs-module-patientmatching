@@ -16,12 +16,17 @@ var s = 0;
 
 function runReport() {
     if (confirm("Are you sure you want to generate a new report?")) {
-        //location.reload(); // to reset the checklist
-        
         showRunReport(false);
         DWRMatchingConfigUtilities.doAnalysis();
         showRunReport(false);
     }
+}
+
+function resetChecklist() {
+	if (confirm("Are you sure you want to reset the checklist?")) {
+		DWRMatchingConfigUtilities.resetStep();
+		strikeUpToStep(0);
+	}
 }
 
 function deleteFile(file) {
@@ -214,6 +219,9 @@ window.onload = updateStatus();
 		<td colspan="2">
 		<button onClick="runReport();"><spring:message
 			code="patientmatching.report.run" /></button>
+		</td>
+		<td colspan="2">
+		<button onClick="resetChecklist();"><spring:message code="patientmatching.report.reset"/></button>
 		</td>
 	</tr>
 </table>
