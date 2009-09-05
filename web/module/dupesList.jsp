@@ -216,11 +216,11 @@ window.onload = updateStatus();
 	</tr>
 
 	<tr id="runReport">
-		<td colspan="2">
+		<td>
 		<button onClick="runReport();"><spring:message
 			code="patientmatching.report.run" /></button>
 		</td>
-		<td colspan="2">
+		<td>
 		<button onClick="resetChecklist();"><spring:message code="patientmatching.report.reset"/></button>
 		</td>
 	</tr>
