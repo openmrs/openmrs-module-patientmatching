@@ -22,9 +22,11 @@ public class EntropyAnalyzer extends DataSourceAnalyzer {
 	// of the format table{demographic} -> table{token} -> count
 	private TreeMap<String,Hashtable<String,Integer>> freq_table;
 	private int total_records;
+	private SummaryStatisticsStore sss;
 	
-	public EntropyAnalyzer(LinkDataSource lds, MatchingConfig mc){
+	public EntropyAnalyzer(LinkDataSource lds, MatchingConfig mc, SummaryStatisticsStore s){
 		super(lds, mc);
+		sss = s;
 		freq_table = new TreeMap<String,Hashtable<String,Integer>>();
 		total_records = 0;
 	}
@@ -89,6 +91,7 @@ public class EntropyAnalyzer extends DataSourceAnalyzer {
 			}
 			
 			log.info("column/demographic " + current_demographic + " has entropy of: " + entropy);
+			sss.setEntropy(current_demographic, entropy);
 		}
 	}
 }

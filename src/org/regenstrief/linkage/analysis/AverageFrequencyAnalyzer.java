@@ -18,9 +18,11 @@ public class AverageFrequencyAnalyzer extends DataSourceAnalyzer {
 	private TreeMap<String, Integer> unique_freq_table;
 	private TreeMap<String, Double> result_table;
 	private int total_records;
+	private SummaryStatisticsStore sss;
 
-	public AverageFrequencyAnalyzer(LinkDataSource lds, MatchingConfig mc, TreeMap<String, Integer> computed_unique_freq_table) {
+	public AverageFrequencyAnalyzer(LinkDataSource lds, MatchingConfig mc, TreeMap<String, Integer> computed_unique_freq_table, SummaryStatisticsStore s) {
 		super(lds, mc);
+		sss = s;
 		unique_freq_table = computed_unique_freq_table;
 		result_table = new TreeMap<String, Double>();
 	}
@@ -61,6 +63,7 @@ public class AverageFrequencyAnalyzer extends DataSourceAnalyzer {
 					+ " has average frequency: "
 					+ favg);
 			result_table.put(current_demographic, favg);
+			sss.setAverageFrequency(current_demographic, favg);
 		}
 	}
 

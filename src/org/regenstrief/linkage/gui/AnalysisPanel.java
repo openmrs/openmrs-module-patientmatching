@@ -10,12 +10,16 @@ import javax.swing.JPanel;
 
 import org.regenstrief.linkage.analysis.AverageFrequencyAnalyzer;
 import org.regenstrief.linkage.analysis.DataSourceAnalysis;
+import org.regenstrief.linkage.analysis.DataSourceFrequency;
 import org.regenstrief.linkage.analysis.EMAnalyzer;
 import org.regenstrief.linkage.analysis.EntropyAnalyzer;
+import org.regenstrief.linkage.analysis.FrequencyAnalyzer;
 import org.regenstrief.linkage.analysis.MaximumEntropyAnalyzer;
+import org.regenstrief.linkage.analysis.MemoryBackedDataSourceFrequency;
+import org.regenstrief.linkage.analysis.NullAnalyzer;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
-import org.regenstrief.linkage.analysis.NullAnalyzer;
+import org.regenstrief.linkage.analysis.SummaryStatisticsStore;
 import org.regenstrief.linkage.analysis.UniqueAnalyzer;
 import org.regenstrief.linkage.analysis.VectorTable;
 import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
@@ -41,7 +45,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 	
 	private JButton random_button;
 	
-	private JButton em_button, vector_button, summary_button;
+	private JButton em_button, vector_button, summary_button, freq_button;
 	
 	public AnalysisPanel(RecMatchConfig rmc){
 		super();
@@ -70,6 +74,10 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		summary_button = new JButton("Perform Summary Statistic Analyses");
 		this.add(summary_button);
 		summary_button.addActionListener(this);
+		
+		freq_button = new JButton("Perform Frequency Analysis");
+		this.add(freq_button);
+		freq_button.addActionListener(this);
 	}
 	
 	private void runEMAnalysis(){
@@ -152,13 +160,41 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		    performRandomSampling();
 		} else if(ae.getSource() == summary_button) {
 			performSummaryStatistics();
+		} else if(ae.getSource() == freq_button) {
+			performFrequencyAnalysis();
 		}
+	}
+	
+	private void performFrequencyAnalysis(){
+		DataSourceFrequency dsf1 = new MemoryBackedDataSourceFrequency(rm_conf.getLinkDataSource1());
+		FrequencyAnalyzer fa1 = new FrequencyAnalyzer(rm_conf.getLinkDataSource1(), null, dsf1);
+		DataSourceFrequency dsf2 = new MemoryBackedDataSourceFrequency(rm_conf.getLinkDataSource2());
+		FrequencyAnalyzer fa2 = new FrequencyAnalyzer(rm_conf.getLinkDataSource2(), null, dsf2);
+		
+		ReaderProvider rp = new ReaderProvider();
+		
+		System.out.println("ready to read datasources for frequencies");
+		DataSourceAnalysis dsa = new DataSourceAnalysis(rp.getReader(rm_conf.getLinkDataSource1()));
+		dsa.addAnalyzer(fa1);
+		dsa.analyzeData();
+		
+		System.out.println("analyzed source 1, getting ready to read source 2");
+		if(!rm_conf.isDeduplication()){
+			dsa = new DataSourceAnalysis(rp.getReader(rm_conf.getLinkDataSource1()));
+			dsa.addAnalyzer(fa2);
+			dsa.analyzeData();
+		}
+		
+		System.out.println("counted frequency for both sources");
 	}
 	
 	private void performSummaryStatistics() {
 		ReaderProvider rp = new ReaderProvider();
 		List<MatchingConfig> mcs = rm_conf.getMatchingConfigs();
 		Iterator<MatchingConfig> it = mcs.iterator();
+		SummaryStatisticsStore sss1 = new SummaryStatisticsStore(rm_conf.getLinkDataSource1());
+		SummaryStatisticsStore sss2 = new SummaryStatisticsStore(rm_conf.getLinkDataSource2());
+		
 		while(it.hasNext()){
 			MatchingConfig mc = it.next();
 			
@@ -175,8 +211,8 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 				DataSourceAnalysis dsa2 = new DataSourceAnalysis(odsr2);
 
 				// Null - compute the number of null elements for each demographic
-				NullAnalyzer na1 = new NullAnalyzer(lds1, mc);
-				NullAnalyzer na2 = new NullAnalyzer(lds2, mc);
+				NullAnalyzer na1 = new NullAnalyzer(lds1, mc, sss1);
+				NullAnalyzer na2 = new NullAnalyzer(lds2, mc, sss2);
 				
 				dsa1.addAnalyzer(na1);
 				dsa2.addAnalyzer(na2);
@@ -186,29 +222,29 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 				*/ 
 				
 				// Entropy - compute the entropy of a demographic
-				EntropyAnalyzer ea1 = new EntropyAnalyzer(lds1, mc);
-				EntropyAnalyzer ea2 = new EntropyAnalyzer(lds2, mc);
+				EntropyAnalyzer ea1 = new EntropyAnalyzer(lds1, mc, sss1);
+				EntropyAnalyzer ea2 = new EntropyAnalyzer(lds2, mc, sss2);
 				
 				dsa1.addAnalyzer(ea1);
 				dsa2.addAnalyzer(ea2);
 				
 				// Unique - compute the number of unique values of a demographic
-				UniqueAnalyzer ua1 = new UniqueAnalyzer(lds1, mc);
-				UniqueAnalyzer ua2 = new UniqueAnalyzer(lds2, mc);
+				UniqueAnalyzer ua1 = new UniqueAnalyzer(lds1, mc, sss1);
+				UniqueAnalyzer ua2 = new UniqueAnalyzer(lds2, mc, sss2);
 				
 				dsa1.addAnalyzer(ua1);
 				dsa2.addAnalyzer(ua2);
 				
 				// Average Frequency - compute the average frequency of values in a demographic
-				AverageFrequencyAnalyzer afa1 = new AverageFrequencyAnalyzer(lds1, mc, ua1.getResults());
-				AverageFrequencyAnalyzer afa2 = new AverageFrequencyAnalyzer(lds2, mc, ua2.getResults());
+				AverageFrequencyAnalyzer afa1 = new AverageFrequencyAnalyzer(lds1, mc, ua1.getResults(), sss1);
+				AverageFrequencyAnalyzer afa2 = new AverageFrequencyAnalyzer(lds2, mc, ua2.getResults(), sss2);
 				
 				dsa1.addAnalyzer(afa1);
 				dsa2.addAnalyzer(afa2);
 				
 				// Maximum Entropy - compute the maximum entropy of a demographic
-				MaximumEntropyAnalyzer mea1 = new MaximumEntropyAnalyzer(lds1, mc, afa1.getResults(), ua1.getResults());
-				MaximumEntropyAnalyzer mea2 = new MaximumEntropyAnalyzer(lds2, mc, afa2.getResults(), ua2.getResults());
+				MaximumEntropyAnalyzer mea1 = new MaximumEntropyAnalyzer(lds1, mc, afa1.getResults(), ua1.getResults(), sss1);
+				MaximumEntropyAnalyzer mea2 = new MaximumEntropyAnalyzer(lds2, mc, afa2.getResults(), ua2.getResults(), sss2);
 				
 				dsa1.addAnalyzer(mea1);
 				dsa2.addAnalyzer(mea2);

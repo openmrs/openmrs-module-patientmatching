@@ -18,9 +18,11 @@ import org.regenstrief.linkage.util.MatchingConfigRow;
 public class UniqueAnalyzer extends DataSourceAnalyzer {
 	private TreeMap<String, Integer> freq_table;
 	private HashSet<String> known_values;
+	private SummaryStatisticsStore sss;
 
-	public UniqueAnalyzer(LinkDataSource lds, MatchingConfig mc) {
+	public UniqueAnalyzer(LinkDataSource lds, MatchingConfig mc, SummaryStatisticsStore s) {
 		super(lds, mc);
+		sss = s;
 		freq_table = new TreeMap<String, Integer>();
 		known_values = new HashSet<String>();
 	}
@@ -77,6 +79,7 @@ public class UniqueAnalyzer extends DataSourceAnalyzer {
 			log.info("column/demographic " + current_demographic
 					+ " has this many unique values: "
 					+ freq_table.get(current_demographic));
+			sss.setUniqueValueCount(current_demographic, freq_table.get(current_demographic));
 		}
 	}
 

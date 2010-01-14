@@ -16,9 +16,11 @@ import org.regenstrief.linkage.util.MatchingConfigRow;
  */
 public class NullAnalyzer extends DataSourceAnalyzer {
 	private TreeMap<String,Integer> freq_table;
+	private SummaryStatisticsStore sss;
 	
-	public NullAnalyzer(LinkDataSource lds, MatchingConfig mc) {
+	public NullAnalyzer(LinkDataSource lds, MatchingConfig mc, SummaryStatisticsStore s) {
 		super(lds, mc);
+		sss = s;
 		freq_table = new TreeMap<String,Integer>();
 	}
 	
@@ -70,6 +72,7 @@ public class NullAnalyzer extends DataSourceAnalyzer {
 			String current_demographic = demographic_it.next();
 			
 			log.info("column/demographic " + current_demographic + " has null count of: " + freq_table.get(current_demographic));
+			sss.setNullCount(current_demographic, freq_table.get(current_demographic));
 		}
 	}
 	

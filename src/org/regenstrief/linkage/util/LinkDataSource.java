@@ -15,6 +15,7 @@ public class LinkDataSource implements Cloneable {
 	private String unique_id_field;
 	private int ds_id;
 	private boolean file_header_line;
+	private boolean skip_first_row;
 	
 	public static final int UNKNOWN_REC_COUNT = -1;
 	public static final int UNKNOWN_DS_ID = -1;
@@ -28,6 +29,7 @@ public class LinkDataSource implements Cloneable {
 		column_settings = new ArrayList<DataColumn>();
 		ds_id = id;
 		file_header_line = false;
+		skip_first_row = false;
 	}
 		
 	/*
@@ -50,6 +52,14 @@ public class LinkDataSource implements Cloneable {
 	
 	public void setFileHeaderLine(boolean has_header_line){
 		file_header_line = has_header_line;
+	}
+	
+	public boolean getSkipFirstRow(){
+		return skip_first_row;
+	}
+	
+	public void setSkipFirstRow(boolean skip_row){
+		skip_first_row = skip_row;
 	}
 	
 	public String getUniqueID(){

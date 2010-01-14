@@ -47,9 +47,9 @@ public class CharDelimFileReader implements DataSourceReader{
 		// determine if unique ID column needs to be added
 		if(lds.getUniqueID() == null){
 			addIDColumn(lds);
-			switched_file = switchColumns(raw_file, true, lds.getFileHeaderLine());
+			switched_file = switchColumns(raw_file, true, (lds.getFileHeaderLine() || lds.getSkipFirstRow()));
 		} else {
-			switched_file = switchColumns(raw_file, false, lds.getFileHeaderLine());
+			switched_file = switchColumns(raw_file, false, (lds.getFileHeaderLine() || lds.getSkipFirstRow()));
 		}
 		
 		raw_file_sep = lds.getAccess().charAt(0);

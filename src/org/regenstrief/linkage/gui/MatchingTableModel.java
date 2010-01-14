@@ -59,7 +59,7 @@ public class MatchingTableModel extends AbstractTableModel {
 		}
 		
 		int read_lines = 0;
-		if(lds.getFileHeaderLine()){
+		if(lds.getFileHeaderLine() || lds.getSkipFirstRow()){
 			if(dsr.hasNextRecord()){
 				dsr.nextRecord();
 			}

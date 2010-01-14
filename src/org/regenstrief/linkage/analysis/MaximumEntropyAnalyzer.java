@@ -1,6 +1,5 @@
 package org.regenstrief.linkage.analysis;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.TreeMap;
 
@@ -18,9 +17,11 @@ public class MaximumEntropyAnalyzer extends DataSourceAnalyzer {
 	private TreeMap<String, Double> average_freq_table;
 	private TreeMap<String, Integer> unique_freq_table;
 	private int total_records;
+	private SummaryStatisticsStore sss;
 
-	public MaximumEntropyAnalyzer(LinkDataSource lds, MatchingConfig mc, TreeMap<String, Double> computed_average_freq_table, TreeMap<String, Integer> computed_unique_freq_table) {
+	public MaximumEntropyAnalyzer(LinkDataSource lds, MatchingConfig mc, TreeMap<String, Double> computed_average_freq_table, TreeMap<String, Integer> computed_unique_freq_table, SummaryStatisticsStore s) {
 		super(lds, mc);
+		sss = s;
 		average_freq_table = computed_average_freq_table;
 		unique_freq_table = computed_unique_freq_table;
 	}
@@ -57,6 +58,7 @@ public class MaximumEntropyAnalyzer extends DataSourceAnalyzer {
 			log.info("column/demographic " + current_demographic
 					+ " has maximum entropy: "
 					+ mxent);
+			sss.setMaxEntropy(current_demographic, mxent);
 		}
 	}
 

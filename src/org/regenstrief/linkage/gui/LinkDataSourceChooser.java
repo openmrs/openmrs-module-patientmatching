@@ -38,7 +38,7 @@ public class LinkDataSourceChooser implements ActionListener{
 	JPasswordField passwd;
 	JButton ok, cancel, choose_file;
 	JDialog dialog;
-	JCheckBox header;
+	JCheckBox header, skip_first_row;
 	
 	// variables to save for creating the return object
 	String name;
@@ -125,7 +125,15 @@ public class LinkDataSourceChooser implements ActionListener{
 		line = new JPanel();
 		line.add(new JLabel("Has file header:"));
 		header = new JCheckBox();
+		header.addActionListener(this);
 		line.add(header);
+		ret.add(line);
+		
+		line = new JPanel();
+		line.add(new JLabel("Skip first row:"));
+		skip_first_row = new JCheckBox();
+		skip_first_row.addActionListener(this);
+		line.add(skip_first_row);
 		ret.add(line);
 		
 		return ret;
@@ -148,6 +156,9 @@ public class LinkDataSourceChooser implements ActionListener{
 		if(header.isSelected()){
 			lds.setFileHeaderLine(true);
 		}
+		if(skip_first_row.isSelected()){
+			lds.setSkipFirstRow(true);
+		}
 	}
 	
 	public void actionPerformed(ActionEvent ae){
@@ -157,6 +168,14 @@ public class LinkDataSourceChooser implements ActionListener{
 			if(ret == JFileChooser.APPROVE_OPTION){
 				File f = jfc.getSelectedFile();
 				file.setText(f.getPath());
+			}
+		} else if(ae.getSource() == header){
+			if(header.isSelected()){
+				skip_first_row.setSelected(false);
+			}
+		} else if(ae.getSource() == skip_first_row){
+			if(skip_first_row.isSelected()){
+				header.setSelected(false);
 			}
 		} else {
 			if(ae.getSource() == ok){
