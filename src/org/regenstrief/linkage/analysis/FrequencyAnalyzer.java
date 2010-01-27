@@ -25,7 +25,7 @@ public class FrequencyAnalyzer extends DataSourceAnalyzer {
 		while(it.hasNext()){
 			String dem = it.next();
 			String value = rec.getDemographic(dem);
-			counter.incrementCount(value);
+			counter.incrementCount(dem, value);
 		}
 	}
 

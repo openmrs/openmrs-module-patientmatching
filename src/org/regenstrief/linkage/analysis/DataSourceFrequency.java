@@ -1,14 +1,20 @@
 package org.regenstrief.linkage.analysis;
 
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.Set;
+
 import org.regenstrief.linkage.util.LinkDataSource;
 
 public abstract class DataSourceFrequency {
 	protected LinkDataSource source;
 	protected boolean finished;
+	protected Map<String,Integer> totals;
 	
 	public DataSourceFrequency(LinkDataSource source){
 		this.source = source;
 		finished = false;
+		totals = new Hashtable<String,Integer>();
 	}
 	
 	public boolean isFinished(){
@@ -19,7 +25,19 @@ public abstract class DataSourceFrequency {
 		finished = f;
 	}
 	
-	public abstract int getFrequency(String token);
+	public int getFrequenciesSum(String field){
+		return totals.get(field);
+	}
 	
-	public abstract void incrementCount(String token);
+	public abstract int getTotal(String field);
+	
+	public abstract int getFrequency(String field, String token);
+	
+	public abstract void setFrequency(String field, String token, int freq);
+	
+	public abstract void incrementCount(String field, String token);
+	
+	public abstract Set<String> getTokens(String field);
+	
+	public abstract Set<String> getFields();
 }

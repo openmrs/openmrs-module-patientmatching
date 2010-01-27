@@ -1,12 +1,18 @@
 package org.regenstrief.linkage.util;
 
-import java.util.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
-import javax.xml.parsers.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
-import org.xml.sax.*;
-import org.w3c.dom.*;
+import org.regenstrief.linkage.analysis.DataSourceFrequency;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 /**
  * Class created to store the options for the Record Linkage GUI and 
@@ -18,6 +24,7 @@ public class RecMatchConfig implements Iterable<MatchingConfig> {
 	private LinkDataSource lds1, lds2;	
 	private AnalysisConfig analysis_configs;
 	private List<MatchingConfig> mc_configs;
+	private DataSourceFrequency dsf1, dsf2;
 	
 	private boolean deduplication;
 	
@@ -44,6 +51,24 @@ public class RecMatchConfig implements Iterable<MatchingConfig> {
 		return mc_configs.iterator();
 	}
 	
+	
+	
+	public DataSourceFrequency getDataSourceFrequency1() {
+		return dsf1;
+	}
+
+	public void setDataSourceFrequency1(DataSourceFrequency dsf1) {
+		this.dsf1 = dsf1;
+	}
+
+	public DataSourceFrequency getDataSourceFrequencyf2() {
+		return dsf2;
+	}
+
+	public void setDataSourceFrequency2(DataSourceFrequency dsf2) {
+		this.dsf2 = dsf2;
+	}
+
 	/**
 	 * 
 	 * @param lds	the new first LinkDataSource

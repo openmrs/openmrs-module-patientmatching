@@ -6,9 +6,12 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.regenstrief.linkage.analysis.AverageFrequencyAnalyzer;
+import org.regenstrief.linkage.analysis.CloseFormUCalculator;
+import org.regenstrief.linkage.analysis.CloseFormUCalculatorDedup;
 import org.regenstrief.linkage.analysis.DataSourceAnalysis;
 import org.regenstrief.linkage.analysis.DataSourceFrequency;
 import org.regenstrief.linkage.analysis.EMAnalyzer;
@@ -45,7 +48,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 	
 	private JButton random_button;
 	
-	private JButton em_button, vector_button, summary_button, freq_button;
+	private JButton em_button, vector_button, summary_button, freq_button, closed_form_button;
 	
 	public AnalysisPanel(RecMatchConfig rmc){
 		super();
@@ -78,6 +81,10 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		freq_button = new JButton("Perform Frequency Analysis");
 		this.add(freq_button);
 		freq_button.addActionListener(this);
+		
+		closed_form_button = new JButton("Perform Closed U value calculation");
+		this.add(closed_form_button);
+		closed_form_button.addActionListener(this);
 	}
 	
 	private void runEMAnalysis(){
@@ -162,6 +169,31 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 			performSummaryStatistics();
 		} else if(ae.getSource() == freq_button) {
 			performFrequencyAnalysis();
+		} else if(ae.getSource() == closed_form_button){
+			calculateClosedUValues();
+		}
+	}
+	
+	private void calculateClosedUValues(){
+		DataSourceFrequency dsf1 = rm_conf.getDataSourceFrequency1();
+		DataSourceFrequency dsf2 = rm_conf.getDataSourceFrequencyf2();
+		
+		if(dsf1 != null){
+			if(rm_conf.isDeduplication()){
+				// run dedpulication u value calculator
+				CloseFormUCalculatorDedup cfucd = new CloseFormUCalculatorDedup(null, dsf1);
+				cfucd.calculateUValues();
+			} else {
+				// run normal u value calculator
+				CloseFormUCalculator cfuc = new CloseFormUCalculator(null, dsf1, dsf2);
+				cfuc.calculateUValues();
+			}
+			
+		} else {
+			// notify user they need to perform frequency analysis
+			JOptionPane.showMessageDialog(this, "Could not find frequency information for datasources; frequency analysis might not have been run",
+				    "No frequency information",
+				    JOptionPane.ERROR_MESSAGE);
 		}
 	}
 	
@@ -177,15 +209,20 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		DataSourceAnalysis dsa = new DataSourceAnalysis(rp.getReader(rm_conf.getLinkDataSource1()));
 		dsa.addAnalyzer(fa1);
 		dsa.analyzeData();
+		rm_conf.setDataSourceFrequency1(dsf1);
 		
-		System.out.println("analyzed source 1, getting ready to read source 2");
 		if(!rm_conf.isDeduplication()){
+			System.out.println("analyzed source 1, getting ready to read source 2");
 			dsa = new DataSourceAnalysis(rp.getReader(rm_conf.getLinkDataSource1()));
 			dsa.addAnalyzer(fa2);
 			dsa.analyzeData();
+			rm_conf.setDataSourceFrequency2(dsf2);
+			System.out.println("counted frequency for both sources");
+		} else {
+			System.out.println("analyzed data");
 		}
 		
-		System.out.println("counted frequency for both sources");
+		
 	}
 	
 	private void performSummaryStatistics() {
