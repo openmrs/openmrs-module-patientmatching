@@ -4,14 +4,11 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
-import org.regenstrief.linkage.util.LinkDataSource;
-
 public class MemoryBackedDataSourceFrequency extends DataSourceFrequency {
 	
 	Map<String,Map<String, Integer>> frequencies;
 	
-	public MemoryBackedDataSourceFrequency(LinkDataSource lds){
-		super(lds);
+	public MemoryBackedDataSourceFrequency(){
 		frequencies = new Hashtable<String,Map<String,Integer>>();
 	}
 	

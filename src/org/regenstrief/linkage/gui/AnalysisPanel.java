@@ -6,12 +6,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JButton;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.regenstrief.linkage.analysis.AverageFrequencyAnalyzer;
-import org.regenstrief.linkage.analysis.CloseFormUCalculator;
-import org.regenstrief.linkage.analysis.CloseFormUCalculatorDedup;
+import org.regenstrief.linkage.analysis.ClosedFormAnalysis;
 import org.regenstrief.linkage.analysis.DataSourceAnalysis;
 import org.regenstrief.linkage.analysis.DataSourceFrequency;
 import org.regenstrief.linkage.analysis.EMAnalyzer;
@@ -175,32 +173,49 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 	}
 	
 	private void calculateClosedUValues(){
-		DataSourceFrequency dsf1 = rm_conf.getDataSourceFrequency1();
-		DataSourceFrequency dsf2 = rm_conf.getDataSourceFrequencyf2();
 		
-		if(dsf1 != null){
-			if(rm_conf.isDeduplication()){
+		/*if(rm_conf.isDeduplication()){
 				// run dedpulication u value calculator
-				CloseFormUCalculatorDedup cfucd = new CloseFormUCalculatorDedup(null, dsf1);
+				CloseFormUCalculatorDedup cfucd = new CloseFormUCalculatorDedup(rm_conf.getMatchingConfigs().get(0), dsf1);
 				cfucd.calculateUValues();
 			} else {
 				// run normal u value calculator
-				CloseFormUCalculator cfuc = new CloseFormUCalculator(null, dsf1, dsf2);
+				CloseFormUCalculator cfuc = new CloseFormUCalculator(rm_conf.getMatchingConfigs().get(0), dsf1, dsf2);
 				cfuc.calculateUValues();
+			}*/
+		
+		ReaderProvider rp = new ReaderProvider();
+		List<MatchingConfig> mcs = rm_conf.getMatchingConfigs();
+		Iterator<MatchingConfig> it = mcs.iterator();
+		while(it.hasNext()){
+			MatchingConfig mc = it.next();
+
+			OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
+			OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
+			if(odsr1 != null && odsr2 != null){
+				// analyze with EM
+				FormPairs fp2 = null;
+				if (rm_conf.isDeduplication()) {
+					fp2 = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
+				} else {
+					fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+				}
+				
+				PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
+
+				// create u value analyzer, add to pdsa, and run analysis
+				ClosedFormAnalysis cfa = new ClosedFormAnalysis(mc);
+				pdsa.addAnalyzer(cfa);
+				pdsa.analyzeData();
+
 			}
-			
-		} else {
-			// notify user they need to perform frequency analysis
-			JOptionPane.showMessageDialog(this, "Could not find frequency information for datasources; frequency analysis might not have been run",
-				    "No frequency information",
-				    JOptionPane.ERROR_MESSAGE);
 		}
 	}
 	
 	private void performFrequencyAnalysis(){
-		DataSourceFrequency dsf1 = new MemoryBackedDataSourceFrequency(rm_conf.getLinkDataSource1());
+		DataSourceFrequency dsf1 = new MemoryBackedDataSourceFrequency();
 		FrequencyAnalyzer fa1 = new FrequencyAnalyzer(rm_conf.getLinkDataSource1(), null, dsf1);
-		DataSourceFrequency dsf2 = new MemoryBackedDataSourceFrequency(rm_conf.getLinkDataSource2());
+		DataSourceFrequency dsf2 = new MemoryBackedDataSourceFrequency();
 		FrequencyAnalyzer fa2 = new FrequencyAnalyzer(rm_conf.getLinkDataSource2(), null, dsf2);
 		
 		ReaderProvider rp = new ReaderProvider();

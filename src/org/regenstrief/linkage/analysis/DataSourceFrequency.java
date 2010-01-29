@@ -7,12 +7,10 @@ import java.util.Set;
 import org.regenstrief.linkage.util.LinkDataSource;
 
 public abstract class DataSourceFrequency {
-	protected LinkDataSource source;
 	protected boolean finished;
 	protected Map<String,Integer> totals;
 	
-	public DataSourceFrequency(LinkDataSource source){
-		this.source = source;
+	public DataSourceFrequency(){
 		finished = false;
 		totals = new Hashtable<String,Integer>();
 	}
