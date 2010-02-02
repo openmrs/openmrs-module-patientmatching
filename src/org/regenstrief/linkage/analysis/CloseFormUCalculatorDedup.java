@@ -2,7 +2,6 @@ package org.regenstrief.linkage.analysis;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Set;
 
 import org.regenstrief.linkage.util.MatchingConfig;
 
@@ -43,10 +42,15 @@ public class CloseFormUCalculatorDedup {
 			while(it2.hasNext()){
 				String token2 = it2.next();
 				int freq = freq1.getFrequency(field, token2);
-				double numerator = (Math.pow(freq, 2) - freq) / 2;
-				double denominator = (Math.pow(total, 2) - total)/ 2;
-				double increment =  numerator / denominator;
-				u_values.put(field, u_values.get(field) + increment);
+				
+				// add if statement to ignore empty string tokens
+				if(!token2.equals("")){
+					double numerator = (Math.pow(freq, 2) - freq) / 2;
+					double denominator = (Math.pow(total, 2) - total)/ 2;
+					double increment =  numerator / denominator;
+					u_values.put(field, u_values.get(field) + increment);
+				}
+				
 			}
 			
 			System.out.println("total for field " + field + ":\t" + u_values.get(field));

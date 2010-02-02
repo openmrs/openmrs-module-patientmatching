@@ -161,19 +161,15 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 			double stdDev = getStandardDeviation(sampleSize, u_val);
 			double[] confidenceInterval = getConfidenceInterval(u_val, stdDev);
 			
-			log.info("Generated u for: " + demographic + formatOutput(u_val, stdDev, confidenceInterval));
+			log.info(demographic + "," + formatOutput(u_val, stdDev, confidenceInterval));
 			mc.getMatchingConfigRowByName(demographic).setNonAgreement(u_val);
 		}
 	}
 	
 	private String formatOutput(double u, double stdDev, double[] interval){
 	    StringBuffer buffer = new StringBuffer();
-	    buffer.append(System.getProperty("line.separator"));
-	    buffer.append("\tu value: ").append(u).append(", ");
-	    buffer.append(System.getProperty("line.separator"));
-	    buffer.append("\tsd: ").append(stdDev).append(", ");
-	    buffer.append(System.getProperty("line.separator"));
-	    buffer.append("\t95% CI: ");
+	    buffer.append(u).append(", ");
+	    buffer.append(stdDev).append(", ");
 	    buffer.append("(").append(interval[0]).append(", ");
 	    buffer.append(interval[1]).append(")");
 	    return buffer.toString();
