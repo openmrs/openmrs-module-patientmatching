@@ -10,6 +10,7 @@ import javax.swing.JPanel;
 
 import org.regenstrief.linkage.analysis.AverageFrequencyAnalyzer;
 import org.regenstrief.linkage.analysis.ClosedFormAnalysis;
+import org.regenstrief.linkage.analysis.ClosedFormDedupAnalyzer;
 import org.regenstrief.linkage.analysis.DataSourceAnalysis;
 import org.regenstrief.linkage.analysis.DataSourceFrequency;
 import org.regenstrief.linkage.analysis.EMAnalyzer;
@@ -189,26 +190,31 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		Iterator<MatchingConfig> it = mcs.iterator();
 		while(it.hasNext()){
 			MatchingConfig mc = it.next();
-
-			OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
-			OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
-			if(odsr1 != null && odsr2 != null){
-				// analyze with EM
-				FormPairs fp2 = null;
-				if (rm_conf.isDeduplication()) {
-					fp2 = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
-				} else {
+			if(rm_conf.isDeduplication()){
+				OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
+				DataSourceAnalysis dsa = new DataSourceAnalysis(odsr1);
+				ClosedFormDedupAnalyzer cfda = new ClosedFormDedupAnalyzer(rm_conf.getLinkDataSource1(), mc);
+				dsa.addAnalyzer(cfda);
+				dsa.analyzeData();
+			} else {
+				OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
+				OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
+				if(odsr1 != null && odsr2 != null){
+					// analyze with EM
+					FormPairs fp2 = null;
 					fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+					
+					PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
+
+					// create u value analyzer, add to pdsa, and run analysis
+					ClosedFormAnalysis cfa = new ClosedFormAnalysis(mc);
+					pdsa.addAnalyzer(cfa);
+					pdsa.analyzeData();
+
 				}
-				
-				PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
-
-				// create u value analyzer, add to pdsa, and run analysis
-				ClosedFormAnalysis cfa = new ClosedFormAnalysis(mc);
-				pdsa.addAnalyzer(cfa);
-				pdsa.analyzeData();
-
 			}
+
+			
 		}
 	}
 	
