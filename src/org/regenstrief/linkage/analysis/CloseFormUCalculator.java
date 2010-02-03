@@ -68,7 +68,7 @@ public class CloseFormUCalculator {
 					String s2 = q_it2.next();
 					
 					int f2 = freq2.getFrequency(field, s2);
-					double increment = f1 * f2;
+					double increment = (double)f1 * (double)f2;
 					field_total += increment;
 					if(s1.equals(s2)){
 						diagonal_total += increment;
