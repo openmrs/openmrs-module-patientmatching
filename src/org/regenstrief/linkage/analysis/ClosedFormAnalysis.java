@@ -32,7 +32,7 @@ public class ClosedFormAnalysis implements PairAnalyzer {
 		Iterator<String> it = r.getDemographics().keySet().iterator();
 		while(it.hasNext()){
 			String demographic = it.next();
-			if(mc.getMatchingConfigRowByName(demographic).isIncluded()){
+			if(mc.getMatchingConfigRowByName(demographic).isIncluded() || mc.getMatchingConfigRowByName(demographic).getBlockOrder() > 0){
 				String value = r.getDemographic(demographic);
 				dsf.incrementCount(demographic, value);
 			}

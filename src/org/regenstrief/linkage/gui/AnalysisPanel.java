@@ -192,10 +192,19 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 			MatchingConfig mc = it.next();
 			if(rm_conf.isDeduplication()){
 				OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
-				DataSourceAnalysis dsa = new DataSourceAnalysis(odsr1);
-				ClosedFormDedupAnalyzer cfda = new ClosedFormDedupAnalyzer(rm_conf.getLinkDataSource1(), mc);
-				dsa.addAnalyzer(cfda);
-				dsa.analyzeData();
+				OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
+				if(odsr1 != null && odsr2 != null){
+					// analyze with EM
+					FormPairs fp2 = null;
+					fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+					
+					PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
+					// create u value analyzer, add to pdsa, and run analysis
+					ClosedFormDedupAnalyzer cfda = new ClosedFormDedupAnalyzer(mc);
+					pdsa.addAnalyzer(cfda);
+					pdsa.analyzeData();
+				}
+				
 			} else {
 				OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
 				OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
