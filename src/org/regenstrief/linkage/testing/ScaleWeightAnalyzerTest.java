@@ -55,7 +55,7 @@ public class ScaleWeightAnalyzerTest {
 			// Retrieve data sources for easier access
 			LinkDataSource lds1 = rmc.getLinkDataSource1();
 			LinkDataSource lds2 = rmc.getLinkDataSource2();
-			ReaderProvider rp = new ReaderProvider();
+			ReaderProvider rp = ReaderProvider.getInstance();
 
 			for(MatchingConfig mc_test : rmc) {
 			//for(int j = 0; j < 1; j++){
