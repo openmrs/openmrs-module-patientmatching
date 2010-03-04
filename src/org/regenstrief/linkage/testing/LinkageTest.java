@@ -68,7 +68,7 @@ public class LinkageTest {
 			*/
 			
 			// new way of making readers
-			ReaderProvider rp = new ReaderProvider();
+			ReaderProvider rp = ReaderProvider.getInstance();
 			// ugly casting needed until io package object/interface hierarchy is improved or updated
 			OrderedDataSourceReader dsr1 = rp.getReader(rmc.getLinkDataSource1(), mc_test);
 			OrderedDataSourceReader dsr2 = rp.getReader(rmc.getLinkDataSource1(), mc_test);

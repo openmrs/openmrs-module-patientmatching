@@ -38,7 +38,7 @@ public class MatchingTableModel extends AbstractTableModel {
 	}
 	
 	private void getLines(){
-		ReaderProvider rp = new ReaderProvider();
+		ReaderProvider rp = ReaderProvider.getInstance();
 		// need to get a BasicCharDelimFileReader instead of a CharDelimFileReader
 		// to get more information about raw data
 		DataSourceReader dsr;

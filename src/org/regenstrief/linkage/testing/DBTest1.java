@@ -45,7 +45,7 @@ public class DBTest1 {
 			MatchingConfig test_mc = rmc.getMatchingConfigs().get(0);
 			RecordDBManager ldbm = new RecordDBManager(rmc.getLinkDataSource1());
 			
-			MatchFinder mf = new MatchFinder(rmc.getLinkDataSource1(), new ReaderProvider(), rmc.getMatchingConfigs(), new RecordFieldAnalyzer(),MatchFinder.Scoring.BLOCKING_EXCLUSIVE);
+			MatchFinder mf = new MatchFinder(rmc.getLinkDataSource1(), ReaderProvider.getInstance(), rmc.getMatchingConfigs(), new RecordFieldAnalyzer(),MatchFinder.Scoring.BLOCKING_EXCLUSIVE);
 			Record test_find = new Record(0, "testing");
 			test_find.addDemographic("fn", "test");
 			test_find.addDemographic("ln", "patient");

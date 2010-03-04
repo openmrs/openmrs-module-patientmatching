@@ -52,7 +52,7 @@ public class FileWritingMatcher {
 		try{
 			//BufferedWriter fout = new BufferedWriter(new FileWriter(f));
 			
-			ReaderProvider rp = new ReaderProvider();
+			ReaderProvider rp = ReaderProvider.getInstance();
 			
 			// if diong a group analysis, then create list for all RecordLink objects from blocking runs
 			List<RecordLink> all_links = null;

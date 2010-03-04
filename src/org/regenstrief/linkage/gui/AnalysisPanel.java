@@ -87,7 +87,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 	}
 	
 	private void runEMAnalysis(){
-		ReaderProvider rp = new ReaderProvider();
+		ReaderProvider rp = ReaderProvider.getInstance();
 		List<MatchingConfig> mcs = rm_conf.getMatchingConfigs();
 		Iterator<MatchingConfig> it = mcs.iterator();
 		while(it.hasNext()){
@@ -185,7 +185,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 				cfuc.calculateUValues();
 			}*/
 		
-		ReaderProvider rp = new ReaderProvider();
+		ReaderProvider rp = ReaderProvider.getInstance();
 		List<MatchingConfig> mcs = rm_conf.getMatchingConfigs();
 		Iterator<MatchingConfig> it = mcs.iterator();
 		while(it.hasNext()){
@@ -233,7 +233,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		DataSourceFrequency dsf2 = new MemoryBackedDataSourceFrequency();
 		FrequencyAnalyzer fa2 = new FrequencyAnalyzer(rm_conf.getLinkDataSource2(), null, dsf2);
 		
-		ReaderProvider rp = new ReaderProvider();
+		ReaderProvider rp = ReaderProvider.getInstance();
 		
 		System.out.println("ready to read datasources for frequencies");
 		DataSourceAnalysis dsa = new DataSourceAnalysis(rp.getReader(rm_conf.getLinkDataSource1()));
@@ -256,7 +256,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 	}
 	
 	private void performSummaryStatistics() {
-		ReaderProvider rp = new ReaderProvider();
+		ReaderProvider rp = ReaderProvider.getInstance();
 		List<MatchingConfig> mcs = rm_conf.getMatchingConfigs();
 		Iterator<MatchingConfig> it = mcs.iterator();
 		SummaryStatisticsStore sss1 = new SummaryStatisticsStore(rm_conf.getLinkDataSource1());
@@ -327,7 +327,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 	}
 
     private void performRandomSampling() {
-        ReaderProvider rp = new ReaderProvider();
+        ReaderProvider rp = ReaderProvider.getInstance();
         List<MatchingConfig> mcs = rm_conf.getMatchingConfigs();
         Iterator<MatchingConfig> it = mcs.iterator();
         while(it.hasNext()){

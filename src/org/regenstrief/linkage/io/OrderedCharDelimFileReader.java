@@ -43,13 +43,54 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader implements O
 		//super(lds);
 		data_source = lds;
 		this.mc = mc;
-		if(lds.getUniqueID() == null){
-			addIDColumn(lds);
-			this.switched_file = switchColumns(new File(lds.getName()), mc, true, lds.getFileHeaderLine());
+		raw_file_sep = data_source.getAccess().charAt(0);
+		initReader();
+	}
+	
+	/**
+	 * Constructor takes an extra argument representing a file modification time.  If the File mofication date
+	 * for the LinkDataSource is newer than the date, then the steps taken in the normal constructor need to be
+	 * done in order to resort the file.  If the date is after and the final, sorted file exists, then it is still valid and
+	 * the intermediate steps can be skipped.
+	 * 
+	 * @param lds
+	 * @param mc
+	 * @param date
+	 */
+	public OrderedCharDelimFileReader(LinkDataSource lds, MatchingConfig mc, long date){
+		data_source = lds;
+		this.mc = mc;
+		raw_file_sep = data_source.getAccess().charAt(0);
+		long modified_date = new File(data_source.getName()).lastModified();
+		if(modified_date > date){
+			initReader();
 		} else {
-			this.switched_file = switchColumns(new File(lds.getName()), mc, false, lds.getFileHeaderLine());
+			
+			File switched = new File(data_source.getName() + this.mc.getName() + ".switched");
+			File sorted = new File(switched.getPath() + ".sorted");
+			if(sorted.exists()){
+				try{
+					file_reader = new BufferedReader(new FileReader(sorted));
+					next_record = line2Record(file_reader.readLine());
+				}
+				catch(IOException ioe){
+					file_reader = null;
+					next_record = null;
+				}
+			} else {
+				initReader();
+			}
 		}
-		raw_file_sep = lds.getAccess().charAt(0);
+	}
+	
+	private void initReader(){
+		if(data_source.getUniqueID() == null){
+			addIDColumn(data_source);
+			this.switched_file = switchColumns(new File(data_source.getName()), mc, true, data_source.getFileHeaderLine());
+		} else {
+			this.switched_file = switchColumns(new File(data_source.getName()), mc, false, data_source.getFileHeaderLine());
+		}
+		
 		sorted_file = sortInputFile(switched_file, raw_file_sep);
 		try{
 			file_reader = new BufferedReader(new FileReader(sorted_file));

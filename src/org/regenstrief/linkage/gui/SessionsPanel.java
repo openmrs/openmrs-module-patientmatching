@@ -19,10 +19,12 @@ import java.io.File;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -33,6 +35,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -44,6 +47,16 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
+import org.regenstrief.linkage.analysis.ClosedFormAnalysis;
+import org.regenstrief.linkage.analysis.ClosedFormDedupAnalyzer;
+import org.regenstrief.linkage.analysis.EMAnalyzer;
+import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
+import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
+import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
+import org.regenstrief.linkage.io.FormPairs;
+import org.regenstrief.linkage.io.OrderedDataSourceFormPairs;
+import org.regenstrief.linkage.io.OrderedDataSourceReader;
+import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.FileWritingMatcher;
 import org.regenstrief.linkage.util.MatchingConfig;
@@ -67,14 +80,16 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	 
 	MatchingConfig current_working_config;
 
-    private JCheckBox randomSampleCheckBox;
-    private JCheckBox randomSampleLockCheckBox;
+    
     private JTextField randomSampleTextField;
     private JLabel randomSampleSizeLabel;
     private JTextField thresholdTextField;
     private JCheckBox cbWriteXML;
     private JCheckBox cbGrouping;
-	
+	private JRadioButton ucalc_em, ucalc_closed, ucalc_rand, mcalc_lock, mcalc_uinclude;
+    private ButtonGroup ucalc_group, mcalc_group;
+    private JButton calculate_uvalue, calculate_mvalue;
+    
 	public SessionsPanel(RecMatchConfig rmc){
 		//super();
 		rm_conf = rmc;
@@ -168,12 +183,19 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         /* ******************************
          * Random Sample Area
          * ******************************/
-        JPanel randomSamplePanel = new JPanel();
-        randomSamplePanel.setBorder(BorderFactory.createTitledBorder("Session Global Parameter"));
+        JPanel uvalue_panel = new JPanel();
+        uvalue_panel.setBorder(BorderFactory.createTitledBorder("u-Value calculation"));
+        ucalc_closed = new JRadioButton("Closed form");
+        ucalc_closed.addActionListener(this);
+        ucalc_em = new JRadioButton("EM");
+        ucalc_em.addActionListener(this);
+        ucalc_rand = new JRadioButton("Random Sample");
+        ucalc_rand.addActionListener(this);
         
-        randomSampleCheckBox = new JCheckBox();
-        randomSampleCheckBox.setText("Use Random Sampling");
-        randomSampleCheckBox.addItemListener(this);
+        ucalc_group = new ButtonGroup();
+        ucalc_group.add(ucalc_closed);
+        ucalc_group.add(ucalc_em);
+        ucalc_group.add(ucalc_rand);
         
         randomSampleSizeLabel = new JLabel();
         randomSampleSizeLabel.setText("Sample Size");
@@ -184,12 +206,30 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         randomSampleTextField.setEnabled(false);
         randomSampleTextField.addFocusListener(this);
         
-        randomSampleLockCheckBox = new JCheckBox();
-        randomSampleLockCheckBox.setText("Lock u-Values");
-        randomSampleLockCheckBox.setEnabled(false);
-        randomSampleLockCheckBox.addItemListener(this);
+        calculate_uvalue = new JButton("Calculate u-values");
+        calculate_uvalue.addActionListener(this);
         /* ******************************
          * End Random Sample Area
+         * ******************************/
+        
+        /* ******************************
+         * M value calculation area
+         * ******************************/
+        JPanel mvalue_panel = new JPanel();
+        mvalue_panel.setBorder(BorderFactory.createTitledBorder("m / u-Value calculation"));
+        mcalc_lock = new JRadioButton("Lock existing u-values in EM calculation");
+        ucalc_closed.addActionListener(this);
+        mcalc_uinclude = new JRadioButton("Calculate u-values along with m-values in EM");
+        ucalc_em.addActionListener(this);
+        
+        mcalc_group = new ButtonGroup();
+        mcalc_group.add(mcalc_lock);
+        mcalc_group.add(mcalc_uinclude);
+        
+        calculate_mvalue = new JButton("Calculate values");
+        calculate_mvalue.addActionListener(this);
+        /* ******************************
+         * End M value calculation area
          * ******************************/
         
         /* ******************
@@ -314,8 +354,8 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        //gridBagConstraints.gridheight = 2;
+        gridBagConstraints.anchor = GridBagConstraints.NORTH;
         mainPanelSessions.add(sessionListEntryPanel, gridBagConstraints);
         /*
          * End of Blocking Run Modifier Section
@@ -328,7 +368,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
          * that will be used to generate the u-values. User can specify
          * whether to use random sampling and the sample size
          */
-        randomSamplePanel.setLayout(new GridBagLayout());
+        uvalue_panel.setLayout(new GridBagLayout());
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -338,24 +378,90 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.7;
         gridBagConstraints.insets = new Insets(0, 5, 5, 5);
-        randomSamplePanel.add(randomSampleCheckBox, gridBagConstraints);
+        uvalue_panel.add(ucalc_closed, gridBagConstraints);
         
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.7;
+        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+        uvalue_panel.add(ucalc_em, gridBagConstraints);
+        
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.7;
+        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+        uvalue_panel.add(ucalc_rand, gridBagConstraints);
+        
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.ipadx = 5;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 5, 5, 5);
-        randomSamplePanel.add(randomSampleSizeLabel, gridBagConstraints);
+        uvalue_panel.add(randomSampleSizeLabel, gridBagConstraints);
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 5, 5, 5);
-        randomSamplePanel.add(randomSampleTextField, gridBagConstraints);
+        uvalue_panel.add(randomSampleTextField, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.7;
+        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+        uvalue_panel.add(calculate_uvalue, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        mainPanelSessions.add(uvalue_panel, gridBagConstraints);
+        /*
+         * End of Random Sampling Parameters Section
+         */
+        
+        /*
+         * Begin m-calculation panel section
+         */
+        mvalue_panel.setLayout(new GridBagLayout());
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.7;
+        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+        mvalue_panel.add(mcalc_uinclude, gridBagConstraints);
+        
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.7;
+        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+        mvalue_panel.add(mcalc_lock, gridBagConstraints);
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -365,16 +471,17 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.7;
         gridBagConstraints.insets = new Insets(0, 5, 5, 5);
-        randomSamplePanel.add(randomSampleLockCheckBox, gridBagConstraints);
+        mvalue_panel.add(calculate_mvalue, gridBagConstraints);
 
         gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
-        mainPanelSessions.add(randomSamplePanel, gridBagConstraints);
+        mainPanelSessions.add(mvalue_panel, gridBagConstraints);
+        
         /*
-         * End of Random Sampling Parameters Section
+         * end m-calculation panel section
          */
 
         /*
@@ -406,9 +513,9 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         linkagePanel.add(run_link, gridBagConstraints);
 
         gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 4;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+       // gridBagConstraints.gridheight = 4;
         gridBagConstraints.anchor = GridBagConstraints.NORTH;
         gridBagConstraints.insets = new Insets(0, 0, 0, 0);
         mainPanelSessions.add(linkagePanel, gridBagConstraints);
@@ -446,8 +553,9 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        //gridBagConstraints.anchor = GridBagConstraints.NORTH;
         mainPanelSessions.add(thresholdPanel, gridBagConstraints);
         /*
          * End of Linkage Process Section
@@ -504,10 +612,10 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
             if(m.isUsingRandomSampling()) {
                 randomSampleTextField.setText(String.valueOf(m.getRandomSampleSize()));
             }
-			randomSampleCheckBox.setSelected(m.isUsingRandomSampling());
+			ucalc_rand.setSelected(m.isUsingRandomSampling());
 			randomSampleSizeLabel.setEnabled(m.isUsingRandomSampling());
             randomSampleTextField.setEnabled(m.isUsingRandomSampling());
-            randomSampleLockCheckBox.setSelected(m.isLockedUValues());
+            //lock_uvalue.setSelected(m.isLockedUValues());
             thresholdTextField.setText(String.valueOf(m.getScoreThreshold()));
 		}
 		current_working_config = mc;
@@ -630,6 +738,40 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	}
 	
 	public void actionPerformed(ActionEvent ae){
+		if(ae.getSource() instanceof JRadioButton){
+			JRadioButton source = (JRadioButton)ae.getSource();
+			if(source.getText().equals("Closed form")){
+				randomSampleTextField.setEnabled(false);
+				randomSampleSizeLabel.setEnabled(false);
+				if(current_working_config != null) {
+                    current_working_config.setUsingRandomSampling(false);
+                }
+			} else if(source.getText().equals("EM")){
+				randomSampleTextField.setEnabled(false);
+				randomSampleSizeLabel.setEnabled(false);
+				if(current_working_config != null) {
+                    current_working_config.setUsingRandomSampling(false);
+                }
+			} else if(source.getText().equals("Random Sample")){
+				randomSampleTextField.setEnabled(true);
+				randomSampleSizeLabel.setEnabled(true);
+                randomSampleTextField.setEnabled(true);
+                randomSampleTextField.requestFocus();
+                if(current_working_config != null) {
+                    current_working_config.setUsingRandomSampling(true);
+                    int sampleSize = Integer.parseInt(randomSampleTextField.getText());
+                    current_working_config.setRandomSampleSize(sampleSize);
+                }
+			} else if(source.getText().equals("Calculate u-values along with m-values in EM")){
+				if(current_working_config != null){
+					current_working_config.setLockedUValues(false);
+				}
+			} else if(source.getText().equals("Lock existing u-values in EM calculation")){
+				if(current_working_config != null){
+					current_working_config.setLockedUValues(true);
+				}
+			}
+		}
 		if(ae.getSource() instanceof JButton){
 			JButton source = (JButton)ae.getSource();
 			System.out.println("Source: " + source.getText());
@@ -675,9 +817,136 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 					MatchingConfig mc = (MatchingConfig)o;
 					removeSessionConfig(mc);
 				}
+			} else if(source.getText().equals("Calculate u-values")){
+				// run either closed form, random sampling, or EM
+				if(ucalc_closed.isSelected()){
+					calculateClosedUValues();
+				} else if(ucalc_em.isSelected()){
+					current_working_config.setLockedUValues(false);
+					runEMAnalysis();
+				} else if(ucalc_rand.isSelected()){
+					performRandomSampling();
+				}
+			} else if(source.getText().equals("Calculate values")){
+				if(current_working_config != null){
+					runEMAnalysis();
+				}
 			}
 		}
 		
+	}
+	
+	private void performRandomSampling() {
+        ReaderProvider rp = ReaderProvider.getInstance();
+        
+        MatchingConfig mc = current_working_config;
+        // if the user not choose to use random sampling, then do nothing
+        // if the u-values is already locked then do nothing as well
+        if(mc.isUsingRandomSampling() && !mc.isLockedUValues()) {
+            OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
+            OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
+            if(odsr1 != null && odsr2 != null){
+                FormPairs fp2 = null;
+                if(rm_conf.isDeduplication()) {
+                    fp2 = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
+                } else {
+                    fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+                }
+                
+                PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
+                
+                RandomSampleLoggingFrame frame = new RandomSampleLoggingFrame(mc);
+                
+                MatchingConfig mcCopy = (MatchingConfig) mc.clone();
+                
+                OrderedDataSourceReader rsa_odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
+                OrderedDataSourceReader rsa_odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
+				FormPairs rsa_fp2 = null;
+				if (rm_conf.isDeduplication()) {
+					rsa_fp2 = new DedupOrderedDataSourceFormPairs(rsa_odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
+				} else {
+					rsa_fp2 = new OrderedDataSourceFormPairs(rsa_odsr1, rsa_odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+				}
+                RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(mcCopy, rsa_fp2);
+                
+                pdsa.addAnalyzer(rsa);
+                frame.addLoggingObject(rsa);
+                    
+                frame.configureLoggingFrame();
+                pdsa.analyzeData();
+                
+                
+            }
+            odsr1.close();
+            odsr2.close();
+        }
+        session_options.repaint();
+    }
+	
+	private void calculateClosedUValues(){
+		
+		ReaderProvider rp = ReaderProvider.getInstance();
+		
+		MatchingConfig mc = current_working_config;
+		if(rm_conf.isDeduplication()){
+			OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
+			OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
+			if(odsr1 != null && odsr2 != null){
+				// analyze with EM
+				FormPairs fp2 = null;
+				fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+				
+				PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
+				// create u value analyzer, add to pdsa, and run analysis
+				ClosedFormDedupAnalyzer cfda = new ClosedFormDedupAnalyzer(mc);
+				pdsa.addAnalyzer(cfda);
+				pdsa.analyzeData();
+			}
+			
+		} else {
+			OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
+			OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
+			if(odsr1 != null && odsr2 != null){
+				// analyze with EM
+				FormPairs fp2 = null;
+				fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+				
+				PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
+					// create u value analyzer, add to pdsa, and run analysis
+				ClosedFormAnalysis cfa = new ClosedFormAnalysis(mc);
+				pdsa.addAnalyzer(cfa);
+				pdsa.analyzeData();
+				}
+		}
+		session_options.repaint();
+	}
+	
+	private void runEMAnalysis(){
+		ReaderProvider rp = ReaderProvider.getInstance();
+		MatchingConfig mc = current_working_config;
+		
+		OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
+		OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
+		if(odsr1 != null && odsr2 != null){
+			// analyze with EM
+		    FormPairs fp2 = null;
+		    if (rm_conf.isDeduplication()) {
+		        fp2 = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
+		    } else {
+		        fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+		    }
+			LoggingFrame frame = new LoggingFrame(mc.getName());
+			PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
+			
+			EMAnalyzer ema = new EMAnalyzer(mc);
+			pdsa.addAnalyzer(ema);
+			frame.addLoggingObject(ema);
+			frame.configureLoggingFrame();
+			pdsa.analyzeData();
+		}
+		odsr1.close();
+		odsr2.close();
+		session_options.repaint();
 	}
 	
 	/*
@@ -736,11 +1005,11 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 
     public void itemStateChanged(ItemEvent e) {
     	// update the ui based on whether the use random sample is checked or not
-        if(e.getSource() == randomSampleCheckBox) {
+        if(e.getSource() == ucalc_rand) {
             if(e.getStateChange() == ItemEvent.SELECTED) {
                 randomSampleSizeLabel.setEnabled(true);
                 randomSampleTextField.setEnabled(true);
-                randomSampleLockCheckBox.setEnabled(true);
+                //lock_uvalue.setEnabled(true);
                 randomSampleTextField.requestFocus();
                 if(current_working_config != null) {
                     current_working_config.setUsingRandomSampling(true);
@@ -750,13 +1019,13 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
             } else if(e.getStateChange() == ItemEvent.DESELECTED){
                 randomSampleSizeLabel.setEnabled(false);
                 randomSampleTextField.setEnabled(false);
-                randomSampleLockCheckBox.setEnabled(false);
+                //lock_uvalue.setEnabled(false);
                 randomSampleTextField.select(0, 0);
                 if(current_working_config != null) {
                     current_working_config.setUsingRandomSampling(false);
                 }
             }
-        } else if(e.getSource() == randomSampleLockCheckBox) {
+        /*} else if(e.getSource() == lock_uvalue) {
             if(e.getStateChange() == ItemEvent.SELECTED) {
                 randomSampleSizeLabel.setEnabled(false);
                 randomSampleTextField.select(0, 0);
@@ -770,7 +1039,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
                 if(current_working_config != null) {
                     current_working_config.setLockedUValues(false);
                 }
-            }
+            }*/
         }
     }
 

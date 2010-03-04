@@ -2,6 +2,7 @@ package org.regenstrief.linkage.io;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.Hashtable;
 
 import javax.sql.DataSource;
@@ -36,9 +37,16 @@ import org.regenstrief.linkage.util.MatchingConfig;
 
 public class ReaderProvider {
 	Hashtable<LinkDataSource, DataSource> database_pools;
+	Hashtable<LinkDataSource,Hashtable<MatchingConfig,Long>> sort_times;
+	private static final ReaderProvider INSTANCE = new ReaderProvider();
 	
-	public ReaderProvider(){
+	private ReaderProvider(){
 		database_pools = new Hashtable<LinkDataSource, DataSource>();
+		sort_times = new Hashtable<LinkDataSource,Hashtable<MatchingConfig,Long>>();
+	}
+	
+	public static ReaderProvider getInstance(){
+		return INSTANCE;
 	}
 	
 	public DataSourceReader getReader(LinkDataSource lds){
@@ -55,7 +63,23 @@ public class ReaderProvider {
 	
 	public OrderedDataSourceReader getReader(LinkDataSource lds, MatchingConfig mc){
 		if(lds.getType().equals("CharDelimFile")){
-			return new OrderedCharDelimFileReader(lds, mc);
+			// check if orderedCharDelimFileReader has been created before for this lds and mc
+			Hashtable<MatchingConfig,Long> entry = sort_times.get(lds);
+			if(entry == null){
+				entry = new Hashtable<MatchingConfig,Long>();
+				entry.put(mc, new Long(new Date().getTime()));
+				sort_times.put(lds, entry);
+				return new OrderedCharDelimFileReader(lds, mc);
+			} else {
+				Long sorted = entry.get(mc);
+				if(sorted == null){
+					entry.put(mc, new Long(new Date().getTime()));
+					return new OrderedCharDelimFileReader(lds, mc);
+				} else {
+					return new OrderedCharDelimFileReader(lds, mc, sorted);
+				}
+			}
+			
 		} else if(lds.getType().equals("DataBase")){
 			Connection db = getConnection(lds);
 			return new OrderedDataBaseReader(lds, db, mc);

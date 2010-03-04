@@ -267,7 +267,7 @@ public class LinkDBConnections {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.parse(config);
 			RecMatchConfig rmc = XMLTranslator.createRecMatchConfig(doc);
-			rp = new ReaderProvider();
+			rp = ReaderProvider.getInstance();
 			
 			// as of version 1.2.0, removing RecordFieldAnalyzer object from Matchfiner since new Blocking exclusion
 			// feature is being used

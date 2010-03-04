@@ -167,7 +167,7 @@ public class MatchingReportUtils {
 		recordStore.close();
 		reader.close();
 
-		ReaderProvider rp = new ReaderProvider();
+		ReaderProvider rp = ReaderProvider.getInstance();
 		for (MatchingConfig matchingConfig : matchingConfigLists) {
 			MatchingReportUtils.nextStep();
 			MatchingConfigurationUtils.log

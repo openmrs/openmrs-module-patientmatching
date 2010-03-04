@@ -57,7 +57,7 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 		/*
 		 * Check the current blocking run use random sampling or not.
 		 */
-		pin_u_values = mc.isUsingRandomSampling();
+		pin_u_values = mc.isLockedUValues();
 	}
 	
 	public void setIterations(int iterations){
@@ -164,49 +164,48 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 				int mv_count = vector_count.get(mv).intValue();
 				vct_count += mv_count;
 				vct_count++;
-				for(int j = 0; j < mv_count; j++){
-					// begin the EM calculation loop for the current record pair
-					termM = 1;
-					termU = 1;
-					gMtemp = 0;
-					gUtemp = 0;
-					
-					for(int k = 0; k < demographics.length; k++){
-						String demographic = demographics[k];
-						boolean matched = mv.matchedOn(demographic);
-						int comp = 0;
-						if(matched){
-							comp = 1;
-						}
-						termM = termM * Math.pow(mest.get(demographic), comp) * Math.pow(1 - mest.get(demographic), 1 - comp);
-						termU = termU * Math.pow(uest.get(demographic), comp) * Math.pow(1 - uest.get(demographic), 1 - comp);
-						//System.out.println(termM + "\t" + termU);
+				
+				// begin the EM calculation loop for the current record pair
+				termM = 1;
+				termU = 1;
+				gMtemp = 0;
+				gUtemp = 0;
+				
+				for(int k = 0; k < demographics.length; k++){
+					String demographic = demographics[k];
+					boolean matched = mv.matchedOn(demographic);
+					int comp = 0;
+					if(matched){
+						comp = 1;
 					}
-					//System.out.println();
-					gMtemp = (p * termM) / ((p * termM) + ((1 - p) * termU));
-					gUtemp = ((1 - p) * termU) / (((1 - p) * termU) + (p * termM)); 
-					//System.out.println("gMtemp: " + gMtemp);
-					
-					// update the running sum for msum and usum
-					for(int k = 0; k < demographics.length; k++){
-						String demographic = demographics[k];
-						boolean matched = mv.matchedOn(demographic);
-						if(matched){
-							double m = msum.get(demographic);
-							double u = usum.get(demographic);
-							msum.put(demographic, new Double(m + gMtemp));
-							usum.put(demographic, new Double(u + gUtemp));
-						}
-					}
-					
-					// update the running sum for gMsum and gUsum
-					
-					
-					
-					gMsum = gMsum + gMtemp;
-					gUsum = gUsum + gUtemp;
-					
+					termM = termM * Math.pow(mest.get(demographic), comp) * Math.pow(1 - mest.get(demographic), 1 - comp);
+					termU = termU * Math.pow(uest.get(demographic), comp) * Math.pow(1 - uest.get(demographic), 1 - comp);
+					//System.out.println(termM + "\t" + termU);
 				}
+				//System.out.println();
+				gMtemp = (p * termM) / ((p * termM) + ((1 - p) * termU));
+				gUtemp = ((1 - p) * termU) / (((1 - p) * termU) + (p * termM)); 
+				//System.out.println("gMtemp: " + gMtemp);
+				
+				// multiply by mv_count to account for however many matches of this type
+				gMtemp = (double)mv_count * gMtemp;
+				gUtemp = (double)mv_count * gUtemp;
+				
+				// update the running sum for msum and usum
+				for(int k = 0; k < demographics.length; k++){
+					String demographic = demographics[k];
+					boolean matched = mv.matchedOn(demographic);
+					if(matched){
+						double m = msum.get(demographic);
+						double u = usum.get(demographic);
+						msum.put(demographic, new Double(m + gMtemp));
+						usum.put(demographic, new Double(u + gUtemp));
+					}
+				}
+				
+				// update the running sum for gMsum and gUsum
+				gMsum = gMsum + gMtemp;
+				gUsum = gUsum + gUtemp;
 				
 			}
 			
