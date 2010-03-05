@@ -13,6 +13,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
+import java.util.Enumeration;
 
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
@@ -29,6 +30,8 @@ import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.apache.log4j.Appender;
+import org.apache.log4j.Logger;
 import org.regenstrief.linkage.util.CharDelimLDSInspector;
 import org.regenstrief.linkage.util.DataBaseLDSInspector;
 import org.regenstrief.linkage.util.LinkDataSource;
@@ -69,6 +72,10 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 	public RecMatch(File config){
 	    recentFile = new RecentFile(5);
 		current_program_config_file = config;
+		
+		// remove appenders from lob4j configuration file that's used for the OpenMRS module
+		Logger root_logger = Logger.getRootLogger();
+		root_logger.removeAllAppenders();
 		
 		// load the config file if one was given when program was started
 		if(config != null){
