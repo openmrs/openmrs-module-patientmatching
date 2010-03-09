@@ -2,9 +2,11 @@ package org.regenstrief.linkage.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridLayout;
 import java.awt.Insets;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -13,7 +15,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
-import java.util.Enumeration;
 
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
@@ -30,7 +31,6 @@ import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.apache.log4j.Appender;
 import org.apache.log4j.Logger;
 import org.regenstrief.linkage.util.CharDelimLDSInspector;
 import org.regenstrief.linkage.util.DataBaseLDSInspector;
@@ -99,7 +99,6 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 		main_window = new JFrame(PROGRAM_NAME);
 		main_window.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		main_window.addWindowListener(this);
-		main_window.setLocationRelativeTo(null);
 		
 		main_window.setJMenuBar(createMenu());
 
@@ -158,6 +157,11 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 		c.add(panelConfig, BorderLayout.NORTH);
 		c.add(panelMatching, BorderLayout.CENTER);
 		main_window.pack();
+		
+		Point screen_center = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint();
+		Point init_point = new Point(screen_center.x - main_window.getWidth()/2, screen_center.y - main_window.getHeight()/2);
+		main_window.setLocation(init_point);
+		
 		main_window.setVisible(true);
 		
 		// display data in rm_conf
@@ -180,6 +184,11 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 		jm = new JMenu("File");
 		jm.setMnemonic(KeyEvent.VK_F);
 		jmb.add(jm);
+		jmi = new JMenuItem("New configuration");
+		jmi.setMnemonic(KeyEvent.VK_N);
+        jmi.setAccelerator(KeyStroke.getKeyStroke("ctrl N"));
+        jm.add(jmi);
+        jmi.addActionListener(this);
         jmi = new JMenuItem("Open configuration");
         jmi.setMnemonic(KeyEvent.VK_O);
         jmi.setAccelerator(KeyStroke.getKeyStroke("ctrl O"));
@@ -397,6 +406,13 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 			if(source.getText().equals("Exit")){
 				System.out.println("exiting . . . .");
 				exitProgram();
+			} else if(source.getText().equals("New configuration")){
+				rm_conf = null;
+				current_program_config_file = null;
+				main_window.setVisible(false);
+				main_window = null;
+				initGui();
+				return;
 			} else if(source.getText().equals("Save configuration")){
 				saveConfig();
 			} else if(source.getText().equals("Save configuration as . . .")){
