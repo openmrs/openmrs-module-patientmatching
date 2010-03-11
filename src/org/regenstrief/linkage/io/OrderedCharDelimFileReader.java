@@ -67,7 +67,8 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader implements O
 		} else {
 			
 			File switched = new File(data_source.getName() + this.mc.getName() + ".switched");
-			File sorted = new File(switched.getPath() + ".sorted");
+			String desc = mc.getBlockingHash();
+			File sorted = new File(switched.getPath() + desc + ".sorted");
 			if(sorted.exists()){
 				try{
 					file_reader = new BufferedReader(new FileReader(sorted));
@@ -142,7 +143,8 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader implements O
 		// column IDs for character delimited file should hold line array index
 		// of column
 		String [] blocking_columns = mc.getBlockingColumns();
-		File sorted = new File(f.getPath() + ".sorted");
+		String desc = mc.getBlockingHash();
+		File sorted = new File(f.getPath() + desc + ".sorted");
 		// if there are blocking columns
 		if(blocking_columns != null) {
 			int[] column_order = data_source.getIncludeIndexesOfColumnNames(blocking_columns);

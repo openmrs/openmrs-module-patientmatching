@@ -5,8 +5,15 @@ package org.regenstrief.linkage.util;
  * the 
  */
 
-import java.util.*;
-import java.text.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+
+import com.sun.org.apache.xml.internal.security.utils.Base64;
 
 public class MatchingConfig implements Cloneable {
 	
@@ -362,6 +369,30 @@ public class MatchingConfig implements Cloneable {
 
 	public void make_scale_weight() {
 		this.is_scale_weight = true;
+	}
+	
+	private String getBlockingDescriptionString(){
+		String ret = "";
+		String[] blocking_fields = getBlockingColumns();
+		for(int i = 0; i < blocking_fields.length; i++){
+			MatchingConfigRow mcr = this.getMatchingConfigRowByName(blocking_fields[i]);
+			ret += blocking_fields[i] + mcr.getBlockChars();
+		}
+		return ret;
+	}
+	
+	public String getBlockingHash(){
+		try{
+			MessageDigest md = MessageDigest.getInstance("MD5");
+			String blocking_string = getBlockingDescriptionString();
+			
+			byte[] hash = md.digest(blocking_string.getBytes());
+			return Base64.encode(hash);
+		}
+		catch(NoSuchAlgorithmException nsae){
+			return null;
+		}
+		
 	}
 	
 	public Object clone() {

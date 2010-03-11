@@ -407,6 +407,17 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 				System.out.println("exiting . . . .");
 				exitProgram();
 			} else if(source.getText().equals("New configuration")){
+				int option = JOptionPane.showConfirmDialog(main_window, "Save configuration?", "Save?", JOptionPane.YES_NO_OPTION);
+				if(option == JOptionPane.YES_OPTION){
+					if(current_program_config_file == null){
+						// ask user if they want to save
+						saveAsConfig();
+					} else {
+						saveConfig();
+					}
+					
+				}
+				
 				rm_conf = null;
 				current_program_config_file = null;
 				main_window.setVisible(false);

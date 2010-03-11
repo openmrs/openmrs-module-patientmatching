@@ -19,7 +19,6 @@ import java.io.File;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -80,7 +79,8 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	 
 	MatchingConfig current_working_config;
 
-    
+    private boolean write_xml, groupAnalysis;
+	
     private JTextField randomSampleTextField;
     private JLabel randomSampleSizeLabel;
     private JTextField thresholdTextField;
@@ -218,9 +218,9 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         JPanel mvalue_panel = new JPanel();
         mvalue_panel.setBorder(BorderFactory.createTitledBorder("m / u-Value calculation"));
         mcalc_lock = new JRadioButton("Lock existing u-values in EM calculation");
-        ucalc_closed.addActionListener(this);
+        mcalc_lock.addActionListener(this);
         mcalc_uinclude = new JRadioButton("Calculate u-values along with m-values in EM");
-        ucalc_em.addActionListener(this);
+        mcalc_uinclude.addActionListener(this);
         
         mcalc_group = new ButtonGroup();
         mcalc_group.add(mcalc_lock);
@@ -239,7 +239,9 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         linkagePanel.setBorder(BorderFactory.createTitledBorder("Linkage Process"));
         
         cbWriteXML = new JCheckBox("Include XML When Writing Output");
+        cbWriteXML.addActionListener(this);
         cbGrouping = new JCheckBox("Perform Grouping When Writing Output");
+        cbGrouping.addActionListener(this);
         
         JButton run_link = new JButton();
         run_link.addActionListener(this);
@@ -796,8 +798,6 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 				File out = null;
 				File match_file = null;
 				if(ret == JFileChooser.APPROVE_OPTION){
-					boolean write_xml = cbWriteXML.isSelected();
-					boolean groupAnalysis = cbGrouping.isSelected();
 					out = out_chooser.getSelectedFile();
 					match_file = FileWritingMatcher.writeMatchResults(rm_conf, out, write_xml, groupAnalysis);
 	                
@@ -831,6 +831,13 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 				if(current_working_config != null){
 					runEMAnalysis();
 				}
+			}
+		} else if(ae.getSource() instanceof JCheckBox){
+			JCheckBox source = (JCheckBox)ae.getSource();
+			if(source.getText().equals("Include XML When Writing Output")){
+				write_xml = cbWriteXML.isSelected();
+			} else if(source.getText().equals("Perform Grouping When Writing Output")){
+				groupAnalysis = cbGrouping.isSelected();
 			}
 		}
 		
@@ -1025,21 +1032,6 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
                     current_working_config.setUsingRandomSampling(false);
                 }
             }
-        /*} else if(e.getSource() == lock_uvalue) {
-            if(e.getStateChange() == ItemEvent.SELECTED) {
-                randomSampleSizeLabel.setEnabled(false);
-                randomSampleTextField.select(0, 0);
-                randomSampleTextField.setEnabled(false);
-                if(current_working_config != null) {
-                    current_working_config.setLockedUValues(true);
-                }
-            } else if(e.getStateChange() == ItemEvent.DESELECTED){
-                randomSampleSizeLabel.setEnabled(true);
-                randomSampleTextField.setEnabled(true);
-                if(current_working_config != null) {
-                    current_working_config.setLockedUValues(false);
-                }
-            }*/
         }
     }
 
