@@ -15,10 +15,13 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,8 +35,10 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -43,7 +48,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
 import org.regenstrief.linkage.analysis.ClosedFormAnalysis;
@@ -59,6 +66,7 @@ import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.FileWritingMatcher;
 import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.MatchingConfigRow;
 import org.regenstrief.linkage.util.RecMatchConfig;
 
 /**
@@ -67,7 +75,7 @@ import org.regenstrief.linkage.util.RecMatchConfig;
  *
  */
 public class SessionsPanel extends JPanel implements ActionListener, KeyListener,
-        ListSelectionListener, ItemListener, FocusListener, TableModelListener{
+        ListSelectionListener, ItemListener, FocusListener, TableModelListener, MouseListener{
 	public final String DEFAULT_NAME = "New match";
 	
 	JList runs;
@@ -86,9 +94,10 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
     private JTextField thresholdTextField;
     private JCheckBox cbWriteXML;
     private JCheckBox cbGrouping;
-	private JRadioButton ucalc_em, ucalc_closed, ucalc_rand, mcalc_lock, mcalc_uinclude;
+	private JRadioButton ucalc_closed, ucalc_rand, mcalc_lock, mcalc_uinclude;
     private ButtonGroup ucalc_group, mcalc_group;
     private JButton calculate_uvalue, calculate_mvalue;
+    private JPopupMenu resetm, resetu;
     
 	public SessionsPanel(RecMatchConfig rmc){
 		//super();
@@ -126,6 +135,17 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		
 		// item for the top panel
 		this.add(getSessionTable());
+		
+		// init popup menus
+		JMenuItem reset;
+		resetm = new JPopupMenu();
+		reset = new JMenuItem("Reset m values to default");
+		reset.addActionListener(this);
+		resetm.add(reset);
+		resetu = new JPopupMenu();
+		reset = new JMenuItem("Reset u values to default");
+		reset.addActionListener(this);
+		resetu.add(reset);
 		
 		// add items for the bottom panel
         /* *********************************
@@ -187,14 +207,11 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         uvalue_panel.setBorder(BorderFactory.createTitledBorder("u-Value calculation"));
         ucalc_closed = new JRadioButton("Closed form");
         ucalc_closed.addActionListener(this);
-        ucalc_em = new JRadioButton("EM");
-        ucalc_em.addActionListener(this);
         ucalc_rand = new JRadioButton("Random Sample");
         ucalc_rand.addActionListener(this);
         
         ucalc_group = new ButtonGroup();
         ucalc_group.add(ucalc_closed);
-        ucalc_group.add(ucalc_em);
         ucalc_group.add(ucalc_rand);
         
         randomSampleSizeLabel = new JLabel();
@@ -390,21 +407,11 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.7;
         gridBagConstraints.insets = new Insets(0, 5, 5, 5);
-        uvalue_panel.add(ucalc_em, gridBagConstraints);
-        
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 5;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.7;
-        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
         uvalue_panel.add(ucalc_rand, gridBagConstraints);
         
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.ipadx = 5;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 5, 5, 5);
@@ -412,7 +419,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
@@ -421,7 +428,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 5;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
@@ -585,6 +592,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		
 		JScrollPane table_pane = new JScrollPane(session_options);
 		table_pane.setPreferredSize(new Dimension(800, 300));
+		session_options.getTableHeader().addMouseListener(this);
 		
 		return table_pane;
 		
@@ -821,9 +829,6 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 				// run either closed form, random sampling, or EM
 				if(ucalc_closed.isSelected()){
 					calculateClosedUValues();
-				} else if(ucalc_em.isSelected()){
-					current_working_config.setLockedUValues(false);
-					runEMAnalysis();
 				} else if(ucalc_rand.isSelected()){
 					performRandomSampling();
 				}
@@ -839,8 +844,35 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			} else if(source.getText().equals("Perform Grouping When Writing Output")){
 				groupAnalysis = cbGrouping.isSelected();
 			}
+		} else if(ae.getSource() instanceof JMenuItem){
+			JMenuItem jmi = (JMenuItem)ae.getSource();
+			if(jmi.getText().equals("Reset u values to default")){
+				resetUValues();
+			} else if(jmi.getText().equals("Reset m values to default")){
+				resetMValues();
+			}
 		}
 		
+	}
+	
+	private void resetUValues(){
+		List<MatchingConfigRow> rows = current_working_config.getMatchingConfigRows();
+		Iterator<MatchingConfigRow> it = rows.iterator();
+		while(it.hasNext()){
+			MatchingConfigRow mcr = it.next();
+			mcr.setNonAgreement(MatchingConfigRow.DEFAULT_NON_AGREEMENT);
+		}
+		session_options.repaint();
+	}
+	
+	private void resetMValues(){
+		List<MatchingConfigRow> rows = current_working_config.getMatchingConfigRows();
+		Iterator<MatchingConfigRow> it = rows.iterator();
+		while(it.hasNext()){
+			MatchingConfigRow mcr = it.next();
+			mcr.setAgreement(MatchingConfigRow.DEFAULT_AGREEMENT);
+		}
+		session_options.repaint();
 	}
 	
 	private void performRandomSampling() {
@@ -862,7 +894,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
                 
                 PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
                 
-                RandomSampleLoggingFrame frame = new RandomSampleLoggingFrame(mc);
+                RandomSampleLoggingFrame frame = new RandomSampleLoggingFrame(mc, session_options);
                 
                 MatchingConfig mcCopy = (MatchingConfig) mc.clone();
                 
@@ -1095,5 +1127,43 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
                 model.setValueAt(new Boolean(false), rowIndex, 3);
             }
         }
+    }
+    
+    public void mouseClicked(MouseEvent me){
+		// important to notice that 'int column' is set to table model's column index, NOT
+		// column model's index
+		
+		// determine what collumn user clicked on
+		if(me.getSource() instanceof JTableHeader){
+			JTableHeader jth = (JTableHeader)me.getSource();
+			TableColumnModel columnModel = jth.getColumnModel();
+            int viewColumn = columnModel.getColumnIndexAtX(me.getX());
+            
+            if(me.getButton() == MouseEvent.BUTTON3){
+            	// show popup menu for resetting values
+            	if(viewColumn == 4){
+            		resetm.show(this, me.getX(), me.getY());
+            	} else if(viewColumn == 5){
+            		resetu.show(this, me.getX(), me.getY());
+            	}
+            }
+		}
+		
+    }
+    
+    public void mousePressed(MouseEvent me){
+    	
+    }
+    
+    public void mouseReleased(MouseEvent me){
+    	
+    }
+    
+    public void mouseExited(MouseEvent me){
+    	
+    }
+    
+    public void mouseEntered(MouseEvent me){
+    	
     }
 }

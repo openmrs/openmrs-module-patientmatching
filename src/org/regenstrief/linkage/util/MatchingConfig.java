@@ -13,7 +13,8 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 
-import com.sun.org.apache.xml.internal.security.utils.Base64;
+import org.apache.commons.codec.binary.Base64;
+
 
 public class MatchingConfig implements Cloneable {
 	
@@ -387,7 +388,12 @@ public class MatchingConfig implements Cloneable {
 			String blocking_string = getBlockingDescriptionString();
 			
 			byte[] hash = md.digest(blocking_string.getBytes());
-			return Base64.encode(hash);
+			Base64 b = new Base64();
+			String ret = b.encodeToString(hash);
+			
+			// remove trailing line feed from returned String
+			ret = ret.substring(0, 22);
+			return ret;
 		}
 		catch(NoSuchAlgorithmException nsae){
 			return null;

@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
 
 import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
 import org.regenstrief.linkage.util.MatchingConfig;
@@ -20,14 +21,17 @@ public class RandomSampleLoggingFrame extends LoggingFrame {
     private JButton applyValue;
     
     private MatchingConfig config;
+    private JTable options;
     
-    public RandomSampleLoggingFrame(String title) {
+    public RandomSampleLoggingFrame(String title, JTable options) {
         super(title);
+        this.options = options;
     }
     
-    public RandomSampleLoggingFrame(MatchingConfig config) {
+    public RandomSampleLoggingFrame(MatchingConfig config, JTable options) {
         super(config.getName());
         this.config = config;
+        this.options = options;
     }
 
     /**
@@ -68,6 +72,11 @@ public class RandomSampleLoggingFrame extends LoggingFrame {
             String name = row.getName();
             MatchingConfigRow guiRow = config.getMatchingConfigRowByName(name);
             guiRow.setNonAgreement(row.getNonAgreement());
+        }
+        
+        // repaint GUI element that displays the new values, if needed
+        if(options != null){
+        	options.repaint();
         }
         
         JOptionPane.showMessageDialog(

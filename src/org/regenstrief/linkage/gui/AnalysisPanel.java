@@ -347,7 +347,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
                     
                     PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
                     
-                    RandomSampleLoggingFrame frame = new RandomSampleLoggingFrame(mc);
+                    RandomSampleLoggingFrame frame = new RandomSampleLoggingFrame(mc, null);
                     
                     MatchingConfig mcCopy = (MatchingConfig) mc.clone();
                     
