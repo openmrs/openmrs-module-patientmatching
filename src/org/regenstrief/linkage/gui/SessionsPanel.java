@@ -881,7 +881,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         MatchingConfig mc = current_working_config;
         // if the user not choose to use random sampling, then do nothing
         // if the u-values is already locked then do nothing as well
-        if(mc.isUsingRandomSampling() && !mc.isLockedUValues()) {
+        if(mc.isUsingRandomSampling()) {
             OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
             OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
             if(odsr1 != null && odsr2 != null){
@@ -986,6 +986,8 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		odsr1.close();
 		odsr2.close();
 		session_options.repaint();
+		thresholdTextField.setText(Double.toString(mc.getScoreThreshold()));
+		
 	}
 	
 	/*

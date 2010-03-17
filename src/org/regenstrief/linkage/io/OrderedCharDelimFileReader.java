@@ -44,34 +44,14 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader implements O
 		data_source = lds;
 		this.mc = mc;
 		raw_file_sep = data_source.getAccess().charAt(0);
-		initReader();
-	}
-	
-	/**
-	 * Constructor takes an extra argument representing a file modification time.  If the File mofication date
-	 * for the LinkDataSource is newer than the date, then the steps taken in the normal constructor need to be
-	 * done in order to resort the file.  If the date is after and the final, sorted file exists, then it is still valid and
-	 * the intermediate steps can be skipped.
-	 * 
-	 * @param lds
-	 * @param mc
-	 * @param date
-	 */
-	public OrderedCharDelimFileReader(LinkDataSource lds, MatchingConfig mc, long date){
-		data_source = lds;
-		this.mc = mc;
-		raw_file_sep = data_source.getAccess().charAt(0);
 		long modified_date = new File(data_source.getName()).lastModified();
-		if(modified_date > date){
-			initReader();
-		} else {
-			
-			File switched = new File(data_source.getName() + this.mc.getName() + ".switched");
-			String desc = mc.getBlockingHash();
-			File sorted = new File(switched.getPath() + desc + ".sorted");
-			if(sorted.exists()){
+		File expected = getExpectedFile(new File(data_source.getName() + this.mc.getName()));
+		
+		// check if initReader() file exists, and if so, it's modification date isn't newer than modification date of original file
+		if(expected.exists()){
+			if(expected.lastModified() > modified_date){
 				try{
-					file_reader = new BufferedReader(new FileReader(sorted));
+					file_reader = new BufferedReader(new FileReader(expected));
 					next_record = line2Record(file_reader.readLine());
 				}
 				catch(IOException ioe){
@@ -81,7 +61,17 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader implements O
 			} else {
 				initReader();
 			}
+		} else {
+			initReader();
 		}
+		
+	}
+	
+	private File getExpectedFile(File f){
+		File switched = new File(f.getPath() + ".switched");
+		String desc = mc.getBlockingHash();
+		File sorted = new File(switched.getPath() + desc + ".sorted");
+		return sorted;
 	}
 	
 	private void initReader(){

@@ -63,23 +63,7 @@ public class ReaderProvider {
 	
 	public OrderedDataSourceReader getReader(LinkDataSource lds, MatchingConfig mc){
 		if(lds.getType().equals("CharDelimFile")){
-			// check if orderedCharDelimFileReader has been created before for this lds and mc
-			Hashtable<MatchingConfig,Long> entry = sort_times.get(lds);
-			if(entry == null){
-				entry = new Hashtable<MatchingConfig,Long>();
-				entry.put(mc, new Long(new Date().getTime()));
-				sort_times.put(lds, entry);
-				return new OrderedCharDelimFileReader(lds, mc);
-			} else {
-				Long sorted = entry.get(mc);
-				if(sorted == null){
-					entry.put(mc, new Long(new Date().getTime()));
-					return new OrderedCharDelimFileReader(lds, mc);
-				} else {
-					return new OrderedCharDelimFileReader(lds, mc, sorted);
-				}
-			}
-			
+			return new OrderedCharDelimFileReader(lds, mc);
 		} else if(lds.getType().equals("DataBase")){
 			Connection db = getConnection(lds);
 			return new OrderedDataBaseReader(lds, db, mc);
