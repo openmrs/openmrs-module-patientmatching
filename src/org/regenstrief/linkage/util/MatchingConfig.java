@@ -388,8 +388,7 @@ public class MatchingConfig implements Cloneable {
 			String blocking_string = getBlockingDescriptionString();
 			
 			byte[] hash = md.digest(blocking_string.getBytes());
-			Base64 b = new Base64();
-			String ret = b.encodeToString(hash);
+			String ret = Base64.encodeBase64URLSafeString(hash);
 			
 			// remove trailing line feed from returned String
 			ret = ret.substring(0, 22);
