@@ -33,7 +33,7 @@ public class ColumnSwitcher{
 	}
 	
 	public void setReadHeaderLine(boolean has_header){
-		read_header_line = true;
+		read_header_line = has_header;
 	}
 	
 	public boolean switchColumns() throws IOException{
