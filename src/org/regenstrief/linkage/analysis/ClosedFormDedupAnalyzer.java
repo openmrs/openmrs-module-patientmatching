@@ -23,7 +23,7 @@ public class ClosedFormDedupAnalyzer implements PairAnalyzer {
 		for(int i = 0; i < pair.length; i++){
 			long id = pair[i].getUID();
 			if(!encountered.containsKey(new Long(id))){
-				analyzeRecordValues(dsf, pair[0]);
+				analyzeRecordValues(dsf, pair[i]);
 				encountered.put(new Long(id), Boolean.TRUE);
 			}
 		}
