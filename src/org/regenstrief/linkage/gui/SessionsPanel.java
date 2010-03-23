@@ -621,11 +621,18 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			// config data
             if(m.isUsingRandomSampling()) {
                 randomSampleTextField.setText(String.valueOf(m.getRandomSampleSize()));
+                ucalc_rand.setSelected(true);
+                randomSampleSizeLabel.setEnabled(true);
+                randomSampleTextField.setEnabled(true);
+            } else {
+            	ucalc_closed.setSelected(true);
             }
-			ucalc_rand.setSelected(m.isUsingRandomSampling());
-			randomSampleSizeLabel.setEnabled(m.isUsingRandomSampling());
-            randomSampleTextField.setEnabled(m.isUsingRandomSampling());
-            //lock_uvalue.setSelected(m.isLockedUValues());
+            if(m.isLockedUValues()){
+            	this.mcalc_lock.setSelected(true);
+            } else {
+            	this.mcalc_uinclude.setSelected(true);
+            }
+			
             thresholdTextField.setText(String.valueOf(m.getScoreThreshold()));
 		}
 		current_working_config = mc;
