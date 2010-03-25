@@ -48,11 +48,15 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 	/*
 	 * Random sampling size as defined by the user that will replace the static value
 	 */
-	private int sampleSize;
+	protected int sampleSize;
 	
 	public RandomSampleAnalyzer(MatchingConfig mc, FormPairs fp){
 		super(mc);
 		this.fp = fp;
+		initAnalyzer();
+	}
+	
+	protected void initAnalyzer(){
 		rand = new Random();
 		
 		left_pair_entry = new Hashtable<Integer,List<Integer>>();
@@ -117,7 +121,7 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 		pair_count++;
 	}
 	
-	private void checkSimilarity(Record r1, Record r2){
+	protected void checkSimilarity(Record r1, Record r2){
 		// compare the two records to modify u values
 		HashSet<String> demographics = new HashSet<String>();
 		List<MatchingConfigRow> includedColumn = mc.getIncludedColumns();
@@ -166,7 +170,7 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 		}
 	}
 	
-	private String formatOutput(double u, double stdDev, double[] interval){
+	protected String formatOutput(double u, double stdDev, double[] interval){
 	    StringBuffer buffer = new StringBuffer();
 	    buffer.append(u).append(", ");
 	    buffer.append(stdDev).append(", ");
@@ -179,7 +183,7 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
      * Generate standard deviation value
      * Probably should move this to a static utility class
      */
-    private double getStandardDeviation(double n, double p) {
+    protected double getStandardDeviation(double n, double p) {
         return Math.sqrt(n * p * (1 - p)) / n;
     }
     
@@ -187,14 +191,14 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
      * Generate the confidence interval value.
      * Probably should move this to a static utility class
      */
-    private double[] getConfidenceInterval(double p, double std) {
+    protected double[] getConfidenceInterval(double p, double std) {
         double[] d = new double[2];
         d[0] = p - 2 * std;
         d[1] = p + 2 * std;
         return d;
     }
     
-	private boolean matchesOnDemographic(Record r1, Record r2, String demographic, MatchingConfig mc){
+	protected boolean matchesOnDemographic(Record r1, Record r2, String demographic, MatchingConfig mc){
 		String val1 = r1.getDemographic(demographic);
 		String val2 = r2.getDemographic(demographic);
 		
@@ -221,7 +225,7 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 		return match;
 	}
 	
-	private int countRecordPairs(){
+	protected int countRecordPairs(){
 		
 		int pair_count = 0;
 		while(fp.getNextRecordPair() != null){
@@ -231,7 +235,7 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 		return pair_count;
 	}
 	
-	private void setIndexPairs(int max_index){
+	protected void setIndexPairs(int max_index){
 		LookupFormPairs lfp = null;
 		Hashtable<Integer,List<Integer>> pairs = null;
 		if(fp instanceof LookupFormPairs){

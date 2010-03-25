@@ -55,6 +55,7 @@ import javax.swing.table.TableModel;
 
 import org.regenstrief.linkage.analysis.ClosedFormAnalysis;
 import org.regenstrief.linkage.analysis.ClosedFormDedupAnalyzer;
+import org.regenstrief.linkage.analysis.DedupRandomSampleAnalyzer;
 import org.regenstrief.linkage.analysis.EMAnalyzer;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
@@ -908,12 +909,15 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
                 OrderedDataSourceReader rsa_odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
                 OrderedDataSourceReader rsa_odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
 				FormPairs rsa_fp2 = null;
+				RandomSampleAnalyzer rsa ;
 				if (rm_conf.isDeduplication()) {
 					rsa_fp2 = new DedupOrderedDataSourceFormPairs(rsa_odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
+					rsa = new DedupRandomSampleAnalyzer(mcCopy, rsa_fp2);
 				} else {
 					rsa_fp2 = new OrderedDataSourceFormPairs(rsa_odsr1, rsa_odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+					rsa = new RandomSampleAnalyzer(mcCopy, rsa_fp2);
 				}
-                RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(mcCopy, rsa_fp2);
+                
                 
                 pdsa.addAnalyzer(rsa);
                 frame.addLoggingObject(rsa);
