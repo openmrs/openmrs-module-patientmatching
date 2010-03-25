@@ -101,11 +101,18 @@ public class DedupRandomSampleAnalyzer extends RandomSampleAnalyzer {
 		// need to get two sets of random numbers, one for each data source
 		for(int i = 0; i < sampleSize && max_index > 0; i++){
 			
-			int left_uid_index = rand.nextInt(left_uids.size());
-			int right_uid_index = rand.nextInt(right_uids.size());
-			
-			int left_index = left_uid_index_occurrence.get(left_uids.get(left_uid_index));
-			int right_index = right_uid_index_occurrence.get(right_uids.get(right_uid_index));
+			long sampled_left_uid, sampled_right_uid;
+			do{
+				int left_uid_index = rand.nextInt(left_uids.size());
+				int right_uid_index = rand.nextInt(right_uids.size());
+				
+				sampled_left_uid = left_uids.get(left_uid_index);
+				sampled_right_uid = right_uids.get(right_uid_index);
+				
+				
+			}while(sampled_left_uid == sampled_right_uid);
+			int left_index = left_uid_index_occurrence.get(sampled_left_uid);
+			int right_index = right_uid_index_occurrence.get(sampled_right_uid);
 			
 			if(lfp != null){
 				// save index pairs
