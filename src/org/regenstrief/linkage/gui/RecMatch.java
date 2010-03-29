@@ -70,7 +70,7 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 	private File current_program_config_file;
 	
 	public RecMatch(File config){
-	    recentFile = new RecentFile(5);
+	    recentFile = new RecentFile(10);
 		current_program_config_file = config;
 		
 		// remove appenders from lob4j configuration file that's used for the OpenMRS module

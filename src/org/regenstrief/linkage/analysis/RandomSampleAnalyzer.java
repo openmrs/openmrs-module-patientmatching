@@ -97,10 +97,10 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 				} else {
 					// compare and increment count hash, then clear
 					checkSimilarity(pair[0],r);
-					record_pairs.remove(Integer.valueOf(index));
+					//record_pairs.remove(Integer.valueOf(index));
 				}
 			}
-			left_pair_entry.remove(Integer.valueOf(pair_count));
+			//left_pair_entry.remove(Integer.valueOf(pair_count));
 		}
 		
 		if(pair_count < sample2.length && sample2[pair_count]){
@@ -113,10 +113,10 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 				} else {
 					// compare and increment count hash, then clear
 					checkSimilarity(pair[1],r);
-					record_pairs.remove(Integer.valueOf(index));
+					//record_pairs.remove(Integer.valueOf(index));
 				}
 			}
-			right_pair_entry.remove(Integer.valueOf(pair_count));
+			//right_pair_entry.remove(Integer.valueOf(pair_count));
 		}
 		pair_count++;
 	}
