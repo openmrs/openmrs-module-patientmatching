@@ -280,6 +280,7 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 		// launches a JFileChooser and returns a File object
 		// if user cancels, return null
 		JFileChooser jfc = new JFileChooser();
+		jfc.setFileFilter(new ConfigFileFilter());
 		int ret = jfc.showOpenDialog(null);
 		
 		if(ret == JFileChooser.APPROVE_OPTION){
@@ -348,6 +349,7 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 		// show JFileChooser until they cancel, say yes to over writing, or enter new name
 		
 		JFileChooser jfc = new JFileChooser();
+		jfc.setFileFilter(new ConfigFileFilter());
 		boolean escape_condition = false;
 		File selection = null;
 		
