@@ -9,6 +9,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -331,25 +333,34 @@ public class MatchingConfig implements Cloneable {
 		return ret;
 	}
 	
+	/**
+	 * Method return the blocking column names in order according to blocking index
+	 * 
+	 * @return	array of names of the blocking columns
+	 */
 	public String[] getBlockingColumns(){
-		int blocking_count = 0;
+		ArrayList<MatchingConfigRow> tmp_mcrs = new ArrayList<MatchingConfigRow>();
 		Iterator<MatchingConfigRow> it = row_options.iterator();
 		while(it.hasNext()){
 			MatchingConfigRow mcr = it.next();
 			if(mcr.getBlockOrder() != MatchingConfigRow.DEFAULT_BLOCK_ORDER){
-				blocking_count++;
+				tmp_mcrs.add(mcr);
 			}
 		}
-		if(blocking_count == 0){
-			return null;
-		}
-		String[] ret = new String[blocking_count];
-		for(int i = 0; i < row_options.size(); i++){
-			MatchingConfigRow mcr = row_options.get(i);
-			int order = mcr.getBlockOrder();
-			if(order != MatchingConfigRow.DEFAULT_BLOCK_ORDER){
-				ret[order - 1] = mcr.getName();
+		
+		// sort tmp_mcrs based on blocking order
+		Collections.sort(tmp_mcrs, new Comparator(){
+			public int compare(Object o1, Object o2){
+				MatchingConfigRow mcr1 = (MatchingConfigRow)o1;
+				MatchingConfigRow mcr2 = (MatchingConfigRow)o2;
+				return mcr1.getBlockOrder() - mcr2.getBlockOrder();
 			}
+		});
+		
+		String[] ret = new String[tmp_mcrs.size()];
+		for(int i = 0; i < ret.length; i++){
+			MatchingConfigRow mcr = tmp_mcrs.get(i);
+			ret[i] = mcr.getName();
 		}
 		return ret;
 	}

@@ -14,6 +14,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.File;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -168,13 +169,33 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 		if(rm_conf != null){
 			LinkDataSource lds1 = rm_conf.getLinkDataSource1();
 			LinkDataSource lds2 = rm_conf.getLinkDataSource2();
+			File test;
 			if(lds1 != null && lds1.getName() != null){
-				tfn.setText(lds1.getName());
-				parseDataToTable(TOP);
+				test = new File(lds1.getName());
+				if(test.exists()){
+					tfn.setText(lds1.getName());
+					parseDataToTable(TOP);
+				} else {
+					JOptionPane.showMessageDialog(this,
+						    "Data file " + lds1.getName() + " not found.\nThe configuration file will need to be fixed or this datasource reconfigured.",
+						    "Data file not found",
+						    JOptionPane.WARNING_MESSAGE);
+					rm_conf.setLinkDataSource1(null);
+				}
+				
 			}
 			if(lds2 != null && lds2.getName() != null){
-				bfn.setText(lds2.getName());
-				parseDataToTable(BOTTOM);
+				test = new File(lds2.getName());
+				if(test.exists()){
+					bfn.setText(lds2.getName());
+					parseDataToTable(BOTTOM);
+				} else {
+					JOptionPane.showMessageDialog(this,
+						    "Data file " + lds2.getName() + " not found.\nThe configuration file will need to be fixed or this datasource reconfigured.",
+						    "Data file not found",
+						    JOptionPane.WARNING_MESSAGE);
+				}
+				
 			}
 		}
 	}

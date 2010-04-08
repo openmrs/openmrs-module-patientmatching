@@ -68,6 +68,7 @@ import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.FileWritingMatcher;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
+import org.regenstrief.linkage.util.MatchingConfigValidator;
 import org.regenstrief.linkage.util.RecMatchConfig;
 
 /**
@@ -578,6 +579,13 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		this.add(list_panel);
 	}
 	
+	private void invalidBlockingSchemeNotification(){
+		JOptionPane.showMessageDialog(this,
+			    "Invalid blocking scheme; cannot run process",
+			    "Invalid Configuration",
+			    JOptionPane.ERROR_MESSAGE);
+	}
+	
 	private Component getSessionTable(){
 	    SessionOptionsTableModel model = new SessionOptionsTableModel();
 	    model.addTableModelListener(this);
@@ -809,24 +817,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 				runs.setSelectedIndex(dlm.getSize() - 1);
 				displayThisMatchingConfig(mc);
 			} else if(source.getText().equals("Run Linkage Process")){
-				JFileChooser out_chooser = new JFileChooser();
-				int ret = out_chooser.showDialog(this, "Choose output file");
-				File out = null;
-				File match_file = null;
-				if(ret == JFileChooser.APPROVE_OPTION){
-					out = out_chooser.getSelectedFile();
-					match_file = FileWritingMatcher.writeMatchResults(rm_conf, out, write_xml, groupAnalysis);
-	                
-	                if(match_file == null){
-	                    JOptionPane.showMessageDialog(this,
-	                            "Error writing match result file",
-	                            "Error", JOptionPane.ERROR_MESSAGE);
-	                } else {
-	                    JOptionPane.showMessageDialog(this,
-	                            "Matching results written to " + match_file,
-	                            "Matching Successful", JOptionPane.INFORMATION_MESSAGE);
-	                }
-				}
+				runLinkageProcess();
 			} else if(source.getText().equals("Remove")){
 				Object o = runs.getSelectedValue();
 				if(o instanceof MatchingConfig){
@@ -863,6 +854,31 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		
 	}
 	
+	private void runLinkageProcess(){
+		if(!MatchingConfigValidator.validMatchingConfig(current_working_config)){
+			invalidBlockingSchemeNotification();
+			return;
+		}
+		JFileChooser out_chooser = new JFileChooser();
+		int ret = out_chooser.showDialog(this, "Choose output file");
+		File out = null;
+		File match_file = null;
+		if(ret == JFileChooser.APPROVE_OPTION){
+			out = out_chooser.getSelectedFile();
+			match_file = FileWritingMatcher.writeMatchResults(rm_conf, out, write_xml, groupAnalysis);
+            
+            if(match_file == null){
+                JOptionPane.showMessageDialog(this,
+                        "Error writing match result file",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "Matching results written to " + match_file,
+                        "Matching Successful", JOptionPane.INFORMATION_MESSAGE);
+            }
+		}
+	}
+	
 	private void resetUValues(){
 		List<MatchingConfigRow> rows = current_working_config.getMatchingConfigRows();
 		Iterator<MatchingConfigRow> it = rows.iterator();
@@ -884,6 +900,11 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	}
 	
 	private void performRandomSampling() {
+		if(!MatchingConfigValidator.validMatchingConfig(current_working_config)){
+			invalidBlockingSchemeNotification();
+			return;
+		}
+		
         ReaderProvider rp = ReaderProvider.getInstance();
         
         MatchingConfig mc = current_working_config;
@@ -934,6 +955,15 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
     }
 	
 	private void calculateClosedUValues(){
+		if(!MatchingConfigValidator.validMatchingConfig(current_working_config)){
+			invalidBlockingSchemeNotification();
+			return;
+		}
+		
+		if(!MatchingConfigValidator.validMatchingConfig(current_working_config)){
+			invalidBlockingSchemeNotification();
+			return;
+		}
 		
 		ReaderProvider rp = ReaderProvider.getInstance();
 		
@@ -972,6 +1002,11 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	}
 	
 	private void runEMAnalysis(){
+		if(!MatchingConfigValidator.validMatchingConfig(current_working_config)){
+			invalidBlockingSchemeNotification();
+			return;
+		}
+		
 		ReaderProvider rp = ReaderProvider.getInstance();
 		MatchingConfig mc = current_working_config;
 		
