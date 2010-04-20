@@ -915,11 +915,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
             OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
             if(odsr1 != null && odsr2 != null){
                 FormPairs fp2 = null;
-                if(rm_conf.isDeduplication()) {
-                    fp2 = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
-                } else {
-                    fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
-                }
+                fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
                 
                 PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
                 
@@ -929,13 +925,11 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
                 
                 OrderedDataSourceReader rsa_odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
                 OrderedDataSourceReader rsa_odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
-				FormPairs rsa_fp2 = null;
+				FormPairs rsa_fp2 = 	new OrderedDataSourceFormPairs(rsa_odsr1, rsa_odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
 				RandomSampleAnalyzer rsa ;
 				if (rm_conf.isDeduplication()) {
-					rsa_fp2 = new DedupOrderedDataSourceFormPairs(rsa_odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
 					rsa = new DedupRandomSampleAnalyzer(mcCopy, rsa_fp2);
 				} else {
-					rsa_fp2 = new OrderedDataSourceFormPairs(rsa_odsr1, rsa_odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
 					rsa = new RandomSampleAnalyzer(mcCopy, rsa_fp2);
 				}
                 
@@ -970,11 +964,11 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		MatchingConfig mc = current_working_config;
 		if(rm_conf.isDeduplication()){
 			OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
-			OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
-			if(odsr1 != null && odsr2 != null){
+			
+			if(odsr1 != null){
 				// analyze with EM
 				FormPairs fp2 = null;
-				fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+				fp2 = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
 				
 				PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
 				// create u value analyzer, add to pdsa, and run analysis

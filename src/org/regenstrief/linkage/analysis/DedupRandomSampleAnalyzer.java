@@ -14,16 +14,12 @@ import org.regenstrief.linkage.io.LookupFormPairs;
 import org.regenstrief.linkage.util.MatchingConfig;
 
 public class DedupRandomSampleAnalyzer extends RandomSampleAnalyzer {
-	
-	// variables different from original Random Sample Analyzer
-	Hashtable<Long,Integer> left_uid_index_occurrence;
-	Hashtable<Long,Integer> right_uid_index_occurrence;
-	Vector<Long> left_uids;
-	Vector<Long> right_uids;
+	Hashtable<Long,Integer> right_uid_index_map;
+	Hashtable<Long,Integer> left_uid_index_map;
+	List<Long> uid_list;
 	
 	public DedupRandomSampleAnalyzer(MatchingConfig mc, FormPairs fp){
 		super(mc, fp);
-		
 	}
 	
 	protected void initAnalyzer(){
@@ -35,26 +31,23 @@ public class DedupRandomSampleAnalyzer extends RandomSampleAnalyzer {
 		demographic_agree_count = new Hashtable<String,Integer>();
 		
 		// initialize dedup hashtables
-		left_uid_index_occurrence = new Hashtable<Long,Integer>();
-		right_uid_index_occurrence = new Hashtable<Long,Integer>();
-		left_uids = new Vector<Long>();
-		right_uids = new Vector<Long>();
+		right_uid_index_map = new Hashtable<Long,Integer>();
+		left_uid_index_map = new Hashtable<Long,Integer>();
+		uid_list = new Vector<Long>();
 		
-		int recordPairCount;
 		if(fp instanceof LookupFormPairs){
-			recordPairCount = ((LookupFormPairs)fp).size();
+			pair_count = ((LookupFormPairs)fp).size();
 		} else {
-			recordPairCount = countRecordPairs();
+			pair_count = countRecordPairs();
 		}
 		
-		System.out.println("pair count: " + recordPairCount);
+		System.out.println("pair count: " + pair_count);
 		
 		sampleSize = mc.getRandomSampleSize();
-		sample1 = new boolean[recordPairCount];
-		sample2 = new boolean[recordPairCount];
+		sample1 = new boolean[pair_count];
+		sample2 = new boolean[pair_count];
 		
-		setIndexPairs(recordPairCount);
-		
+		setIndexPairs(uid_list.size());
 		pair_count = 0;
 	}
 	
@@ -67,20 +60,19 @@ public class DedupRandomSampleAnalyzer extends RandomSampleAnalyzer {
 			long uid1 = r1.getUID();
 			long uid2 = r2.getUID();
 			
-			Integer lo = left_uid_index_occurrence.get(uid1);
-			if(lo == null){
-				left_uid_index_occurrence.put(uid1, pair_count);
+			if(left_uid_index_map.get(uid1) == null){
+				left_uid_index_map.put(uid1, pair_count);
 			}
-			Integer ro = right_uid_index_occurrence.get(uid2);
-			if(ro == null){
-				right_uid_index_occurrence.put(uid2, pair_count);
+			if(right_uid_index_map.get(uid2) == null){
+				right_uid_index_map.put(uid2, pair_count);
 			}
 			
-			if(!left_uids.contains(uid1)){
-				left_uids.add(uid1);
+			
+			if(!uid_list.contains(uid1)){
+				uid_list.add(uid1);
 			}
-			if(!right_uids.contains(uid2)){
-				right_uids.add(uid2);
+			if(!uid_list.contains(uid2)){
+				uid_list.add(uid2);
 			}
 			
 			pair_count++;
@@ -101,18 +93,23 @@ public class DedupRandomSampleAnalyzer extends RandomSampleAnalyzer {
 		// need to get two sets of random numbers, one for each data source
 		for(int i = 0; i < sampleSize && max_index > 0; i++){
 			
-			long sampled_left_uid, sampled_right_uid;
+			int sampled_left_uid, sampled_right_uid; 
+			long left_uid, right_uid;
+			int left_uid_index, right_uid_index;
 			do{
-				int left_uid_index = rand.nextInt(left_uids.size());
-				int right_uid_index = rand.nextInt(right_uids.size());
+				left_uid_index = rand.nextInt(max_index);
+				right_uid_index = rand.nextInt(max_index);
 				
-				sampled_left_uid = left_uids.get(left_uid_index);
-				sampled_right_uid = right_uids.get(right_uid_index);
+				left_uid = uid_list.get(left_uid_index);
+				right_uid = uid_list.get(right_uid_index);
 				
-				
-			}while(sampled_left_uid == sampled_right_uid);
-			int left_index = left_uid_index_occurrence.get(sampled_left_uid);
-			int right_index = right_uid_index_occurrence.get(sampled_right_uid);
+				sampled_left_uid = left_uid_index_map.get(left_uid);
+				sampled_right_uid = right_uid_index_map.get(right_uid);
+			}while(left_uid == right_uid);
+			int left_index = sampled_left_uid;
+			int right_index = sampled_right_uid;
+			
+			//System.out.println("pair " + left_uid + "," + right_uid + "\tpair index of " + left_index + "," + right_index);
 			
 			if(lfp != null){
 				// save index pairs
@@ -171,6 +168,4 @@ public class DedupRandomSampleAnalyzer extends RandomSampleAnalyzer {
 			}
 		}
 	}
-	
-	
 }
