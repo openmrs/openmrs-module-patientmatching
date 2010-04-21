@@ -53,12 +53,17 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
+import org.regenstrief.linkage.analysis.CloseFormUCalculatorDedup;
 import org.regenstrief.linkage.analysis.ClosedFormAnalysis;
-import org.regenstrief.linkage.analysis.ClosedFormDedupAnalyzer;
+import org.regenstrief.linkage.analysis.DataSourceAnalysis;
+import org.regenstrief.linkage.analysis.DataSourceFrequency;
 import org.regenstrief.linkage.analysis.DedupRandomSampleAnalyzer;
 import org.regenstrief.linkage.analysis.EMAnalyzer;
+import org.regenstrief.linkage.analysis.FrequencyAnalyzer;
+import org.regenstrief.linkage.analysis.MemoryBackedDataSourceFrequency;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
+import org.regenstrief.linkage.io.DataSourceReader;
 import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.FormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceFormPairs;
@@ -963,19 +968,17 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		
 		MatchingConfig mc = current_working_config;
 		if(rm_conf.isDeduplication()){
-			OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
-			
-			if(odsr1 != null){
-				// analyze with EM
-				FormPairs fp2 = null;
-				fp2 = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
-				
-				PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
-				// create u value analyzer, add to pdsa, and run analysis
-				ClosedFormDedupAnalyzer cfda = new ClosedFormDedupAnalyzer(mc);
-				pdsa.addAnalyzer(cfda);
-				pdsa.analyzeData();
+			DataSourceFrequency dsf = rm_conf.getDataSourceFrequency1();
+			if(dsf == null){
+				DataSourceReader dsr = rp.getReader(rm_conf.getLinkDataSource1());
+				DataSourceAnalysis dsa = new DataSourceAnalysis(dsr);
+				dsf = new MemoryBackedDataSourceFrequency();
+				dsa.addAnalyzer(new FrequencyAnalyzer(rm_conf.getLinkDataSource1(), mc, dsf));
+				dsa.analyzeData();
+				rm_conf.setDataSourceFrequency1(dsf);
 			}
+			CloseFormUCalculatorDedup cfucd = new CloseFormUCalculatorDedup(mc, dsf);
+			cfucd.calculateUValues();
 			
 		} else {
 			OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
