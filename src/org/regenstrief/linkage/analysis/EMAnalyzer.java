@@ -1,14 +1,18 @@
 package org.regenstrief.linkage.analysis;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.MatchVector;
 import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.ScoreVector;
 import org.regenstrief.linkage.util.LoggingObject;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
@@ -273,230 +277,69 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 		log.info("Estimated non matches:\t" + non_matches);
 		//***************************************
 		
-		log.info("previous score threshold:\t" + mc.getScoreThreshold());
+		for(int i = 0; i < demographics.length; i++){
+			String demographic = demographics[i];
+			MatchingConfigRow mcr = mc.getMatchingConfigRows().get(mc.getRowIndexforName(demographic));
+			double mest_val = mest.get(demographic);
+			double uest_val = uest.get(demographic);
+			
+			if(mest_val > EM_ONE){
+				mest_val = EM_ONE;
+			}
+			if(mest_val < EM_ZERO){
+				mest_val = EM_ZERO;
+			}
+			if(uest_val > EM_ONE){
+				uest_val = EM_ONE;
+			}
+			if(uest_val < EM_ZERO){
+				uest_val = EM_ZERO;
+			}
+			
+			mcr.setAgreement(mest_val);
+			mcr.setNonAgreement(uest_val);
+			
+		}
 		// change the score threshold to one calculated from estimated true matches
+		log.info("previous score threshold:\t" + mc.getScoreThreshold());
 		VectorTable vt = new VectorTable(mc);
 		
-		// get sorted list of results
-		List<MatchResult> results = vt.getPossibleMatchResults();
-		Iterator<MatchResult> it = results.iterator();
-		double total = 0;
-		MatchResult total_mr = null;
-		double prev_total = 0;
-		MatchResult prev_mr = null;
-		while(it.hasNext() && total < true_matches){
-			MatchResult mr = it.next();
-			double d = mr.getTrueProbability() * total_pairs;
-			prev_total = total;
-			prev_mr = total_mr;
-			total += d;
-			total_mr = mr;
+		// get sorted list of MatchResult objects to go with the MatchVector objects
+		Iterator<MatchVector> it = vector_count.keySet().iterator();
+		List<MatchResult> mrs = new Vector<MatchResult>();
+		while(it.hasNext()){
+			MatchVector mv = it.next();
+			mrs.add(new MatchResult(vt.getScore(mv),vt.getInclusiveScore(mv),vt.getMatchVectorFalseProbability(mv),vt.getMatchVectorTrueProbability(mv),vt.getSensitivity(mv),vt.getSpecificity(mv),mv,null, null,null,mc));
 		}
-		// choose total or prev_total, depending on which one is closer to estimated matches
-        if (prev_mr != null && total_mr != null){
-            if(Math.abs(total - true_matches) > Math.abs(prev_total - true_matches)){
-                // use previous score as threshold
-                mc.setScoreThreshold(prev_mr.getScore());
-            } else {
-                mc.setScoreThreshold(total_mr.getScore());
-            }
-        }
-		log.info("new score threshold:\t" + mc.getScoreThreshold());
 		
-		for(int i = 0; i < demographics.length; i++){
-			String demographic = demographics[i];
-			MatchingConfigRow mcr = mc.getMatchingConfigRows().get(mc.getRowIndexforName(demographic));
-			double mest_val = mest.get(demographic);
-			double uest_val = uest.get(demographic);
-			
-			if(mest_val > EM_ONE){
-				mest_val = EM_ONE;
-			}
-			if(mest_val < EM_ZERO){
-				mest_val = EM_ZERO;
-			}
-			if(uest_val > EM_ONE){
-				uest_val = EM_ONE;
-			}
-			if(uest_val < EM_ZERO){
-				uest_val = EM_ZERO;
-			}
-			
-			mcr.setAgreement(mest_val);
-			mcr.setNonAgreement(uest_val);
+		// sort list based on score
+		Collections.sort(mrs, new Comparator<MatchResult>() {
+		    public int compare(MatchResult mr1, MatchResult mr2) {
+		    	double diff = mr2.getScore() - mr1.getScore();
+		        int ret;
+		        if(diff == 0){
+		        	ret = 0;
+		        } else if(diff > 0){
+		        	ret = 1;
+		        } else {
+		        	ret = -1;
+		        }
+		        return ret;
+		    }});
+		
+		int result_place = 0;
+		Iterator<MatchResult> mr_it = mrs.iterator();
+		double new_threshold = 0;
+		while(mr_it.hasNext() && result_place < true_matches){
+			MatchResult mr = mr_it.next();
+			new_threshold = mr.getScore();
+			result_place += vector_count.get(mr.getMatchVector());
 		}
+		mc.setScoreThreshold(new_threshold);
+		
+		log.info("new score threshold:\t" + mc.getScoreThreshold());
 	}
 	
-	/*
-	private void finishAnalysis(VectorTable vt, String[] demographics, MatchingConfig mc, int iterations)  throws IOException{
-		
-		// values to store index by demographic name
-		Hashtable<String,Double> msum = new Hashtable<String,Double>();
-		Hashtable<String,Double> usum = new Hashtable<String,Double>();
-		Hashtable<String,Double> mest = new Hashtable<String,Double>();
-		Hashtable<String,Double> uest = new Hashtable<String,Double>();
-		
-		// initialize default values
-		for(int i = 0; i < demographics.length; i++){
-			mest.put(demographics[i], new Double(INIT_MEST));
-			uest.put(demographics[i], new Double(INIT_UEST));
-			msum.put(demographics[i], new Double(0));
-			usum.put(demographics[i], new Double(0));
-		}
-		
-		
-		double gMsum, gUsum, gMtemp, gUtemp;
-		double termM, termU;
-		double p = 0.01;
-		//gMsum = 0;
-		//gUsum = 0;
-		//gMtemp = 0;
-		//gUtemp = 0;
-		
-		for(int i = 0; i < iterations; i++){
-			gMsum = 0;
-			gUsum = 0;
-			gMtemp = 0;
-			gUtemp = 0;
-			int vct_count = 0;
-			
-			// zero out msum and usum arrays
-			for(int k = 0; k < demographics.length; k++){
-				msum.put(demographics[k], new Double(0));
-				usum.put(demographics[k], new Double(0));
-			}
-			
-			Iterator<MatchVector> mv_it = vector_count.keySet().iterator();
-			//Iterator<MatchVector> mv_it = vector_list.iterator();
-			while(mv_it.hasNext()){
-				MatchVector mv = mv_it.next();
-				int mv_count = vector_count.get(mv).intValue();
-				vct_count += mv_count;
-				vct_count++;
-				for(int j = 0; j < mv_count; j++){
-					// begin the EM calculation loop for the current record pair
-					termM = 1;
-					termU = 1;
-					gMtemp = 0;
-					gUtemp = 0;
-					
-					for(int k = 0; k < demographics.length; k++){
-						String demographic = demographics[k];
-						boolean matched = mv.matchedOn(demographic);
-						int comp = 0;
-						if(matched){
-							comp = 1;
-						}
-						termM = termM * Math.pow(mest.get(demographic), comp) * Math.pow(1 - mest.get(demographic), 1 - comp);
-						termU = termU * Math.pow(uest.get(demographic), comp) * Math.pow(1 - uest.get(demographic), 1 - comp);
-						//System.out.println(termM + "\t" + termU);
-					}
-					//System.out.println();
-					gMtemp = (p * termM) / ((p * termM) + ((1 - p) * termU));
-					gUtemp = ((1 - p) * termU) / (((1 - p) * termU) + (p * termM)); 
-					//System.out.println("gMtemp: " + gMtemp);
-					
-					// update the running sum for msum and usum
-					for(int k = 0; k < demographics.length; k++){
-						String demographic = demographics[k];
-						boolean matched = mv.matchedOn(demographic);
-						if(matched){
-							double m = msum.get(demographic);
-							double u = usum.get(demographic);
-							msum.put(demographic, new Double(m + gMtemp));
-							usum.put(demographic, new Double(u + gUtemp));
-						}
-					}
-					
-					// update the running sum for gMsum and gUsum
-					
-					
-					
-					gMsum = gMsum + gMtemp;
-					gUsum = gUsum + gUtemp;
-					
-				}
-				
-			}
-			
-			// update p_est
-			p = gMsum / vct_count;
-			//System.out.println("Iteration " + (i + 1));
-			//System.out.println("P: " + p);
-			log.info("Iteration " + (i + 1));
-			log.info("P: " + p);
-			
-			// update the mest and uest values after each iteration
-			for(int j = 0; j < demographics.length; j++){
-				String demographic = demographics[j];
-				double mest_val = msum.get(demographic) / gMsum;
-				double uest_val = usum.get(demographic) / gUsum;
-				mest.put(demographic, mest_val);
-				uest.put(demographic, uest_val);
-			}
-			
-			
-			for(int j = 0; j < demographics.length; j++){
-				String demographic = demographics[j];
-				//System.out.println(demographic + ":   mest: " + mest.get(demographic) + "   uest: " + uest.get(demographic));
-				log.info(demographic + ":   mest: " + mest.get(demographic) + "   uest: " + uest.get(demographic));
-			}
-			
-		}
-		
-		//***************************************
-		// print basic information about analysis
-		String[] bcs = mc.getBlockingColumns();
-		//System.out.print("\nBlocking columns: ");
-		log.info("\nBlocking columns: ");
-		for(int i = 0; i < bcs.length; i++){
-			String block_col_name = bcs[i];
-			//System.out.print(" " + block_col_name);
-			log.info(" " + block_col_name);
-		}
-		//System.out.println();
-		//System.out.println("P:\t" + p);
-		log.info("P:\t" + p);
-		int total_pairs = 0;
-		Enumeration<MatchVector> e = vector_count.keys();
-		while(e.hasMoreElements()){
-			MatchVector mv = e.nextElement();
-			total_pairs += vector_count.get(mv);
-		}
-		double true_matches = total_pairs * p;
-		double non_matches = total_pairs * (1 - p);
-		//System.out.println("Total pairs processed:\t" + total_pairs);
-		//System.out.println("Estimated true matches:\t" + true_matches);
-		//System.out.println("Estimated non matches:\t" + non_matches);
-		//System.out.println();
-		log.info("Total pairs processed:\t" + total_pairs);
-		log.info("Estimated true matches:\t" + true_matches);
-		log.info("Estimated non matches:\t" + non_matches);
-		//***************************************
-		
-		for(int i = 0; i < demographics.length; i++){
-			String demographic = demographics[i];
-			MatchingConfigRow mcr = mc.getMatchingConfigRows().get(mc.getRowIndexforName(demographic));
-			double mest_val = mest.get(demographic);
-			double uest_val = uest.get(demographic);
-			
-			if(mest_val > EM_ONE){
-				mest_val = EM_ONE;
-			}
-			if(mest_val < EM_ZERO){
-				mest_val = EM_ZERO;
-			}
-			if(uest_val > EM_ONE){
-				uest_val = EM_ONE;
-			}
-			if(uest_val < EM_ZERO){
-				uest_val = EM_ZERO;
-			}
-			
-			mcr.setAgreement(mest_val);
-			mcr.setNonAgreement(uest_val);
-		}
-		
-	}*/
+	
 	
 }

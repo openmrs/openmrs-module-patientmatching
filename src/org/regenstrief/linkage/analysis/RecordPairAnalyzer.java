@@ -7,7 +7,7 @@ import org.apache.log4j.PatternLayout;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.MatchingConfig;
 
-public abstract class RecordPairAnalyzer implements PairAnalyzer{
+public abstract class RecordPairAnalyzer implements PairAnalyzer, MatchingConfigAnalyzer{
 	
 	MatchingConfig mc;
 	protected Logger log = Logger.getLogger(this.getClass() + this.toString());

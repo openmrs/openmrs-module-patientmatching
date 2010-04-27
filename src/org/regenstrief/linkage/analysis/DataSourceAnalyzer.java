@@ -24,7 +24,7 @@ import org.regenstrief.linkage.util.MatchingConfigRow;
  */
 
 
-public abstract class DataSourceAnalyzer implements SingleSourceAnalyzer, LoggingObject{
+public abstract class DataSourceAnalyzer implements SingleSourceAnalyzer, LoggingObject, MatchingConfigAnalyzer{
 	
 	protected MatchingConfig config;
 	protected LinkDataSource lds;
@@ -64,6 +64,10 @@ public abstract class DataSourceAnalyzer implements SingleSourceAnalyzer, Loggin
 		log.addAppender(a);
 		log.setAdditivity(false);
 		log.setLevel(Level.INFO);
+	}
+	
+	public MatchingConfig getAnalyzerMatchingConfig(){
+		return config;
 	}
 	
 	public Logger getLog(){

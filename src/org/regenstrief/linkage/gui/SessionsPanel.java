@@ -612,7 +612,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		
 	}
 	
-	private void displayThisMatchingConfig(MatchingConfig mc){
+	public void displayThisMatchingConfig(MatchingConfig mc){
 		//session_options.setModel(new SessionOptionsTableModel(mc));
 		
 		// only display runs data if there's actually mc in the list model
@@ -924,7 +924,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
                 
                 PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
                 
-                RandomSampleLoggingFrame frame = new RandomSampleLoggingFrame(mc, session_options);
+                ApplyAnalyzerLoggingFrame frame = new ApplyAnalyzerLoggingFrame(mc, this);
                 
                 MatchingConfig mcCopy = (MatchingConfig) mc.clone();
                 
@@ -1017,10 +1017,11 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		    } else {
 		        fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
 		    }
-			LoggingFrame frame = new LoggingFrame(mc.getName());
+			ApplyAnalyzerLoggingFrame frame = new ApplyAnalyzerLoggingFrame(mc, this);
 			PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
-			
-			EMAnalyzer ema = new EMAnalyzer(mc);
+			 MatchingConfig mcCopy = (MatchingConfig) mc.clone();
+			 
+			EMAnalyzer ema = new EMAnalyzer(mcCopy);
 			pdsa.addAnalyzer(ema);
 			frame.addLoggingObject(ema);
 			frame.configureLoggingFrame();
