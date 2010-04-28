@@ -70,7 +70,7 @@ public abstract class DataSourceAnalyzer implements SingleSourceAnalyzer, Loggin
 		return config;
 	}
 	
-	public Logger getLog(){
+	public Logger getLogger(){
 		return log;
 	}
 	

@@ -28,7 +28,7 @@ import org.regenstrief.linkage.util.StringMatch;
  * 
  */
 
-public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingObject {
+public class RandomSampleAnalyzer extends RecordPairAnalyzer{
 	public static final int SAMPLE_SIZE = 100000;
 	
 	FormPairs fp;
@@ -304,9 +304,5 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer implements LoggingO
 				}
 			}
 		}
-	}
-
-	public Logger getLogger() {
-		return log;
 	}
 }

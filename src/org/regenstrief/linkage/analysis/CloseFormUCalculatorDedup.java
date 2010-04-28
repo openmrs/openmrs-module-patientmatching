@@ -53,7 +53,6 @@ public class CloseFormUCalculatorDedup {
 				
 			}
 			
-			System.out.println("total for field " + field + ":\t" + u_values.get(field));
 			mc.setNonAgreementValue(mc.getRowIndexforName(field), u_values.get(field));
 		}
 		

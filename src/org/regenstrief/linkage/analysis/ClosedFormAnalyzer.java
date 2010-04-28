@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.MatchingConfigRow;
 
 /**
  * Class analyzes a blocking scheme and uses token frequency information to directly calculate u values
@@ -12,14 +13,13 @@ import org.regenstrief.linkage.util.MatchingConfig;
  *
  */
 
-public class ClosedFormAnalysis implements PairAnalyzer {
-	MatchingConfig mc;
+public class ClosedFormAnalyzer extends RecordPairAnalyzer {
 	DataSourceFrequency dsf1, dsf2;
 	
-	public ClosedFormAnalysis(MatchingConfig mc){
+	public ClosedFormAnalyzer(MatchingConfig mc){
+		super(mc);
 		dsf1 = new MemoryBackedDataSourceFrequency();
 		dsf2 = new MemoryBackedDataSourceFrequency();
-		this.mc = mc;
 	}
 
 	public void analyzeRecordPair(Record[] pair) {
@@ -42,6 +42,12 @@ public class ClosedFormAnalysis implements PairAnalyzer {
 	public void finishAnalysis() {
 		CloseFormUCalculator cfuc = new CloseFormUCalculator(mc, dsf1, dsf2);
 		cfuc.calculateUValues();
+		log.info("calcluted values:");
+		Iterator<MatchingConfigRow> it = mc.getMatchingConfigRows().iterator();
+		while(it.hasNext()){
+			MatchingConfigRow mcr = it.next();
+			log.info(mcr.getName() + ":\t" + mcr.getNonAgreement());
+		}
 	}
 
 }

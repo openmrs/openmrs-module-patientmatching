@@ -9,7 +9,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import org.regenstrief.linkage.analysis.AverageFrequencyAnalyzer;
-import org.regenstrief.linkage.analysis.ClosedFormAnalysis;
+import org.regenstrief.linkage.analysis.ClosedFormAnalyzer;
 import org.regenstrief.linkage.analysis.ClosedFormDedupAnalyzer;
 import org.regenstrief.linkage.analysis.DataSourceAnalysis;
 import org.regenstrief.linkage.analysis.DataSourceFrequency;
@@ -24,6 +24,7 @@ import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
 import org.regenstrief.linkage.analysis.SummaryStatisticsStore;
 import org.regenstrief.linkage.analysis.UniqueAnalyzer;
 import org.regenstrief.linkage.analysis.VectorTable;
+import org.regenstrief.linkage.io.DataSourceReader;
 import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.FormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceFormPairs;
@@ -191,16 +192,11 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		while(it.hasNext()){
 			MatchingConfig mc = it.next();
 			if(rm_conf.isDeduplication()){
-				OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
-				OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
-				if(odsr1 != null && odsr2 != null){
-					// analyze with EM
-					FormPairs fp2 = null;
-					fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
-					
-					PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
+				DataSourceReader dsr = rp.getReader(rm_conf.getLinkDataSource1());
+				if(dsr != null){
+					DataSourceAnalysis pdsa = new DataSourceAnalysis(dsr);
 					// create u value analyzer, add to pdsa, and run analysis
-					ClosedFormDedupAnalyzer cfda = new ClosedFormDedupAnalyzer(mc);
+					ClosedFormDedupAnalyzer cfda = new ClosedFormDedupAnalyzer(rm_conf.getLinkDataSource1(), mc);
 					pdsa.addAnalyzer(cfda);
 					pdsa.analyzeData();
 				}
@@ -216,7 +212,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 					PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
 
 					// create u value analyzer, add to pdsa, and run analysis
-					ClosedFormAnalysis cfa = new ClosedFormAnalysis(mc);
+					ClosedFormAnalyzer cfa = new ClosedFormAnalyzer(mc);
 					pdsa.addAnalyzer(cfa);
 					pdsa.analyzeData();
 
