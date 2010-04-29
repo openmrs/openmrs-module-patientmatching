@@ -64,6 +64,14 @@ public class MatchingConfig implements Cloneable {
 	 * boolean value to determine whether the user want to use current random sampling
 	 */
 	private boolean lockedUValues;
+	/*
+	 * if EM has been run, agreement rate that was last calculated
+	 */
+	private double p;
+	/*
+	 * number of pairs in blocking scheme
+	 */
+	private int npairs;
 	
 	public MatchingConfig(String name, String[] rn){
 		row_options = new ArrayList<MatchingConfigRow>();
@@ -77,6 +85,9 @@ public class MatchingConfig implements Cloneable {
 		double_format.setMaximumFractionDigits(DOUBLE_SIG_FIGS);
 		score_threshold = DEFAULT_SCORE_THRESHOLD;
 		bel = null;
+		lockedUValues = false;
+		p = 0;
+		npairs = 0;
 	}
 	
 	public MatchingConfig(String name, MatchingConfigRow[] mcrs){
@@ -90,6 +101,9 @@ public class MatchingConfig implements Cloneable {
 		double_format.setMaximumFractionDigits(DOUBLE_SIG_FIGS);
 		score_threshold = DEFAULT_SCORE_THRESHOLD;
 		bel = null;
+		lockedUValues = false;
+		p = 0;
+		npairs = 0;
 	}
 	
 	public MatchingConfigRow getMatchingConfigRowByName(String name) {
@@ -101,6 +115,22 @@ public class MatchingConfig implements Cloneable {
 			}
 		}
 		return null;
+	}
+	
+	public double getP(){
+		return p;
+	}
+	
+	public void setP(double p){
+		this.p = p;
+	}
+	
+	public int getNPairs(){
+		return npairs;
+	}
+	
+	public void setNPairs(int n){
+		npairs = n;
 	}
 	
 	public boolean isUsingRandomSampling() {

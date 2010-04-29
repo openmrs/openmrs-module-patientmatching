@@ -260,12 +260,14 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 		//System.out.println();
 		//System.out.println("P:\t" + p);
 		log.info("P:\t" + p);
+		mc.setP(p);
 		int total_pairs = 0;
 		Enumeration<MatchVector> e = vector_count.keys();
 		while(e.hasMoreElements()){
 			MatchVector mv = e.nextElement();
 			total_pairs += vector_count.get(mv);
 		}
+		mc.setNPairs(total_pairs);
 		double true_matches = total_pairs * p;
 		double non_matches = total_pairs * (1 - p);
 		//System.out.println("Total pairs processed:\t" + total_pairs);

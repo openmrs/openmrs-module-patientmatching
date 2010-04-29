@@ -216,8 +216,14 @@ public class XMLTranslator {
 		} else {
 			ret.setAttribute("estimate", "false");
 		}
-		
+		if(mc.isLockedUValues()){
+			ret.setAttribute("ulocked", "true");
+		} else {
+			ret.setAttribute("ulocked", "false");
+		}
 		ret.setAttribute("name", mc.getName());
+		ret.setAttribute("npairs", Integer.toString(mc.getNPairs()));
+		ret.setAttribute("p", Double.toString(mc.getP()));
 		
 		// if the user want to use random sampling, then add attributes in
 		// the "run" element of the configuration file to persist the random
@@ -248,7 +254,7 @@ public class XMLTranslator {
 		ret.setAttribute("name", mcr.getName());
 		
 		Element block_order = doc.createElement("BlockOrder");
-		if(mcr.getBlockOrder() == mcr.DEFAULT_BLOCK_ORDER) {
+		if(mcr.getBlockOrder() == MatchingConfigRow.DEFAULT_BLOCK_ORDER) {
 			block_order.setTextContent("null");
 		} else {
 			block_order.setTextContent(Integer.toString(mcr.getBlockOrder()));
@@ -268,9 +274,7 @@ public class XMLTranslator {
 		}
 		ret.appendChild(include);
 		
-		Locale new_locale = Locale.US;
 		DecimalFormat df = new DecimalFormat("0.#####");
-		//df.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(new_locale));
 		
 		Element t_agreement = doc.createElement("TAgreement");
 		t_agreement.setTextContent(df.format(mcr.getAgreement()));
@@ -468,6 +472,30 @@ public class XMLTranslator {
 			}
 		}
 		
+		// check if u values were locked
+		node = attributes.getNamedItem("ulocked");
+		boolean ulocked = false;
+		if(node != null){
+			String locked = node.getTextContent();
+			if(locked.equals("true")){
+				ulocked = true;
+			}
+		}
+		
+		// get saved p value, if present
+		node = attributes.getNamedItem("p");
+		double p = 0;
+		if(node != null){
+			p = Double.parseDouble(node.getTextContent());
+		}
+		
+		// get number of pairs, if present
+		node = attributes.getNamedItem("npairs");
+		int npairs = 0;
+		if(node != null){
+			npairs = Integer.parseInt(node.getTextContent());
+		}
+		
 		// iterate over the children nodes and create the MatchingConfigRow objects
 		ArrayList<MatchingConfigRow> mcrs = new ArrayList<MatchingConfigRow>();
 		for(int i = 0; i < mc.getChildNodes().getLength(); i++){
@@ -491,6 +519,9 @@ public class XMLTranslator {
 		ret.setEstimate(estimate);
 		ret.setUsingRandomSampling(randomSampling);
 		ret.setRandomSampleSize(sampleSize);
+		ret.setLockedUValues(ulocked);
+		ret.setNPairs(npairs);
+		ret.setP(p);
 		if(score_threshold != null){
 			try{
 				double threshold = Double.parseDouble(score_threshold.getTextContent());

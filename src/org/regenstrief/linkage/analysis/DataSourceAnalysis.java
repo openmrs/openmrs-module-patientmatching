@@ -65,7 +65,6 @@ public class DataSourceAnalysis {
 			analyzers.get(i).finishAnalysis();
 		}
 		
-		data_reader.reset();
 	}
 	
 }

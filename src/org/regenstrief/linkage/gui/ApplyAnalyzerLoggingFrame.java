@@ -76,6 +76,8 @@ public class ApplyAnalyzerLoggingFrame extends LoggingFrame {
             guiRow.setAgreement((row.getAgreement()));
         }
         config.setScoreThreshold(analyzerConfig.getScoreThreshold());
+        config.setNPairs(analyzerConfig.getNPairs());
+        config.setP(analyzerConfig.getP());
         
         // repaint GUI element that displays the new values, if needed
         if(options != null){
