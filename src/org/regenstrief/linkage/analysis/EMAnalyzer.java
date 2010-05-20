@@ -5,14 +5,15 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.MatchVector;
+import org.regenstrief.linkage.NullDemographicsMatchVector;
 import org.regenstrief.linkage.Record;
-import org.regenstrief.linkage.ScoreVector;
 import org.regenstrief.linkage.util.LoggingObject;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
@@ -42,11 +43,20 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 	final static int MAX_ITERATIONS = 200;
 	private int iterations;
 	private boolean pin_u_values;
+	private boolean trinomial;
 	
 	//private Logger log = Logger.getLogger(this.getClass() + this.toString());
 	
+	Hashtable<String,Double> msum;
+	Hashtable<String,Double> usum;
+	Hashtable<String,Double> mest;
+	Hashtable<String,Double> uest;
+	
 	private Hashtable<MatchVector,Integer> vector_count;
+	private List<NullDemographicsMatchVector> null_vectors;
 	private ScorePair sp;
+	int vct_count;
+	double termM, termU, 	gMtemp, gUtemp, gMsum, gUsum;
 	
 	/**
 	 * Constructor needs a name to use when created the temporary
@@ -55,13 +65,27 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 	 */
 	public EMAnalyzer(MatchingConfig mc){
 		super(mc);
+		
+		msum = new Hashtable<String,Double>();
+		usum = new Hashtable<String,Double>();
+		mest = new Hashtable<String,Double>();
+		uest = new Hashtable<String,Double>();
+		
+		vct_count = 0;
+		
 		vector_count = new Hashtable<MatchVector,Integer>();
+		null_vectors = new LinkedList<NullDemographicsMatchVector>();
 		sp = new ScorePair(mc);
 		iterations = MAX_ITERATIONS;
 		/*
 		 * Check the current blocking run use random sampling or not.
 		 */
 		pin_u_values = mc.isLockedUValues();
+		trinomial = false;
+	}
+	
+	public void setTrinomial(boolean trinomial){
+		this.trinomial = trinomial;
 	}
 	
 	public void setIterations(int iterations){
@@ -92,12 +116,17 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 		MatchVector mr_vect = mr.getMatchVector();
 		//vector_list.add(mr_vect);
 		
-		Integer mv_count = vector_count.get(mr_vect);
-		if(mv_count == null){
-			vector_count.put(mr_vect, new Integer(1));
+		if(trinomial && mr_vect instanceof NullDemographicsMatchVector){
+			null_vectors.add((NullDemographicsMatchVector)mr_vect);
 		} else {
-			vector_count.put(mr_vect, new Integer(mv_count.intValue() + 1));
+			Integer mv_count = vector_count.get(mr_vect);
+			if(mv_count == null){
+				vector_count.put(mr_vect, new Integer(1));
+			} else {
+				vector_count.put(mr_vect, new Integer(mv_count.intValue() + 1));
+			}
 		}
+		
 	}
 	
 	public void finishAnalysis(){
@@ -110,12 +139,6 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 			//System.out.print(" " + block_col_name);
 			log.info(" " + block_col_name);
 		}
-		
-		// values to store index by demographic name
-		Hashtable<String,Double> msum = new Hashtable<String,Double>();
-		Hashtable<String,Double> usum = new Hashtable<String,Double>();
-		Hashtable<String,Double> mest = new Hashtable<String,Double>();
-		Hashtable<String,Double> uest = new Hashtable<String,Double>();
 		
 		// initialize default values
 		for(int i = 0; i < demographics.length; i++){
@@ -138,22 +161,14 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 		}
 		
 		
-		double gMsum, gUsum, gMtemp, gUtemp;
-		double termM, termU;
 		double p = 0.01;
 		double prev_p = 0.01;
 		boolean break_early = false;
-		//gMsum = 0;
-		//gUsum = 0;
-		//gMtemp = 0;
-		//gUtemp = 0;
 		
 		for(int i = 0; i < iterations; i++){
 			gMsum = 0;
 			gUsum = 0;
-			gMtemp = 0;
-			gUtemp = 0;
-			int vct_count = 0;
+			vct_count = 0;
 			
 			// zero out msum and usum arrays
 			for(int k = 0; k < demographics.length; k++){
@@ -162,55 +177,19 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 			}
 			
 			Iterator<MatchVector> mv_it = vector_count.keySet().iterator();
-			//Iterator<MatchVector> mv_it = vector_list.iterator();
 			while(mv_it.hasNext()){
 				MatchVector mv = mv_it.next();
 				int mv_count = vector_count.get(mv).intValue();
-				vct_count += mv_count;
-				vct_count++;
+				modifyMU(mv, p, mv_count);
 				
-				// begin the EM calculation loop for the current record pair
-				termM = 1;
-				termU = 1;
-				gMtemp = 0;
-				gUtemp = 0;
+			}
+			
+			// iterate over NullSetMatchVectors in null_vectors
+			Iterator<NullDemographicsMatchVector> it = null_vectors.iterator();
+			while(it.hasNext()){
+				NullDemographicsMatchVector nsmv = it.next();
 				
-				for(int k = 0; k < demographics.length; k++){
-					String demographic = demographics[k];
-					boolean matched = mv.matchedOn(demographic);
-					int comp = 0;
-					if(matched){
-						comp = 1;
-					}
-					termM = termM * Math.pow(mest.get(demographic), comp) * Math.pow(1 - mest.get(demographic), 1 - comp);
-					termU = termU * Math.pow(uest.get(demographic), comp) * Math.pow(1 - uest.get(demographic), 1 - comp);
-					//System.out.println(termM + "\t" + termU);
-				}
-				//System.out.println();
-				gMtemp = (p * termM) / ((p * termM) + ((1 - p) * termU));
-				gUtemp = ((1 - p) * termU) / (((1 - p) * termU) + (p * termM)); 
-				//System.out.println("gMtemp: " + gMtemp);
-				
-				// multiply by mv_count to account for however many matches of this type
-				gMtemp = (double)mv_count * gMtemp;
-				gUtemp = (double)mv_count * gUtemp;
-				
-				// update the running sum for msum and usum
-				for(int k = 0; k < demographics.length; k++){
-					String demographic = demographics[k];
-					boolean matched = mv.matchedOn(demographic);
-					if(matched){
-						double m = msum.get(demographic);
-						double u = usum.get(demographic);
-						msum.put(demographic, new Double(m + gMtemp));
-						usum.put(demographic, new Double(u + gUtemp));
-					}
-				}
-				
-				// update the running sum for gMsum and gUsum
-				gMsum = gMsum + gMtemp;
-				gUsum = gUsum + gUtemp;
-				
+				modifyMU(nsmv, p, 1);
 			}
 			
 			// update p_est
@@ -218,9 +197,8 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 			if(Math.abs(p - prev_p) < EARLY_TERMINATION_THRESHOLD && i > MIN_ITERATIONS){
 				break_early = true;
 			}
+			
 			prev_p = p;
-			//System.out.println("Iteration " + (i + 1));
-			//System.out.println("P: " + p);
 			log.info("Iteration " + (i + 1));
 			log.info("P: " + p);
 			
@@ -235,10 +213,8 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 				}
 			}
 			
-			
 			for(int j = 0; j < demographics.length; j++){
 				String demographic = demographics[j];
-				//System.out.println(demographic + ":   mest: " + mest.get(demographic) + "   uest: " + uest.get(demographic));
 				log.info(demographic + ":   mest: " + mest.get(demographic) + "   uest: " + uest.get(demographic));
 			}
 			if(break_early){
@@ -248,17 +224,13 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 			
 		}
 		
-		//***************************************
 		// print basic information about analysis
-		//System.out.print("\nBlocking columns: ");
 		log.info("\nBlocking columns: ");
 		for(int i = 0; i < bcs.length; i++){
 			String block_col_name = bcs[i];
-			//System.out.print(" " + block_col_name);
 			log.info(" " + block_col_name);
 		}
-		//System.out.println();
-		//System.out.println("P:\t" + p);
+		
 		log.info("P:\t" + p);
 		mc.setP(p);
 		int total_pairs = 0;
@@ -270,14 +242,10 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 		mc.setNPairs(total_pairs);
 		double true_matches = total_pairs * p;
 		double non_matches = total_pairs * (1 - p);
-		//System.out.println("Total pairs processed:\t" + total_pairs);
-		//System.out.println("Estimated true matches:\t" + true_matches);
-		//System.out.println("Estimated non matches:\t" + non_matches);
-		//System.out.println();
+		
 		log.info("Total pairs processed:\t" + total_pairs);
 		log.info("Estimated true matches:\t" + true_matches);
 		log.info("Estimated non matches:\t" + non_matches);
-		//***************************************
 		
 		for(int i = 0; i < demographics.length; i++){
 			String demographic = demographics[i];
@@ -342,6 +310,53 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 		log.info("new score threshold:\t" + mc.getScoreThreshold());
 	}
 	
-	
+	/**
+	 * Method modifies the demographic's m and u values based on the given MatchVector
+	 * 
+	 * @param mv	the agreement and disagreement to use in the calculations
+	 * @param p	p value at beginning of calculation
+	 * @param count	the number of times the given MatchVector should be applied
+	 */
+	protected void modifyMU(MatchVector mv, double p, int count){
+		vct_count += count;
+		termM = 1;
+		termU = 1;
+		gMtemp = 0;
+		gUtemp = 0;
+		List<String> demographics = mv.getDemographics();
+		
+		Iterator<String> it = demographics.iterator();
+		while(it.hasNext()){
+			String demographic = it.next();
+			boolean matched = mv.matchedOn(demographic);
+			int comp = 0;
+			if(matched){
+				comp = 1;
+			}
+			termM = termM * Math.pow(mest.get(demographic), comp) * Math.pow(1 - mest.get(demographic), 1 - comp);
+			termU = termU * Math.pow(uest.get(demographic), comp) * Math.pow(1 - uest.get(demographic), 1 - comp);
+		}
+		
+		gMtemp = (p * termM) / ((p * termM) + ((1 - p) * termU));
+		gUtemp = ((1 - p) * termU) / (((1 - p) * termU) + (p * termM)); 
+		
+		gMtemp = (double)count * gMtemp;
+		gUtemp = (double)count * gUtemp;
+		
+		it = demographics.iterator();
+		while(it.hasNext()){
+			String demographic = it.next();
+			boolean matched = mv.matchedOn(demographic);
+			if(matched){
+				double m = msum.get(demographic);
+				double u = usum.get(demographic);
+				msum.put(demographic, new Double(m + gMtemp));
+				usum.put(demographic, new Double(u + gUtemp));
+			}
+		}
+		
+		gMsum = gMsum + gMtemp;
+		gUsum = gUsum + gUtemp;
+	}
 	
 }

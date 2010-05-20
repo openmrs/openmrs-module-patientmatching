@@ -16,6 +16,7 @@ import java.util.List;
 
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.MatchVector;
+import org.regenstrief.linkage.NullDemographicsMatchVector;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.analysis.Modifier;
 import org.regenstrief.linkage.analysis.VectorTable;
@@ -36,7 +37,12 @@ public class ScorePair {
 	}
 
 	public MatchResult scorePair(Record rec1, Record rec2){
-		MatchVector mv = new MatchVector();
+		MatchVector mv;
+		if(rec1.hasNullValues() || rec2.hasNullValues()){
+			mv = new NullDemographicsMatchVector();
+		} else {
+			mv = new MatchVector();
+		}
 		List<MatchingConfigRow> config_rows = mc.getIncludedColumns();
 		Iterator<MatchingConfigRow> it = config_rows.iterator();
 		while(it.hasNext()){
@@ -44,6 +50,11 @@ public class ScorePair {
 			String comparison_demographic = mcr.getName();
 			String data1 = rec1.getDemographic(comparison_demographic);
 			String data2 = rec2.getDemographic(comparison_demographic);
+			
+			if(data1.equals("") || data2.equals("")){
+				NullDemographicsMatchVector nsmv = (NullDemographicsMatchVector)mv;
+				nsmv.hadNullValue(comparison_demographic);
+			}
 
 			boolean match = false;
 			if(data1 != null && data2 != null) {

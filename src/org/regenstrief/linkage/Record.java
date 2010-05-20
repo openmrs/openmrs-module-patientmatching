@@ -30,6 +30,25 @@ public class Record {
 		uid = id;
 		uidContext = context;
 	}
+	
+	/**
+	 * Method returns true if any of the demographics in this Record has
+	 * a null or empty string as its value
+	 * 
+	 * @return	true if at least one demographic has no value, false if
+	 * all demographics have non-empty string, non-null values
+	 */
+	public boolean hasNullValues(){
+		Enumeration<String> e = demographics.keys();
+		while(e.hasMoreElements()){
+			String d = e.nextElement();
+			String value = demographics.get(d);
+			if(value == null || value.equals("")){
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/**
 	 * Value should be unique among all Records created from the same DataSource
