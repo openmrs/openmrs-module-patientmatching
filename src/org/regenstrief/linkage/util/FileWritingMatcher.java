@@ -95,7 +95,10 @@ public class FileWritingMatcher {
 					Record[] pair;
 					while((pair = fp.getNextRecordPair()) != null){
 						MatchResult mr = sp.scorePair(pair[0], pair[1]);
-						results.add(mr);
+						//results.add(mr);
+						
+						// changed to write output line without sorting results first
+						fout.write(getOutputLine(mr, order, id_field) + "\n");
 						
 						// add to grouping list, if needed
 						if(all_links != null){
