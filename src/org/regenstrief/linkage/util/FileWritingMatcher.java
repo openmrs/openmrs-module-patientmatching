@@ -13,6 +13,7 @@ import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.RecordLink;
 import org.regenstrief.linkage.SameEntityRecordGroup;
+import org.regenstrief.linkage.analysis.NullDemographicScoreModifier;
 import org.regenstrief.linkage.analysis.SetSimilarityAnalysis;
 import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.FormPairs;
@@ -92,6 +93,13 @@ public class FileWritingMatcher {
 				    }
 					
 					ScorePair sp = new ScorePair(mc);
+					
+					// check if scoring needs to be modified
+					if(mc.isTrinomialScoring()){
+						NullDemographicScoreModifier ndsm = new NullDemographicScoreModifier();
+						sp.addScoreModifier(ndsm);
+					}
+					
 					Record[] pair;
 					while((pair = fp.getNextRecordPair()) != null){
 						MatchResult mr = sp.scorePair(pair[0], pair[1]);

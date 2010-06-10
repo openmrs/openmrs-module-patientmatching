@@ -221,6 +221,16 @@ public class XMLTranslator {
 		} else {
 			ret.setAttribute("ulocked", "false");
 		}
+		if(mc.isTrinomialEM()){
+			ret.setAttribute("trinomial_EM", "true");
+		} else {
+			ret.setAttribute("trinomial_EM", "false");
+		}
+		if(mc.isTrinomialScoring()){
+			ret.setAttribute("trinomial_scoring", "false");
+		} else {
+			ret.setAttribute("trinomial_scoring", "true");
+		}
 		ret.setAttribute("name", mc.getName());
 		ret.setAttribute("npairs", Integer.toString(mc.getNPairs()));
 		ret.setAttribute("p", Double.toString(mc.getP()));
@@ -472,6 +482,24 @@ public class XMLTranslator {
 			}
 		}
 		
+		node = attributes.getNamedItem("trinomial_scoring");
+		boolean trinomial_scoring = false;
+		if(node != null){
+			String tri = node.getTextContent();
+			if(tri.equals("true")){
+				trinomial_scoring = true;
+			}
+		}
+		
+		node = attributes.getNamedItem("trinomial_EM");
+		boolean trinomial_EM = false;
+		if(node != null){
+			String tri = node.getTextContent();
+			if(tri.equals("true")){
+				trinomial_EM = true;
+			}
+		}
+		
 		// check if u values were locked
 		node = attributes.getNamedItem("ulocked");
 		boolean ulocked = false;
@@ -522,6 +550,8 @@ public class XMLTranslator {
 		ret.setLockedUValues(ulocked);
 		ret.setNPairs(npairs);
 		ret.setP(p);
+		ret.setTrinomialEM(trinomial_EM);
+		ret.setTrinomialScoring(trinomial_scoring);
 		if(score_threshold != null){
 			try{
 				double threshold = Double.parseDouble(score_threshold.getTextContent());

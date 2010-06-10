@@ -69,10 +69,10 @@ public class SessionOptionsTableModel extends AbstractTableModel{
 			mcr.setAgreement(d.doubleValue());
 		} else if(col == 5 && value instanceof Double){
 			Double d = (Double)value;
-			if(d > 0.99999){
-				d = 0.99999;
-			} else if(d < 0.00001){
-				d = 0.00001;
+			if(d > MatchingConfig.META_ONE){
+				d = MatchingConfig.META_ONE;
+			} else if(d < MatchingConfig.META_ZERO){
+				d = MatchingConfig.META_ZERO;
 			}
 			mcr.setNonAgreement(d.doubleValue());
 		} else if(col == 6){

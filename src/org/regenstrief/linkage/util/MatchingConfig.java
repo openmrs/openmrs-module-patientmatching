@@ -42,14 +42,16 @@ public class MatchingConfig implements Cloneable {
 	private NumberFormat double_format;
 	private static final int DOUBLE_SIG_FIGS = 5;
 	
-	final static double META_ONE = 0.99999;
-	final static double META_ZERO = 0.00001;
+	public final static double META_ONE = 0.99999999999;
+	public final static double META_ZERO = 0.00000000001;
 	
 	private List<MatchingConfigRow> row_options;
 	
 	private String name;
 	private boolean estimate;
 	private BlockingExclusionList bel;
+	private boolean trinomial_scoring;
+	private boolean trinomial_EM;
 	
 	/*
 	 * boolean value to determine whether current blocking run use random
@@ -115,6 +117,22 @@ public class MatchingConfig implements Cloneable {
 			}
 		}
 		return null;
+	}
+	
+	public boolean isTrinomialScoring(){
+		return trinomial_scoring;
+	}
+	
+	public boolean isTrinomialEM(){
+		return trinomial_EM;
+	}
+	
+	public void setTrinomialEM(boolean trinomial){
+		trinomial_EM = trinomial;
+	}
+	
+	public void setTrinomialScoring(boolean trinomial){
+		trinomial_scoring = trinomial;
 	}
 	
 	public double getP(){

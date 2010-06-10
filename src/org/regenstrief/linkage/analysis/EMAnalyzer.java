@@ -88,6 +88,10 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 		this.trinomial = trinomial;
 	}
 	
+	public boolean isTrinomial(){
+		return trinomial;
+	}
+	
 	public void setIterations(int iterations){
 		this.iterations = iterations;
 	}
@@ -333,8 +337,25 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 			if(matched){
 				comp = 1;
 			}
-			termM = termM * Math.pow(mest.get(demographic), comp) * Math.pow(1 - mest.get(demographic), 1 - comp);
-			termU = termU * Math.pow(uest.get(demographic), comp) * Math.pow(1 - uest.get(demographic), 1 - comp);
+			
+			boolean trinomial_em = false;
+			if(mv instanceof NullDemographicsMatchVector && trinomial){
+				NullDemographicsMatchVector ndmv = (NullDemographicsMatchVector)mv;
+				if(ndmv.isNullComparison(demographic)){
+					trinomial_em = true;
+				}
+			}
+			
+			if(trinomial_em){
+				termM = termM * (Math.pow(mest.get(demographic), comp) * Math.pow(1 - mest.get(demographic), 1 - comp))/2;
+				termU = termU * (Math.pow(uest.get(demographic), comp) * Math.pow(1 - uest.get(demographic), 1 - comp))/2;
+			} else {
+				termM = termM * Math.pow(mest.get(demographic), comp) * Math.pow(1 - mest.get(demographic), 1 - comp);
+				termU = termU * Math.pow(uest.get(demographic), comp) * Math.pow(1 - uest.get(demographic), 1 - comp);
+			}
+			
+			
+			
 		}
 		
 		gMtemp = (p * termM) / ((p * termM) + ((1 - p) * termU));
