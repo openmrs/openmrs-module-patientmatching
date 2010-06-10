@@ -1024,6 +1024,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			MatchingConfig mcCopy = (MatchingConfig) mc.clone();
 			
 			EMAnalyzer ema = new EMAnalyzer(mcCopy);
+			ema.setTrinomial(mcCopy.isTrinomialEM());
 			pdsa.addAnalyzer(ema);
 			frame.addLoggingObject(ema);
 			frame.configureLoggingFrame();
