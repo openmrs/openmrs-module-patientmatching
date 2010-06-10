@@ -243,6 +243,7 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 			MatchVector mv = e.nextElement();
 			total_pairs += vector_count.get(mv);
 		}
+		total_pairs += null_vectors.size();
 		mc.setNPairs(total_pairs);
 		double true_matches = total_pairs * p;
 		double non_matches = total_pairs * (1 - p);

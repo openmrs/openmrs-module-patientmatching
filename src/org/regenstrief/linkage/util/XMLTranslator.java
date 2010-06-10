@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.IllegalFormatException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -227,9 +226,9 @@ public class XMLTranslator {
 			ret.setAttribute("trinomial_EM", "false");
 		}
 		if(mc.isTrinomialScoring()){
-			ret.setAttribute("trinomial_scoring", "false");
-		} else {
 			ret.setAttribute("trinomial_scoring", "true");
+		} else {
+			ret.setAttribute("trinomial_scoring", "false");
 		}
 		ret.setAttribute("name", mc.getName());
 		ret.setAttribute("npairs", Integer.toString(mc.getNPairs()));
