@@ -220,13 +220,13 @@ public class XMLTranslator {
 		} else {
 			ret.setAttribute("ulocked", "false");
 		}
-		if(mc.isTrinomialEM()){
-			ret.setAttribute("trinomial_EM", "true");
+		if(mc.isNullAveragingEM()){
+			ret.setAttribute("null_EM", "true");
 		} else {
-			ret.setAttribute("trinomial_EM", "false");
+			ret.setAttribute("null_EM", "false");
 		}
-		if(mc.isTrinomialScoring()){
-			ret.setAttribute("trinomial_scoring", "true");
+		if(mc.isNullScoring()){
+			ret.setAttribute("null_scoring", "true");
 		} else {
 			ret.setAttribute("trinomial_scoring", "false");
 		}
@@ -481,7 +481,7 @@ public class XMLTranslator {
 			}
 		}
 		
-		node = attributes.getNamedItem("trinomial_scoring");
+		node = attributes.getNamedItem("null_scoring");
 		boolean trinomial_scoring = false;
 		if(node != null){
 			String tri = node.getTextContent();
@@ -490,7 +490,7 @@ public class XMLTranslator {
 			}
 		}
 		
-		node = attributes.getNamedItem("trinomial_EM");
+		node = attributes.getNamedItem("null_EM");
 		boolean trinomial_EM = false;
 		if(node != null){
 			String tri = node.getTextContent();
@@ -549,8 +549,8 @@ public class XMLTranslator {
 		ret.setLockedUValues(ulocked);
 		ret.setNPairs(npairs);
 		ret.setP(p);
-		ret.setTrinomialEM(trinomial_EM);
-		ret.setTrinomialScoring(trinomial_scoring);
+		ret.setNullAveragingEM(trinomial_EM);
+		ret.setNullScoring(trinomial_scoring);
 		if(score_threshold != null){
 			try{
 				double threshold = Double.parseDouble(score_threshold.getTextContent());

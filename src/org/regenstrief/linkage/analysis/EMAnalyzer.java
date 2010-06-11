@@ -43,7 +43,7 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 	final static int MAX_ITERATIONS = 200;
 	private int iterations;
 	private boolean pin_u_values;
-	private boolean trinomial;
+	private boolean null_avg;
 	
 	//private Logger log = Logger.getLogger(this.getClass() + this.toString());
 	
@@ -81,15 +81,15 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 		 * Check the current blocking run use random sampling or not.
 		 */
 		pin_u_values = mc.isLockedUValues();
-		trinomial = false;
+		null_avg = false;
 	}
 	
-	public void setTrinomial(boolean trinomial){
-		this.trinomial = trinomial;
+	public void setNullAveraging(boolean null_avg){
+		this.null_avg = null_avg;
 	}
 	
-	public boolean isTrinomial(){
-		return trinomial;
+	public boolean isNullAveraging(){
+		return null_avg;
 	}
 	
 	public void setIterations(int iterations){
@@ -120,7 +120,7 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 		MatchVector mr_vect = mr.getMatchVector();
 		//vector_list.add(mr_vect);
 		
-		if(trinomial && mr_vect instanceof NullDemographicsMatchVector){
+		if(null_avg && mr_vect instanceof NullDemographicsMatchVector){
 			null_vectors.add((NullDemographicsMatchVector)mr_vect);
 		} else {
 			Integer mv_count = vector_count.get(mr_vect);
@@ -339,17 +339,17 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 				comp = 1;
 			}
 			
-			boolean trinomial_em = false;
-			if(mv instanceof NullDemographicsMatchVector && trinomial){
+			boolean avg_em = false;
+			if(mv instanceof NullDemographicsMatchVector && null_avg){
 				NullDemographicsMatchVector ndmv = (NullDemographicsMatchVector)mv;
 				if(ndmv.isNullComparison(demographic)){
-					trinomial_em = true;
+					avg_em = true;
 				}
 			}
 			
-			if(trinomial_em){
-				termM = termM * (Math.pow(mest.get(demographic), comp) * Math.pow(1 - mest.get(demographic), 1 - comp))/2;
-				termU = termU * (Math.pow(uest.get(demographic), comp) * Math.pow(1 - uest.get(demographic), 1 - comp))/2;
+			if(avg_em){
+				termM = termM * (Math.pow(mest.get(demographic), comp) + Math.pow(1 - mest.get(demographic), 1 - comp))/2;
+				termU = termU * (Math.pow(uest.get(demographic), comp) + Math.pow(1 - uest.get(demographic), 1 - comp))/2;
 			} else {
 				termM = termM * Math.pow(mest.get(demographic), comp) * Math.pow(1 - mest.get(demographic), 1 - comp);
 				termU = termU * Math.pow(uest.get(demographic), comp) * Math.pow(1 - uest.get(demographic), 1 - comp);

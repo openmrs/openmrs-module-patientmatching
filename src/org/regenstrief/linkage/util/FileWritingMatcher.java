@@ -95,7 +95,7 @@ public class FileWritingMatcher {
 					ScorePair sp = new ScorePair(mc);
 					
 					// check if scoring needs to be modified
-					if(mc.isTrinomialScoring()){
+					if(mc.isNullScoring()){
 						NullDemographicScoreModifier ndsm = new NullDemographicScoreModifier();
 						sp.addScoreModifier(ndsm);
 					}

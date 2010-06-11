@@ -50,8 +50,8 @@ public class MatchingConfig implements Cloneable {
 	private String name;
 	private boolean estimate;
 	private BlockingExclusionList bel;
-	private boolean trinomial_scoring;
-	private boolean trinomial_EM;
+	private boolean null_scoring;
+	private boolean null_avg_EM;
 	
 	/*
 	 * boolean value to determine whether current blocking run use random
@@ -119,20 +119,20 @@ public class MatchingConfig implements Cloneable {
 		return null;
 	}
 	
-	public boolean isTrinomialScoring(){
-		return trinomial_scoring;
+	public boolean isNullScoring(){
+		return null_scoring;
 	}
 	
-	public boolean isTrinomialEM(){
-		return trinomial_EM;
+	public boolean isNullAveragingEM(){
+		return null_avg_EM;
 	}
 	
-	public void setTrinomialEM(boolean trinomial){
-		trinomial_EM = trinomial;
+	public void setNullAveragingEM(boolean null_avg_EM){
+		this.null_avg_EM = null_avg_EM;
 	}
 	
-	public void setTrinomialScoring(boolean trinomial){
-		trinomial_scoring = trinomial;
+	public void setNullScoring(boolean null_scoring){
+		this.null_scoring = null_scoring;
 	}
 	
 	public double getP(){
