@@ -228,7 +228,7 @@ public class XMLTranslator {
 		if(mc.isNullScoring()){
 			ret.setAttribute("null_scoring", "true");
 		} else {
-			ret.setAttribute("trinomial_scoring", "false");
+			ret.setAttribute("null_scoring", "false");
 		}
 		ret.setAttribute("name", mc.getName());
 		ret.setAttribute("npairs", Integer.toString(mc.getNPairs()));
