@@ -422,7 +422,7 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 				
 				rm_conf = new RecMatchConfig();
 				current_program_config_file = null;
-				//main_window.setVisible(false);
+				main_window.setVisible(false);
 				main_window = null;
 				initGui();
 				return;
