@@ -14,17 +14,39 @@
 var n_steps = 11; // hard-coded for now; unlikely to change
 var s = 0;
 
+
 function runReport() {
     if (confirm("Are you sure you want to generate a new report?")) {
         DWRMatchingConfigUtilities.doAnalysis();
     }
 }
 
+function reportProcessStarted(){
+
+	document.getElementById("run").disabled = true;
+    for(var i=1;i<n_steps;i++){
+		var processTime = document.getElementById("time"+i);
+		processTime.innerHTML = "";
+	}
+	 var step = document.getElementById("step1");
+		step.style.color="black";
+		var step = document.getElementById("step11");
+		step.style.color="black";
+     var step = document.getElementById("step2");
+		step.style.color="green";
+}
+
 function resetChecklist() {
 	if (confirm("Are you sure you want to reset the checklist?")) {
 		DWRMatchingConfigUtilities.resetStep();
-		strikeUpToStep(0);
 	}
+}
+function reset(){
+strikeUpToStep(0);
+}
+
+function enableGenReport(){
+	document.getElementById("run").disabled = false;
 }
 
 function deleteFile(file) {
@@ -33,7 +55,7 @@ function deleteFile(file) {
         DWRMatchingConfigUtilities.deleteReportFile(file);
         buildTable();
         DWREngine.endBatch();
-        updateStatus();
+        //updateStatus();
 
         //location.reload();
     }
@@ -43,7 +65,7 @@ function viewFile(file) {
         window.open("${pageContext.request.contextPath}/module/patientmatching/report.form?<c:out value="${reportParam}" />=" + file,
                     "Report",
                     "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=no,copyhistory=no");
-        updateStatus();
+        //updateStatus();
 }
 
 function showRunReport(show) {
@@ -82,34 +104,87 @@ function updateTimer() { // deprecated
         s = setTimeout("updateTimer()", refreshPeriod*1000);
     }    
 }
-
-function updateStatus() {
-	var refreshPeriod = 5; // in seconds
-	DWRMatchingConfigUtilities.getStep(function updateChecklist(nStr) {
-		n = parseInt(nStr)+1; // add one to correspond to the step ids in the HTML
-		strikeUpToStep(n);
-		if (n == n_steps) {
-            DWREngine.beginBatch();          
-            buildTable();
-            DWREngine.endBatch();
-
-            DWRMatchingConfigUtilities.resetStep();
-
-            strikeUpToStep(1);
-		}
-	});
-
-    s = setTimeout('updateStatus()', refreshPeriod*1000);
+function updateChecklist(nStr) {
+	var nSt = nStr.split(",");
+	if(nSt[0]!="0"){
+	n = parseInt(nSt[0])+1; // add one to correspond to the step ids in the HTML
+	if(nSt[1].indexOf('p') != -1){
+		var ti=nSt[1].split("p");
+		var processTime = document.getElementById("time9");
+		processTime.style.color = "red";
+		processTime.innerHTML = ti[0]+" ms";
+	}else{
+		var processTime = document.getElementById("time"+nSt[0]);
+		processTime.style.color = "red";
+		processTime.innerHTML = nSt[1]+" ms";
+	}
+	strikeStep(n);
+	if (n == n_steps) {
+        DWREngine.beginBatch();          
+        buildTable();
+        DWREngine.endBatch();
+	}
+	}else if(nSt[0]=="0"){
+		strikeUpToStep(0);
+	}
 }
 
+function prevProStat(timeD){
+	var times = timeD+"";
+	var time = times.split(",");
+	for(var i=0;i<time.length;i++){
+		var processTime = document.getElementById("time"+(i+2));
+		processTime.style.color = "red";
+		processTime.innerHTML = time[i]+" ms";
+	}
+}
+
+function check(currentStep){
+	var stepDe = currentStep.split(",");
+	var cuStep = parseInt(stepDe[0]);
+	if(cuStep==0){
+		if(stepDe[1]=="true"){
+			document.getElementById("run").disabled = true;
+		}
+		s = setTimeout("strikeUpToStep(0)", 0.1*1000);
+	}else if(cuStep>=2){
+		var step = document.getElementById("step" + cuStep);
+		step.style.color="green";
+		document.getElementById("run").disabled = true; 
+		DWRMatchingConfigUtilities.previousProcessStatus(prevProStat);
+	}
+}
+
+function updateStatus() {
+	dwr.engine.setActiveReverseAjax(true)
+	DWRMatchingConfigUtilities.getStep(check);
+}
 function strikeStep(n) {
-	step = document.getElementById("step" + n);
-	step.innerHTML = "<span style=\"color: green;\">" + step.innerHTML + "</span>";
+	//alert("step");
+	var step = document.getElementById("step" + n);
+	step.style.color="green";
+	for (var i=1; i<=n_steps; i++) {
+		if(i != n){
+		step = document.getElementById("step" + i);
+		step.style.color="black";
+		}
+	}
+//	step.innerHTML = step.innerHTML.replace(/<\/?[^>]+(>|$)/g, ''); // strip the highlighting tags
+	if(n==n_steps){
+		document.getElementById("run").disabled = false;
+	}
 }
 
 function unstrikeStep(n) {
 	step = document.getElementById("step" + n);
-	step.innerHTML = step.innerHTML.replace(/<\/?[^>]+(>|$)/g, ''); // strip the highlighting tags
+	if(n==1){
+		step.style.color="green";
+	}else {
+		var processTime = document.getElementById("time"+n);
+		processTime.innerHTML = "";
+		step.style.color="black";
+	}
+	//step.innerHTML = step.innerHTML.replace(/<\/?[^>]+(>|$)/g, ''); // strip the highlighting tags
 }
 
 function strikeUpToStep(n) {
@@ -206,8 +281,8 @@ window.onload = updateStatus();
 
 		<ul>
 			<c:forEach items="${stepList}" var="step" varStatus="entriesIndex">
-				<li><span id="step${entriesIndex.count}"><c:out
-					value="${step}" /></span></li>
+				<li><span id="step${entriesIndex.count}" style="color:black"><c:out
+					value="${step}" />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label id="time${entriesIndex.count}"></label></span></li>
 			</c:forEach>
 		</ul>
 		</td>
@@ -215,11 +290,11 @@ window.onload = updateStatus();
 
 	<tr id="runReport">
 		<td>
-		<button onClick="runReport();"><spring:message
-			code="patientmatching.report.run" /></button>
+		<input id="run" type="button" onClick="runReport();" value="<spring:message
+			code="patientmatching.report.run" />"/>
 		</td>
 		<td>
-		<button onClick="resetChecklist();"><spring:message code="patientmatching.report.reset"/></button>
+		<input type="button" onClick="resetChecklist();" value="<spring:message code="patientmatching.report.reset"/>"/>
 		</td>
 	</tr>
 </table>

@@ -345,7 +345,6 @@ public class LinkDBConnections {
             }
             
             PersonName personName = patient.getPersonName();
-            
             for (String property : namePropertyList) {
                 String value = "";
                 try {
@@ -371,7 +370,6 @@ public class LinkDBConnections {
                     ret.addDemographic(property, value);
                 }
             }
-            
             for (PatientIdentifierType patientIdentifierType : patientIdentifierTypes) {
                 PatientIdentifier identifier = patient.getPatientIdentifier(patientIdentifierType.getName());
                 if (identifier != null) {

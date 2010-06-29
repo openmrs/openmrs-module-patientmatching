@@ -50,12 +50,11 @@
                     <include method="deleteBlockingRun"/>
                     <include method="doAnalysis"/>
                     <include method="deleteReportFile"/>
-                    <include method="getStatus"/>
-                    <include method="setStatus"/>
                     <include method="getNextPage"/>
                     <include method="getPrevPage"/>
                     <include method="resetStep"/>
                     <include method="getStep"/>
+                    <include method="previousProcessStatus"/>
                 </create>
             </allow>
     
@@ -68,11 +67,10 @@
                 DWRMatchingConfigUtilities.doAnalysis()
                 DWRMatchingConfigUtilities.resetStep()
                 DWRMatchingConfigUtilities.deleteReportFile(String)
-                DWRMatchingConfigUtilities.getStatus()
-                DWRMatchingConfigUtilities.setStatus(String)
                 DWRMatchingConfigUtilities.getNextPage()
                 DWRMatchingConfigUtilities.getPrevPage()
                 DWRMatchingConfigUtilities.getStep()
+                DWRMatchingConfigUtilities.previousProcessStatus()
                 ]]>
             </signatures>
         </dwr>
@@ -92,4 +90,4 @@
             <file>messages_es.properties</file>
         </messages>
         <!-- /Internationalization -->
-    </module>
+</module>
