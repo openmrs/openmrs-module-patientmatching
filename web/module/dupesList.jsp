@@ -246,7 +246,7 @@ function buildTable() {
     });
 }
 
-window.onload = updateStatus();
+window.onload = updateStatus;
 </script>
 
 <h2><spring:message code="patientmatching.report.title" /></h2>

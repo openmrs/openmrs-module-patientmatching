@@ -232,9 +232,9 @@ public class DWRMatchingConfigUtilities {
 			}
 			
 			if(reset != -1){
-				Collection sessions1 = sctx.getScriptSessionsByPage(currentPage);
-	            Util pages1 = new Util(sessions);
-	            pages.addFunctionCall("updateChecklist",previousProcessTime);
+				Collection sessions2 = sctx.getScriptSessionsByPage(currentPage);
+	            Util pages2 = new Util(sessions2);
+	            pages2.addFunctionCall("updateChecklist",previousProcessTime);
 				
 			}else {
 				proTimeList = null;
