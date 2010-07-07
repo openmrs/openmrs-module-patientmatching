@@ -60,14 +60,20 @@ public class DataBaseRecordStore implements RecordStore {
 		}
 		
 		dropTableIfExists(table_name);
-		createTable();
-		insert_stmt = createInsertQuery();
+		if(!createTable()){
+			close();
+		} else {
+			insert_stmt = createInsertQuery();
+		}
 		
 	}
 	
 	public boolean clearRecords(){
 		String delete_query = "DELETE FROM " + table_name;
 		try{
+			if(db_connection.isClosed()){
+				return false;
+			}
 			Statement s = db_connection.createStatement();
 			s.execute(delete_query);
 			s.close();
@@ -97,7 +103,7 @@ public class DataBaseRecordStore implements RecordStore {
 			      .append(quote_string)
 			      .append(column)
 			      .append(quote_string)
-			      .append("\tvarchar(255)");
+			      .append("\ttext");
 
 		}
 		buffer.append(")");
@@ -191,6 +197,10 @@ public class DataBaseRecordStore implements RecordStore {
 	 */
 	public boolean storeRecord(Record r) {
 		try{
+			if(db_connection.isClosed()){
+				return false;
+			}
+			
 			insert_stmt.setLong(1, r.getUID());
 			insert_count++;
 			for(int i = 0; i < insert_demographics.size(); i++){
