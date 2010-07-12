@@ -338,7 +338,7 @@ public class LinkDBConnections {
                     String classProperty = property.substring(property.lastIndexOf(".") + 1);
                     value = BeanUtils.getProperty(patient, classProperty);
                 } catch (Exception e) {
-                    logger.debug("Error getting the value for property: " + property, e);
+                    logger.debug("Error getting the value for property: " + property + " for patient " + id);
                 } finally {
                     ret.addDemographic(property, value);
                 }
@@ -351,7 +351,7 @@ public class LinkDBConnections {
                     String classProperty = property.substring(property.lastIndexOf(".") + 1);
                     value = BeanUtils.getProperty(personName, classProperty);
                 } catch (Exception e) {
-                    logger.debug("Error getting the value for property: " + property, e);
+                    logger.debug("Error getting the value for property: " + property + " for patient " + id);
                 } finally {
                     ret.addDemographic(property, value);
                 }
@@ -365,7 +365,7 @@ public class LinkDBConnections {
                     String classProperty = property.substring(property.lastIndexOf(".") + 1);
                     value = BeanUtils.getProperty(personAddress, classProperty);
                 } catch (Exception e) {
-                    logger.debug("Error getting the value for property: " + property, e);
+                    logger.debug("Error getting the value for property: " + property + " for patient " + id);
                 } finally {
                     ret.addDemographic(property, value);
                 }
