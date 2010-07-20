@@ -8,10 +8,13 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.Patient;
+import org.openmrs.api.context.Context;
 import org.openmrs.util.OpenmrsUtil;
 
 /**
@@ -193,7 +196,7 @@ public class MatchingReportReader {
         String s = null;
         // read the first line of the report file
         s = raf.readLine();
-        
+        s=s+"|Action";
         // Split the line using the separator char
         //TODO: Needs to move this separator char to the constants interface
         // and use it globally in the module.
@@ -259,12 +262,20 @@ public class MatchingReportReader {
         raf.seek(pageOffset);
         
         int counter = 0;
+        Patient patient = null;
         String s = null;
         String[] split = null;
         List<String> list = null;
+        Collection<String> collec = null;
         while((s = raf.readLine()) != null) {
+        	collec = null;
+        	list = new ArrayList<String>();
             split = s.split("[|]");
-            list = Arrays.asList(split);
+            collec = Arrays.asList(split);
+            list.addAll(collec);
+            list.add(0,split[1]);
+            patient = Context.getPatientService().getPatient(Integer.parseInt(split[1]));
+            list.add(0,patient.getVoided().toString());
             currentContent.add(list);
             counter ++;
             // read until the report paging size or end of file is reached
