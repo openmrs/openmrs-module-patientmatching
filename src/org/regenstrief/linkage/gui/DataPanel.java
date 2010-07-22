@@ -172,7 +172,7 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 			File test;
 			if(lds1 != null && lds1.getName() != null){
 				test = new File(lds1.getName());
-				if(test.exists()){
+				if(test.exists() || !lds1.getType().equals("CharDelimFile")){
 					tfn.setText(lds1.getName());
 					parseDataToTable(TOP);
 				} else {
@@ -186,7 +186,7 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
 			}
 			if(lds2 != null && lds2.getName() != null){
 				test = new File(lds2.getName());
-				if(test.exists()){
+				if(test.exists() || !lds2.getType().equals("CharDelimFile")){
 					bfn.setText(lds2.getName());
 					parseDataToTable(BOTTOM);
 				} else {

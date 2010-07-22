@@ -74,7 +74,7 @@ public class DataBaseReader implements DataSourceReader {
 				query = constructQuery();
 				pstmt = db.prepareStatement(query,ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
 			}
-			pstmt.setFetchSize(Integer.MIN_VALUE);
+			//pstmt.setFetchSize(Integer.MIN_VALUE);
 			data = pstmt.executeQuery();
 			if(data.next()){
 				parseDataBaseRow();

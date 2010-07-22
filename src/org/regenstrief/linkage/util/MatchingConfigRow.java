@@ -20,6 +20,7 @@ public class MatchingConfigRow implements Cloneable {
 	private double agreement;
 	private double non_agreement;
 	private boolean scale_weight;
+	private boolean trinomial_EM;
 	private ScaleWeightSetting sw_settings;
 	private int buffer_size;
 	private float sw_number;
@@ -32,6 +33,7 @@ public class MatchingConfigRow implements Cloneable {
 	public static final double DEFAULT_AGREEMENT = 0.9;
 	public static final double DEFAULT_NON_AGREEMENT = 0.1;
 	public static final boolean DEFAULT_SCALE_WEIGHT = false;
+	public static final boolean DEFAULT_TRINOMIAL_EM = false;
 	public static final int DEFAULT_ALGORITHM = MatchingConfig.EXACT_MATCH;
 	// Load all tokens by default
 	public static final Float DEFAULT_SW_NUMBER = new Float(1.0);
@@ -54,6 +56,7 @@ public class MatchingConfigRow implements Cloneable {
 		sw_settings = DEFAULT_SW_SETTING;
 		sw_number = DEFAULT_SW_NUMBER;
 		buffer_size = DEFAULT_BUFFER_SIZE;
+		trinomial_EM = DEFAULT_TRINOMIAL_EM;
 	}
 	
 	public String getName(){
@@ -72,7 +75,13 @@ public class MatchingConfigRow implements Cloneable {
 		this.agreement = agreement;
 	}
 
-
+	public void setTrinomailEM(boolean tri){
+		trinomial_EM = tri;
+	}
+	
+	public boolean isTrinomialEM(){
+		return trinomial_EM;
+	}
 
 	public int getAlgorithm() {
 		return algorithm;
