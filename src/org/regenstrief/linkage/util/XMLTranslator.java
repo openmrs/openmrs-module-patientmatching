@@ -225,6 +225,7 @@ public class XMLTranslator {
 		} else {
 			ret.setAttribute("null_EM", "false");
 		}
+		
 		if(mc.isNullScoring()){
 			ret.setAttribute("null_scoring", "true");
 		} else {
@@ -261,6 +262,11 @@ public class XMLTranslator {
 	public static Element toDOMNode(MatchingConfigRow mcr, Document doc){
 		Element ret = doc.createElement("row");
 		ret.setAttribute("name", mcr.getName());
+		if(mcr.isTrinomialEM()){
+			ret.setAttribute("trinomial_EM", "true");
+		} else {
+			ret.setAttribute("trinomial_EM", "false");
+		}
 		
 		Element block_order = doc.createElement("BlockOrder");
 		if(mcr.getBlockOrder() == MatchingConfigRow.DEFAULT_BLOCK_ORDER) {
@@ -491,11 +497,11 @@ public class XMLTranslator {
 		}
 		
 		node = attributes.getNamedItem("null_EM");
-		boolean trinomial_EM = false;
+		boolean null_avg_EM = false;
 		if(node != null){
 			String tri = node.getTextContent();
 			if(tri.equals("true")){
-				trinomial_EM = true;
+				null_avg_EM = true;
 			}
 		}
 		
@@ -549,7 +555,8 @@ public class XMLTranslator {
 		ret.setLockedUValues(ulocked);
 		ret.setNPairs(npairs);
 		ret.setP(p);
-		ret.setNullAveragingEM(trinomial_EM);
+		ret.setNullAveragingEM(null_avg_EM);
+		
 		ret.setNullScoring(trinomial_scoring);
 		if(score_threshold != null){
 			try{
@@ -570,6 +577,15 @@ public class XMLTranslator {
 	public static MatchingConfigRow createMatchingConfigRow(Node n){
 		String row_name = n.getAttributes().getNamedItem("name").getTextContent();
 		MatchingConfigRow ret = new MatchingConfigRow(row_name);
+		
+		Node node = n.getAttributes().getNamedItem("trinomial_EM");
+		boolean tri = false;
+		if(node != null){
+			if(node.getTextContent().equals("true")){
+				tri = true;
+			}
+		}
+		ret.setTrinomialEM(tri);
 		
 		// iterate over the children nodes to get the block order, block chars, etc.
 		for(int i = 0; i < n.getChildNodes().getLength(); i++){

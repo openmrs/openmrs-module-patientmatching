@@ -75,7 +75,7 @@ public class MatchingConfigRow implements Cloneable {
 		this.agreement = agreement;
 	}
 
-	public void setTrinomailEM(boolean tri){
+	public void setTrinomialEM(boolean tri){
 		trinomial_EM = tri;
 	}
 	
