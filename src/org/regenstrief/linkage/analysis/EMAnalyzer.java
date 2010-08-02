@@ -158,7 +158,7 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 			String val2 = r2.getDemographic(demographic);
 			if(val1 == null || val2 == null | val1.equals("") || val2.equals("")){
 				Integer count = demographics_null_comparisons.get(demographic);
-				if(count == null){
+				if(count != null){
 					demographics_null_comparisons.put(demographic, new Integer(count + 1));
 				} else {
 					demographics_null_comparisons.put(demographic, new Integer(1));
