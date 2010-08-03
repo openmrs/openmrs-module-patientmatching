@@ -54,6 +54,7 @@ public class ReportFormSimpleFormController extends SimpleFormController {
         session.setAttribute("reportPagePosition", reader.getPagePos());
         session.setAttribute("reportCurrentPage", reader.getCurrentPage());
         session.setAttribute("isReportEOF", reader.isEof());
+        session.removeAttribute("endPage");
         
 		return map;
 		

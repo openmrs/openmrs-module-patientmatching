@@ -4,13 +4,13 @@
 package org.openmrs.module.patientmatching.web.dwr;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -19,13 +19,9 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.directwebremoting.ScriptBuffer;
-import org.directwebremoting.ScriptSession;
 import org.directwebremoting.ServerContext;
 import org.directwebremoting.ServerContextFactory;
 import org.directwebremoting.proxy.dwr.Util;
-import org.openmrs.Patient;
-import org.openmrs.api.context.Context;
 import org.openmrs.module.patientmatching.LinkDBConnections;
 import org.openmrs.module.patientmatching.MatchingConfigurationUtils;
 import org.openmrs.module.patientmatching.MatchingConstants;
@@ -58,6 +54,7 @@ public class DWRMatchingConfigUtilities {
 	static int index = 1;
 	static int currentStep;
 	static int size = 0;
+	static String[] selectedStrat;
 	
 	/**
 	 * Constructor
@@ -117,6 +114,13 @@ public class DWRMatchingConfigUtilities {
 	public List<Long> previousProcessStatus(){
 		return proTimeList;
 	}
+	
+	public void selStrategy(String selected){
+		WebContext context = WebContextFactory.get();
+		HttpSession session = context.getSession();
+		session.removeAttribute("selStrategy");
+		session.setAttribute("selStrategy", selected);
+	}
 
 	public void getCurrentProcessStatus(int nextStep){
 		
@@ -125,7 +129,7 @@ public class DWRMatchingConfigUtilities {
 			switch(nextStep){
 			case 2:
 				objects = new HashMap<String, Object>();
-				objects = MatchingReportUtils.ReadConfigFile(objects);
+				objects = MatchingReportUtils.ReadConfigFile(objects,selectedStrat);
 				break;
 
 			case 3:
@@ -185,8 +189,8 @@ public class DWRMatchingConfigUtilities {
 	/**
 	 * @see MatchingReportUtils#doAnalysis()
 	 */
-	public void doAnalysis() {
-		
+	public void doAnalysis(String selectedStrategies) {
+		selectedStrat = selectedStrategies.split(",");
 		proTimeList = new ArrayList<Long>();
 		Collection sessions = sctx.getScriptSessionsByPage(currentPage);
         Util pages = new Util(sessions);
@@ -285,8 +289,7 @@ public class DWRMatchingConfigUtilities {
 		List<List<String>> currentContent = new ArrayList<List<String>>();
 		// init with error message
 		List<String> s = new ArrayList<String>();
-		s
-				.add("Unable to get the report data, please retry or re-open the report page");
+		s.add("Unable to get the report data, please retry or re-open the report page");
 		currentContent.add(s);
 
 		MatchingReportReader reader = new MatchingReportReader(currentPage,
@@ -294,6 +297,9 @@ public class DWRMatchingConfigUtilities {
 		try {
 			if (eof) {
 				reader.fetchContent(currentPage);
+				if(session.getAttribute("endPage")==null){
+					session.setAttribute("endPage", currentPage);
+				}
 			} else {
 				reader.fetchContent(currentPage + 1);
 			}
@@ -329,8 +335,7 @@ public class DWRMatchingConfigUtilities {
 		List<List<String>> currentContent = new ArrayList<List<String>>();
 		// init with error message
 		List<String> s = new ArrayList<String>();
-		s
-				.add("Unable to get the report data, please retry or re-open the report page");
+		s.add("Unable to get the report data, please retry or re-open the report page");
 		currentContent.add(s);
 
 		MatchingReportReader reader = new MatchingReportReader(currentPage,
@@ -352,4 +357,112 @@ public class DWRMatchingConfigUtilities {
 		}
 		return currentContent;
 	}
+	
+	public List<List<String>> getStartPage(){
+		WebContext context = WebContextFactory.get();
+		HttpSession session = context.getSession();
+		
+		String filename = (String) session.getAttribute("reportFilename");
+		List<Long> pagePos = (List<Long>) session.getAttribute("reportPagePosition");
+		int currentPage = 1;
+		boolean eof = false;
+		
+		List<List<String>> currentContent = new ArrayList<List<String>>();
+		// init with error message
+		List<String> s = new ArrayList<String>();
+		s.add("Unable to get the report data, please retry or re-open the report page");
+		currentContent.add(s);
+		
+		MatchingReportReader reader = new MatchingReportReader(currentPage,	eof, pagePos, filename);
+		
+		try {
+			
+				reader.fetchContent(currentPage);
+			
+			// only update the value when succeed
+			session.setAttribute("reportPagePosition", reader.getPagePos());
+			session.setAttribute("reportCurrentPage", reader.getCurrentPage());
+			session.setAttribute("isReportEOF", reader.isEof());
+			// this will replace error message if the process is done
+			currentContent = reader.getCurrentContent();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		
+		return currentContent;
+	}
+	
+	public List<List<String>> getEndPage(){
+		List<List<String>> currentContent = new ArrayList<List<String>>();
+		
+		try {
+		
+		WebContext context = WebContextFactory.get();
+		HttpSession session = context.getSession();
+		
+		String filename = (String) session.getAttribute("reportFilename");
+		int currentPage = (Integer) session.getAttribute("reportCurrentPage");
+		boolean eof = (Boolean) session.getAttribute("isReportEOF");
+		List<Long> pagePos = (List<Long>) session.getAttribute("reportPagePosition");
+		
+		if(session.getAttribute("endPage")==null){
+		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
+        File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
+        File reportFile = new File(configFileFolder, filename);
+        
+		RandomAccessFile raf = new RandomAccessFile(reportFile, "r");
+		String line="";
+        double count = -1;
+        while(!((line=raf.readLine())== null)){
+        	++count;
+        }
+		
+		int totalPages = ((int)Math.ceil(count/MatchingReportReader.REPORT_PAGE_SIZE));
+		int counter = 0;
+           	long offset = pagePos.get(currentPage);
+        	raf.seek(offset);
+
+        	while(!((line=raf.readLine())== null)){
+        		++counter;
+        		if(counter >= MatchingReportReader.REPORT_PAGE_SIZE){
+        			currentPage++;
+        			counter = 0;
+        			boolean incl = false;
+        			try{
+        				pagePos.get(currentPage);
+        			}catch(IndexOutOfBoundsException e){
+        				incl = true;
+        			}
+        			if(incl)
+        				pagePos.add(raf.getFilePointer());
+        		}
+        	}
+		currentPage = totalPages;
+		session.setAttribute("endPage", totalPages);
+		}else{
+			currentPage = (Integer) session.getAttribute("endPage");
+		}
+		// init with error message
+		List<String> s = new ArrayList<String>();
+		s.add("Unable to get the report data, please retry or re-open the report page");
+		currentContent.add(s);
+		
+		MatchingReportReader reader = new MatchingReportReader(currentPage,	eof, pagePos, filename);
+		
+		reader.fetchContent(currentPage);
+		
+		session.setAttribute("reportPagePosition", reader.getPagePos());
+		session.setAttribute("reportCurrentPage", reader.getCurrentPage());
+		session.setAttribute("isReportEOF", reader.isEof());
+		// this will replace error message if the process is done
+		currentContent = reader.getCurrentContent();
+		
+        } catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return currentContent;
+	}
+	
 }

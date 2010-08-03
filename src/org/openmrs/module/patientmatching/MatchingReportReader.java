@@ -36,7 +36,7 @@ public class MatchingReportReader {
      * Default paging size of the report. This indicate the total number of lines
      * that will be displayed in the show report web page.
      */
-    private static final int REPORT_PAGE_SIZE = 20;
+    public static final int REPORT_PAGE_SIZE = 20;
     
     /**
      * Cache for each page offset from the start of the file. Element i-th will
@@ -294,6 +294,7 @@ public class MatchingReportReader {
         // if the currently requested page is larger than total number of the
         // offset cache, then it means we're going to a page that is not reached
         // before and we need to add it to the offset cache
+        
         if (!(page < pagePos.size() - 1)) {
             pagePos.add(raf.getFilePointer());
         }

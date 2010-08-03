@@ -13,166 +13,99 @@ var str="";
 
 
     function getNextPage() {
-        DWRMatchingConfigUtilities.getNextPage(function writeReports(reports) {
-            DWRUtil.removeAllRows("report-list");
-            
-            var main = document.getElementById("report-list");
-            
-            currentGroup = -999;
-            currentClass = "oddRow";
-            groupChange = false;
-			mergeButton = false;
-            preClass = "oddRow";
-
-            for(i = 0; i < reports.length; i ++) {
-                var row = reports[i];
-                var tr = document.createElement("tr");
-                
-                if (currentGroup != row[2]) {
-                    groupChange = true;
-					mergeButton = true;
-                    currentGroup = row[2];
-                } else{
-                    groupChange = false;
-                }
-            
-                if(groupChange) {
-                    if (currentClass == "oddRow") {
-                        currentClass = "evenRow";
-                    } else {
-						currentClass = "oddRow";
-                    }
-                }
-
-				if(row[0]=="true"){
-							preClass = currentClass;
-							currentClass = "error";
-				}
-
-                tr.className = currentClass;
-                main.appendChild(tr);
-                if(row[0]=="true"){
-					currentClass = preClass;
-				}
-                for (j = 0; j < row.length; j ++) {
-                    if(j==0){
-						var td = document.createElement("td");
-						td.innerHTML = "<input type=\"checkbox\" id=\""+row[2]+"#"+row[1]+"\" name=\"patientId\" value=\""+row[1]+"\" onclick=\"val(this);\"/>";
-						tr.appendChild(td);
-					}else if(j>=2){
-					var td = document.createElement("td");
-				 	    td.innerHTML = row[j];
-						tr.appendChild(td);
-					}
-                }
-				if(mergeButton){
-					var td = document.createElement("td");
-						td.innerHTML = "<input type=\"button\" id=\""+row[2]+"\" value=\"Merge GroupId "+row[2]+"\" id=\""+row[2]+"Group\" onclick=\"return mergePatients(this)\" name=\"sub\" disabled/>";
-						tr.appendChild(td);
-						mergeButton = false;
-				}
-            }
-		var checkNames = document.getElementsByName("patients");
-		if(checkNames.length>0){
-			for(var i=0;i<checkNames.length;i++){
-				var num = 0;
-				var value = checkNames[i].value.split(',');
-				var id = checkNames[i].id.substring(0,checkNames[i].id.indexOf('h'));
-				for(var k=0;k<value.length-1;k++){
-					var box = document.getElementById(id+"#"+value[k]);
-					if(box!=null){
-						box.checked = true;
-					}
-					num++;
-				}
-				if(num>1 && document.getElementById(id)!=null){
-						document.getElementById(id).disabled = false;
-					}
-
-			}
-		}
-        });
+        DWRMatchingConfigUtilities.getNextPage(writeReports);
     }
 
     function getPrevPage() {
-        DWRMatchingConfigUtilities.getPrevPage(function writeReports(reports) {
-            DWRUtil.removeAllRows("report-list");
-            
-            var main = document.getElementById("report-list");
-            
-            currentGroup = -999;
-            currentClass = "oddRow";
-            groupChange = false;
-			mergeButton = false;
-            preClass = "oddRow";
-
-            for(i = 0; i < reports.length; i ++) {
-                var row = reports[i];
-                var tr = document.createElement("tr");
-                
-                if (currentGroup != row[2]) {
-                    groupChange = true;
-					mergeButton = true;
-                    currentGroup = row[2];
-                } else {
-                    groupChange = false;
-                }
-                
-                if(groupChange) {
-                   	if (currentClass == "oddRow") {
-						currentClass = "evenRow";
-					} else {
-						currentClass = "oddRow";
-					}
-                }
-				if(row[0]=="true"){
-							preClass = currentClass;
-							currentClass = "error";
-				}
-                tr.className = currentClass;
-                main.appendChild(tr);
-				if(row[0]=="true"){
-					currentClass = preClass;
-				}
-                for (j = 0; j < row.length; j ++) {
-                   if(j==0){
-					    var td = document.createElement("td");
-						td.innerHTML = "<input type=\"checkbox\" id=\""+row[2]+"#"+row[1]+"\" name=\"patientId\" value=\""+row[1]+"\" onclick=\"val(this);\"/>";
-						tr.appendChild(td);
-					}else if(j>=2){
-						var td = document.createElement("td");
-				 	    td.innerHTML = row[j];
-						tr.appendChild(td);
-					}
-                    
-                }
-				if(mergeButton){
-					var td = document.createElement("td");
-						td.innerHTML = "<input type=\"button\" id=\""+row[2]+"\" value=\"Merge GroupId "+row[2]+"\" id=\""+row[2]+"Group\" onclick=\"return mergePatients(this)\" name=\"sub\" disabled/>";
-						tr.appendChild(td);
-						mergeButton = false;
-				}
-            }
-			var checkNames = document.getElementsByName("patients");
-			if(checkNames.length>0){
-				for(var i=0;i<checkNames.length;i++){
-					var num = 0;
-					var value = checkNames[i].value.split(',');
-					var id = checkNames[i].id.substring(0,checkNames[i].id.indexOf('h'));
-					for(var k=0;k<value.length-1;k++){
-						var box = document.getElementById(id+"#"+value[k]);
-						if(box!=null){
-							box.checked = true;
-						}
-						num++;
-					}
-					if(num>1 && document.getElementById(id)!=null){
-						document.getElementById(id).disabled = false;
-					}
-				}
-			}
-        });
+        DWRMatchingConfigUtilities.getPrevPage(writeReports);
     }
+
+    function getStartPage(){
+    	DWRMatchingConfigUtilities.getStartPage(writeReports);
+    }
+
+    function getEndPage(){
+    	DWRMatchingConfigUtilities.getEndPage(writeReports);
+    }
+
+    function writeReports(reports) {
+        DWRUtil.removeAllRows("report-list");
+        
+        var main = document.getElementById("report-list");
+        
+        currentGroup = -999;
+        currentClass = "oddRow";
+        groupChange = false;
+    	mergeButton = false;
+        preClass = "oddRow";
+
+        for(i = 0; i < reports.length; i ++) {
+            var row = reports[i];
+            var tr = document.createElement("tr");
+            
+            if (currentGroup != row[2]) {
+                groupChange = true;
+    			mergeButton = true;
+                currentGroup = row[2];
+            } else {
+                groupChange = false;
+            }
+            
+            if(groupChange) {
+               	if (currentClass == "oddRow") {
+    				currentClass = "evenRow";
+    			} else {
+    				currentClass = "oddRow";
+    			}
+            }
+    		if(row[0]=="true"){
+    					preClass = currentClass;
+    					currentClass = "error";
+    		}
+            tr.className = currentClass;
+            main.appendChild(tr);
+    		if(row[0]=="true"){
+    			currentClass = preClass;
+    		}
+            for (j = 0; j < row.length; j ++) {
+               if(j==0){
+    			    var td = document.createElement("td");
+    				td.innerHTML = "<input type=\"checkbox\" id=\""+row[2]+"#"+row[1]+"\" name=\"patientId\" value=\""+row[1]+"\" onclick=\"val(this);\"/>";
+    				tr.appendChild(td);
+    			}else if(j>=2){
+    				var td = document.createElement("td");
+    		 	    td.innerHTML = row[j];
+    				tr.appendChild(td);
+    			}
+                
+            }
+    		if(mergeButton){
+    			var td = document.createElement("td");
+    				td.innerHTML = "<input type=\"button\" id=\""+row[2]+"\" value=\"Merge GroupId "+row[2]+"\" id=\""+row[2]+"Group\" onclick=\"return mergePatients(this)\" name=\"sub\" disabled/>";
+    				tr.appendChild(td);
+    				mergeButton = false;
+    		}
+        }
+    	var checkNames = document.getElementsByName("patients");
+    	if(checkNames.length>0){
+    		for(var i=0;i<checkNames.length;i++){
+    			var num = 0;
+    			var value = checkNames[i].value.split(',');
+    			var id = checkNames[i].id.substring(0,checkNames[i].id.indexOf('h'));
+    			for(var k=0;k<value.length-1;k++){
+    				var box = document.getElementById(id+"#"+value[k]);
+    				if(box!=null){
+    					box.checked = true;
+    				}
+    				num++;
+    			}
+    			if(num>1 && document.getElementById(id)!=null){
+    				document.getElementById(id).disabled = false;
+    			}
+    		}
+    	}
+    }
+    
  
 function val(obj){
 	
@@ -336,6 +269,8 @@ function mergePatients(obj){
 <br/>
 <input type="submit" value="Prev" onClick="getPrevPage();"/>
 <input type="submit" value="Next" onClick="getNextPage();"/>
+<input type="submit" value="Start" onClick="getStartPage();"/>
+<input type="submit" value="End" onClick="getEndPage();"/>
 <br />
 
 <%@ include file="/WEB-INF/template/footer.jsp" %>

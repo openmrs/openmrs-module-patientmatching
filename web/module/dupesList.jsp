@@ -17,8 +17,30 @@ var s = 0;
 
 function runReport() {
     if (confirm("Are you sure you want to generate a new report?")) {
-        DWRMatchingConfigUtilities.doAnalysis();
+		var blockList = document.getElementsByName("blockList");
+		var blListStr = "";
+		for(var i=0;i<blockList.length;i++){
+			if(blockList[i].checked == true)
+				blListStr = blListStr+blockList[i].value+",";
+		}
+		if(blListStr != ""){
+			DWRMatchingConfigUtilities.doAnalysis(blListStr);
+		}else alert("Select atleast one Strategy");
     }
+}
+
+function selectAll(){
+	var box = document.getElementsByName("blockList");
+	for(var i=0;i<box.length;i++){
+		box[i].checked = true;
+	}
+}
+
+function deselectAll(){
+	var box = document.getElementsByName("blockList");
+	for(var i=0;i<box.length;i++){
+		box[i].checked = false;
+	}
 }
 
 function reportProcessStarted(){
@@ -157,6 +179,19 @@ function check(currentStep){
 
 function updateStatus() {
 	dwr.engine.setActiveReverseAjax(true)
+	
+	<%
+		if(session.getAttribute("selStrategy")!=null){
+		String selected = (String) session.getAttribute("selStrategy");%>
+		var selected = "<%=selected%>";
+		if(selected != ""){
+			var listSelected = selected.split(",");
+			for(var i=0;i<listSelected.length;i++){
+				document.getElementById(listSelected[i]).checked = true;
+			}
+		}
+	<%}%>
+	
 	DWRMatchingConfigUtilities.getStep(check);
 }
 function strikeStep(n) {
@@ -246,7 +281,23 @@ function buildTable() {
     });
 }
 
+function storeSelStrategy(){
+	var list = document.getElementsByName("blockList");
+	var selected = "";
+	var coun = 1;
+	for(var i=0;i<list.length;i++){
+		if(list[i].checked == true){
+			if(coun>1)
+				selected = selected+",";
+			selected = selected+list[i].value;
+			coun++;
+		}
+	}
+		DWRMatchingConfigUtilities.selStrategy(selected);
+}
+
 window.onload = updateStatus;
+window.onbeforeunload = storeSelStrategy;
 </script>
 
 <h2><spring:message code="patientmatching.report.title" /></h2>
@@ -267,11 +318,12 @@ window.onload = updateStatus;
 		<ol>
 			<c:forEach items="${blockingRuns}" var="blockingRun"
 				varStatus="entriesIndex">
-				<li><c:out value="${blockingRun}" /></li>
+				<li style="list-style-type: none"><input type="checkbox" id="${blockingRun}" name="blockList" value="${blockingRun}"/>${entriesIndex.index+1}.&nbsp;<c:out value="${blockingRun}" /></li>
 			</c:forEach>
 		</ol>
 		</td>
 	</tr>
+	<tr><td><input type="button" value="Select All" onclick="selectAll()"/><input type="button" value="Deselect All" onclick="deselectAll()"/></td></tr>
 </table>
 
 <table cellspacing="2" cellpadding="2">
@@ -287,7 +339,7 @@ window.onload = updateStatus;
 		</ul>
 		</td>
 	</tr>
-
+	
 	<tr id="runReport">
 		<td>
 		<input id="run" type="button" onClick="runReport();" value="<spring:message

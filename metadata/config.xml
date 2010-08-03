@@ -55,6 +55,9 @@
                     <include method="resetStep"/>
                     <include method="getStep"/>
                     <include method="previousProcessStatus"/>
+                    <include method="getStartPage"/>
+                    <include method="getEndPage"/>
+                    <include method="selStrategy"/>
                 </create>
             </allow>
     
@@ -64,13 +67,16 @@
                 DWRMatchingConfigUtilities.getAllBlockingRuns()
                 DWRMatchingConfigUtilities.getAllReports()
                 DWRMatchingConfigUtilities.deleteBlockingRun(String)
-                DWRMatchingConfigUtilities.doAnalysis()
+                DWRMatchingConfigUtilities.doAnalysis(String)
                 DWRMatchingConfigUtilities.resetStep()
                 DWRMatchingConfigUtilities.deleteReportFile(String)
                 DWRMatchingConfigUtilities.getNextPage()
                 DWRMatchingConfigUtilities.getPrevPage()
                 DWRMatchingConfigUtilities.getStep()
                 DWRMatchingConfigUtilities.previousProcessStatus()
+                DWRMatchingConfigUtilities.getStartPage()
+                DWRMatchingConfigUtilities.getEndPage()
+                DWRMatchingConfigUtilities.selStrategy(String)
                 ]]>
             </signatures>
         </dwr>

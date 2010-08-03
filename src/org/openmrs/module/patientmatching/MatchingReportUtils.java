@@ -88,7 +88,7 @@ public class MatchingReportUtils {
 		return stepList;
 	}
 	//New Method1 2
-	public static Map<String,Object> ReadConfigFile(Map<String,Object> objects){
+	public static Map<String,Object> ReadConfigFile(Map<String,Object> objects,String[] selectedStrategies){
 		MatchingConfigurationUtils.log
 		.info("Starting generate report process sequence");
 		
@@ -103,8 +103,16 @@ public class MatchingReportUtils {
 		RecMatchConfig recMatchConfig = XMLTranslator
 		.createRecMatchConfig(XMLTranslator
 				.getXMLDocFromFile(configFile));
-		List<MatchingConfig> matchingConfigLists = recMatchConfig
-		.getMatchingConfigs();
+		List<MatchingConfig> matchConf = recMatchConfig.getMatchingConfigs();
+		List<MatchingConfig> matchingConfigLists = new ArrayList<MatchingConfig>();
+		for(String selectedStrat:selectedStrategies){
+			for(MatchingConfig conf:matchConf){
+				if(conf.getName().equals(selectedStrat)){
+					matchingConfigLists.add(conf);
+				}
+			}
+		}
+		
 		Set<String> globalIncludeColumns = new TreeSet<String>();
 		DedupMatchResultList handler = new DedupMatchResultList();
 
@@ -174,7 +182,6 @@ public class MatchingReportUtils {
 		objects.put("recMatchConfig", recMatchConfig);
 		MatchingConfig matchingConfig = ((List<MatchingConfig>)objects.get("matchingConfigLists")).get(0);
 		objects.put("matchingConfig", matchingConfig);
-		
 		return objects;
 		
 	}
@@ -182,7 +189,6 @@ public class MatchingReportUtils {
 	
 	//New Method3 End 4
 	public static Map<String, Object> CreRanSamAnalyzer(Map<String,Object> objects){
-		
 		RecMatchConfig recMatchConfig=(RecMatchConfig) objects.get("recMatchConfig");
 		MatchingConfigurationUtils.log
 				.info("Creating random sample analyzer");
