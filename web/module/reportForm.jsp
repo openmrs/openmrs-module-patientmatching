@@ -41,12 +41,18 @@ var str="";
 
         for(i = 0; i < reports.length; i ++) {
             var row = reports[i];
-            var tr = document.createElement("tr");
             
             if (currentGroup != row[2]) {
                 groupChange = true;
     			mergeButton = true;
                 currentGroup = row[2];
+				var tr = document.createElement("tr");
+				var td = document.createElement("td");
+				td.style.borderBottom = "2px solid black";
+				td.colSpan = 100;
+				tr.appendChild(td);
+				main.appendChild(tr);
+
             } else {
                 groupChange = false;
             }
@@ -62,6 +68,7 @@ var str="";
     					preClass = currentClass;
     					currentClass = "error";
     		}
+			var tr = document.createElement("tr");
             tr.className = currentClass;
             main.appendChild(tr);
     		if(row[0]=="true"){
@@ -70,11 +77,18 @@ var str="";
             for (j = 0; j < row.length; j ++) {
                if(j==0){
     			    var td = document.createElement("td");
+					var hidField = document.getElementById(row[2]);
     				td.innerHTML = "<input type=\"checkbox\" id=\""+row[2]+"#"+row[1]+"\" name=\"patientId\" value=\""+row[1]+"\" onclick=\"val(this);\"/>";
     				tr.appendChild(td);
     			}else if(j>=2){
     				var td = document.createElement("td");
-    		 	    td.innerHTML = row[j];
+					if(j==2){
+						var b = document.createElement("b");
+						b.innerHTML = row[j];
+						td.appendChild(b);
+					}else{
+    		 			td.innerHTML = row[j];
+					}
     				tr.appendChild(td);
     			}
                 
@@ -86,6 +100,7 @@ var str="";
     				mergeButton = false;
     		}
         }
+
     	var checkNames = document.getElementsByName("patients");
     	if(checkNames.length>0){
     		for(var i=0;i<checkNames.length;i++){
@@ -103,6 +118,16 @@ var str="";
     				document.getElementById(id).disabled = false;
     			}
     		}
+
+			var patientId = document.getElementsByName("patientId");
+			var id = checkNames[0].id.substring(0,checkNames[0].id.indexOf('h'));
+			for(var i=0;i<patientId.length;i++){
+				if(patientId[i].id == id+"#"+patientId[i].value){
+					patientId[i].disabled = false;
+				}else{
+					patientId[i].disabled = true;
+				}
+			}
     	}
     }
     
@@ -122,6 +147,15 @@ function val(obj){
 			element1.type="hidden";
 			element1.value=obj.value+",";
 			block.appendChild(element1);
+			var patientId = document.getElementsByName("patientId");
+			for(var i=0;i<patientId.length;i++){
+				//var id = patientId[i].val
+				if(patientId[i].id == groupId+"#"+patientId[i].value){
+					patientId[i].disabled = false;
+				}else{
+					patientId[i].disabled = true;
+				}
+			}
 		}else{
 			hidField.value=hidField.value+obj.value+",";
 			var size = hidField.value.split(",");
@@ -144,6 +178,10 @@ function val(obj){
 		if(value.indexOf(',')==-1){
 			document.getElementById(groupId).disabled = true;
 			block.removeChild(hidField);
+			var patientId = document.getElementsByName("patientId");
+			for(var i=0;i<patientId.length;i++){
+					patientId[i].disabled = false;
+			}
 		}
 		if(count==1){
 			document.getElementById(groupId).disabled = true;
@@ -182,7 +220,7 @@ function mergePatients(obj){
 <b class="boxHeader"><spring:message code="patientmatching.report.run" /></b>
 <div class="box">
         <table cellspacing="2" cellpadding="2" id="report-header">
-            <tr>
+            <tr style="background-color: #E7E7E7;">
             	<td>
                     <label>Checkbox</label>
                 </td>
@@ -207,6 +245,9 @@ function mergePatients(obj){
                         <c:set var="group" value="${reportResult[2]}" scope="page" />
                         <c:set var="groupChange" value="true" scope="page" />
                          <c:set var="mergeButton" value="true" scope="page" />
+						<tr>
+							<td colspan="100%" style="border-bottom: 2px solid black;"></td>
+						</tr>
                     </c:when>
                     <c:when test="${group == reportResult[2] && reportResult[0]=='true'}">
                         <c:set var="groupChange" value="false" scope="page" />
@@ -247,7 +288,14 @@ function mergePatients(obj){
                    			</c:when>
                    			<c:when  test="${entriesIndexInner.index>=2}">
 							<td>
-		                        <c:out value="${reportResultCell}" />
+							<c:choose>
+								<c:when  test="${entriesIndexInner.index==2}"><b>
+									<c:out value="${reportResultCell}" /></b>
+								</c:when>
+								<c:otherwise>
+									<c:out value="${reportResultCell}" />
+								</c:otherwise>
+							</c:choose>
 		                    </td>
 							</c:when>
 		                </c:choose>

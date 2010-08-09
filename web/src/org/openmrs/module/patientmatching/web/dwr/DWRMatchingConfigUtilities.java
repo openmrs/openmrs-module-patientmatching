@@ -4,7 +4,6 @@
 package org.openmrs.module.patientmatching.web.dwr;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -42,6 +41,7 @@ import uk.ltd.getahead.dwr.WebContextFactory;
 public class DWRMatchingConfigUtilities {
 
 	protected final Log log = LogFactory.getLog(getClass());
+	public static boolean timerTaskStarted = false;
     private ServerContext sctx;
     private String currentPage;
 	static Map objects;
@@ -106,6 +106,11 @@ public class DWRMatchingConfigUtilities {
 	 */
 	public String getStep() {
 		int step = currentStep;
+		if(timerTaskStarted){
+			Collection sessions3 = sctx.getScriptSessionsByPage(currentPage);
+			Util pages3 = new Util(sessions3);
+			pages3.addFunctionCall("scheduledTaskRunning");
+		}
 		log.info("DWRMatchingConfigUtilities: returning step " + new Integer(step));
 		return (new Integer(step).toString())+","+processStarted.toString();
 	}
@@ -190,65 +195,71 @@ public class DWRMatchingConfigUtilities {
 	 * @see MatchingReportUtils#doAnalysis()
 	 */
 	public void doAnalysis(String selectedStrategies) {
-		selectedStrat = selectedStrategies.split(",");
-		proTimeList = new ArrayList<Long>();
-		Collection sessions = sctx.getScriptSessionsByPage(currentPage);
-        Util pages = new Util(sessions);
-        pages.addFunctionCall("reportProcessStarted");
-		reset = 0;
-		for(int i=2;i<11;i++){
-			currentStep = i;
-			processStarted = true;
-			getCurrentProcessStatus(i);
-			processStarted = false;
-			if(reset == -1){
-				Collection sessions1 = sctx.getScriptSessionsByPage(currentPage);
-		        Util pages1 = new Util(sessions1);
-		        pages1.addFunctionCall("enableGenReport");
-				break;
-			}
-						
-			if(size >1 && index >1 && i>=4 && i<=9){
-				int j = i;
-				time = (time+proTimeList.get(i-2));
-				if(i == 9 && size != index){
-					j = 3;
-					previousProcessTime = j+","+time+"p";
+		if(!timerTaskStarted){
+			selectedStrat = selectedStrategies.split(",");
+			proTimeList = new ArrayList<Long>();
+			Collection sessions = sctx.getScriptSessionsByPage(currentPage);
+			Util pages = new Util(sessions);
+			pages.addFunctionCall("reportProcessStarted");
+			reset = 0;
+			for(int i=2;i<11;i++){
+				currentStep = i;
+				processStarted = true;
+				getCurrentProcessStatus(i);
+				processStarted = false;
+				if(reset == -1){
+					Collection sessions1 = sctx.getScriptSessionsByPage(currentPage);
+					Util pages1 = new Util(sessions1);
+					pages1.addFunctionCall("enableGenReport");
+					break;
+				}
+
+				if(size >1 && index >1 && i>=4 && i<=9){
+					int j = i;
+					time = (time+proTimeList.get(i-2));
+					if(i == 9 && size != index){
+						j = 3;
+						previousProcessTime = j+","+time+"p";
+					}else{
+						previousProcessTime = j+","+time;
+					}
+					proTimeList.set((i-2),time);
 				}else{
-				previousProcessTime = j+","+time;
+					int j = i;
+					if(size >1 && i==9){
+						j = 3;
+						previousProcessTime = j+","+time+"p";
+					}else {
+						previousProcessTime = i+","+time;
+					}
+					proTimeList.add(time);
 				}
-				proTimeList.set((i-2),time);
-			}else{
-				int j = i;
-				if(size >1 && i==9){
-					j = 3;
-					previousProcessTime = j+","+time+"p";
+
+				if(i==9 && size != index && size != 0){
+					objects.put("matchingConfig",((List<MatchingConfig>)objects.get("matchingConfigLists")).get(index));
+					index++;
+					i = 3;
+				}
+
+				if(reset != -1){
+					Collection sessions2 = sctx.getScriptSessionsByPage(currentPage);
+					Util pages2 = new Util(sessions2);
+					pages2.addFunctionCall("updateChecklist",previousProcessTime);
+
 				}else {
-				previousProcessTime = i+","+time;
+					proTimeList = null;
+					currentStep = 0;
 				}
-				proTimeList.add(time);
 			}
-			
-			if(i==9 && size != index && size != 0){
-				objects.put("matchingConfig",((List<MatchingConfig>)objects.get("matchingConfigLists")).get(index));
-				index++;
-				i = 3;
-			}
-			
-			if(reset != -1){
-				Collection sessions2 = sctx.getScriptSessionsByPage(currentPage);
-	            Util pages2 = new Util(sessions2);
-	            pages2.addFunctionCall("updateChecklist",previousProcessTime);
-				
-			}else {
-				proTimeList = null;
-				currentStep = 0;
-			}
+			processStarted = false;
+			currentStep = 0;
+			index = 1;
+			size = 0;
+		}else{
+			Collection sessions3 = sctx.getScriptSessionsByPage(currentPage);
+			Util pages3 = new Util(sessions3);
+			pages3.addFunctionCall("scheduledTaskRunning");
 		}
-		processStarted = false;
-		currentStep = 0;
-		index = 1;
-		size = 0;
 	}
 
 	/**

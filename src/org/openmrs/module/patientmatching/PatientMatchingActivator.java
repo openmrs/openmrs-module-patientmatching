@@ -1,6 +1,7 @@
 package org.openmrs.module.patientmatching;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -13,6 +14,8 @@ import org.openmrs.api.PatientSetService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.Activator;
 import org.openmrs.module.patientmatching.advice.PatientMatchingAdvice;
+import org.openmrs.scheduler.SchedulerException;
+import org.openmrs.scheduler.TaskDefinition;
 import org.openmrs.util.OpenmrsConstants;
 import org.regenstrief.linkage.db.RecordDBManager;
 import org.springframework.aop.Advisor;
@@ -64,7 +67,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	public static final String GET_PATIENT_METHOD = "getPatientByExample";
 	public static final String MERGE_METHOD = "mergePatient";
 	public static final String SAVE_METHOD = "savePatient";
-	
+    private static final String extention = "patientMatching";
 	public final static String CONFIG_FILE = "link_config.xml";
 	public final static String MATCHING_ATTRIBUTE = "Other Matching Information";
 	public final static String LINK_TABLE_KEY_DEMOGRAPHIC = "openmrs_id";
@@ -80,6 +83,19 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	 */
 	public void shutdown() {
 		log.info("Shutting down Patient Matching Module");
+		
+		Collection<TaskDefinition> rTasks = Context.getSchedulerService().getRegisteredTasks();
+		for(TaskDefinition td:rTasks){
+			if(td.getName().contains(extention)){
+				try {
+					Context.getSchedulerService().shutdownTask(td);
+				} catch (SchedulerException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		
 		LinkDBConnections ldb_con = LinkDBConnections.getInstance();
 		RecordDBManager link_db = ldb_con.getRecDBManager();
 		link_db.disconnect();

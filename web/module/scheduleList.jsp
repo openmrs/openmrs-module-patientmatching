@@ -1,69 +1,97 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
 <openmrs:require privilege="View Patients, View Patient Cohorts" otherwise="/login.htm" redirect="/module/patientmatching/schedule.list" />
 
 <%@ include file="/WEB-INF/template/header.jsp" %>
 <%@ include file="localHeader.jsp" %>
-<openmrs:htmlInclude file="/scripts/calendar/calendar.js" />
-
 <h2><spring:message code="patientmatching.schedule.title"/></h2>
 
+<script type="text/javascript">
+
+function validate(obj){
+	var check = document.getElementsByName("taskId");
+	var count = 0;
+	for(var i=0;i<check.length;i++){
+		if(check[i].checked == true){
+			++count;
+		}
+	}
+
+	if(count <= 0){
+		alert("No tasks selected to "+obj.value);
+		return false;
+	}else{
+		return true;
+	}
+}
+
+</script>
+
+<style>
+	tr.top, tr.bottom { background-color: #E7E7E7; border: 1px solid black; }
+	th, td { text-align: center; vertical-align: top; padding: 10px;  } 
+	th.left, td.left { text-align: left; } 
+	td.button { border: 0; } 
+	tr.even { background-color: #F7F7F7; }
+</style>
+
 <br/>
-
-<b class="boxHeader"><spring:message code="patientmatching.schedule.new" /></b>
-<div class="box">
-    <form method="post">
-        <table cellspacing="2">
-            <tr>
-                <th colspan="2"><spring:message code="patientmatching.schedule.parameter"/></th>
-            </tr>
-            <tr>
-                <td><spring:message code="patientmatching.schedule.name" /></td>
-                <td>
-                    <input type="text" 
-                        name="name" size="30" id="name"
-                        value="" />
-                </td>
-            </tr>
-            <tr>
-                <td><spring:message code="patientmatching.schedule.date" /></td>
-                <td>
-                    <input type="text" 
-                        name="startdate" size="10" id="startdate"
-                        value=""
-                        onClick="showCalendar(this)" />
-                </td>
-            </tr>
-            <tr>
-                <td><spring:message code="patientmatching.schedule.repeatable" /></td>
-                <td>
-                    <input type="checkbox" name="repeatable" id="repeatable" />
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <input type="submit" value="<spring:message code="general.save" />" />
-                </td>
-            </tr>
-        </table>
-    </form>
-</div>
-<br/><br/>
-
+<a href="schedule.form">Create Schedule</a>
+<br/>
+<br/>
 <b class="boxHeader"><spring:message code="patientmatching.schedule.list" /></b>
-<div class="box">
-    <table cellspacing="2">
-        <tr>
-            <th><spring:message code="patientmatching.schedule.name" /></th>
-            <th><spring:message code="patientmatching.schedule.date" /></th>
-            <th><spring:message code="patientmatching.schedule.repeatable" /></th>
+<div>
+<form method="post">
+    <table cellspacing="2" class="box">
+        <tr class="top">
+            <th></th>
+            <th>Status</th>
+            <th>Tasks</th>
+            <th>Schedule</th>
+            <th>Last Execution</th>
         </tr>
-        <tr>
-            <td></td>
-            <td></td>
-            <td></td>
+        <c:forEach items="${allTasks}" var="selectedTask" varStatus="taskIndex">
+        
+        		<c:set var="rowColor" value="oddRow" />
+				<c:if test="${taskIndex.index % 2 == 0}">
+					<c:set var="rowColor" value="evenRow"/>
+				</c:if>
+        <tr class="${rowColor}">
+        	<td><input type="checkbox" size="3" name="taskId" value="${selectedTask.task.id}"/></td>
+        	<td valign="top" align="center"><c:choose>
+					<c:when test="${selectedTask.task.started}">
+						<font color="green"><strong>Started</strong></font><br>										
+						<c:if test="${selectedTask.task.startTime!=null}">
+							<i>Runs again in <strong>${selectedTask.task.secondsUntilNextExecutionTime}s</strong></i>
+						</c:if>
+					</c:when>
+					<c:otherwise>
+						<font color="red"><strong>Stopped</strong></font>
+					</c:otherwise>
+				</c:choose></td>
+            <td class="left"><a href="schedule.form?taskId=${selectedTask.task.id}"><strong>${selectedTask.name}</strong></a></td>
+            <td class="left">Runs every <strong>${intervals[selectedTask.task]}</strong> 
+				<c:if test="${selectedTask.task.startTime!=null}">	
+						<fmt:formatDate var="taskStartTime" pattern="hh:mm:ssa" value="${selectedTask.task.startTime}" />
+						<fmt:formatDate var="taskStartDate" pattern="MMM dd yyyy" value="${selectedTask.task.startTime}" />							 	
+				 	 from <strong>${taskStartTime}</strong>, 
+				 	<br/>starting on <strong>${taskStartDate}</strong>
+				</c:if>							
+			</td>
+            <td class="left"><openmrs:formatDate date="${selectedTask.task.lastExecutionTime}" type="long" /></td>
         </tr>
+        </c:forEach>
+        <tr class="bottom">
+			<td colspan="6">
+				<input type="submit" value="<spring:message code="Scheduler.taskList.start"/>" name="action" onclick="return validate(this);">
+				<input type="submit" value="<spring:message code="Scheduler.taskList.stop"/>" name="action" onclick="return validate(this);">
+				<input type="submit" value="<spring:message code="Scheduler.taskList.delete"/>" name="action" onclick="return validate(this);">
+						
+			</td>
+		</tr>
     </table>
+    </form>
 </div>
 <br/>
 <%@ include file="/WEB-INF/template/footer.jsp" %>

@@ -11,6 +11,7 @@
                 <prop key="/module/@MODULE_ID@/config.list">matchConfig</prop>
                 <prop key="/module/@MODULE_ID@/config.form">configForm</prop>
                 <prop key="/module/@MODULE_ID@/schedule.list">matchSchedule</prop>
+                <prop key="/module/@MODULE_ID@/schedule.form">scheduleForm</prop>
                 <prop key="/module/@MODULE_ID@/dupes.list">matchDupes</prop>
                 <prop key="/module/@MODULE_ID@/report.form">reportDupes</prop>
 			</props>
@@ -30,6 +31,12 @@
 
     <bean id="matchSchedule" class="@MODULE_PACKAGE@.web.ScheduleSimpleFormController">
         <property name="formView"><value>/module/@MODULE_ID@/scheduleList</value></property>
+        <property name="successView"><value>schedule.list</value></property>
+    </bean>
+    <bean id="scheduleForm" class="@MODULE_PACKAGE@.web.CreateScheduleFormController">
+    	<property name="commandName"><value>task</value></property>
+        <property name="formView"><value>/module/@MODULE_ID@/scheduleForm</value></property>
+        <property name="successView"><value>schedule.list</value></property>
     </bean>
 
     <bean id="matchDupes" class="@MODULE_PACKAGE@.web.ReportSimpleFormController">

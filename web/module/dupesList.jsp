@@ -4,6 +4,7 @@
 	otherwise="/login.htm" redirect="/module/patientmatching/dupes.list" />
 
 <%@ include file="/WEB-INF/template/header.jsp"%>
+<div id="openmrs_msg" style="display:none"><spring:message code="TaskMessage" text="Scheduled Task Report Generation is Running"/></div>
 <%@ include file="localHeader.jsp"%>
 <openmrs:htmlInclude file="/dwr/interface/DWRMatchingConfigUtilities.js" />
 <openmrs:htmlInclude file="/dwr/engine.js" />
@@ -17,6 +18,7 @@ var s = 0;
 
 function runReport() {
     if (confirm("Are you sure you want to generate a new report?")) {
+    	document.getElementById("openmrs_msg").style.display = "none";
 		var blockList = document.getElementsByName("blockList");
 		var blListStr = "";
 		for(var i=0;i<blockList.length;i++){
@@ -27,6 +29,10 @@ function runReport() {
 			DWRMatchingConfigUtilities.doAnalysis(blListStr);
 		}else alert("Select atleast one Strategy");
     }
+}
+
+function scheduledTaskRunning(){
+	document.getElementById("openmrs_msg").style.display = "";
 }
 
 function selectAll(){
@@ -204,7 +210,6 @@ function strikeStep(n) {
 		step.style.color="black";
 		}
 	}
-//	step.innerHTML = step.innerHTML.replace(/<\/?[^>]+(>|$)/g, ''); // strip the highlighting tags
 	if(n==n_steps){
 		document.getElementById("run").disabled = false;
 	}
@@ -219,7 +224,6 @@ function unstrikeStep(n) {
 		processTime.innerHTML = "";
 		step.style.color="black";
 	}
-	//step.innerHTML = step.innerHTML.replace(/<\/?[^>]+(>|$)/g, ''); // strip the highlighting tags
 }
 
 function strikeUpToStep(n) {
