@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 
@@ -21,6 +22,8 @@ import org.apache.commons.logging.LogFactory;
 import org.directwebremoting.ServerContext;
 import org.directwebremoting.ServerContextFactory;
 import org.directwebremoting.proxy.dwr.Util;
+import org.openmrs.Patient;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.patientmatching.LinkDBConnections;
 import org.openmrs.module.patientmatching.MatchingConfigurationUtils;
 import org.openmrs.module.patientmatching.MatchingConstants;
@@ -62,6 +65,8 @@ public class DWRMatchingConfigUtilities {
 	
 	public DWRMatchingConfigUtilities(){
 		ServletContext servletContext = org.directwebremoting.WebContextFactory.get().getServletContext();
+		//ServletConfig sc = org.directwebremoting.WebContextFactory.get().getServletConfig();
+		//System.out.println("testing..."+sc.getInitParameter("activeReverseAjaxEnabled")+"..."+sc.getInitParameter("debug")+"..."+sc.getServletName());
         sctx = ServerContextFactory.get(servletContext);
         org.directwebremoting.WebContext wctx = org.directwebremoting.WebContextFactory.get();
         currentPage = wctx.getCurrentPage();
@@ -106,16 +111,30 @@ public class DWRMatchingConfigUtilities {
 	 */
 	public String getStep() {
 		int step = currentStep;
+		String activeReverseAjaxEnabled = "true";
+		ServletConfig sc = org.directwebremoting.WebContextFactory.get().getServletConfig();
+		if(sc.getInitParameter("activeReverseAjaxEnabled")==null||sc.getInitParameter("activeReverseAjaxEnabled").equals("false")){
+			activeReverseAjaxEnabled = "false,"+reset+","+timerTaskStarted;
+		}
+		
+		System.out.println("in get..."+activeReverseAjaxEnabled);
+		
 		if(timerTaskStarted){
 			Collection sessions3 = sctx.getScriptSessionsByPage(currentPage);
 			Util pages3 = new Util(sessions3);
 			pages3.addFunctionCall("scheduledTaskRunning");
 		}
 		log.info("DWRMatchingConfigUtilities: returning step " + new Integer(step));
-		return (new Integer(step).toString())+","+processStarted.toString();
+		return (new Integer(step).toString())+","+processStarted.toString()+","+activeReverseAjaxEnabled;
 	}
 
 	//New Method Declaration
+	
+	public Patient getPatient(String patientId){
+		Patient patient = Context.getPatientService().getPatient(Integer.valueOf(patientId));
+		return patient;
+	}
+	
 	public List<Long> previousProcessStatus(){
 		return proTimeList;
 	}

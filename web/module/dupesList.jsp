@@ -14,7 +14,8 @@
 
 var n_steps = 11; // hard-coded for now; unlikely to change
 var s = 0;
-
+var count = 0;
+var actRA = "true";
 
 function runReport() {
     if (confirm("Are you sure you want to generate a new report?")) {
@@ -26,7 +27,10 @@ function runReport() {
 				blListStr = blListStr+blockList[i].value+",";
 		}
 		if(blListStr != ""){
-			DWRMatchingConfigUtilities.doAnalysis(blListStr);
+			if(actRA=="true")
+				DWRMatchingConfigUtilities.doAnalysis(blListStr);
+			else
+				s = setTimeout("updateStatus()", 100);
 		}else alert("Select atleast one Strategy");
     }
 }
@@ -181,13 +185,23 @@ function check(currentStep){
 		document.getElementById("run").disabled = true; 
 		DWRMatchingConfigUtilities.previousProcessStatus(prevProStat);
 	}
+	if(stepDe[2]=="false"){
+		if(stepDe[3]=="-1"){
+			reset();
+		}
+		if(stepDe[4]=="true"&&count==0){
+			scheduledTaskRunning();
+			count++;
+		}
+		actRA == "false";
+		s = setTimeout("updateStatus()", 1000);
+	}
 }
 
-function updateStatus() {
-	dwr.engine.setActiveReverseAjax(true)
-	
+function callOnloadFunctions(){
+	dwr.engine.setActiveReverseAjax(true);
 	<%
-		if(session.getAttribute("selStrategy")!=null){
+	if(session.getAttribute("selStrategy")!=null){
 		String selected = (String) session.getAttribute("selStrategy");%>
 		var selected = "<%=selected%>";
 		if(selected != ""){
@@ -197,11 +211,13 @@ function updateStatus() {
 			}
 		}
 	<%}%>
-	
+	updateStatus();
+}
+
+function updateStatus() {
 	DWRMatchingConfigUtilities.getStep(check);
 }
 function strikeStep(n) {
-	//alert("step");
 	var step = document.getElementById("step" + n);
 	step.style.color="green";
 	for (var i=1; i<=n_steps; i++) {
@@ -300,7 +316,7 @@ function storeSelStrategy(){
 		DWRMatchingConfigUtilities.selStrategy(selected);
 }
 
-window.onload = updateStatus;
+window.onload = callOnloadFunctions;
 window.onbeforeunload = storeSelStrategy;
 </script>
 
