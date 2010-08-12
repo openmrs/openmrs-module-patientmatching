@@ -65,8 +65,6 @@ public class DWRMatchingConfigUtilities {
 	
 	public DWRMatchingConfigUtilities(){
 		ServletContext servletContext = org.directwebremoting.WebContextFactory.get().getServletContext();
-		//ServletConfig sc = org.directwebremoting.WebContextFactory.get().getServletConfig();
-		//System.out.println("testing..."+sc.getInitParameter("activeReverseAjaxEnabled")+"..."+sc.getInitParameter("debug")+"..."+sc.getServletName());
         sctx = ServerContextFactory.get(servletContext);
         org.directwebremoting.WebContext wctx = org.directwebremoting.WebContextFactory.get();
         currentPage = wctx.getCurrentPage();
@@ -116,9 +114,6 @@ public class DWRMatchingConfigUtilities {
 		if(sc.getInitParameter("activeReverseAjaxEnabled")==null||sc.getInitParameter("activeReverseAjaxEnabled").equals("false")){
 			activeReverseAjaxEnabled = "false,"+reset+","+timerTaskStarted;
 		}
-		
-		System.out.println("in get..."+activeReverseAjaxEnabled);
-		
 		if(timerTaskStarted){
 			Collection sessions3 = sctx.getScriptSessionsByPage(currentPage);
 			Util pages3 = new Util(sessions3);
