@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -23,6 +24,8 @@ import org.directwebremoting.ServerContext;
 import org.directwebremoting.ServerContextFactory;
 import org.directwebremoting.proxy.dwr.Util;
 import org.openmrs.Patient;
+import org.openmrs.PatientIdentifier;
+import org.openmrs.PersonAddress;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.patientmatching.LinkDBConnections;
 import org.openmrs.module.patientmatching.MatchingConfigurationUtils;
@@ -125,9 +128,17 @@ public class DWRMatchingConfigUtilities {
 
 	//New Method Declaration
 	
-	public Patient getPatient(String patientId){
-		Patient patient = Context.getPatientService().getPatient(Integer.valueOf(patientId));
-		return patient;
+	public List<Object>getPatient(String patientId){
+		List<Object> patientDetails = new ArrayList<Object>();
+		int pId =  Integer.valueOf(patientId);
+		Patient patient = Context.getPatientService().getPatient(pId);
+		Set<PatientIdentifier> patientIdentifier = Context.getPatientService().getPatient(pId).getIdentifiers();
+		Set<PersonAddress> patientAddress = Context.getPatientService().getPatient(pId).getAddresses();
+		patientDetails.add(patient);
+		patientDetails.add(patientIdentifier);
+		patientDetails.add(patientAddress);
+		
+		return patientDetails;
 	}
 	
 	public List<Long> previousProcessStatus(){

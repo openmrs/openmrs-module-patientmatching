@@ -43,6 +43,58 @@
         </globalProperty>
         <dwr>
             <allow>
+            	
+               <convert converter="bean" match="org.openmrs.Person">
+        		    <param name="include" value="personId, names,
+                         addresses, attributes, gender, birthdate,
+                		 birthdateEstimated, age, dead, voided,
+            		     personName, personAddress, attributeMap"/>
+           	   </convert>
+			   <convert converter="bean" match="org.openmrs.PersonName">
+	                <param name="include" value="personNameId, preferred,
+	                     prefix, givenName, middleName, familyNamePrefix,
+	                     familyName, familyName2, familyNameSuffix,
+	                     degree, voided"/>
+	           </convert>
+	           <convert converter="bean" match="org.openmrs.PersonAddress">
+	                <param name="include" value="personAddressId,
+	                     preferred, address1, address2, cityVillage,
+	                     neighborhoodCell, countyDistrict, townshipDivision,
+	                     region, subregion, stateProvince, country, postalCode,
+	                     latitude, longitude, voided"/>
+	           </convert>
+	           <convert converter="bean" match="org.openmrs.PersonAttribute">
+    	            <param name="include" value="personAttributeId,
+          	             person, attributeType, value, voided"/>
+         	   </convert>
+        	   <convert converter="bean" match="org.openmrs.PersonAttributeType">
+           		    <param name="include" value="personAttributeTypeId,
+                         name, format, foreignKey, description, searchable,
+            	         retired"/>
+           		</convert>
+	            <convert converter="bean" match="org.openmrs.Patient">
+	                <param name="include" value="patientId,
+	                     identifiers, voided, personId, names,
+	                     addresses, attributes, gender, birthdate,
+	                     birthdateEstimated, age, deathdate, dead,
+	                     personName, personAddress, attributeMap"/>
+	            </convert>
+	            <convert converter="bean" match="org.openmrs.PatientIdentifier">
+		            <param name="include" value="identifier,
+		                 identifierType, location, voided, preferred"/>
+		        </convert>
+		        <convert converter="bean" match="org.openmrs.PatientIdentifierType">
+		            <param name="include" value="patientIdentifierTypeId,
+		                 name, format, required, formatDescription, checkDigit,
+		                 description, validator, retired, patientIdentifier"/>
+		        </convert>
+		        <convert converter="bean" match="org.openmrs.Location">
+		            <param name="include" value="locationId, name,
+		                 description, address1, address2, cityVillage,
+		                 stateProvince, country, postalCode, latitude,
+		                 longitude, countyDistrict, neighborhoodCell,
+		                 townshipDivision, region, subregion, retired"/>
+		        </convert>
                 <create creator="new" javascript="DWRMatchingConfigUtilities">
                     <param name="class" value="@MODULE_PACKAGE@.web.dwr.DWRMatchingConfigUtilities"/>
                     <include method="getAllBlockingRuns"/>
@@ -58,11 +110,14 @@
                     <include method="getStartPage"/>
                     <include method="getEndPage"/>
                     <include method="selStrategy"/>
+                    <include method="getPatient"/>
                 </create>
             </allow>
     
             <signatures>
                 <![CDATA[
+                import java.util.List;
+				import java.util.Set;
                 import @MODULE_PACKAGE@.web.dwr.DWRMatchingConfigUtilities;
                 DWRMatchingConfigUtilities.getAllBlockingRuns()
                 DWRMatchingConfigUtilities.getAllReports()
@@ -77,6 +132,7 @@
                 DWRMatchingConfigUtilities.getStartPage()
                 DWRMatchingConfigUtilities.getEndPage()
                 DWRMatchingConfigUtilities.selStrategy(String)
+                DWRMatchingConfigUtilities.getPatient(String)
                 ]]>
             </signatures>
         </dwr>

@@ -6,7 +6,9 @@
 <openmrs:htmlInclude file="/dwr/interface/DWRMatchingConfigUtilities.js"/>
 <openmrs:htmlInclude file="/dwr/engine.js"/>
 <openmrs:htmlInclude file="/dwr/util.js"/>
-
+<script type="text/javascript" src="${pageContext.request.contextPath}/moduleResources/patientmatching/includes/jquery-1.4.2.min.js"></script>
+<openmrs:htmlInclude file="/scripts/jquery-ui/css/redmond/jquery-ui-1.7.2.custom.css" />
+<openmrs:htmlInclude file="/scripts/jquery-ui/js/jquery-ui-1.7.2.custom.min.js" />
 <script type="text/javascript">
 var checkbox_choices = 0;
 var str="";
@@ -70,7 +72,8 @@ var str="";
     		}
 			var tr = document.createElement("tr");
             tr.className = currentClass;
-            main.appendChild(tr);
+			tr.id = row[1]+"";
+			tr.ondblclick = function ondblclick(){patientInfo(this)}
     		if(row[0]=="true"){
     			currentClass = preClass;
     		}
@@ -86,6 +89,12 @@ var str="";
 						var b = document.createElement("b");
 						b.innerHTML = row[j];
 						td.appendChild(b);
+					}else if(j==3){
+						var a = document.createElement("a");
+						a.href = "javascript:patientInfo("+row[j]+");";
+						a.innerHTML = row[j];
+						td.appendChild(a);
+						
 					}else{
     		 			td.innerHTML = row[j];
 					}
@@ -99,6 +108,7 @@ var str="";
     				tr.appendChild(td);
     				mergeButton = false;
     		}
+			main.appendChild(tr);
         }
 
     	var checkNames = document.getElementsByName("patients");
@@ -208,10 +218,126 @@ function mergePatients(obj){
 	}
 }
 
+function displayPatient(patientDetails){
+	
+	var patient = patientDetails[0];
+	var names = patient.names;
+	var patientNames = "";
+	for(var i=0;i<names.length;i++){
+		patientNames = patientNames+"<li>"+names[i].givenName+" "+names[i].middleName+" "+names[i].familyName;
+	}
+	document.getElementById("name").innerHTML = patientNames;
+	document.getElementById("info0").innerHTML = patient.patientId;
+	var gender = patient.gender;
+	if(gender.indexOf('f')>=0){
+		gender = "<img src=\"${pageContext.request.contextPath}/images/female.gif\" />"
+	}else{
+		gender = "<img src=\"${pageContext.request.contextPath}/images/male.gif\" />"
+	}
+	document.getElementById("info1").innerHTML = gender;
+	var date = new Date();
+	date = patient.birthdate;
+	document.getElementById("info2").innerHTML = date.getDate()+"/"+(date.getMonth()+1)+"/"+(date.getYear()+1900);
+	if(patient.dead){
+		date = patient.deathdate;
+		document.getElementById("info3").innerHTML = date.getDate()+"/"+(date.getMonth()+1)+"/"+(date.getYear()+1900);
+	}else{
+		document.getElementById("info3").innerHTML = "";
+	}
+	var voided = patient.voided;
+	if(voided){
+		voided = "Yes";
+	}else if(!voided){
+		voided = "No";
+	}
+	document.getElementById("info4").innerHTML = voided;
+	var patientIdentifiers = patientDetails[1];
+	
+	var identifiers = "";
+	for(var i=0; i<patientIdentifiers.length; i++){
+		identifiers = identifiers+"<li>"+patientIdentifiers[i].identifier;
+	}
+	document.getElementById("identifier").innerHTML = identifiers;
+	var patientAddresses = patientDetails[2];
+	
+	var addresses = "";
+	for(var i=0; i<patientAddresses.length; i++){
+		addresses = addresses+"<li>"+patientAddresses[i].address1+" "+patientAddresses[i].address2+" "+patientAddresses[i].cityVillage;
+	}
+	document.getElementById("address").innerHTML = addresses;
+}
+
+function patientInfo(obj){
+	var patientId = "";
+	if(obj.id == undefined){
+		patientId = obj;
+	}else{
+		patientId = obj.id;
+	}
+	DWRMatchingConfigUtilities.getPatient(patientId,displayPatient);
+}
+
+$(document).ready(function() {
+
+	$('#full').dialog({
+			autoOpen: false,
+			modal: true,
+			title: '<spring:message code="Module.addOrUpgrade" javaScriptEscape="true"/>',
+			width: '30%'
+			
+		});
+
+	$("[id='report-list']").dblclick(function() {
+
+			$("#full").dialog('open');
+
+		});
+});
+
 </script>
 
 <h2><spring:message code="patientmatching.report.title"/></h2>
-
+<div id="full">
+<div class="box">
+	<table>
+	<tr><td><h4><spring:message code="Patient.names"/></h4>
+				<ol id="name"></ol></td>
+	</tr>
+	<tr><td><h4><spring:message code="Patient.identifiers"/></h4>
+				<ol id="identifier"></ol></td>
+	</tr>
+	<tr><td><h4><spring:message code="Patient.addresses"/></h4>
+				<ol id="address"></ol></td>
+	</tr>
+	<tr><td><h4><spring:message code="Patient.information"/></h4>
+				
+		<table>
+			<tr>
+				<th align="left"><spring:message code="general.id"/></th>
+				<td id="info0"></td>
+			</tr>
+			<tr>
+				<th align="left"><spring:message code="Person.gender"/></th>
+				<td id="info1"></td>
+			</tr>
+			<tr>
+				<th align="left"><spring:message code="Person.birthdate"/></th>
+				<td id="info2"></td>
+			</tr>
+			
+			<tr>
+				<th align="left"><spring:message code="Person.deathDate"/></th>
+				<td id="info3"></td>
+			</tr>
+			<tr>
+				<th align="left"><spring:message code="general.voided"/></th>
+				<td id="info4"></td>
+			</tr>
+		</table></td>
+	</tr>
+	</table>
+</div>
+</div>
 <br />
 <a href="javascript:window.close()" title="Close This Window">Close This Window</a>
 <br />
@@ -277,7 +403,7 @@ function mergePatients(obj){
                     </c:choose>
                 </c:if>
 					
-                <tr class="<c:out value="${currentClass}" />">
+                <tr ondblclick="patientInfo(this);" id="${reportResult[1]}" class="<c:out value="${currentClass}" />">
                 
                 <c:forEach items="${reportResult}" var="reportResultCell" varStatus="entriesIndexInner">
                     <c:choose>
@@ -291,6 +417,9 @@ function mergePatients(obj){
 							<c:choose>
 								<c:when  test="${entriesIndexInner.index==2}"><b>
 									<c:out value="${reportResultCell}" /></b>
+								</c:when>
+								<c:when  test="${entriesIndexInner.index==3}"><a href="javascript:patientInfo(${reportResultCell});">
+									<c:out value="${reportResultCell}" /></a>
 								</c:when>
 								<c:otherwise>
 									<c:out value="${reportResultCell}" />
