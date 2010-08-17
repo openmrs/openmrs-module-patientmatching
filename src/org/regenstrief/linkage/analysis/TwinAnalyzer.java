@@ -5,10 +5,10 @@ import org.regenstrief.linkage.Record;
 /**
  * Class checks two records to see if they are likely to be twins.  Current
  * default rules that will be implemented are:
- *     FN’s disagree and MRN’s disagree
+ *     FNs disagree and MRNs disagree
  *     Genders both not null and Genders disagree
- *     FN’s disagree and Genders disagree
- *     FN’s disagree and at least one MRN null
+ *     FNs disagree and Genders disagree
+ *     FNs disagree and at least one MRN null
  * 
  * An initial check for different MRNs are done and if they are
  * the same, then the method immediately returns false.
