@@ -603,12 +603,14 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
             }
         } else if (e.getSource() == doneCheckBox) {
             if(e.getStateChange() == ItemEvent.SELECTED){
+            	dedupeCheckBox.setEnabled(false);
                 boolean uniqueIdSet = true;
                 LinkDataSource firstDataSource = rm_conf.getLinkDataSource1();
                 LinkDataSource secondDataSource = rm_conf.getLinkDataSource2();
-                if ((firstDataSource.getUniqueID() == null)
-                        || (secondDataSource.getUniqueID() == null)) {
+                if (firstDataSource.getUniqueID() == null){
                     uniqueIdSet = false;
+                } else {
+                	secondDataSource.setUniqueID(firstDataSource.getUniqueID());
                 }
                 if (rm_conf.isDeduplication()) {
                     if(uniqueIdSet) {
@@ -619,16 +621,25 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
                     } else {
                         doneCheckBox.setSelected(false);
                         JOptionPane.showMessageDialog(main_window,
-                                "For deduplication process, a unique id column\n must be present and selected.", "Program says ...",
+                                "A unique id column\n must be present and selected.", "Program says ...",
                                 JOptionPane.ERROR_MESSAGE);
                     }
                 } else {
-                    tabs.setEnabledAt(0, false);
-                    tabs.setEnabledAt(1, true);
-                    tabs.setEnabledAt(2, true);
-                    tabs.setSelectedIndex(1);
+                	if(uniqueIdSet) {
+                		tabs.setEnabledAt(0, false);
+                        tabs.setEnabledAt(1, true);
+                        tabs.setEnabledAt(2, true);
+                        tabs.setSelectedIndex(1);
+                	} else {
+                        doneCheckBox.setSelected(false);
+                        JOptionPane.showMessageDialog(main_window,
+                                "A unique id column\n must be present and selected.", "Program says ...",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                    
                 }
             } else {
+            	dedupeCheckBox.setEnabled(true);
                 tabs.setEnabledAt(0, true);
                 tabs.setEnabledAt(1, false);
                 tabs.setEnabledAt(2, false);

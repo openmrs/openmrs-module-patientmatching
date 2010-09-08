@@ -810,13 +810,17 @@ public class DataPanel extends JPanel implements MouseListener, ActionListener, 
                 lds = rm_conf.getLinkDataSource1();
                 lds.setUniqueID(columnName);
                 lds = rm_conf.getLinkDataSource2();
-                lds.setUniqueID(columnName);
+                if(lds != null){
+                	lds.setUniqueID(columnName);
+                }
             } else {
                 lds = rm_conf.getLinkDataSource1();
                 if (columnName.equals(lds.getUniqueID())) {
                     lds.setUniqueID(null);
                     lds = rm_conf.getLinkDataSource2();
-                    lds.setUniqueID(null);
+                    if(lds != null){
+                    	lds.setUniqueID(null);
+                    }
                 }
             }
         }
