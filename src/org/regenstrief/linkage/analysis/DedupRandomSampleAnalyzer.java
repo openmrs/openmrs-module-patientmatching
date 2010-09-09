@@ -16,7 +16,7 @@ import org.regenstrief.linkage.util.MatchingConfig;
 public class DedupRandomSampleAnalyzer extends RandomSampleAnalyzer {
 	Hashtable<Long,Integer> right_uid_index_map;
 	Hashtable<Long,Integer> left_uid_index_map;
-	List<Long> uid_list;
+	Hashtable<Long,Boolean> uid_list;
 	
 	public DedupRandomSampleAnalyzer(MatchingConfig mc, FormPairs fp){
 		super(mc, fp);
@@ -33,7 +33,7 @@ public class DedupRandomSampleAnalyzer extends RandomSampleAnalyzer {
 		// initialize dedup hashtables
 		right_uid_index_map = new Hashtable<Long,Integer>();
 		left_uid_index_map = new Hashtable<Long,Integer>();
-		uid_list = new Vector<Long>();
+		uid_list = new Hashtable<Long,Boolean>();
 		
 		if(fp instanceof LookupFormPairs){
 			pair_count = ((LookupFormPairs)fp).size();
@@ -68,12 +68,8 @@ public class DedupRandomSampleAnalyzer extends RandomSampleAnalyzer {
 			}
 			
 			
-			if(!uid_list.contains(uid1)){
-				uid_list.add(uid1);
-			}
-			if(!uid_list.contains(uid2)){
-				uid_list.add(uid2);
-			}
+			uid_list.put(uid1, true);
+			uid_list.put(uid2, true);
 			
 			pair_count++;
 			pair = fp.getNextRecordPair();
@@ -90,6 +86,9 @@ public class DedupRandomSampleAnalyzer extends RandomSampleAnalyzer {
 			pairs = new Hashtable<Integer,List<Integer>>();
 		}
 		
+		Vector<Long> uids = new Vector<Long>();
+		uids.addAll(uid_list.keySet());
+		
 		// need to get two sets of random numbers, one for each data source
 		for(int i = 0; i < sampleSize && max_index > 0; i++){
 			
@@ -100,8 +99,8 @@ public class DedupRandomSampleAnalyzer extends RandomSampleAnalyzer {
 				left_uid_index = rand.nextInt(max_index);
 				right_uid_index = rand.nextInt(max_index);
 				
-				left_uid = uid_list.get(left_uid_index);
-				right_uid = uid_list.get(right_uid_index);
+				left_uid = uids.get(left_uid_index);
+				right_uid = uids.get(right_uid_index);
 				
 				sampled_left_uid = left_uid_index_map.get(left_uid);
 				sampled_right_uid = right_uid_index_map.get(right_uid);
