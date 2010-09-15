@@ -15,6 +15,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
+import java.util.Properties;
 
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
@@ -50,6 +51,8 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 	public static final int CONCURRENT_LINKAGE_RUNS_LIMIT = 1;
 	public static final int ROWS_IN_TABLE = 15;
 	public static final String PROGRAM_NAME = "Record Linker";
+	
+	public final double min_version = 1.5;
 	
 	public static final String RECENT_FILE_PATH =  ".history";
 	
@@ -164,6 +167,8 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 		
 		main_window.setVisible(true);
 		
+		checkJavaVersion();
+		
 		// display data in rm_conf
 		if(rm_conf != null){
 			if(rm_conf.getLinkDataSource1() != null){
@@ -174,6 +179,24 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 			}
 		}
 		
+	}
+	
+	private void checkJavaVersion(){
+		Properties p = System.getProperties();
+		String ver = p.getProperty("java.vm.version");
+		String major_version = ver.substring(0, 3);
+		try{
+			double d = Double.parseDouble(major_version);
+			if(d < min_version){
+				// show message
+				String msg = "Program is running with Java " + ver + ".  This is unsupported, and it's possible the program will not work.";
+				msg += "  Minimum version is Java " + min_version;
+				JOptionPane.showMessageDialog(main_window, msg);
+			}
+		}
+		catch(NumberFormatException nfe){
+			System.err.println("unknown Java version: " + major_version);
+		}
 	}
 	
 	private JMenuBar createMenu(){
