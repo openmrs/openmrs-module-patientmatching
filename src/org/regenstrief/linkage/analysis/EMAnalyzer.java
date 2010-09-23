@@ -432,7 +432,7 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 			}
 			if(!matched && mv instanceof NullDemographicsMatchVector){
 				NullDemographicsMatchVector ndmv = (NullDemographicsMatchVector) mv;
-				if(ndmv.isNullComparison(demographic)){
+				if(!ndmv.isNullComparison(demographic)){
 					B = 1;
 				}
 			}

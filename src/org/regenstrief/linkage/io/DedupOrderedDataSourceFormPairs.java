@@ -26,8 +26,11 @@ public class DedupOrderedDataSourceFormPairs extends FormPairs{
 	protected List<Record[]> blocking_set;
 	protected String[] comp_columns;
 	
+	int pair_count;
+	
 	public DedupOrderedDataSourceFormPairs(OrderedDataSourceReader dsr1, MatchingConfig mc, Hashtable<String,Integer> type_table){
 		super(mc);
+		pair_count = 0;
 		this.type_table = type_table;
 		reader = dsr1;
 		
@@ -109,6 +112,12 @@ public class DedupOrderedDataSourceFormPairs extends FormPairs{
 			if(blocking_set.size() > 0){
 				returnedRecords = blocking_set.remove(0);
 			}
+		}
+		
+		pair_count++;
+		
+		if(pair_count % 5000 == 0){
+			//System.out.println("pairs returned: " + pair_count);
 		}
 		return returnedRecords;
 	}

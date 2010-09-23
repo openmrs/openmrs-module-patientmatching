@@ -35,6 +35,8 @@ public class OrderedDataSourceFormPairs extends FormPairs{
 	private static final int EQUAL = 0;
 	private static final int LESS_THAN = -1;
 	
+	int pair_count;
+	
 	/**
 	 * 
 	 * 
@@ -45,7 +47,7 @@ public class OrderedDataSourceFormPairs extends FormPairs{
 	 */
 	public OrderedDataSourceFormPairs(OrderedDataSourceReader dsr1, OrderedDataSourceReader dsr2, MatchingConfig mc, Hashtable<String,Integer> type_table){
 		super(mc);
-		
+		pair_count = 0;
 		this.dsr1 = dsr1;
 		this.dsr2 = dsr2;
 		this.type_table = type_table;
@@ -127,6 +129,11 @@ public class OrderedDataSourceFormPairs extends FormPairs{
 			dsr1_next = dsr1.nextRecord();
 		}
 		
+		pair_count++;
+		
+		if(pair_count % 5000 == 0){
+			//System.out.println("pairs returned: " + pair_count);
+		}
 		return ret;
 	}
 	

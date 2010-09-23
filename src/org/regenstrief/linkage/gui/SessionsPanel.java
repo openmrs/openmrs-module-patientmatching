@@ -18,6 +18,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -53,16 +54,14 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
-import org.regenstrief.linkage.analysis.CloseFormUCalculatorDedup;
 import org.regenstrief.linkage.analysis.ClosedFormAnalyzer;
 import org.regenstrief.linkage.analysis.ClosedFormDedupAnalyzer;
 import org.regenstrief.linkage.analysis.DataSourceAnalysis;
-import org.regenstrief.linkage.analysis.DataSourceFrequency;
 import org.regenstrief.linkage.analysis.DedupRandomSampleAnalyzer;
 import org.regenstrief.linkage.analysis.EMAnalyzer;
-import org.regenstrief.linkage.analysis.MemoryBackedDataSourceFrequency;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
+import org.regenstrief.linkage.io.CommonPairFormPairs;
 import org.regenstrief.linkage.io.DataSourceReader;
 import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.FormPairs;
@@ -94,7 +93,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	 
 	MatchingConfig current_working_config;
 
-    private boolean write_xml, groupAnalysis;
+    private boolean write_xml, groupAnalysis, common_pairs_fp;
 	
     private JTextField randomSampleTextField;
     private JLabel randomSampleSizeLabel;
@@ -105,6 +104,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
     private ButtonGroup ucalc_group, mcalc_group;
     private JButton calculate_uvalue, calculate_mvalue;
     private JPopupMenu resetm, resetu;
+    private JCheckBox common_pairs;
     
 	public SessionsPanel(RecMatchConfig rmc){
 		//super();
@@ -168,6 +168,9 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         JButton down = new JButton();
         down.addActionListener(this);
         down.setText("Move Down");
+        
+        common_pairs = new JCheckBox("Combine pairs in blocks");
+        common_pairs.addActionListener(this);
         
         runs = new JList();
         runs.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -328,6 +331,15 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         gridBagConstraints.anchor = GridBagConstraints.EAST;
         gridBagConstraints.insets = new Insets(5, 2, 0, 0);
         listPanel.add(down, gridBagConstraints);
+        
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = GridBagConstraints.SOUTH;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(5, 0, 0, 0);
+        listPanel.add(common_pairs, gridBagConstraints);
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -337,6 +349,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         gridBagConstraints.anchor = GridBagConstraints.NORTH;
         gridBagConstraints.insets = new Insets(5, 10, 5, 10);
         mainPanelSessions.add(listPanel, gridBagConstraints);
+        
         /*
          * End of Blocking Run List Section
          */
@@ -847,7 +860,10 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 				write_xml = cbWriteXML.isSelected();
 			} else if(source.getText().equals("Perform Grouping When Writing Output")){
 				groupAnalysis = cbGrouping.isSelected();
+			} else if(source.equals(common_pairs)){
+				common_pairs_fp = common_pairs.isSelected();
 			}
+			
 		} else if(ae.getSource() instanceof JMenuItem){
 			JMenuItem jmi = (JMenuItem)ae.getSource();
 			if(jmi.getText().equals("Reset u values to default")){
@@ -910,17 +926,15 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			return;
 		}
 		
-        ReaderProvider rp = ReaderProvider.getInstance();
-        
         MatchingConfig mc = current_working_config;
         // if the user not choose to use random sampling, then do nothing
         // if the u-values is already locked then do nothing as well
         if(mc.isUsingRandomSampling()) {
-            OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
-            OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
-            if(odsr1 != null && odsr2 != null){
-                FormPairs fp2 = null;
-                fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+        	
+        	FormPairs fp2 = getFormPairs();
+        	
+            
+            if(fp2 != null){
                 
                 PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
                 
@@ -928,9 +942,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
                 
                 MatchingConfig mcCopy = (MatchingConfig) mc.clone();
                 
-                OrderedDataSourceReader rsa_odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
-                OrderedDataSourceReader rsa_odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
-				FormPairs rsa_fp2 = 	new OrderedDataSourceFormPairs(rsa_odsr1, rsa_odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+				FormPairs rsa_fp2 = getFormPairs();
 				RandomSampleAnalyzer rsa ;
 				if (rm_conf.isDeduplication()) {
 					rsa = new DedupRandomSampleAnalyzer(mcCopy, rsa_fp2);
@@ -947,8 +959,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
                 
                 
             }
-            odsr1.close();
-            odsr2.close();
+            
         }
         session_options.repaint();
     }
@@ -1000,38 +1011,67 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		
 	}
 	
-	private void runEMAnalysis(){
-		if(!MatchingConfigValidator.validMatchingConfig(current_working_config)){
-			invalidBlockingSchemeNotification();
-			return;
-		}
+	private FormPairs getFormPairs(){
+		FormPairs ret = null;
 		
 		ReaderProvider rp = ReaderProvider.getInstance();
 		MatchingConfig mc = current_working_config;
 		
 		OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
 		OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
-		if(odsr1 != null && odsr2 != null){
-			// analyze with EM
-		    FormPairs fp2 = null;
-		    if (rm_conf.isDeduplication()) {
-		        fp2 = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
-		    } else {
-		        fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
-		    }
-			ApplyAnalyzerLoggingFrame frame = new ApplyAnalyzerLoggingFrame(mc, this);
-			PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
-			MatchingConfig mcCopy = (MatchingConfig) mc.clone();
+		
+		if (rm_conf.isDeduplication()) {
+	        ret = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
+	    } else {
+	        ret = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+	    }
+		
+		if(common_pairs_fp){
+			List<FormPairs> fps = new ArrayList<FormPairs>();
+			fps.add(ret);
+			Iterator<MatchingConfig> it = rm_conf.getMatchingConfigs().iterator();
 			
-			EMAnalyzer ema = new EMAnalyzer(mcCopy);
-			ema.setNullAveraging(mcCopy.isNullAveragingEM());
-			pdsa.addAnalyzer(ema);
-			frame.addLoggingObject(ema);
-			frame.configureLoggingFrame();
-			pdsa.analyzeData();
+			while(it.hasNext()){
+				mc = it.next();
+				
+				if(mc != current_working_config){
+					odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
+					odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
+					if (rm_conf.isDeduplication()) {
+			        	ret = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
+			    	} else {
+			    		ret = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+			    	}
+					fps.add(ret);
+				}
+			}
+			ret = new CommonPairFormPairs(fps);
+			
 		}
-		odsr1.close();
-		odsr2.close();
+		
+		return ret;
+	}
+	
+	private void runEMAnalysis(){
+		if(!MatchingConfigValidator.validMatchingConfig(current_working_config)){
+			invalidBlockingSchemeNotification();
+			return;
+		}
+		MatchingConfig mc = current_working_config;
+		
+		FormPairs fp2 = getFormPairs();
+		ApplyAnalyzerLoggingFrame frame = new ApplyAnalyzerLoggingFrame(mc, this);
+		PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
+		
+		MatchingConfig mcCopy = (MatchingConfig) mc.clone();
+		
+		EMAnalyzer ema = new EMAnalyzer(mcCopy);
+		ema.setNullAveraging(mcCopy.isNullAveragingEM());
+		pdsa.addAnalyzer(ema);
+		frame.addLoggingObject(ema);
+		frame.configureLoggingFrame();
+		pdsa.analyzeData();
+		
 		session_options.repaint();
 		thresholdTextField.setText(Double.toString(mc.getScoreThreshold()));
 		
