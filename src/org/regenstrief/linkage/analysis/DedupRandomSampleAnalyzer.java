@@ -47,6 +47,7 @@ public class DedupRandomSampleAnalyzer extends RandomSampleAnalyzer {
 		sample1 = new boolean[pair_count];
 		sample2 = new boolean[pair_count];
 		
+		
 		setIndexPairs(uid_list.size());
 		pair_count = 0;
 	}
@@ -92,7 +93,7 @@ public class DedupRandomSampleAnalyzer extends RandomSampleAnalyzer {
 		// need to get two sets of random numbers, one for each data source
 		for(int i = 0; i < sampleSize && max_index > 0; i++){
 			
-			int sampled_left_uid, sampled_right_uid; 
+			Integer sampled_left_uid, sampled_right_uid; 
 			long left_uid, right_uid;
 			int left_uid_index, right_uid_index;
 			do{
@@ -104,7 +105,7 @@ public class DedupRandomSampleAnalyzer extends RandomSampleAnalyzer {
 				
 				sampled_left_uid = left_uid_index_map.get(left_uid);
 				sampled_right_uid = right_uid_index_map.get(right_uid);
-			}while(left_uid == right_uid);
+			}while(sampled_left_uid == null || sampled_right_uid == null || left_uid == right_uid);
 			int left_index = sampled_left_uid;
 			int right_index = sampled_right_uid;
 			
