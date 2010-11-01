@@ -287,6 +287,10 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 					double sest_val = (ssum.get(demographic) * Cusum) / udenom;
 					double test_val = (tsum.get(demographic) * Cusum) / udenom;
 					
+					// new logging statements to help with debugging
+					log.info(demographic + " q est: " + qsum.get(demographic) + " * " + Cmsum + " / " + mdenom + " = " + qest_val);
+					log.info(demographic + " t est: " + tsum.get(demographic) + " * " + Cusum + " / " + udenom + " = " + test_val);
+					
 					pest.put(demographic, pest_val);
 					qest.put(demographic, qest_val);
 					sest.put(demographic, sest_val);
@@ -451,10 +455,12 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 				termU = termU * (Math.pow(uest.get(demographic), comp) + Math.pow(1 - uest.get(demographic), 1 - comp))/2;
 			} else {
 				
-				termM = termM * Math.pow((Math.pow(mest.get(demographic),
-						comp) * Math.pow(1 - mest.get(demographic), 1 - comp)),bin)*
-						Math.pow((Math.pow(pest.get(demographic),A)*Math.pow(qest.get(demographic
-						),B)*Math.pow((1-pest.get(demographic)-qest.get(demographic)),C)),1-bin);
+				termM = termM * 
+					Math.pow((Math.pow(mest.get(demographic),comp) * 
+					Math.pow(1 - mest.get(demographic), 1 - comp)),bin) *
+					Math.pow((Math.pow(pest.get(demographic),A) *
+					Math.pow(qest.get(demographic),B) *
+					Math.pow((1-pest.get(demographic)-qest.get(demographic)),C)),1-bin);
 				
 				termU = termU * Math.pow((Math.pow(uest.get(demographic),
 						comp) * Math.pow(1 - uest.get(demographic), 1 - comp)),bin)*
