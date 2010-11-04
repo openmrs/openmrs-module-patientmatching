@@ -81,6 +81,9 @@ public class ScorePair {
 		for(Modifier m : modifiers){
 			mr = m.getModifiedMatchResult(mr, mc);
 		}
+		
+		mr.setCertainty(1);
+		mr.setMatch_status(MatchResult.UNKNOWN);
 
 		return mr;
 	}

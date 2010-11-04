@@ -61,6 +61,7 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 	SessionsPanel spanel;
 	DataPanel dpanel;
 	AnalysisPanel apanel;
+	MatchResultReviewPagerPanel mrrpanel;
 	RecMatchConfig rm_conf;
     
     private JCheckBox doneCheckBox;
@@ -150,10 +151,15 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
         tabs.addTab("Sessions", spanel);
 		apanel = new AnalysisPanel(rm_conf);
 		tabs.addTab("Analysis", apanel);
+		mrrpanel = new MatchResultReviewPagerPanel();
+		tabs.addTab("Review Results", mrrpanel);
+		
 		tabs.addChangeListener(this);
         tabs.setEnabledAt(1, false);
         tabs.setEnabledAt(2, false);
+        tabs.setEnabledAt(3, true);
 		panelMatching.add(tabs);
+		
 		
 		Container c = main_window.getContentPane();
 		c.setLayout(new BorderLayout());

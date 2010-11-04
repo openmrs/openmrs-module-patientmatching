@@ -25,7 +25,7 @@ public class Record {
 	 * context
 	 * 
 	 */
-	public Record(int id, String context) {
+	public Record(long id, String context) {
 		demographics = new Hashtable<String, String>();
 		uid = id;
 		uidContext = context;

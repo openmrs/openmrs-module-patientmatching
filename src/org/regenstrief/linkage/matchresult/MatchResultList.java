@@ -41,4 +41,24 @@ public class MatchResultList implements MatchResultHandler, MatchResultStore {
 		return results.get(index);
 	}
 
+	public void addMatchResult(MatchResult mr) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public int getSize() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public void addMatchResult(MatchResult mr, int id) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void removeMatchResult(int id) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

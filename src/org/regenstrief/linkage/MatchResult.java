@@ -22,7 +22,13 @@ public class MatchResult extends RecordLink implements Comparable{
 	protected MatchVector match_vct;
 	protected ScoreVector score_vct;
 	protected MatchingConfig mc;
+	protected int match_status;
+	protected double certainty;
+	protected String note;
 	
+	public static final int MATCH = 1;
+	public static final int NON_MATCH = -1;
+	public static final int UNKNOWN = 0;
 	/**
 	 * Constructor initializes the Hashtable match_table
 	 *
@@ -38,9 +44,26 @@ public class MatchResult extends RecordLink implements Comparable{
 		this.match_vct = match_vct;
 		this.score_vct = score_vct;
 		this.mc = mc;
-		
+		match_status = UNKNOWN;
+		certainty = 0;
 	}
 	
+	public int getMatch_status() {
+		return match_status;
+	}
+
+	public void setMatch_status(int match_status) {
+		this.match_status = match_status;
+	}
+
+	public double getCertainty() {
+		return certainty;
+	}
+
+	public void setCertainty(double certainty) {
+		this.certainty = certainty;
+	}
+
 	/**
 	 * Returns the match score
 	 * 
@@ -128,6 +151,14 @@ public class MatchResult extends RecordLink implements Comparable{
 	 */
 	public MatchingConfig getMatchingConfig(){
 		return mc;
+	}
+	
+	public String getNote() {
+		return note;
+	}
+
+	public void setNote(String note) {
+		this.note = note;
 	}
 	
 	/**

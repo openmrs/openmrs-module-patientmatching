@@ -4,8 +4,11 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -15,11 +18,14 @@ import org.regenstrief.linkage.RecordLink;
 import org.regenstrief.linkage.SameEntityRecordGroup;
 import org.regenstrief.linkage.analysis.NullDemographicScoreModifier;
 import org.regenstrief.linkage.analysis.SetSimilarityAnalysis;
+import org.regenstrief.linkage.db.SavedResultDBConnection;
 import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.FormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceReader;
 import org.regenstrief.linkage.io.ReaderProvider;
+import org.regenstrief.linkage.matchresult.DBMatchResultStore;
+import org.regenstrief.linkage.matchresult.MatchResultStore;
 
 /**
  * Purpose of class is to find matches between two data sources using all the
@@ -35,10 +41,10 @@ public class FileWritingMatcher {
 	public static final String OUT_FILE = "linkage.out";
 	
 	public static File writeMatchResults(RecMatchConfig rmc){
-		return writeMatchResults(rmc, new File(OUT_FILE), true, false);
+		return writeMatchResults(rmc, new File(OUT_FILE), true, false, false);
 	}
 	
-	public static File writeMatchResults(RecMatchConfig rmc, File f, boolean write_xml, boolean group_analysis){
+	public static File writeMatchResults(RecMatchConfig rmc, File f, boolean write_xml, boolean write_db, boolean group_analysis){
 		
 		// set output order based on include position in lds
 		LinkDataSource lds = rmc.getLinkDataSource1();
@@ -49,6 +55,7 @@ public class FileWritingMatcher {
 		}
 		String id_field = lds.getUniqueID();
 		
+		Date report_time = new Date();
 		
 		try{
 			//BufferedWriter fout = new BufferedWriter(new FileWriter(f));
@@ -61,6 +68,7 @@ public class FileWritingMatcher {
 				all_links = new ArrayList<RecordLink>();
 			}
 			
+			
 			// iterate over each MatchingConfig
 			List<MatchingConfig> mcs = rmc.getMatchingConfigs();
 			Iterator<MatchingConfig> it = mcs.iterator();
@@ -69,6 +77,23 @@ public class FileWritingMatcher {
 				List<MatchResult> results = new ArrayList<MatchResult>();
 				File f2 = new File(f.getPath() + "_" + mc.getName() + ".txt");
 				BufferedWriter fout = new BufferedWriter(new FileWriter(f2));
+				Connection db = null;
+				
+				// write db if needed
+				MatchResultStore mrs = null;
+				if(write_db){
+					File db_file = new File(f.getPath() + ".db");
+					db = SavedResultDBConnection.openDBResults(db_file);
+					SavedResultDBConnection.createMatchResultTables(db);
+					try{
+						db.setAutoCommit(false);
+					}
+					catch(SQLException sqle){
+						
+					}
+					mrs = new DBMatchResultStore(db);
+					((DBMatchResultStore)mrs).setDate(report_time);
+				}
 				
 				OrderedDataSourceReader odsr1 = rp.getReader(rmc.getLinkDataSource1(), mc);
 				OrderedDataSourceReader odsr2 = rp.getReader(rmc.getLinkDataSource2(), mc);
@@ -101,6 +126,7 @@ public class FileWritingMatcher {
 					}
 					
 					Record[] pair;
+					int count = 0;
 					while((pair = fp.getNextRecordPair()) != null){
 						MatchResult mr = sp.scorePair(pair[0], pair[1]);
 						//results.add(mr);
@@ -108,12 +134,33 @@ public class FileWritingMatcher {
 						// changed to write output line without sorting results first
 						fout.write(getOutputLine(mr, order, id_field) + "\n");
 						
+						// add match result to db, if needed
+						if(write_db && mrs != null){
+							mrs.addMatchResult(mr, count);
+						}
+						
 						// add to grouping list, if needed
 						if(all_links != null){
 							if(mr.getScore() >= mc.getScoreThreshold()){
 								all_links.add(mr);
 							}
 						}
+						
+						count++;
+					}
+					
+					if(mrs instanceof DBMatchResultStore){
+						DBMatchResultStore dbmrs = (DBMatchResultStore)mrs;
+						dbmrs.addIndexes();
+					}
+					
+					try{
+						if(write_db && db != null){
+							db.commit();
+							db.close();
+						}
+					}catch(SQLException sqle){
+						
 					}
 					
 					// sort results list, then print to fout
@@ -134,6 +181,8 @@ public class FileWritingMatcher {
 					
 					
 				}
+				
+				
 				
 				fout.flush();
 				fout.close();

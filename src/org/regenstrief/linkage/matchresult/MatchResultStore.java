@@ -11,4 +11,10 @@ import org.regenstrief.linkage.MatchResult;
 
 public interface MatchResultStore {
 	public MatchResult getMatchResult(int index);
+	
+	public void addMatchResult(MatchResult mr, int id);
+	
+	public void removeMatchResult(int id);
+	
+	public int getSize();
 }

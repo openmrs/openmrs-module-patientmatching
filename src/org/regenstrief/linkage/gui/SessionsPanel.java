@@ -99,6 +99,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
     private JLabel randomSampleSizeLabel;
     private JTextField thresholdTextField;
     private JCheckBox cbWriteXML;
+    private JCheckBox write_db;
     private JCheckBox cbGrouping;
 	private JRadioButton ucalc_closed, ucalc_rand, mcalc_lock, mcalc_uinclude;
     private ButtonGroup ucalc_group, mcalc_group;
@@ -269,6 +270,8 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         cbWriteXML.addActionListener(this);
         cbGrouping = new JCheckBox("Perform Grouping When Writing Output");
         cbGrouping.addActionListener(this);
+        write_db = new JCheckBox("Write Results To DB File");
+        write_db.addActionListener(this);
         
         JButton run_link = new JButton();
         run_link.addActionListener(this);
@@ -534,10 +537,17 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 5, 0, 5);
         linkagePanel.add(cbGrouping, gridBagConstraints);
-
+        
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(0, 5, 0, 5);
+        linkagePanel.add(write_db, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.insets = new Insets(0, 5, 5, 5);
         linkagePanel.add(run_link, gridBagConstraints);
 
@@ -886,7 +896,8 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		File match_file = null;
 		if(ret == JFileChooser.APPROVE_OPTION){
 			out = out_chooser.getSelectedFile();
-			match_file = FileWritingMatcher.writeMatchResults(rm_conf, out, write_xml, groupAnalysis);
+			boolean db = write_db.isSelected();
+			match_file = FileWritingMatcher.writeMatchResults(rm_conf, out, write_xml, db, groupAnalysis);
             
             if(match_file == null){
                 JOptionPane.showMessageDialog(this,
