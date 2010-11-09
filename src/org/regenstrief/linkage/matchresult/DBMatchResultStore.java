@@ -43,7 +43,8 @@ public class DBMatchResultStore implements MatchResultStore {
 	public static final String DELETE_FIELD_AGREEMENT_QUERY = "delete from field_agreement where ID = ?";
 	public static final String UPDATE_MATCH_RESULT_QUERY = "update matchresult set status = ?, certainty = ?, note = ? where ID = ? and report_date = ?";
 	public static final String MIN_UNKNOWN_QUERY = "select min(ID) from matchresult where status = " + MatchResult.UNKNOWN + " and report_date = ?";
-	public static final String DATES_QUERY = "select distinct report_date from matchresult";
+	public static final String DATES_QUERY = "select distinct report_date from report_dates";
+	public static final String DATES_INSERT = "insert into report_dates(report_date) values (?)";
 	
 	private Hashtable<Long,Boolean> imported_uids;
 	
@@ -56,6 +57,8 @@ public class DBMatchResultStore implements MatchResultStore {
 	protected PreparedStatement mr_delete, fa_delete;
 	protected PreparedStatement mr_update;
 	protected PreparedStatement min_query;
+	protected PreparedStatement date_query;
+	protected PreparedStatement date_insert;
 	
 	protected Date set_date;
 	
@@ -75,6 +78,8 @@ public class DBMatchResultStore implements MatchResultStore {
 			fa_delete = db.prepareStatement(DELETE_FIELD_AGREEMENT_QUERY);
 			mr_update = db.prepareStatement(UPDATE_MATCH_RESULT_QUERY);
 			min_query = db.prepareStatement(MIN_UNKNOWN_QUERY);
+			date_query = db.prepareStatement(DATES_QUERY);
+			date_insert = db.prepareStatement(DATES_INSERT);
 		}
 		catch(SQLException sqle){
 			System.err.println(sqle.getMessage());
@@ -86,6 +91,16 @@ public class DBMatchResultStore implements MatchResultStore {
 	}
 	
 	public void setDate(Date d){
+		List<Date> dates = getDates();
+		if(!dates.contains(dates)){
+			try{
+				date_insert.setDate(1, new java.sql.Date(d.getTime()));
+				date_insert.execute();
+			}
+			catch(SQLException sqle){
+				System.err.println(sqle.getMessage());
+			}
+		}
 		set_date = d;
 	}
 	
@@ -276,8 +291,7 @@ public class DBMatchResultStore implements MatchResultStore {
 	public List<Date> getDates(){
 		List<Date> ret = new ArrayList<Date>();
 		try{
-			Statement st = db.createStatement();
-			ResultSet rs = st.executeQuery(DATES_QUERY);
+			ResultSet rs = date_query.executeQuery();
 			while(rs.next()){
 				ret.add(rs.getDate(1));
 			}

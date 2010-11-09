@@ -15,7 +15,7 @@ import java.sql.Statement;
 
 public class SavedResultDBConnection {
 	
-	public static String CREATE_MATCH_RESULT_TABLE = "create table matchresult(" +
+	public static final String CREATE_MATCH_RESULT_TABLE = "create table matchresult(" +
 			"ID bigint," +
 			"mc varchar(40)," +
 			"report_date timestamp," +
@@ -30,33 +30,38 @@ public class SavedResultDBConnection {
 			"uid2 bigint," +
 			"note varchar(255)" +
 			")";
-	public static String CREATE_DEMOGRAPHIC_TABLE = "create table demographic(" +
+	public static final String CREATE_DEMOGRAPHIC_TABLE = "create table demographic(" +
 			"uid bigint," +
 			"field varchar(40)," +
 			"value varchar(40)" +
 			")";
-	public static String CREATE_FIELD_AGREEMENT_TABLE = "create table field_agreement(" +
+	public static final String CREATE_FIELD_AGREEMENT_TABLE = "create table field_agreement(" +
 			"id integer," +
 			"field varchar(40)," + 
 			"algorithm varchar(40)," +
 			"agreement integer" +
 			")";
 	
+	public static final String CREATE_DATE_TABLE = "create table report_dates(" +
+			"report_date timestamp" +
+			")";
+	
 	public static Connection openDBResults(File f){
 		Connection ret = null;
 		String url = null;
 		try{
-			Class.forName("org.sqlite.JDBC");
+			//Class.forName("org.sqlite.JDBC");
+			Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
 		}
 		catch(ClassNotFoundException cnfe){
 			return null;
 		}
 		
-		url = "jdbc:sqlite:" + f.getPath();
-		//if(!f.exists()){
-			//url += ";create=true";
-		//}
-		//url = "jdbc:derby:Results;create=true";
+		//url = "jdbc:sqlite:" + f.getPath();
+		url = "jdbc:derby:" + f.getPath();
+		if(!f.exists()){
+			url += ";create=true";
+		}
 		
 		try {
 			ret = DriverManager.getConnection(url);
@@ -74,6 +79,7 @@ public class SavedResultDBConnection {
 			st.execute(CREATE_MATCH_RESULT_TABLE);
 			st.execute(CREATE_DEMOGRAPHIC_TABLE);
 			st.execute(CREATE_FIELD_AGREEMENT_TABLE);
+			st.execute(CREATE_DATE_TABLE);
 		}
 		catch(SQLException sqle){
 			System.err.println(sqle.getMessage());
