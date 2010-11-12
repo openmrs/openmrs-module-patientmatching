@@ -27,5 +27,9 @@ public class DemographicReviewTableModel extends AbstractTableModel {
 	public String getColumnName(int colnum){
 		return demographics[colnum];
 	}
+	
+	public boolean isCellEditable(int row, int col){
+		return false;
+	}
 
 }

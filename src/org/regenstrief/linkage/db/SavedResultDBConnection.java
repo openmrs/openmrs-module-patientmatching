@@ -32,6 +32,7 @@ public class SavedResultDBConnection {
 			")";
 	public static final String CREATE_DEMOGRAPHIC_TABLE = "create table demographic(" +
 			"uid bigint," +
+			"side int," +
 			"field varchar(40)," +
 			"value varchar(40)" +
 			")";
@@ -50,18 +51,18 @@ public class SavedResultDBConnection {
 		Connection ret = null;
 		String url = null;
 		try{
-			//Class.forName("org.sqlite.JDBC");
-			Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+			Class.forName("org.sqlite.JDBC");
+			//Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
 		}
 		catch(ClassNotFoundException cnfe){
 			return null;
 		}
 		
-		//url = "jdbc:sqlite:" + f.getPath();
-		url = "jdbc:derby:" + f.getPath();
-		if(!f.exists()){
-			url += ";create=true";
-		}
+		url = "jdbc:sqlite:" + f.getPath();
+		//url = "jdbc:derby:" + f.getPath();
+		//if(!f.exists()){
+		//	url += ";create=true";
+		//}
 		
 		try {
 			ret = DriverManager.getConnection(url);

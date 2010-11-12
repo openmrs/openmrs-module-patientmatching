@@ -1,16 +1,22 @@
 package org.regenstrief.linkage.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.sql.Connection;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -18,6 +24,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTextField;
 
 import org.regenstrief.linkage.MatchResult;
@@ -27,10 +35,12 @@ import org.regenstrief.linkage.matchresult.MatchResultStore;
 
 public class MatchResultReviewPagerPanel extends JPanel implements ActionListener{
 
-	public static int VIEWS_PER_PAGE = 4;
+	public static int VIEWS_PER_PAGE = 5;
+	public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
 	private int view_index;
 	private List<MatchResultReviewPanel> rpanels;
 	private MatchResultStore mrs;
+	private DateFormat ui_datefmt;
 	
 	private JButton next_page, prev_page, goto_mr, open, save, exit;
 	private JTextField row, first_unreviewed;
@@ -40,6 +50,7 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 	public MatchResultReviewPagerPanel(){
 		super();
 		mrs = null;
+		ui_datefmt = new SimpleDateFormat(DATE_FORMAT);
 		rpanels = new ArrayList<MatchResultReviewPanel>();
 		view_index = 0;
 		reviewed_match_results = new Hashtable<Integer,MatchResult>();
@@ -47,18 +58,30 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 	}
 	
 	private Date chooseDate(List<Date> options){
-		Date ret = null;
-		Object[] o = options.toArray();
-		ret = (Date)JOptionPane.showInputDialog(
+		// Date object toStrings can be ambiguous, so create more precise string
+		Iterator<Date> it = options.iterator();
+		Hashtable<String,Date> option_dates = new Hashtable<String,Date>();
+		
+		while(it.hasNext()){
+			Date d = it.next();
+			String str = ui_datefmt.format(d);
+			option_dates.put(str, d);
+		}
+		
+		Object[] o = option_dates.keySet().toArray();
+		String choice = (String)JOptionPane.showInputDialog(
                 this,
                 "Multiple runs exist in review database.\nWhich run to open?",
                 "Select date",
                 JOptionPane.PLAIN_MESSAGE,
                 null,
                 o,
-                o[1]);
-		
-		return ret;
+                o[0]);
+		if(choice == null){
+			return null;
+		} else {
+			return option_dates.get(choice);
+		}
 	}
 	
 	private void initGUI(){
@@ -66,22 +89,34 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		
 		// add top section
 		JPanel top = new JPanel();
+		top.setLayout(new BoxLayout(top, BoxLayout.LINE_AXIS));
 		open = new JButton("Open Fiile");
 		open.addActionListener(this);
 		save = new JButton("Save Changes");
 		save.addActionListener(this);
 		JLabel first = new JLabel("First Unreviewed Row:");
 		first_unreviewed = new JTextField(6);
-		top.add(open);
-		top.add(save);
-		top.add(first);
-		top.add(first_unreviewed);
 		
-		this.add(top, BorderLayout.PAGE_START);
+		top.add(Box.createRigidArea(new Dimension(5,0)));
+		top.add(open);
+		top.add(Box.createRigidArea(new Dimension(5,0)));
+		top.add(save);
+		top.add(Box.createRigidArea(new Dimension(5,0)));
+		top.add(first);
+		top.add(Box.createRigidArea(new Dimension(5,0)));
+		top.add(first_unreviewed);
+		top.add(Box.createRigidArea(new Dimension(5,0)));
+		top.add(Box.createHorizontalGlue());
+		
+		JPanel ttop = new JPanel();
+		ttop.setLayout(new BorderLayout());
+		ttop.add(top, BorderLayout.LINE_START);
+		this.add(ttop, BorderLayout.PAGE_START);
 		
 		// create review panels
 		MatchResultReviewPanel mrrp;
 		JPanel middle = new JPanel();
+		
 		middle.setLayout(new BoxLayout(middle, BoxLayout.PAGE_AXIS));
 		for(int i = 0; i < VIEWS_PER_PAGE; i++){
 			String[] dummy_header = new String[8];
@@ -91,9 +126,11 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 			mrrp = new MatchResultReviewPanel(dummy_header);
 			rpanels.add(mrrp);
 			middle.add(mrrp);
+			middle.add(new JSeparator(JSeparator.HORIZONTAL));
 		}
-		
-		this.add(middle, BorderLayout.CENTER);
+		JScrollPane jsp = new JScrollPane(middle);
+		//this.add(middle, BorderLayout.CENTER);
+		this.add(jsp, BorderLayout.CENTER);
 		
 		// create paging buttons
 		JPanel bottom = new JPanel();
@@ -105,8 +142,11 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		goto_mr.addActionListener(this);
 		row = new JTextField(4);
 		bottom.add(prev_page);
+		bottom.add(Box.createRigidArea(new Dimension(5,0)));
 		bottom.add(next_page);
+		bottom.add(Box.createRigidArea(new Dimension(5,0)));
 		bottom.add(goto_mr);
+		bottom.add(Box.createRigidArea(new Dimension(5,0)));
 		bottom.add(row);
 		
 		this.add(bottom, BorderLayout.PAGE_END);
@@ -205,6 +245,7 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 			if(source == open){
 				// get MatchResultStore set and updateview
 				JFileChooser jfc = new JFileChooser();
+				jfc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 				int retval = jfc.showOpenDialog(this);
 				if(retval == JFileChooser.APPROVE_OPTION){
 					File db_file = jfc.getSelectedFile();

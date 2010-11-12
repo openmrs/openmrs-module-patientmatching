@@ -1,14 +1,19 @@
 package org.regenstrief.linkage.gui;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -40,27 +45,45 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 	}
 	
 	private void initGUI(){
+		this.setLayout(new BorderLayout());
+		
 		// init and add elements of score panel
 		score_panel = new JPanel();
 		row = new JTextField(5);
+		row.setEditable(false);
 		score = new JTextField(12);
+		score.setEditable(false);
 		score_panel.add(row);
 		//score_panel.add(score);
 		
 		// init and add elements for demographic values table
 		dem_panel = new JPanel();
-		dem_panel.setLayout(new BoxLayout(dem_panel, BoxLayout.PAGE_AXIS));
+		dem_panel.setLayout(new BorderLayout());
 		Object[][] data = new Object[2][demographics.length];
 		for(int i = 0; i < demographics.length; i++){
 			data[0][i] = "";
 			data[1][i] = "";
 		}
-		values = new JTable(data, demographics);
+		values = new JTable();
+		values.setEnabled(false);
+		DemographicReviewTableModel drtm = new DemographicReviewTableModel(data, demographics);
+		values.setModel(drtm);
 		
-		dem_panel.add(values);
+		JPanel dem_top = new JPanel();
+		dem_top.setLayout(new BorderLayout());
+		JLabel jl = new JLabel("Note:");
+		JPanel dem_bottom = new JPanel();
+		dem_bottom.add(jl);
+		add(Box.createRigidArea(new Dimension(5,0)));
 		note = new JTextField(40);
 		note.addKeyListener(this);
-		dem_panel.add(note);
+		dem_bottom.add(note);
+		
+		dem_top.add(values.getTableHeader(), BorderLayout.PAGE_START);
+		dem_top.add(values, BorderLayout.CENTER);
+		
+		dem_panel.add(dem_top, BorderLayout.PAGE_START);
+		dem_panel.add(dem_bottom, BorderLayout.PAGE_END);
 		
 		
 		// init and add elements for match status panel
@@ -97,9 +120,10 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 		status_panel.add(cpanel);
 		
 		// add panels to MatchResultReviewPanel
-		this.add(score_panel);
-		this.add(dem_panel);
-		this.add(status_panel);
+		this.add(score_panel, BorderLayout.WEST);
+		this.add(dem_panel, BorderLayout.CENTER);
+		this.add(status_panel, BorderLayout.EAST);
+		
 	}
 	
 	public void setRow(int i){

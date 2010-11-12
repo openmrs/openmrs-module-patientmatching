@@ -25,18 +25,21 @@ import org.regenstrief.linkage.util.MatchingConfig;
 
 public class DBMatchResultStore implements MatchResultStore {
 	
+	public static final int LEFT_UID = 1;
+	public static final int RIGHT_UID = 2;
+	
 	public static final String MATCH_RESULT_INSERT = "insert into matchresult" +
 			"(ID,mc,score,true_prob,false_prob,spec,sens,status,certainty,uid1,uid2,note,report_date)" +
 			" values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
 	public static final String DEMOGRAPHIC_INSERT = "insert into demographic" +
-			"(uid,field,value)" +
-			" values (?,?,?)";
+			"(uid,side,field,value)" +
+			" values (?,?,?,?)";
 	public static final String FIELD_AGREEMENT_INSERT = "insert into field_agreement" +
 			"(ID,field,algorithm,agreement)" +
 			" values (?,?,?,?)";
 	public static final String COUNT_QUERY = "select count(*) from matchresult where report_date = ?";
 	public static final String MATCH_RESULT_QUERY = "select * from matchresult where ID = ? and report_date = ?";
-	public static final String DEMOGRAPHIC_QUERY = "select * from demographic where uid = ?";
+	public static final String DEMOGRAPHIC_QUERY = "select * from demographic where uid = ? and side = ?";
 	public static final String DEMOGRAPHIC_COUNT_QUERY = "select count(*) from demographic where uid = ?";
 	public static final String FIELD_AGREEMENT_QUERY = "select * from field_agreement where ID = ?";
 	public static final String DELETE_MATCH_RESULT_QUERY = "delete from matchresult where ID = ? and report_date = ?";
@@ -131,6 +134,7 @@ public class DBMatchResultStore implements MatchResultStore {
 			
 			// get demographics for uid1 and uid2 and make Record objects
 			dem_query.setLong(1, uid1);
+			dem_query.setInt(2, LEFT_UID);
 			rs = dem_query.executeQuery();
 			Record r1 = new Record(uid1, "resultdb");
 			while(rs.next()){
@@ -140,6 +144,7 @@ public class DBMatchResultStore implements MatchResultStore {
 			}
 			
 			dem_query.setLong(1, uid2);
+			dem_query.setInt(2, RIGHT_UID);
 			rs = dem_query.executeQuery();
 			Record r2 = new Record(uid2, "resultdb");
 			while(rs.next()){
@@ -261,16 +266,18 @@ public class DBMatchResultStore implements MatchResultStore {
 				
 				if(add_r1){
 					dem_insert.setLong(1, uid1);
-					dem_insert.setString(2, dem);
-					dem_insert.setString(3, val1);
+					dem_insert.setInt(2, LEFT_UID);
+					dem_insert.setString(3, dem);
+					dem_insert.setString(4, val1);
 					dem_insert.execute();
 					imported_uids.put(uid1, Boolean.TRUE);
 				}
 				
 				if(add_r2){
 					dem_insert.setLong(1, uid2);
-					dem_insert.setString(2, dem);
-					dem_insert.setString(3, val2);
+					dem_insert.setInt(2, RIGHT_UID);
+					dem_insert.setString(3, dem);
+					dem_insert.setString(4, val2);
 					dem_insert.execute();
 					imported_uids.put(uid2, Boolean.TRUE);
 				}
@@ -321,7 +328,7 @@ public class DBMatchResultStore implements MatchResultStore {
 		try{
 			Statement st = db.createStatement();
 			st.execute("create index mr_idx on matchresult(ID, report_date)");
-			st.execute("create index dem_idx on demographic(uid)");
+			st.execute("create index dem_idx on demographic(uid,side)");
 			st.execute("create index fa_idx on field_agreement(ID)");
 		}
 		catch(SQLException sqle){
