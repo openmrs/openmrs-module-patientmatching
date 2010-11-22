@@ -43,7 +43,7 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 	private DateFormat ui_datefmt;
 	
 	private JButton next_page, prev_page, goto_mr, open, save, exit;
-	private JTextField row, first_unreviewed;
+	private JTextField row, first_unreviewed, total;;
 	
 	private Hashtable<Integer,MatchResult> reviewed_match_results;
 	
@@ -96,6 +96,10 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		save.addActionListener(this);
 		JLabel first = new JLabel("First Unreviewed Row:");
 		first_unreviewed = new JTextField(6);
+		first_unreviewed.setEnabled(false);
+		JLabel total_label = new JLabel("Total Rows:");
+		total = new JTextField(6);
+		total.setEnabled(false);
 		
 		top.add(Box.createRigidArea(new Dimension(5,0)));
 		top.add(open);
@@ -106,6 +110,9 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		top.add(Box.createRigidArea(new Dimension(5,0)));
 		top.add(first_unreviewed);
 		top.add(Box.createRigidArea(new Dimension(5,0)));
+		top.add(total_label);
+		top.add(Box.createRigidArea(new Dimension(5,0)));
+		top.add(total);
 		top.add(Box.createHorizontalGlue());
 		
 		JPanel ttop = new JPanel();
@@ -209,6 +216,11 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		updateView(new_index);
 	}
 	
+	private void setTotal(){
+		int size = mrs.getSize();
+		total.setText(Integer.toString(size));
+	}
+	
 	private void setFirstUnreviewed(){
 		if(mrs instanceof DBMatchResultStore){
 			DBMatchResultStore dmrs = (DBMatchResultStore)mrs;
@@ -261,6 +273,7 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 						}
 						updateView(view_index);
 						setFirstUnreviewed();
+						setTotal();
 					}
 				}
 			} else if(source == next_page){

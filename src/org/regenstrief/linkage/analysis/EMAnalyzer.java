@@ -39,11 +39,6 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 	final static int INIT_COMP = 0;
 	final static double EARLY_TERMINATION_THRESHOLD = 0.00001;
 	
-	// use approximate values close to zero and one
-	// due to the math used in the record linking
-	final static double EM_ONE = 0.99999;
-	final static double EM_ZERO = 0.000001;
-	
 	final static int MIN_ITERATIONS = 15;
 	final static int MAX_ITERATIONS = 200;
 	private int iterations;
@@ -288,7 +283,10 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 					double test_val = (tsum.get(demographic) * Cusum) / udenom;
 					
 					// new logging statements to help with debugging
+					log.info(demographic + " p est: " + psum.get(demographic) + " * " + Cmsum + " / " + mdenom + " = " + pest_val);
 					log.info(demographic + " q est: " + qsum.get(demographic) + " * " + Cmsum + " / " + mdenom + " = " + qest_val);
+					
+					log.info(demographic + " s est: " + ssum.get(demographic) + " * " + Cusum + " / " + udenom + " = " + sest_val);
 					log.info(demographic + " t est: " + tsum.get(demographic) + " * " + Cusum + " / " + udenom + " = " + test_val);
 					
 					pest.put(demographic, pest_val);
@@ -345,17 +343,17 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 			double mest_val = mest.get(demographic);
 			double uest_val = uest.get(demographic);
 			
-			if(mest_val > EM_ONE){
-				mest_val = EM_ONE;
+			if(mest_val > MatchingConfig.META_ONE){
+				mest_val = MatchingConfig.META_ONE;
 			}
-			if(mest_val < EM_ZERO){
-				mest_val = EM_ZERO;
+			if(mest_val < MatchingConfig.META_ZERO){
+				mest_val = MatchingConfig.META_ZERO;
 			}
-			if(uest_val > EM_ONE){
-				uest_val = EM_ONE;
+			if(uest_val > MatchingConfig.META_ONE){
+				uest_val = MatchingConfig.META_ONE;
 			}
-			if(uest_val < EM_ZERO){
-				uest_val = EM_ZERO;
+			if(uest_val < MatchingConfig.META_ZERO){
+				uest_val = MatchingConfig.META_ZERO;
 			}
 			
 			mcr.setAgreement(mest_val);
@@ -499,16 +497,13 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 					double s = ssum.get(demographic);
 					psum.put(demographic, new Double(_p + gMtemp));
 					ssum.put(demographic, new Double(s + gUtemp));
+				} else {
+					double q = qsum.get(demographic);
+					double t = tsum.get(demographic);
+					qsum.put(demographic, new Double(q + gMtemp));
+					tsum.put(demographic, new Double(t + gUtemp));
 				}
-				if(!matched && mv instanceof NullDemographicsMatchVector){
-					NullDemographicsMatchVector ndmv = (NullDemographicsMatchVector)mv;
-					if(!ndmv.isNullComparison(demographic)){
-						double q = qsum.get(demographic);
-						double t = tsum.get(demographic);
-						qsum.put(demographic, new Double(q + gMtemp));
-						tsum.put(demographic, new Double(t + gUtemp));
-					}
-				}
+				
 			}
 			
 		}

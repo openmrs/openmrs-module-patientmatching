@@ -13,7 +13,6 @@ import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -25,6 +24,10 @@ import org.regenstrief.linkage.Record;
 
 public class MatchResultReviewPanel extends JPanel implements ActionListener, ChangeListener, KeyListener{
 	public static final int CERTAINTY_LEVELS = 5;
+	
+	private static final String MATCH_STRING = "match";
+	private static final String NONMATCH_STRING = "nonmatch";
+	private static final String NOT_REVIEWED_STRING = "not reviewed";
 	
 	JPanel score_panel, dem_panel, status_panel;
 	JTextField row;
@@ -49,10 +52,12 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 		
 		// init and add elements of score panel
 		score_panel = new JPanel();
+		JLabel row_label = new JLabel("Row:");
 		row = new JTextField(5);
 		row.setEditable(false);
 		score = new JTextField(12);
 		score.setEditable(false);
+		score_panel.add(row_label);
 		score_panel.add(row);
 		//score_panel.add(score);
 		
@@ -88,13 +93,20 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 		
 		// init and add elements for match status panel
 		status_panel = new JPanel();
+		status_panel.addKeyListener(this);
 		status_panel.setLayout(new BoxLayout(status_panel, BoxLayout.PAGE_AXIS));
 		not_reviewed = new JRadioButton("Not-Reviewed");
 		not_reviewed.addActionListener(this);
+		not_reviewed.setMnemonic(KeyEvent.VK_R);
+		//not_reviewed.setActionCommand(NOT_REVIEWED_STRING);
 		match = new JRadioButton("Match");
 		match.addActionListener(this);
+		match.setMnemonic(KeyEvent.VK_M);
+		//match.setActionCommand(MATCH_STRING);
 		not_match = new JRadioButton("Not-Match");
 		not_match.addActionListener(this);
+		not_match.setMnemonic(KeyEvent.VK_N);
+		//not_match.setActionCommand(NONMATCH_STRING);
 		review_status = new ButtonGroup();
 		review_status.add(not_reviewed);
 		review_status.add(match);
@@ -109,11 +121,15 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 		certainty.setPaintTicks(true);
 		certainty.setPaintLabels(true);
 		certainty.addChangeListener(this);
+		certainty.addKeyListener(this);
 		certainty_val = new JTextField(1);
 		certainty_val.addActionListener(this);
 		status_panel.add(not_reviewed);
 		status_panel.add(match);
 		status_panel.add(not_match);
+		not_reviewed.addKeyListener(this);
+		match.addKeyListener(this);
+		not_match.addKeyListener(this);
 		JPanel cpanel = new JPanel();
 		cpanel.add(certainty);
 		cpanel.add(certainty_val);
@@ -193,13 +209,26 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 				// invalid value in TextField, don't assign anything
 			}
 		} else if(s instanceof JRadioButton){
-			if(s == not_reviewed){
-				mr.setMatch_status(MatchResult.UNKNOWN);
-			} else if(s == match){
-				mr.setMatch_status(MatchResult.MATCH);
-			} else if(s == not_match){
-				mr.setMatch_status(MatchResult.NON_MATCH);
+			if(mr != null){
+				if(s == not_reviewed){
+					mr.setMatch_status(MatchResult.UNKNOWN);
+				} else if(s == match){
+					mr.setMatch_status(MatchResult.MATCH);
+				} else if(s == not_match){
+					mr.setMatch_status(MatchResult.NON_MATCH);
+				}
 			}
+			
+		} else {
+			String action_command = ae.getActionCommand();
+			if(action_command.equals(MATCH_STRING)){
+				match.setSelected(true);
+			} else if(action_command.equals(NONMATCH_STRING)){
+				not_match.setSelected(true);
+			} else if(action_command.equals(NOT_REVIEWED_STRING)){
+				not_reviewed.setSelected(true);
+			}
+			
 		}
 		
 	}
@@ -231,8 +260,32 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 	}
 
 	public void keyTyped(KeyEvent arg0) {
+		//System.out.println("key type event: " + arg0);
 		if(mr != null){
-			mr.setNote(note.getText());
+			if(arg0.getSource() == note){
+				mr.setNote(note.getText());
+			} else if(arg0.getSource() == certainty){
+				try{
+					int c = Integer.parseInt(Character.toString(arg0.getKeyChar()));
+					if(c > 0 && c <= CERTAINTY_LEVELS){
+						mr.setCertainty(getMatchResultCertainty(c));
+						certainty_val.setText(Integer.toString(c));
+						certainty.setValue(c);
+					}
+				}
+				catch(NumberFormatException nfe){
+					
+				}
+			} else {
+				// set radio buttons or slider
+				if(arg0.getKeyCode() == KeyEvent.VK_M){
+					match.doClick();
+				} else if(arg0.getKeyCode() == KeyEvent.VK_N){
+					not_match.doClick();
+				} else if(arg0.getKeyCode() == KeyEvent.VK_R){
+					not_reviewed.doClick();
+				}
+			}
 		}
 	}
 }

@@ -156,10 +156,12 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer{
 			String demographic = it.next();
 			int agree_count = demographic_agree_count.get(demographic);
 			double u_val = (double)agree_count/(double)sampleSize;
-			if(u_val < EMAnalyzer.EM_ZERO){
-				u_val = EMAnalyzer.EM_ZERO;
-			} else if(u_val > EMAnalyzer.EM_ONE){
-				u_val = EMAnalyzer.EM_ONE;
+			if(u_val < MatchingConfig.META_ZERO){
+				// set u to 3 * 1/sample size
+				//u_val = MatchingConfig.META_ZERO;
+				u_val = 3 * ( (double)1 / (double)sampleSize);
+			} else if(u_val > MatchingConfig.META_ONE){
+				u_val = MatchingConfig.META_ONE;
 			}
 			
 			double stdDev = getStandardDeviation(sampleSize, u_val);
