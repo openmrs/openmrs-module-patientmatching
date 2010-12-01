@@ -1,6 +1,7 @@
 package org.regenstrief.linkage.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,6 +19,9 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;
@@ -48,6 +52,8 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 	}
 	
 	private void initGUI(){
+		this.addContainerListener(MatchResultReviewKeyboardAccelerator.INSTANCE);
+		
 		this.setLayout(new BorderLayout());
 		
 		// init and add elements of score panel
@@ -55,6 +61,7 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 		JLabel row_label = new JLabel("Row:");
 		row = new JTextField(5);
 		row.setEditable(false);
+		row.setEnabled(false);
 		score = new JTextField(12);
 		score.setEditable(false);
 		score_panel.add(row_label);
@@ -73,6 +80,7 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 		values.setEnabled(false);
 		DemographicReviewTableModel drtm = new DemographicReviewTableModel(data, demographics);
 		values.setModel(drtm);
+		
 		
 		JPanel dem_top = new JPanel();
 		dem_top.setLayout(new BorderLayout());
@@ -139,7 +147,7 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 		this.add(score_panel, BorderLayout.WEST);
 		this.add(dem_panel, BorderLayout.CENTER);
 		this.add(status_panel, BorderLayout.EAST);
-		
+		score_panel.addKeyListener(MatchResultReviewKeyboardAccelerator.INSTANCE);
 	}
 	
 	public void setRow(int i){
@@ -159,6 +167,39 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 		}
 		DemographicReviewTableModel drtm = new DemographicReviewTableModel(data, demographics);
 		values.setModel(drtm);
+		
+		// set column widths
+		int margin = 5;
+		for (int i = 0; i < values.getColumnCount(); i++) {
+            int vColIndex = i;
+            TableColumnModel colModel  = values.getColumnModel();
+            TableColumn col = colModel.getColumn(vColIndex);
+            int width = 0;
+            
+            // Get width of column header
+            TableCellRenderer renderer = col.getHeaderRenderer();
+            
+            if (renderer == null) {
+                renderer = values.getTableHeader().getDefaultRenderer();
+            }
+
+            Component comp = renderer.getTableCellRendererComponent(values, col.getHeaderValue(), false, false, 0, 0);
+            width = comp.getPreferredSize().width;
+            
+            // Get maximum width of column data
+            for (int r = 0; r < values.getRowCount(); r++) {
+                renderer = values.getCellRenderer(r, vColIndex);
+                comp = renderer.getTableCellRendererComponent(values, values.getValueAt(r, vColIndex), false, false,r, vColIndex);
+                width = Math.max(width, comp.getPreferredSize().width);
+            }
+
+            // Add margin
+            width += 2 * margin;
+
+            // Set the width
+            col.setPreferredWidth(width);
+        }
+		
 		int status = mr.getMatch_status();
 		switch(status){
 		case MatchResult.MATCH:
@@ -185,6 +226,28 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 	private double getMatchResultCertainty(int certainty){
 		double ret = (double)(certainty - 1) / (double)(CERTAINTY_LEVELS - 1);
 		return ret;
+	}
+	
+	public void setAsMatch(){
+		match.doClick();
+	}
+	
+	public void setAsNonMatch(){
+		not_match.doClick();
+	}
+	
+	public void setAsNotReviewed(){
+		not_reviewed.doClick();
+	}
+	
+	public void setGUICertainty(int c){
+		if(c > 0 && c <= CERTAINTY_LEVELS){
+			if(mr != null){
+				mr.setCertainty(getMatchResultCertainty(c));
+			}
+			certainty_val.setText(Integer.toString(c));
+			certainty.setValue(c);
+		}
 	}
 
 	public void actionPerformed(ActionEvent ae) {
@@ -279,11 +342,11 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 			} else {
 				// set radio buttons or slider
 				if(arg0.getKeyCode() == KeyEvent.VK_M){
-					match.doClick();
+					setAsMatch();
 				} else if(arg0.getKeyCode() == KeyEvent.VK_N){
-					not_match.doClick();
+					setAsNonMatch();
 				} else if(arg0.getKeyCode() == KeyEvent.VK_R){
-					not_reviewed.doClick();
+					setAsNotReviewed();
 				}
 			}
 		}

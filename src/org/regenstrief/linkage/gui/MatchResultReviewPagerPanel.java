@@ -2,9 +2,10 @@ package org.regenstrief.linkage.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.File;
 import java.sql.Connection;
 import java.text.DateFormat;
@@ -33,7 +34,7 @@ import org.regenstrief.linkage.db.SavedResultDBConnection;
 import org.regenstrief.linkage.matchresult.DBMatchResultStore;
 import org.regenstrief.linkage.matchresult.MatchResultStore;
 
-public class MatchResultReviewPagerPanel extends JPanel implements ActionListener{
+public class MatchResultReviewPagerPanel extends JPanel implements ActionListener, KeyListener{
 
 	public static int VIEWS_PER_PAGE = 5;
 	public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
@@ -87,6 +88,7 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 	private void initGUI(){
 		this.setLayout(new BorderLayout());
 		
+		
 		// add top section
 		JPanel top = new JPanel();
 		top.setLayout(new BoxLayout(top, BoxLayout.LINE_AXIS));
@@ -123,7 +125,7 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		// create review panels
 		MatchResultReviewPanel mrrp;
 		JPanel middle = new JPanel();
-		
+		MatchResultReviewKeyboardAccelerator.INSTANCE.setReviewPanelList(rpanels);
 		middle.setLayout(new BoxLayout(middle, BoxLayout.PAGE_AXIS));
 		for(int i = 0; i < VIEWS_PER_PAGE; i++){
 			String[] dummy_header = new String[8];
@@ -296,5 +298,21 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 				updateView(index);
 			}
 		}
+	}
+
+	public void keyPressed(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+		System.out.println("high level key pressed");
+		
+	}
+
+	public void keyReleased(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void keyTyped(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 }
