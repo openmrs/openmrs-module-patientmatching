@@ -4,7 +4,6 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Logger;
 import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.patientmatching.LinkDBConnections;
@@ -34,7 +33,7 @@ import org.regenstrief.linkage.db.RecordDBManager;
 public class PatientMatchingAdvice implements MethodInterceptor {
 	
 	private Log log = LogFactory.getLog(this.getClass());
-	private Logger file_log = Logger.getLogger(PatientMatchingActivator.FILE_LOG);
+	//private Logger file_log = Logger.getLogger(PatientMatchingActivator.FILE_LOG);
 	
 	public PatientMatchingAdvice(){
 		
@@ -99,15 +98,15 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 						String key_demographic = rec_match.getDemographic(PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC);
 						log.warn("Match with patient " + key_demographic + " - score: " + mr.getScore() + "\tTprob: " + mr.getTrueProbability() + "\tFprob: " + mr.getFalseProbability() + "\tSens: " + mr.getSensitivity() + "\tSpec: " + mr.getSpecificity() + "\tBlock: " + which_mc);
 						log.warn("Score vector for " + mr.getScore() + ":\t" + mr.getScoreVector());
-						file_log.info("Match with patient " + key_demographic + " - score: " + mr.getScore() + "\tTprob: " + mr.getTrueProbability() + "\tFprob: " + mr.getFalseProbability() + "\tSens: " + mr.getSensitivity() + "\tSpec: " + mr.getSpecificity() + "\tBlock: " + which_mc);
-						file_log.info("Score vector for " + mr.getScore() + ":\t" + mr.getScoreVector());
+						//file_log.info("Match with patient " + key_demographic + " - score: " + mr.getScore() + "\tTprob: " + mr.getTrueProbability() + "\tFprob: " + mr.getFalseProbability() + "\tSens: " + mr.getSensitivity() + "\tSpec: " + mr.getSpecificity() + "\tBlock: " + which_mc);
+						//file_log.info("Score vector for " + mr.getScore() + ":\t" + mr.getScoreVector());
 						
 						TwinAnalyzer ta = new TwinAnalyzer();
 						boolean are_twins = ta.areTwins(rec_match, r);
 						if(are_twins){
 							// returned pair seem to be twins; return o and log reason
 							log.warn("Match analyzed as being twins, returning default invocation match");
-							file_log.info("Match analyzed as being twins, returning default OpenMRS invocation match");
+							//file_log.info("Match analyzed as being twins, returning default OpenMRS invocation match");
 							return o;
 						}
 						
@@ -120,7 +119,7 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 				}
 				catch(UnMatchableRecordException umre){
 					Record failed = umre.getRecord();
-					file_log.info("Patient " + failed + "\nnot matchable due to value(s) in demographics");
+					//file_log.info("Patient " + failed + "\nnot matchable due to value(s) in demographics");
 					return null;
 				}
 				catch(Exception e){

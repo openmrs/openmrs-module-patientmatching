@@ -3,9 +3,7 @@ package org.openmrs.module.patientmatching;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -51,7 +49,7 @@ public class LinkDBConnections {
 	//private Map<Integer,Record> cache;
 	//public final static int RECORD_CACHE_SIZE = 1000;
 	
-	protected static Log logger = LogFactory.getLog(LinkDBConnections.class);
+	protected static Log log = LogFactory.getLog(LinkDBConnections.class);
 	
 	private final static LinkDBConnections INSTANCE = new LinkDBConnections();
 	
@@ -258,7 +256,7 @@ public class LinkDBConnections {
 			//log.debug("parsing config file " + config);
 			//file_log.debug("parsing config file " + config);
 			if(!config.exists()){
-				//log.warn("cannot find config file in " + config.getPath());
+				log.warn("cannot find config file in " + config.getPath());
 				//file_log.warn("cannot find config file in " + config.getPath());
 				return false;
 			}
@@ -276,21 +274,22 @@ public class LinkDBConnections {
 			link_db = new RecordDBManager(rmc.getLinkDataSource1());
 		}
 		catch(ParserConfigurationException pce){
-			//log.warn("XML parser error with config file: " + pce.getMessage());
+			log.warn("XML parser error with config file: " + pce.getMessage());
 			//file_log.warn("XML parser error with config file: " + pce.getMessage());
 			return false;
 		}
 		catch(SAXException spe){
-			//log.warn("XML parser error with config file: " + spe.getMessage());
+			log.warn("XML parser error with config file: " + spe.getMessage());
 			//file_log.warn("XML parser error with config file: " + spe.getMessage());
 			return false;
 		}
 		catch(IOException ioe){
-			//log.warn("IOException with config file: " + ioe.getMessage());
+			log.warn("IOException with config file: " + ioe.getMessage());
 			//file_log.warn("IOException with config file: " + ioe.getMessage());
 			return false;
 		}
 		//log.debug("file parsed");
+		
 		return link_db.connect();
 		
 	}
@@ -338,7 +337,7 @@ public class LinkDBConnections {
                     String classProperty = property.substring(property.lastIndexOf(".") + 1);
                     value = BeanUtils.getProperty(patient, classProperty);
                 } catch (Exception e) {
-                    logger.debug("Error getting the value for property: " + property + " for patient " + id);
+                    log.debug("Error getting the value for property: " + property + " for patient " + id);
                 } finally {
                     ret.addDemographic(property, value);
                 }
@@ -351,7 +350,7 @@ public class LinkDBConnections {
                     String classProperty = property.substring(property.lastIndexOf(".") + 1);
                     value = BeanUtils.getProperty(personName, classProperty);
                 } catch (Exception e) {
-                    logger.debug("Error getting the value for property: " + property + " for patient " + id);
+                    log.debug("Error getting the value for property: " + property + " for patient " + id);
                 } finally {
                     ret.addDemographic(property, value);
                 }
@@ -365,7 +364,7 @@ public class LinkDBConnections {
                     String classProperty = property.substring(property.lastIndexOf(".") + 1);
                     value = BeanUtils.getProperty(personAddress, classProperty);
                 } catch (Exception e) {
-                    logger.debug("Error getting the value for property: " + property + " for patient " + id);
+                    log.debug("Error getting the value for property: " + property + " for patient " + id);
                 } finally {
                     ret.addDemographic(property, value);
                 }
