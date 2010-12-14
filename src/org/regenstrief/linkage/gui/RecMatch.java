@@ -78,8 +78,8 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 		current_program_config_file = config;
 		
 		// remove appenders from lob4j configuration file that's used for the OpenMRS module
-		Logger root_logger = Logger.getRootLogger();
-		root_logger.removeAllAppenders();
+		//Logger root_logger = Logger.getRootLogger();
+		//root_logger.removeAllAppenders();
 		
 		// load the config file if one was given when program was started
 		if(config != null){

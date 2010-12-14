@@ -11,9 +11,12 @@ public class PairDataSourceAnalysis {
 	List<PairAnalyzer> analyzers;
 	FormPairs fp;
 	
+	private int n;
+	
 	public PairDataSourceAnalysis(FormPairs fp){
 		this.fp = fp;
 		analyzers = new ArrayList<PairAnalyzer>();
+		n = 0;
 	}
 	
 	public void addAnalyzer(PairAnalyzer a){
@@ -27,6 +30,7 @@ public class PairDataSourceAnalysis {
 	public void analyzeData(){
 		Record[] pair;
 		while((pair = fp.getNextRecordPair()) != null){
+			n++;
 			for(int i = 0; i < analyzers.size(); i++){
 				// pass Record pairs to analyzer object
 				PairAnalyzer a = analyzers.get(i);
@@ -40,5 +44,9 @@ public class PairDataSourceAnalysis {
 			analyzers.get(i).finishAnalysis();
 		}
 		
+	}
+	
+	public int getRecordPairCount(){
+		return n;
 	}
 }

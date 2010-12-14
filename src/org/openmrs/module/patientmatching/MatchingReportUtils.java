@@ -20,9 +20,9 @@ import java.util.TreeSet;
 
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.cfg.Configuration;
-import org.openmrs.Patient;
-import org.openmrs.api.context.Context;
 import org.openmrs.api.db.hibernate.HibernateSessionFactoryBean;
 import org.openmrs.util.OpenmrsUtil;
 import org.regenstrief.linkage.MatchResult;
@@ -134,8 +134,10 @@ public class MatchingReportUtils {
 			databaseConnection = connectionFactory.createConnection();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
+			MatchingConfigurationUtils.log.warn("patientmatching:  error loading database driver to use when matching");
 		} catch (SQLException e) {
 			e.printStackTrace();
+			MatchingConfigurationUtils.log.warn("patientmatching:  error connectiong to database to do matching - \n" + e.getMessage());
 		}
 		
 		objects.put("databaseConnection", databaseConnection);
@@ -259,6 +261,8 @@ public class MatchingReportUtils {
 		PairDataSourceAnalysis pdsa=(PairDataSourceAnalysis)objects.get("pdsa");
 		MatchingConfigurationUtils.log.info("Analyzing data");
 		pdsa.analyzeData();
+		int n = pdsa.getRecordPairCount();
+		MatchingConfigurationUtils.log.info("patientmatching:  analyzed " + n + " pairs of records");
 		objects.put("pdsa", pdsa);
 		databaseReader.close();
 		return objects;

@@ -13,6 +13,7 @@ import java.util.*;
 public class DataSourceAnalysis {
 	List<DataSourceAnalyzer> analyzers;
 	DataSourceReader data_reader;
+	private int n;
 	
 	/**
 	 * Constructor initializes an empty List of Analyzer objects
@@ -22,6 +23,7 @@ public class DataSourceAnalysis {
 	public DataSourceAnalysis(DataSourceReader data_reader){
 		this.data_reader = data_reader;
 		analyzers = new ArrayList<DataSourceAnalyzer>();
+		n = 0;
 	}
 	
 	/**
@@ -52,6 +54,7 @@ public class DataSourceAnalysis {
 	public void analyzeData(){
 		while(data_reader.hasNextRecord()){
 			Record r = data_reader.nextRecord();
+			n++;
 			for(int i = 0; i < analyzers.size(); i++){
 				// pass Record object to analyzer object
 				DataSourceAnalyzer a = analyzers.get(i);
@@ -65,6 +68,10 @@ public class DataSourceAnalysis {
 			analyzers.get(i).finishAnalysis();
 		}
 		
+	}
+	
+	public int getRecordCount(){
+		return n;
 	}
 	
 }

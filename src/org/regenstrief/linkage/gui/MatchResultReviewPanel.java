@@ -58,14 +58,17 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 		
 		// init and add elements of score panel
 		score_panel = new JPanel();
+		JPanel spanel = new JPanel();
+		spanel.setLayout(new BoxLayout(spanel, BoxLayout.PAGE_AXIS));
 		JLabel row_label = new JLabel("Row:");
 		row = new JTextField(5);
-		row.setEditable(false);
+		//row.setEditable(false);
 		row.setEnabled(false);
 		score = new JTextField(12);
 		score.setEditable(false);
-		score_panel.add(row_label);
-		score_panel.add(row);
+		spanel.add(row_label);
+		spanel.add(row);
+		score_panel.add(spanel);
 		//score_panel.add(score);
 		
 		// init and add elements for demographic values table
@@ -131,6 +134,7 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 		certainty.addChangeListener(this);
 		certainty.addKeyListener(this);
 		certainty_val = new JTextField(1);
+		certainty_val.setEnabled(false);
 		certainty_val.addActionListener(this);
 		status_panel.add(not_reviewed);
 		status_panel.add(match);
@@ -139,7 +143,8 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 		match.addKeyListener(this);
 		not_match.addKeyListener(this);
 		JPanel cpanel = new JPanel();
-		cpanel.add(certainty);
+		//cpanel.add(certainty);
+		cpanel.add(new JLabel("Certainty:"));
 		cpanel.add(certainty_val);
 		status_panel.add(cpanel);
 		
@@ -197,7 +202,11 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
             width += 2 * margin;
 
             // Set the width
+            if(width > 100){
+            	width = 100;
+            }
             col.setPreferredWidth(width);
+            //col.setMaxWidth(100);
         }
 		
 		int status = mr.getMatch_status();

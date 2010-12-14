@@ -95,7 +95,7 @@ public class DBMatchResultStore implements MatchResultStore {
 	
 	public void setDate(Date d){
 		List<Date> dates = getDates();
-		if(!dates.contains(dates)){
+		if(!dates.contains(d)){
 			try{
 				date_insert.setDate(1, new java.sql.Date(d.getTime()));
 				date_insert.execute();
