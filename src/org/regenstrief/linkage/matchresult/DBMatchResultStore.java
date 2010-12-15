@@ -373,6 +373,7 @@ public class DBMatchResultStore implements MatchResultStore {
 			mr_update.setInt(4, id);
 			mr_update.setDate(5, new java.sql.Date(set_date.getTime()));
 			mr_update.executeUpdate();
+			db.commit();
 		}
 		catch(SQLException sqle){
 			System.err.println(sqle.getMessage());
