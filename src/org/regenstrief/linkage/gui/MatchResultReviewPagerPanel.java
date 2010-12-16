@@ -6,6 +6,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
 import java.sql.Connection;
 import java.text.DateFormat;
@@ -34,7 +36,7 @@ import org.regenstrief.linkage.db.SavedResultDBConnection;
 import org.regenstrief.linkage.matchresult.DBMatchResultStore;
 import org.regenstrief.linkage.matchresult.MatchResultStore;
 
-public class MatchResultReviewPagerPanel extends JPanel implements ActionListener, KeyListener{
+public class MatchResultReviewPagerPanel extends JPanel implements ActionListener, KeyListener, WindowListener{
 
 	public static int VIEWS_PER_PAGE = 5;
 	public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
@@ -169,7 +171,9 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		window.add(mrrpp);
 		window.setVisible(true);
 		
-		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		// close database on exit, so implement window listener to close connection on exit
+		//window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		window.addWindowListener(mrrpp);
 	}
 	
 	public MatchResultStore getMatchResultStore(){
@@ -252,6 +256,13 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 			
 		}
 	}
+	
+	public void closeDBConnection(){
+		if(mrs != null && mrs instanceof DBMatchResultStore){
+			DBMatchResultStore dmrs = (DBMatchResultStore)mrs;
+			dmrs.close();
+		}
+	}
 
 	public void actionPerformed(ActionEvent ae) {
 		if(ae.getSource() instanceof JButton){
@@ -312,6 +323,41 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 	}
 
 	public void keyTyped(KeyEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void windowActivated(WindowEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void windowClosed(WindowEvent arg0) {
+		closeDBConnection();
+		
+	}
+
+	public void windowClosing(WindowEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void windowDeactivated(WindowEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void windowDeiconified(WindowEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void windowIconified(WindowEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void windowOpened(WindowEvent arg0) {
 		// TODO Auto-generated method stub
 		
 	}
