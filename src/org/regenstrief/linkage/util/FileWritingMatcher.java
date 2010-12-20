@@ -152,6 +152,7 @@ public class FileWritingMatcher {
 					if(mrs instanceof DBMatchResultStore){
 						DBMatchResultStore dbmrs = (DBMatchResultStore)mrs;
 						dbmrs.addIndexes();
+						dbmrs.close();
 					}
 					
 					try{
