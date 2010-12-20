@@ -381,7 +381,20 @@ public class DBMatchResultStore implements MatchResultStore {
 	
 	public void close(){
 		try{
-			db.close();
+			mr_insert.close();
+			dem_insert.close();
+			fa_insert.close();
+			mr_count.close();
+			mr_query.close();
+			dem_query.close();
+			dem_count_query.close();
+			fa_query.close();
+			mr_delete.close();
+			fa_delete.close();
+			mr_update.close();
+			min_query.close();
+			date_query.close();
+			date_insert.close();
 		}
 		catch(SQLException sqle){
 			System.err.println(sqle.getMessage());

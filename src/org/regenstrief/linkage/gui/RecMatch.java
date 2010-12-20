@@ -581,6 +581,7 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 		// copy behaviour from the Exit option in the menu to give the user
 		// the option to save their work
 		exitProgram();
+		mrrpanel.closeDBConnection();
 	}
 	
 	public void stateChanged(ChangeEvent ce){

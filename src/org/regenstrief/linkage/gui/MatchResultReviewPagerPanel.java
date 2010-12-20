@@ -10,6 +10,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -49,6 +50,8 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 	private JTextField row, first_unreviewed, total;;
 	
 	private Hashtable<Integer,MatchResult> reviewed_match_results;
+	
+	private Connection db;
 	
 	public MatchResultReviewPagerPanel(){
 		super();
@@ -172,7 +175,7 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		window.setVisible(true);
 		
 		// close database on exit, so implement window listener to close connection on exit
-		//window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.addWindowListener(mrrpp);
 	}
 	
@@ -261,6 +264,13 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		if(mrs != null && mrs instanceof DBMatchResultStore){
 			DBMatchResultStore dmrs = (DBMatchResultStore)mrs;
 			dmrs.close();
+			
+			try{
+				db.close();
+			}
+			catch(SQLException sqle){
+				System.err.println(sqle.getMessage());
+			}
 		}
 	}
 
@@ -274,7 +284,7 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 				int retval = jfc.showOpenDialog(this);
 				if(retval == JFileChooser.APPROVE_OPTION){
 					File db_file = jfc.getSelectedFile();
-					Connection db = SavedResultDBConnection.openDBResults(db_file);
+					db = SavedResultDBConnection.openDBResults(db_file);
 					if(db != null){
 						mrs = new DBMatchResultStore(db);
 						List<Date> dates = ((DBMatchResultStore)mrs).getDates();
@@ -312,53 +322,43 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 	}
 
 	public void keyPressed(KeyEvent arg0) {
-		// TODO Auto-generated method stub
-		System.out.println("high level key pressed");
 		
 	}
 
 	public void keyReleased(KeyEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	public void keyTyped(KeyEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	public void windowActivated(WindowEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	public void windowClosed(WindowEvent arg0) {
-		closeDBConnection();
+		
 		
 	}
 
 	public void windowClosing(WindowEvent arg0) {
-		// TODO Auto-generated method stub
-		
+		closeDBConnection();
 	}
 
 	public void windowDeactivated(WindowEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	public void windowDeiconified(WindowEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	public void windowIconified(WindowEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	public void windowOpened(WindowEvent arg0) {
-		// TODO Auto-generated method stub
 		
 	}
 }
