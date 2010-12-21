@@ -86,9 +86,6 @@ public class DBMatchResultStore implements MatchResultStore {
 		}
 		catch(SQLException sqle){
 			System.err.println(sqle.getMessage());
-			mr_insert = null;
-			dem_insert = null;
-			fa_insert = null;
 		}
 		
 	}
@@ -131,6 +128,7 @@ public class DBMatchResultStore implements MatchResultStore {
 			long uid1 = rs.getLong("uid1");
 			long uid2 = rs.getLong("uid2");
 			String note = rs.getString("note");
+			rs.close();
 			
 			// get demographics for uid1 and uid2 and make Record objects
 			dem_query.setLong(1, uid1);
@@ -142,6 +140,7 @@ public class DBMatchResultStore implements MatchResultStore {
 				String value = rs.getString("value");
 				r1.addDemographic(field, value);
 			}
+			rs.close();
 			
 			dem_query.setLong(1, uid2);
 			dem_query.setInt(2, RIGHT_UID);
@@ -152,6 +151,7 @@ public class DBMatchResultStore implements MatchResultStore {
 				String value = rs.getString("value");
 				r2.addDemographic(field, value);
 			}
+			rs.close();
 			
 			// get agreement information and make MatchVector
 			fa_query.setInt(1, index);
@@ -166,6 +166,7 @@ public class DBMatchResultStore implements MatchResultStore {
 					mv.setMatch(field, false);
 				}
 			}
+			rs.close();
 			
 			ScoreVector sv = null;
 			MatchingConfig mc = null;
@@ -232,6 +233,7 @@ public class DBMatchResultStore implements MatchResultStore {
 				if(n > 0){
 					add_r1 = false;
 				}
+				rs.close();
 			}
 			
 			if(add_r2){
@@ -242,6 +244,7 @@ public class DBMatchResultStore implements MatchResultStore {
 				if(n > 0){
 					add_r2 = false;
 				}
+				rs.close();
 			}
 			
 		}
@@ -302,6 +305,7 @@ public class DBMatchResultStore implements MatchResultStore {
 			while(rs.next()){
 				ret.add(rs.getDate(1));
 			}
+			rs.close();
 		}
 		catch(SQLException sqle){
 			System.err.println(sqle.getMessage());
@@ -317,6 +321,7 @@ public class DBMatchResultStore implements MatchResultStore {
 			ResultSet rs = min_query.executeQuery();
 			rs.next();
 			id = rs.getInt(1);
+			rs.close();
 		}
 		catch(SQLException sqle){
 			System.err.println(sqle.getMessage());
@@ -344,6 +349,7 @@ public class DBMatchResultStore implements MatchResultStore {
 			ResultSet rs = mr_count.executeQuery();
 			rs.next();
 			size = rs.getInt(1);
+			rs.close();
 		}
 		catch(SQLException sqle){
 			System.err.println(sqle.getMessage());
