@@ -627,6 +627,9 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		TableColumn tc = session_options.getColumnModel().getColumn(6);
 		tc.setCellEditor(new DefaultCellEditor(jcb));
 		
+		MUValueCellRenderer muvcr = new MUValueCellRenderer();
+		session_options.setDefaultRenderer(Double.class, muvcr);
+		
 		JScrollPane table_pane = new JScrollPane(session_options);
 		table_pane.setPreferredSize(new Dimension(800, 300));
 		session_options.getTableHeader().addMouseListener(this);

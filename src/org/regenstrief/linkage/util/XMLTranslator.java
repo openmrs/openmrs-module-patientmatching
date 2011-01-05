@@ -289,14 +289,14 @@ public class XMLTranslator {
 		}
 		ret.appendChild(include);
 		
-		DecimalFormat df = new DecimalFormat("0.#####");
+		//DecimalFormat df = new DecimalFormat("0.#####");
 		
 		Element t_agreement = doc.createElement("TAgreement");
-		t_agreement.setTextContent(df.format(mcr.getAgreement()));
+		t_agreement.setTextContent(Double.toString(mcr.getAgreement()));
 		ret.appendChild(t_agreement);
 		
 		Element n_agreement = doc.createElement("NonAgreement");
-		n_agreement.setTextContent(df.format(mcr.getNonAgreement()));
+		n_agreement.setTextContent(Double.toString(mcr.getNonAgreement()));
 		ret.appendChild(n_agreement);
 		
 		Element scale_weight = doc.createElement("ScaleWeight");
