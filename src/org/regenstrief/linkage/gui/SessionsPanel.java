@@ -630,6 +630,11 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		MUValueCellRenderer muvcr = new MUValueCellRenderer();
 		session_options.setDefaultRenderer(Double.class, muvcr);
 		
+		if(rm_conf != null && rm_conf.getLinkDataSource1() != null){
+			String id_demographic = rm_conf.getLinkDataSource1().getUniqueID();
+			model.setIDName(id_demographic);
+		}
+		
 		JScrollPane table_pane = new JScrollPane(session_options);
 		table_pane.setPreferredSize(new Dimension(800, 300));
 		session_options.getTableHeader().addMouseListener(this);
@@ -681,6 +686,10 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		session_options.setModel(model);
 		TableColumn tc = session_options.getColumnModel().getColumn(6);
 		tc.setCellEditor(new DefaultCellEditor(jcb));
+		if(rm_conf != null && rm_conf.getLinkDataSource1() != null){
+			String id_demographic = rm_conf.getLinkDataSource1().getUniqueID();
+			model.setIDName(id_demographic);
+		}
 	}
 	
 	private void removeSessionConfig(MatchingConfig mc){

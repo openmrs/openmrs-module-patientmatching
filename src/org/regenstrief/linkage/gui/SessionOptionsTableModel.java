@@ -12,6 +12,7 @@ import org.regenstrief.linkage.util.MatchingConfigRow;
 public class SessionOptionsTableModel extends AbstractTableModel{
 	MatchingConfig mc;
 	String row_names[];
+	String id_name;
 	
 	public static final Class[] column_classes = {String.class, Integer.class, Integer.class, Boolean.class, Double.class, Double.class, Object.class};
 	public static final String[] column_names = {"Name", "Block Order", "Block Chars", "Include", "m-value", "u-value", "Algorithm"};
@@ -32,6 +33,10 @@ public class SessionOptionsTableModel extends AbstractTableModel{
 	public SessionOptionsTableModel(){
 		mc = null;
 		row_names = null;
+	}
+	
+	public void setIDName(String id){
+		id_name = id;
 	}
 	
 	public int getOffset(){
@@ -98,8 +103,13 @@ public class SessionOptionsTableModel extends AbstractTableModel{
 	}
 	
 	 public boolean isCellEditable(int row, int col){
-	 	// first column is only to be viewed
-	 	if(col == 0){// || col == 6){
+		int id_row = -1;
+		if(mc != null){
+			id_row = mc.getRowIndexforName(id_name);
+		}
+	 	if(row == id_row){
+	 		return false;
+	 	} else if(col == 0){
 	 		return false;
 	 	} else {
 	 		return true;
