@@ -156,18 +156,23 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer{
 			String demographic = it.next();
 			int agree_count = demographic_agree_count.get(demographic);
 			double u_val = (double)agree_count/(double)sampleSize;
+			boolean low_threshold = false;
 			if(u_val < MatchingConfig.META_ZERO){
 				// set u to 3 * 1/sample size
 				//u_val = MatchingConfig.META_ZERO;
 				u_val = 3 * ( (double)1 / (double)sampleSize);
+				low_threshold = true;
 			} else if(u_val > MatchingConfig.META_ONE){
 				u_val = MatchingConfig.META_ONE;
 			}
 			
 			double stdDev = getStandardDeviation(sampleSize, u_val);
 			double[] confidenceInterval = getConfidenceInterval(u_val, stdDev);
-			
-			log.info(demographic + "," + formatOutput(u_val, stdDev, confidenceInterval));
+			if(low_threshold){
+				log.info("*" + demographic + "," + formatOutput(u_val, stdDev, confidenceInterval));
+			} else {
+				log.info(demographic + "," + formatOutput(u_val, stdDev, confidenceInterval));
+			}
 			mc.getMatchingConfigRowByName(demographic).setNonAgreement(u_val);
 		}
 	}
