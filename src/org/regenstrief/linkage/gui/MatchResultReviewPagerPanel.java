@@ -200,7 +200,11 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		}
 		for(int i = 0; i < rpanels.size(); i++){
 			MatchResultReviewPanel mrrp = rpanels.get(i);
-			MatchResult mr = mrs.getMatchResult(view_index + i);
+			MatchResult mr;
+			mr = reviewed_match_results.get(new Integer(view_index + i));
+			if(mr == null){
+				mr = mrs.getMatchResult(view_index + i);
+			}
 			mrrp.setMatchResult(mr);
 			mrrp.setRow(view_index + i);
 			
@@ -254,7 +258,7 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 					mrs.removeMatchResult(id);
 					mrs.addMatchResult(reviewed, id);
 				}
-				
+				reviewed_match_results.remove(id);
 			}
 			
 		}
