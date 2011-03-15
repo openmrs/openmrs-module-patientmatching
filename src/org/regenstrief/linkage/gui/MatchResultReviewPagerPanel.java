@@ -197,6 +197,9 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		int size = mrs.getSize();
 		if(index > size - VIEWS_PER_PAGE){
 			view_index = size - VIEWS_PER_PAGE;
+			if(view_index < 0){
+				view_index = 0;
+			}
 		}
 		for(int i = 0; i < rpanels.size(); i++){
 			MatchResultReviewPanel mrrp = rpanels.get(i);
@@ -205,10 +208,12 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 			if(mr == null){
 				mr = mrs.getMatchResult(view_index + i);
 			}
-			mrrp.setMatchResult(mr);
-			mrrp.setRow(view_index + i);
-			
-			reviewed_match_results.put(new Integer(view_index + i), mr);
+			if(mr != null){
+				mrrp.setMatchResult(mr);
+				mrrp.setRow(view_index + i);
+				
+				reviewed_match_results.put(new Integer(view_index + i), mr);
+			}
 		}
 	}
 	
