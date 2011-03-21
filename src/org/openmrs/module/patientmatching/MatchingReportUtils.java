@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -20,8 +21,6 @@ import java.util.TreeSet;
 
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.cfg.Configuration;
 import org.openmrs.api.db.hibernate.HibernateSessionFactoryBean;
 import org.openmrs.util.OpenmrsUtil;
@@ -317,9 +316,22 @@ public class MatchingReportUtils {
 
 		SimpleDateFormat format = new SimpleDateFormat("MM-dd-yyyy--HH-mm-ss");
 		String dateString = format.format(new Date());
+		
+		String configString = new String();
+		try{
+			List<MatchingConfig> mcs = (List<MatchingConfig>)objects.get("matchingConfigLists");
+			Iterator<MatchingConfig> it = mcs.iterator();
+			while(it.hasNext()){
+				MatchingConfig mc = it.next();
+				configString += mc.getName() + "-";
+			}
+		}
+		catch(Exception e){
+			
+		}
 		File configFileFolder=(File)objects.get("configFileFolder");
 		File reportFile = new File(configFileFolder, "dedup-report-"
-				+ dateString);
+				+ configString + dateString);
 		BufferedWriter writer = new BufferedWriter(new FileWriter(reportFile));
 		DedupMatchResultList handler=(DedupMatchResultList)objects.get("handler");
 		Set<String> globalIncludeColumns=(Set<String>)objects.get("globalIncludeColumns");
