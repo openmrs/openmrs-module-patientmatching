@@ -11,7 +11,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
 public class TextDisplayFrame extends JFrame implements ActionListener{
-	
+	JPanel button_panel;
 	JTextArea jta;
 	JButton close_window;
 	
@@ -21,9 +21,9 @@ public class TextDisplayFrame extends JFrame implements ActionListener{
 		jta.setText(text);
 	}
 	
-	private void initGUI(){
+	protected void initGUI(){
 		this.setLayout(new BorderLayout());
-		JPanel button_panel = new JPanel();
+		button_panel = new JPanel();
 		close_window = new JButton("Close Window");
 		button_panel.add(close_window);
 		close_window.addActionListener(this);

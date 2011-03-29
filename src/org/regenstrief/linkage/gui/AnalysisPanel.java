@@ -154,7 +154,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		while(it.hasNext()){
 			MatchingConfig mc = it.next();
 			VectorTable vt = new VectorTable(mc);
-			TextDisplayFrame tdf = new TextDisplayFrame(mc.getName(), vt.toString());
+			TextDisplayFrame tdf = new SaveTextDisplayFrame(mc.getName(), vt.toString());
 		}
 	}
 	
