@@ -11,6 +11,7 @@ package org.regenstrief.linkage.util;
  */
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 
@@ -25,11 +26,13 @@ public class ScorePair {
 	private VectorTable vt;
 	private MatchingConfig mc;
 	private List<Modifier> modifiers;
+	private Hashtable<MatchVector,Long> observed_vectors;
 
 	public ScorePair(MatchingConfig mc){
 		this.mc = mc;
 		vt = new VectorTable(mc);
 		modifiers = new ArrayList<Modifier>();
+		observed_vectors = new Hashtable<MatchVector,Long>();
 	}
 
 	public void addScoreModifier(Modifier sm){
@@ -84,7 +87,19 @@ public class ScorePair {
 		
 		mr.setCertainty(1);
 		mr.setMatch_status(MatchResult.UNKNOWN);
+		
+		Long l = observed_vectors.get(mr.getMatchVector());
+		if(l == null){
+			l = new Long(1);
+		} else {
+			l = l + 1;
+		}
+		observed_vectors.put(mr.getMatchVector(), l);
 
 		return mr;
+	}
+	
+	public Hashtable<MatchVector,Long> getObservedVectors(){
+		return observed_vectors;
 	}
 }

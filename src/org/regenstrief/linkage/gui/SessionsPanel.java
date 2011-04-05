@@ -909,7 +909,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		if(ret == JFileChooser.APPROVE_OPTION){
 			out = out_chooser.getSelectedFile();
 			boolean db = write_db.isSelected();
-			match_file = FileWritingMatcher.writeMatchResults(rm_conf, out, write_xml, db, groupAnalysis);
+			match_file = FileWritingMatcher.writeMatchResults(rm_conf, out, write_xml, db, groupAnalysis, true);
             
             if(match_file == null){
                 JOptionPane.showMessageDialog(this,

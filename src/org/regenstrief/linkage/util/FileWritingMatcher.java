@@ -9,15 +9,18 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 
 import org.regenstrief.linkage.MatchResult;
+import org.regenstrief.linkage.MatchVector;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.RecordLink;
 import org.regenstrief.linkage.SameEntityRecordGroup;
 import org.regenstrief.linkage.analysis.NullDemographicScoreModifier;
 import org.regenstrief.linkage.analysis.SetSimilarityAnalysis;
+import org.regenstrief.linkage.analysis.VectorTable;
 import org.regenstrief.linkage.db.SavedResultDBConnection;
 import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.FormPairs;
@@ -41,10 +44,10 @@ public class FileWritingMatcher {
 	public static final String OUT_FILE = "linkage.out";
 	
 	public static File writeMatchResults(RecMatchConfig rmc){
-		return writeMatchResults(rmc, new File(OUT_FILE), true, false, false);
+		return writeMatchResults(rmc, new File(OUT_FILE), true, false, false, false);
 	}
 	
-	public static File writeMatchResults(RecMatchConfig rmc, File f, boolean write_xml, boolean write_db, boolean group_analysis){
+	public static File writeMatchResults(RecMatchConfig rmc, File f, boolean write_xml, boolean write_db, boolean group_analysis, boolean vector_obs){
 		
 		// set output order based on include position in lds
 		LinkDataSource lds = rmc.getLinkDataSource1();
@@ -180,7 +183,26 @@ public class FileWritingMatcher {
 						MatchResultsXML.resultsToXML(results, xml_out);
 					}
 					
-					
+					if(vector_obs){
+						File vector_out = new File(f2.getPath() + "_vectors.txt");
+						BufferedWriter v_out = new BufferedWriter(new FileWriter(vector_out));
+						v_out.write("vector|score|expected|observed\n");
+						Hashtable<MatchVector,Long> vectors = sp.getObservedVectors();
+						Iterator<MatchVector> mv_it = vectors.keySet().iterator();
+						while(mv_it.hasNext()){
+							MatchVector mv_obs = mv_it.next();
+							Long l = vectors.get(mv_obs);
+							VectorTable vt = new VectorTable(mc);
+							double score = vt.getScore(mv_obs);
+							// expected = (true_probability * p * count) + (false_probability * (1 - p) * count
+							double expected_true = vt.getMatchVectorTrueProbability(mv_obs) * mc.getP() * count;
+							double expected_false = vt.getMatchVectorFalseProbability(mv_obs) * (1 - mc.getP()) * count;
+							double expected = expected_true + expected_false;
+							v_out.write(mv_obs + "|" + score + "|" + expected + "|" + l + "\n");
+						}
+						v_out.flush();
+						v_out.close();
+					}
 				}
 				
 				
