@@ -189,16 +189,16 @@ public class FileWritingMatcher {
 						v_out.write("vector|score|expected|observed\n");
 						Hashtable<MatchVector,Long> vectors = sp.getObservedVectors();
 						Iterator<MatchVector> mv_it = vectors.keySet().iterator();
+						VectorTable vt = new VectorTable(mc);
 						while(mv_it.hasNext()){
 							MatchVector mv_obs = mv_it.next();
 							Long l = vectors.get(mv_obs);
-							VectorTable vt = new VectorTable(mc);
 							double score = vt.getScore(mv_obs);
 							// expected = (true_probability * p * count) + (false_probability * (1 - p) * count
 							double expected_true = vt.getMatchVectorTrueProbability(mv_obs) * mc.getP() * count;
 							double expected_false = vt.getMatchVectorFalseProbability(mv_obs) * (1 - mc.getP()) * count;
 							double expected = expected_true + expected_false;
-							v_out.write(mv_obs + "|" + score + "|" + expected + "|" + l + "\n");
+							v_out.write("\"" + mv_obs + "\"|" + score + "|" +vt.getMatchVectorTrueProbability(mv_obs) + "|" + vt.getMatchVectorFalseProbability(mv_obs) + "|" + expected + "|" + l + "\n");
 						}
 						v_out.flush();
 						v_out.close();
