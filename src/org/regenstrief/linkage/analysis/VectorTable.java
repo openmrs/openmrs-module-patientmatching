@@ -34,8 +34,7 @@ public class VectorTable {
 	
 	List<MatchResult> vectors;
 	
-	public static final double MATCH_ONE = 0.999999;
-	public static final double MATCH_ZERO = 0.000001;
+	
 	
 	public VectorTable(MatchingConfig mc){
 		this.mc = mc;
@@ -54,18 +53,6 @@ public class VectorTable {
 			MatchingConfigRow mcr = it.next();
 			double match_rate = mcr.getAgreement();
 			double umatch_rate = mcr.getNonAgreement();
-			if(match_rate > MATCH_ONE || match_rate < MATCH_ZERO){
-				// need to determine proper error action
-				//System.out.println("ERROR: m-value is out of range");
-			}
-			if(umatch_rate > MATCH_ONE || match_rate < MATCH_ZERO){
-				// need to determine proper error action
-				//System.out.println("ERROR: u-value is out of range");
-			}
-			// m[k] = log(mtx[used[k]].m  /    mtx[used[k]].u) / log(2);
-			// u[k] = log( (1 - mtx[used[k]].m) / (1 - mtx[used[k]].u) ) / log(2);
-			// m[i] = Math.log(match_rate / umatch_rate) / Math.log(2);
-			// u[i] = Math.log( (1 - match_rate) / (1 - umatch_rate) ) / Math.log(2);
 			double m = Math.log(match_rate / umatch_rate) / Math.log(2);
 			double u = Math.log( (1 - match_rate) / (1 - umatch_rate) ) / Math.log(2);
 			

@@ -186,7 +186,7 @@ public class FileWritingMatcher {
 					if(vector_obs){
 						File vector_out = new File(f2.getPath() + "_vectors.txt");
 						BufferedWriter v_out = new BufferedWriter(new FileWriter(vector_out));
-						v_out.write("vector|score|expected|observed\n");
+						v_out.write("vector|score|true_prob|false_prob|expected|observed\n");
 						Hashtable<MatchVector,Long> vectors = sp.getObservedVectors();
 						Iterator<MatchVector> mv_it = vectors.keySet().iterator();
 						VectorTable vt = new VectorTable(mc);
