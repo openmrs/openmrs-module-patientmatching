@@ -19,6 +19,7 @@ import org.regenstrief.linkage.analysis.FrequencyAnalyzer;
 import org.regenstrief.linkage.analysis.MaximumEntropyAnalyzer;
 import org.regenstrief.linkage.analysis.MemoryBackedDataSourceFrequency;
 import org.regenstrief.linkage.analysis.NullAnalyzer;
+import org.regenstrief.linkage.analysis.ObservedVectorAnalyzer;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
 import org.regenstrief.linkage.analysis.SummaryStatisticsStore;
@@ -48,7 +49,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 	
 	private JButton random_button;
 	
-	private JButton em_button, vector_button, summary_button, freq_button, closed_form_button;
+	private JButton em_button, vector_button, summary_button, freq_button, closed_form_button, vector_obs_button;
 	
 	public AnalysisPanel(RecMatchConfig rmc){
 		super();
@@ -85,6 +86,10 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		closed_form_button = new JButton("Perform Closed U value calculation");
 		this.add(closed_form_button);
 		closed_form_button.addActionListener(this);
+		
+		vector_obs_button = new JButton("Perform Vector Observation Analysis");
+		this.add(vector_obs_button);
+		vector_obs_button.addActionListener(this);
 	}
 	
 	private void runEMAnalysis(){
@@ -171,6 +176,43 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 			performFrequencyAnalysis();
 		} else if(ae.getSource() == closed_form_button){
 			calculateClosedUValues();
+		} else if(ae.getSource() == vector_obs_button){
+			performVectorObsAnalysis();
+		}
+	}
+	
+	private void performVectorObsAnalysis(){
+		ReaderProvider rp = ReaderProvider.getInstance();
+		List<MatchingConfig> mcs = rm_conf.getMatchingConfigs();
+		Iterator<MatchingConfig> it = mcs.iterator();
+		while(it.hasNext()){
+			MatchingConfig mc = it.next();
+			
+			OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
+			OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
+			if(odsr1 != null && odsr2 != null){
+				// analyze with EM
+			    FormPairs fp2 = null;
+			    if (rm_conf.isDeduplication()) {
+			        fp2 = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
+			    } else {
+			        fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+			    }
+			    
+			    LoggingFrame frame = new SaveTextLoggingFrame(mc.getName());
+				PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
+				// if not using random sampling then don't instantiate random sample analyzer
+				// if the value is locked then don't instantiate random sampler analyzer
+				
+				ObservedVectorAnalyzer ova = new ObservedVectorAnalyzer(mc);
+				pdsa.addAnalyzer(ova);
+				frame.addLoggingObject(ova);
+				frame.configureLoggingFrame();
+				pdsa.analyzeData();
+			}
+			odsr1.close();
+			odsr2.close();
+			
 		}
 	}
 	
