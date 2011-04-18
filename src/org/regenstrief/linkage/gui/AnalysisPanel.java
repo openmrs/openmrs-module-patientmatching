@@ -1,13 +1,17 @@
 package org.regenstrief.linkage.gui;
 
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.analysis.AverageFrequencyAnalyzer;
 import org.regenstrief.linkage.analysis.ClosedFormAnalyzer;
 import org.regenstrief.linkage.analysis.ClosedFormDedupAnalyzer;
@@ -25,6 +29,7 @@ import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
 import org.regenstrief.linkage.analysis.SummaryStatisticsStore;
 import org.regenstrief.linkage.analysis.UniqueAnalyzer;
 import org.regenstrief.linkage.analysis.VectorTable;
+import org.regenstrief.linkage.analysis.VectorValuesFrequencyAnalyzer;
 import org.regenstrief.linkage.io.DataSourceReader;
 import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.FormPairs;
@@ -34,6 +39,7 @@ import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.RecMatchConfig;
+import org.regenstrief.linkage.util.SyntheticRecordGenerator;
 
 /**
  * Class displays different analysis options available in the record linkage GUI
@@ -49,7 +55,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 	
 	private JButton random_button;
 	
-	private JButton em_button, vector_button, summary_button, freq_button, closed_form_button, vector_obs_button;
+	private JButton em_button, vector_button, summary_button, freq_button, closed_form_button, vector_obs_button, synthetic_button;
 	
 	public AnalysisPanel(RecMatchConfig rmc){
 		super();
@@ -62,34 +68,48 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 	}
 	
 	private void createAnalysisPanel(){
-		//this.setLayout(new BorderLayout());
+		FlowLayout fl = new FlowLayout();
+		JPanel row1 = new JPanel();
+		JPanel row2 = new JPanel();
+		row1.setLayout(fl);
+		row2.setLayout(fl);
+		this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+		this.add(row1);
+		this.add(row2);
+		
 	    random_button = new JButton("Perform Random Sampling");
-        this.add(random_button);
+        row1.add(random_button);
         random_button.addActionListener(this);
         
 		em_button = new JButton("Perform EM Analysis");
-		this.add(em_button);
+		row1.add(em_button);
 		em_button.addActionListener(this);
 		
 		vector_button = new JButton("View score tables");
-		this.add(vector_button);
+		row1.add(vector_button);
 		vector_button.addActionListener(this);
 		
 		summary_button = new JButton("Perform Summary Statistic Analyses");
-		this.add(summary_button);
+		row1.add(summary_button);
 		summary_button.addActionListener(this);
 		
 		freq_button = new JButton("Perform Frequency Analysis");
-		this.add(freq_button);
+		row2.add(freq_button);
 		freq_button.addActionListener(this);
 		
 		closed_form_button = new JButton("Perform Closed U value calculation");
-		this.add(closed_form_button);
+		row2.add(closed_form_button);
 		closed_form_button.addActionListener(this);
 		
 		vector_obs_button = new JButton("Perform Vector Observation Analysis");
-		this.add(vector_obs_button);
+		row2.add(vector_obs_button);
 		vector_obs_button.addActionListener(this);
+		
+		synthetic_button = new JButton("Create Synthetic Data");
+		row2.add(synthetic_button);
+		synthetic_button.addActionListener(this);
+		
+		this.add(Box.createVerticalGlue());
 	}
 	
 	private void runEMAnalysis(){
@@ -154,6 +174,43 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		}
 	}
 	
+	private void createSyntheticData(){
+		// do frequency analysis to get values to sample from
+		ReaderProvider rp = ReaderProvider.getInstance();
+		List<MatchingConfig> mcs = rm_conf.getMatchingConfigs();
+		Iterator<MatchingConfig> it = mcs.iterator();
+		while(it.hasNext()){
+			MatchingConfig mc = it.next();
+			
+			OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
+			OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
+			if(odsr1 != null && odsr2 != null){
+				
+			    FormPairs fp2 = null;
+			    if (rm_conf.isDeduplication()) {
+			        fp2 = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
+			    } else {
+			        fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+			    }
+			    
+			    PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
+			    VectorValuesFrequencyAnalyzer vvfa = new VectorValuesFrequencyAnalyzer(mc);
+			    pdsa.addAnalyzer(vvfa);
+			    pdsa.analyzeData();
+			    int count = pdsa.getRecordPairCount();
+			    SyntheticRecordGenerator srg = new SyntheticRecordGenerator(mc, count, null, vvfa.getVectorFrequencies());
+			    for(int i = 0; i < 10; i++){
+			    	Record[] r = srg.getRecordPair();
+			    }
+			    //System.out.println(r[0]);
+			    //System.out.println(r[1]);
+			}
+			
+			
+			
+		}
+	}
+	
 	private void displayVectorTables(){
 		Iterator<MatchingConfig> it = rm_conf.getMatchingConfigs().iterator();
 		while(it.hasNext()){
@@ -178,6 +235,8 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 			calculateClosedUValues();
 		} else if(ae.getSource() == vector_obs_button){
 			performVectorObsAnalysis();
+		} else if(ae.getSource() == synthetic_button){
+			createSyntheticData();
 		}
 	}
 	
