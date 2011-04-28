@@ -56,7 +56,7 @@ public class FileWritingMatcher {
 			DataColumn dc = lds.getDataColumnByIncludePosition(i);
 			order[i] = dc.getName();
 		}
-		String id_field = lds.getUniqueID();
+		
 		
 		Date report_time = new Date();
 		
@@ -135,7 +135,7 @@ public class FileWritingMatcher {
 						//results.add(mr);
 						
 						// changed to write output line without sorting results first
-						fout.write(getOutputLine(mr, order, id_field) + "\n");
+						fout.write(getOutputLine(mr, order) + "\n");
 						
 						// add match result to db, if needed
 						if(write_db && mrs != null){
@@ -172,7 +172,7 @@ public class FileWritingMatcher {
 					Iterator<MatchResult> it2 = results.iterator();
 					while(it2.hasNext()){
 						MatchResult mr = it2.next();
-						fout.write(getOutputLine(mr, order, id_field) + "\n");
+						fout.write(getOutputLine(mr, order) + "\n");
 					}
 					
 					// write to an xml file also, to test this new format
@@ -231,7 +231,7 @@ public class FileWritingMatcher {
 						RecordLink link = group_links_it.next();
 						if(link instanceof MatchResult){
 							MatchResult mr = (MatchResult)link;
-							String link_output_line = Integer.toString(group_id) + "|" + getOutputLine(mr, order, id_field);
+							String link_output_line = Integer.toString(group_id) + "|" + getOutputLine(mr, order);
 							fout.write(link_output_line + "\n");
 						}
 					}
@@ -255,7 +255,7 @@ public class FileWritingMatcher {
 		return f;
 	}
 	
-	private static String getOutputLine(MatchResult mr, String[] order, String id_field){
+	public static String getOutputLine(MatchResult mr, String[] order){
 		String s = new String();
 		s += mr.getScore();
 		//Enumeration<String> demographics = mr.getRecord1().getDemographics().keys();
@@ -265,10 +265,7 @@ public class FileWritingMatcher {
 		//while(demographics.hasMoreElements()){
 		for(int i = 0; i < order.length; i++){
 			String demographic = order[i];
-			MatchingConfigRow mcr = mr.getMatchingConfig().getMatchingConfigRowByName(demographic);
-			if(!mcr.getName().equals(id_field)){
-				s += "|" + r1.getDemographic(demographic) + "|" + r2.getDemographic(demographic);
-			}
+			s += "|" + r1.getDemographic(demographic) + "|" + r2.getDemographic(demographic);
 			
 		}
 		return s;

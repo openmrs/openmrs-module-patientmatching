@@ -26,6 +26,10 @@ public class ValueFrequencyTable {
 		return l;
 	}
 	
+	public int getUniqueValueCount(){
+		return frequencies.keySet().size();
+	}
+	
 	public void setFrequency(String value, long freq){
 		frequencies.put(value, freq);
 	}

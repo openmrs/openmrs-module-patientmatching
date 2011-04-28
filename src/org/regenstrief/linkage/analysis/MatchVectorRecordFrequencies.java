@@ -21,9 +21,9 @@ public class MatchVectorRecordFrequencies {
 	
 	public RecordFrequencies getFrequencies(MatchVector mv){
 		RecordFrequencies rf = vectors.get(mv);
-		if(rf == null){
-			rf = new RecordFrequencies();
-		}
+		//if(rf == null){
+		//	rf = new RecordFrequencies();
+		//}
 		return rf;
 	}
 	

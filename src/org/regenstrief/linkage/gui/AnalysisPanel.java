@@ -3,15 +3,21 @@ package org.regenstrief.linkage.gui;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 
-import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.analysis.AverageFrequencyAnalyzer;
 import org.regenstrief.linkage.analysis.ClosedFormAnalyzer;
 import org.regenstrief.linkage.analysis.ClosedFormDedupAnalyzer;
@@ -26,8 +32,10 @@ import org.regenstrief.linkage.analysis.NullAnalyzer;
 import org.regenstrief.linkage.analysis.ObservedVectorAnalyzer;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
+import org.regenstrief.linkage.analysis.RecordFrequencies;
 import org.regenstrief.linkage.analysis.SummaryStatisticsStore;
 import org.regenstrief.linkage.analysis.UniqueAnalyzer;
+import org.regenstrief.linkage.analysis.ValueFrequencyAnalyzer;
 import org.regenstrief.linkage.analysis.VectorTable;
 import org.regenstrief.linkage.analysis.VectorValuesFrequencyAnalyzer;
 import org.regenstrief.linkage.io.DataSourceReader;
@@ -36,6 +44,7 @@ import org.regenstrief.linkage.io.FormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceReader;
 import org.regenstrief.linkage.io.ReaderProvider;
+import org.regenstrief.linkage.util.FileWritingMatcher;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.RecMatchConfig;
@@ -179,36 +188,77 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		ReaderProvider rp = ReaderProvider.getInstance();
 		List<MatchingConfig> mcs = rm_conf.getMatchingConfigs();
 		Iterator<MatchingConfig> it = mcs.iterator();
-		while(it.hasNext()){
-			MatchingConfig mc = it.next();
+		
+		// get file to write synthetic data files to
+		File output_base = null;
+		JFileChooser fc = new JFileChooser();
+		int returnVal = fc.showOpenDialog(null);
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			output_base = fc.getSelectedFile();
 			
-			OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
-			OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
-			if(odsr1 != null && odsr2 != null){
+			while(it.hasNext()){
+				MatchingConfig mc = it.next();
+				OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
+				OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
 				
-			    FormPairs fp2 = null;
-			    if (rm_conf.isDeduplication()) {
-			        fp2 = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
-			    } else {
-			        fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
-			    }
-			    
-			    PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
-			    VectorValuesFrequencyAnalyzer vvfa = new VectorValuesFrequencyAnalyzer(mc);
-			    pdsa.addAnalyzer(vvfa);
-			    pdsa.analyzeData();
-			    int count = pdsa.getRecordPairCount();
-			    SyntheticRecordGenerator srg = new SyntheticRecordGenerator(mc, count, null, vvfa.getVectorFrequencies());
-			    for(int i = 0; i < 10; i++){
-			    	Record[] r = srg.getRecordPair();
-			    }
-			    //System.out.println(r[0]);
-			    //System.out.println(r[1]);
+				String order[] = mc.getIncludedColumnsNames();
+				
+				if(odsr1 != null && odsr2 != null){
+					// analyze frequencies in data sources first
+					DataSourceAnalysis dsa = new DataSourceAnalysis(odsr1);
+					ValueFrequencyAnalyzer vfa = new ValueFrequencyAnalyzer(rm_conf.getLinkDataSource1(), mc);
+					dsa.addAnalyzer(vfa);
+					dsa.analyzeData();
+					RecordFrequencies rf = vfa.getRecordFrequencies();
+					
+					// analyze frequencies of pairs second
+					odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
+					odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
+					
+				    FormPairs fp2 = null;
+				    if (rm_conf.isDeduplication()) {
+				        fp2 = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
+				    } else {
+				        fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+				    }
+				    
+				    PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
+				    VectorValuesFrequencyAnalyzer vvfa = new VectorValuesFrequencyAnalyzer(mc);
+				    pdsa.addAnalyzer(vvfa);
+				    pdsa.analyzeData();
+				    int count = pdsa.getRecordPairCount();
+				    SyntheticRecordGenerator srg = new SyntheticRecordGenerator(mc, count, rf, vvfa.getVectorFrequencies());
+				    System.out.println("data analyzed, creating records");
+				    int n = 10000;
+				    Date start = new Date();
+				    File synthetic_output = new File(output_base.getPath() + "_" + mc.getName() + "_synthetic.txt");
+				    try{
+				    	BufferedWriter fout = new BufferedWriter(new FileWriter(synthetic_output));
+				    	for(int i = 0; i < n; i++){
+					    	//System.out.println("=========== pair " + i + " ===========");
+					    	MatchResult mr = srg.getRecordPair();
+					    	String output_line = FileWritingMatcher.getOutputLine(mr, order);
+					    	fout.write(output_line + "\n");
+					    	//System.out.println(r[0]);
+						    //System.out.println(r[1]);
+					    }
+				    	fout.flush();
+				    	fout.close();
+				    }
+				    catch(IOException ioe){
+				    	System.err.println("error writing synthetic data to file: " + ioe.getMessage());
+				    }
+				    
+				    Date end = new Date();
+				    System.out.println(n + " records created between " + start + " and " + end);
+				}
+				
+				
+				System.out.println("data generated");
 			}
-			
-			
-			
 		}
+		
+		
 	}
 	
 	private void displayVectorTables(){

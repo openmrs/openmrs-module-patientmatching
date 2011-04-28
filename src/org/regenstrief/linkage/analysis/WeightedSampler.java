@@ -25,9 +25,7 @@ public class WeightedSampler {
 	public static String weightedRandomSample(ValueFrequencyTable vft){
 		List<String> values = vft.getValues();
 		List<String> space = new ArrayList<String>();
-		if(space.size() == 0){
-			return "";
-		}
+		
 		Iterator<String> it = values.iterator();
 		long total = 0;
 		while(it.hasNext()){
@@ -37,6 +35,9 @@ public class WeightedSampler {
 			for(int i = 0; i < f; i++){
 				space.add(value);
 			}
+		}
+		if(space.size() == 0){
+			return null;
 		}
 		int index = rand.nextInt(space.size());
 		return space.get(index);

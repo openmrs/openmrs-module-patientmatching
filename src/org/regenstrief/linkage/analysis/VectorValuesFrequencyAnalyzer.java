@@ -39,8 +39,71 @@ public class VectorValuesFrequencyAnalyzer extends RecordPairAnalyzer
 			if(rf == null){
 				rf = new RecordFrequencies();
 				mvrf.setFrequencies(mv, rf);
+				// add dependent demographics
+				rf.setDependency("sex", "fn");
 			}
-			ValueFrequencyTable vft = rf.getDemographicFrequencies(demographic);
+			
+			// increment count for record 1
+			ValueFrequencyTable vft = null;
+			if(rf.isDependent(demographic)){
+				// get the context the demographic depends on, increment frequency
+				DependentValueFrequencyTable dvft = rf.getDependentValueFrequencyTable(demographic);
+				if(dvft == null){
+					dvft = new DependentValueFrequencyTable();
+					rf.setDependentDemographicFrequencies(demographic, dvft);
+				}
+				String context = pair[0].getDemographic(rf.getContext(demographic));
+				if(context != null){
+					vft = dvft.getValueFrequencyTable(context);
+					if(vft == null){
+						vft = new ValueFrequencyTable();
+						dvft.setValueFrequencyTable(context, vft);
+					}
+				}
+				
+			}
+			// is an independent demographic or there is no value for the dependent demographic context
+			if(vft == null){
+				vft = rf.getDemographicFrequencies(demographic);
+			}
+			if(vft == null){
+				vft = new ValueFrequencyTable();
+				rf.setDemographicFrequencies(demographic, vft);
+			}
+			long current = vft.getFrequency(val1);
+			vft.setFrequency(val1, current+1);
+			
+			// increment count for record 2
+			vft = null;
+			if(rf.isDependent(demographic)){
+				// get the context the demographic depends on, increment frequency
+				DependentValueFrequencyTable dvft = rf.getDependentValueFrequencyTable(demographic);
+				if(dvft == null){
+					dvft = new DependentValueFrequencyTable();
+					rf.setDependentDemographicFrequencies(demographic, dvft);
+				}
+				String context = pair[1].getDemographic(rf.getContext(demographic));
+				if(context != null){
+					vft = dvft.getValueFrequencyTable(context);
+					if(vft == null){
+						vft = new ValueFrequencyTable();
+						dvft.setValueFrequencyTable(context, vft);
+					}
+				}
+				
+			}
+			// is an independent demographic or there is no value for the dependent demographic context
+			if(vft == null){
+				vft = rf.getDemographicFrequencies(demographic);
+			}
+			if(vft == null){
+				vft = new ValueFrequencyTable();
+				rf.setDemographicFrequencies(demographic, vft);
+			}
+			current = vft.getFrequency(val1);
+			vft.setFrequency(val2, current+1);
+			
+			/*ValueFrequencyTable vft = rf.getDemographicFrequencies(demographic);
 			if(vft == null){
 				vft = new ValueFrequencyTable();
 				rf.setDemographicFrequencies(demographic, vft);
@@ -52,6 +115,7 @@ public class VectorValuesFrequencyAnalyzer extends RecordPairAnalyzer
 			// add 1 to frequency count for pair[1] demographic value
 			l = vft.getFrequency(val2);
 			vft.setFrequency(val2, l + 1);
+			*/
 		}
 
 	}
