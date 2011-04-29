@@ -9,7 +9,6 @@ import java.util.Random;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.MatchVector;
 import org.regenstrief.linkage.Record;
-import org.regenstrief.linkage.ScoreVector;
 import org.regenstrief.linkage.analysis.MatchVectorRecordFrequencies;
 import org.regenstrief.linkage.analysis.RecordFrequencies;
 import org.regenstrief.linkage.analysis.ValueFrequencyTable;
@@ -19,6 +18,7 @@ import org.regenstrief.linkage.analysis.WeightedSampler;
 public class SyntheticRecordGenerator {
 
 	public static final int FREQUENCY_THRESHOLD = 10;
+	public static final String DEMOGRAPHIC_RANK_SUFFIX = "_rank";
 	
 	private Hashtable<String,Integer> thresholds;
 	private MatchingConfig mc;
@@ -72,6 +72,9 @@ public class SyntheticRecordGenerator {
 			if(context != null && !primary_demographics.contains(context)){
 				primary_demographics.add(context);
 				dependent_demographics.add(demographic);
+				if(dependent_demographics.contains(context)){
+					dependent_demographics.remove(context);
+				}
 			}
 			if(!dependent_demographics.contains(demographic) && !primary_demographics.contains(demographic)){
 				dependent_demographics.add(demographic);
@@ -124,6 +127,8 @@ public class SyntheticRecordGenerator {
 				setRandomDisagreementDemographic(mv, ret[1], p_demographic, ret[0].getDemographic(p_demographic));
 			} else {
 				ret[1].addDemographic(p_demographic, ret[0].getDemographic(p_demographic));
+				String rank_demographic = p_demographic + DEMOGRAPHIC_RANK_SUFFIX;
+				ret[1].addDemographic(rank_demographic, ret[0].getDemographic(rank_demographic));
 			}
 		}
 		
@@ -141,6 +146,8 @@ public class SyntheticRecordGenerator {
 				setRandomDisagreementDemographic(mv, ret[1], demographic, ret[0].getDemographic(demographic));
 			} else {
 				ret[1].addDemographic(demographic, ret[0].getDemographic(demographic));
+				String rank_demographic = demographic + DEMOGRAPHIC_RANK_SUFFIX;
+				ret[1].addDemographic(rank_demographic, ret[0].getDemographic(rank_demographic));
 			}
 			
 		}
@@ -179,12 +186,18 @@ public class SyntheticRecordGenerator {
 		ValueFrequencyTable vft = getSampleValueFrequencyTable(mv, dest, demographic);
 		String val = WeightedSampler.weightedRandomSample(vft);
 		dest.addDemographic(demographic, val);
+		String rank_demographic = demographic + DEMOGRAPHIC_RANK_SUFFIX;
+		int rank = vft.getRank(val);
+		dest.addDemographic(rank_demographic, Integer.toString(rank));
 	}
 	
 	private void setRandomDisagreementDemographic(MatchVector mv, Record dest, String demographic, String not_match){
 		ValueFrequencyTable vft = getSampleValueFrequencyTable(mv, dest, demographic);
 		if(vft.getUniqueValueCount() == 1){
 			dest.addDemographic(demographic, "");
+			String rank_demographic = demographic + DEMOGRAPHIC_RANK_SUFFIX;
+			int rank = vft.getRank("");
+			dest.addDemographic(rank_demographic, Integer.toString(rank));
 			return;
 		}
 		String new_val;
@@ -192,6 +205,9 @@ public class SyntheticRecordGenerator {
 			new_val = WeightedSampler.weightedRandomSample(vft);
 		}while(not_match.equals(new_val) && !not_match.equals(""));
 		dest.addDemographic(demographic, new_val);
+		String rank_demographic = demographic + DEMOGRAPHIC_RANK_SUFFIX;
+		int rank = vft.getRank(new_val);
+		dest.addDemographic(rank_demographic, Integer.toString(rank));
 	}
 	
 	private MatchVector getRandomMatchVector(){

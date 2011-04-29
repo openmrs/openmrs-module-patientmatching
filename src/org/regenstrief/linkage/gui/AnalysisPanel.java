@@ -202,6 +202,10 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 				OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
 				
 				String order[] = mc.getIncludedColumnsNames();
+				String rank_order[] = new String[order.length];
+				for(int i = 0; i < order.length; i++){
+					rank_order[i] = order[i] + SyntheticRecordGenerator.DEMOGRAPHIC_RANK_SUFFIX;
+				}
 				
 				if(odsr1 != null && odsr2 != null){
 					// analyze frequencies in data sources first
@@ -229,21 +233,27 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 				    int count = pdsa.getRecordPairCount();
 				    SyntheticRecordGenerator srg = new SyntheticRecordGenerator(mc, count, rf, vvfa.getVectorFrequencies());
 				    System.out.println("data analyzed, creating records");
-				    int n = 10000;
+				    int n = 1000;
 				    Date start = new Date();
 				    File synthetic_output = new File(output_base.getPath() + "_" + mc.getName() + "_synthetic.txt");
+				    File synthetic_rank_output = new File(output_base.getPath() + "_" + mc.getName() + "_synthetic_rank.txt");
 				    try{
 				    	BufferedWriter fout = new BufferedWriter(new FileWriter(synthetic_output));
+				    	BufferedWriter rfout = new BufferedWriter(new FileWriter(synthetic_rank_output));
 				    	for(int i = 0; i < n; i++){
 					    	//System.out.println("=========== pair " + i + " ===========");
 					    	MatchResult mr = srg.getRecordPair();
 					    	String output_line = FileWritingMatcher.getOutputLine(mr, order);
 					    	fout.write(output_line + "\n");
+					    	output_line = FileWritingMatcher.getOutputLine(mr, rank_order);
+					    	rfout.write(output_line + "\n");
 					    	//System.out.println(r[0]);
 						    //System.out.println(r[1]);
 					    }
 				    	fout.flush();
 				    	fout.close();
+				    	rfout.flush();
+				    	rfout.close();
 				    }
 				    catch(IOException ioe){
 				    	System.err.println("error writing synthetic data to file: " + ioe.getMessage());

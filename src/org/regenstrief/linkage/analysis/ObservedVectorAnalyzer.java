@@ -2,6 +2,7 @@ package org.regenstrief.linkage.analysis;
 
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.MatchVector;
@@ -24,12 +25,16 @@ public class ObservedVectorAnalyzer extends RecordPairAnalyzer implements
 	
 	public void finishAnalysis() {
 		Hashtable<MatchVector,Long> vectors = sp.getObservedVectors();
-		Iterator<MatchVector> mv_it = vectors.keySet().iterator();
 		VectorTable vt = new VectorTable(mc);
+		List<MatchResult> mrs = vt.getPossibleMatchResults();
+		Iterator<MatchResult> mrs_it = mrs.iterator();
 		log.info("vector|score|true_prob|false_prob|expected|observed");
-		while(mv_it.hasNext()){
-			MatchVector mv_obs = mv_it.next();
+		while(mrs_it.hasNext()){
+			MatchVector mv_obs = mrs_it.next().getMatchVector();
 			Long l = vectors.get(mv_obs);
+			if(l == null){
+				l = (long) 0;
+			}
 			double score = vt.getScore(mv_obs);
 			double expected_true = vt.getMatchVectorTrueProbability(mv_obs) * mc.getP() * count;
 			double expected_false = vt.getMatchVectorFalseProbability(mv_obs) * (1 - mc.getP()) * count;
