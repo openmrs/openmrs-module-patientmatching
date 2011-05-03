@@ -170,7 +170,7 @@ public class SyntheticRecordGenerator {
 		if(vector_rf.getContext(demographic) != null){
 			String context = rec.getDemographic(vector_rf.getContext(demographic));
 			vft = vector_rf.getDependentValueFrequencyTable(demographic).getValueFrequencyTable(context);
-			if(vft.getUniqueValueCount() < getDemographicThreshold(demographic) && vector_sampling){
+			if(vft == null || (vft.getUniqueValueCount() < getDemographicThreshold(demographic) && vector_sampling)){
 				// too few unique values in this given vector's observed values
 				vft = rf.getDependentValueFrequencyTable(demographic).getValueFrequencyTable(context);
 			}
