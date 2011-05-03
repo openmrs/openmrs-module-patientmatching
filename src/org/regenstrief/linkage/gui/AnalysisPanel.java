@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 
@@ -18,6 +19,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 
 import org.regenstrief.linkage.MatchResult;
+import org.regenstrief.linkage.MatchVector;
 import org.regenstrief.linkage.analysis.AverageFrequencyAnalyzer;
 import org.regenstrief.linkage.analysis.ClosedFormAnalyzer;
 import org.regenstrief.linkage.analysis.ClosedFormDedupAnalyzer;
@@ -232,11 +234,12 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 				    pdsa.analyzeData();
 				    int count = pdsa.getRecordPairCount();
 				    SyntheticRecordGenerator srg = new SyntheticRecordGenerator(mc, count, rf, vvfa.getVectorFrequencies());
-				    System.out.println("data analyzed, creating records");
-				    int n = 1000;
 				    Date start = new Date();
+				    System.out.println("data analyzed, creating records at " + start);
+				    int n = 1000;
 				    File synthetic_output = new File(output_base.getPath() + "_" + mc.getName() + "_synthetic.txt");
 				    File synthetic_rank_output = new File(output_base.getPath() + "_" + mc.getName() + "_synthetic_rank.txt");
+				    Hashtable<MatchVector,Integer> mv_counter = new Hashtable<MatchVector,Integer>();
 				    try{
 				    	BufferedWriter fout = new BufferedWriter(new FileWriter(synthetic_output));
 				    	BufferedWriter rfout = new BufferedWriter(new FileWriter(synthetic_rank_output));
@@ -249,11 +252,24 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 					    	rfout.write(output_line + "\n");
 					    	//System.out.println(r[0]);
 						    //System.out.println(r[1]);
+					    	Integer mv_count = mv_counter.get(mr.getMatchVector());
+					    	if(mv_count == null){
+					    		mv_counter.put(mr.getMatchVector(), 1);
+					    	} else {
+					    		Integer new_count = mv_count + 1;
+					    		mv_counter.put(mr.getMatchVector(), new_count);
+					    	}
 					    }
 				    	fout.flush();
 				    	fout.close();
 				    	rfout.flush();
 				    	rfout.close();
+				    	/*Iterator<MatchVector> mv_it = mv_counter.keySet().iterator();
+				    	System.out.println("generated vectors:");
+				    	while(mv_it.hasNext()){
+				    		MatchVector mv = mv_it.next();
+				    		System.out.println(mv + ":\t" + mv_counter.get(mv));
+				    	}*/
 				    }
 				    catch(IOException ioe){
 				    	System.err.println("error writing synthetic data to file: " + ioe.getMessage());

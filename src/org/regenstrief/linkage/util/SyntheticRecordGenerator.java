@@ -87,14 +87,15 @@ public class SyntheticRecordGenerator {
 		Iterator<MatchResult> mr_it = vt.getPossibleMatchResults().iterator();
 		double prev = 0;
 		int i = 0;
+		double p = mc.getP();
 		while(mr_it.hasNext()){
 			MatchVector mv_obs = mr_it.next().getMatchVector();
-			double expected_true = vt.getMatchVectorTrueProbability(mv_obs) * mc.getP();// * pair_count;
-			double expected_false = vt.getMatchVectorFalseProbability(mv_obs) * (1 - mc.getP());// * pair_count;
-			
+			double expected_true = vt.getMatchVectorTrueProbability(mv_obs) * p;// * pair_count;
+			double expected_false = vt.getMatchVectorFalseProbability(mv_obs) * (1 - p);// * pair_count;
 			prev = expected_true + expected_false + prev;
-			mv_values.add(prev);
+			mv_values.add(i, prev);
 			mv_vectors.add(i, mv_obs);
+			i++;
 		}
 		
 		rand_limit = prev;
@@ -215,11 +216,10 @@ public class SyntheticRecordGenerator {
 		
 		double selected = 0;
 		int i = 0;
-		do{
-			selected = selected + mv_values.get(i);
-			i++;
-		}while(r > selected);
+		for(; r > selected && i < mv_values.size(); i++){
+			selected = mv_values.get(i);
+		}
 		
-		return mv_vectors.get(i);
+		return mv_vectors.get(i - 1);
 	}
 }
