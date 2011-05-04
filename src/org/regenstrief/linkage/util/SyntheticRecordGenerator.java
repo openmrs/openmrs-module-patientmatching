@@ -32,6 +32,7 @@ public class SyntheticRecordGenerator {
 	
 	private List<Double> mv_values;
 	private List<MatchVector> mv_vectors;
+	private Hashtable<MatchVector,Double> mv_true_prob;
 	private double rand_limit = 1;
 	
 	public SyntheticRecordGenerator(MatchingConfig mc, long pair_count, RecordFrequencies rf, MatchVectorRecordFrequencies mvrf){
@@ -46,6 +47,7 @@ public class SyntheticRecordGenerator {
 		mv_values = new ArrayList<Double>();
 		mv_vectors = new ArrayList<MatchVector>();
 		thresholds = new Hashtable<String,Integer>();
+		mv_true_prob = new Hashtable<MatchVector,Double>();
 		
 		generateVectorProbabilities(pair_count);
 		generateDemographicsLists();
@@ -92,9 +94,11 @@ public class SyntheticRecordGenerator {
 			MatchVector mv_obs = mr_it.next().getMatchVector();
 			double expected_true = vt.getMatchVectorTrueProbability(mv_obs) * p;// * pair_count;
 			double expected_false = vt.getMatchVectorFalseProbability(mv_obs) * (1 - p);// * pair_count;
+			double true_prob = expected_true / (expected_true + expected_false);
 			prev = expected_true + expected_false + prev;
 			mv_values.add(i, prev);
 			mv_vectors.add(i, mv_obs);
+			mv_true_prob.put(mv_obs, true_prob);
 			i++;
 		}
 		
@@ -112,9 +116,8 @@ public class SyntheticRecordGenerator {
 		//System.out.println("generating pair with vector " + mv);
 		
 		// step 2, randomly choose whether vector will be true or false, weighted by true positive/true negative likelihood values
-		double true_prob = vt.getMatchVectorTrueProbability(mv);
 		double r = rand.nextDouble();
-		if(r <= true_prob){
+		if(r <= mv_true_prob.get(mv)){
 			true_positive = true;
 		}
 		
@@ -154,6 +157,7 @@ public class SyntheticRecordGenerator {
 		}
 		// double score, double incl_score, double true_prob, double false_prob, double sensitivity, double specificity, MatchVector match_vct, ScoreVector score_vct, Record r1, Record r2, MatchingConfig mc){
 		MatchResult mr = new MatchResult(vt.getScore(mv), vt.getInclusiveScore(mv), vt.getMatchVectorTrueProbability(mv), vt.getMatchVectorFalseProbability(mv), vt.getSensitivity(mv), vt.getSpecificity(mv), mv, vt.getScoreVector(mv), ret[0], ret[1], mc);
+		mr.setMatch(true_positive);
 		return mr;
 	}
 	

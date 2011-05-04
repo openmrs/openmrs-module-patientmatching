@@ -16,6 +16,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.regenstrief.linkage.MatchResult;
@@ -190,7 +191,23 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		ReaderProvider rp = ReaderProvider.getInstance();
 		List<MatchingConfig> mcs = rm_conf.getMatchingConfigs();
 		Iterator<MatchingConfig> it = mcs.iterator();
-		
+		int n = 1000;
+		boolean valid_n = false;
+		do{
+			String s = (String)JOptionPane.showInputDialog(this,"Number of pairs to create:","Synthetic Pairs",JOptionPane.PLAIN_MESSAGE,null,null,"1000");
+			if(s == null){
+				return;
+			} else {
+				try{
+					n = Integer.parseInt(s);
+					valid_n = true;
+				}
+				catch(NumberFormatException nfe){
+					
+				}
+			}
+		}while(!valid_n);
+				
 		// get file to write synthetic data files to
 		File output_base = null;
 		JFileChooser fc = new JFileChooser();
@@ -236,7 +253,6 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 				    SyntheticRecordGenerator srg = new SyntheticRecordGenerator(mc, count, rf, vvfa.getVectorFrequencies());
 				    Date start = new Date();
 				    System.out.println("data analyzed, creating records at " + start);
-				    int n = 1000;
 				    File synthetic_output = new File(output_base.getPath() + "_" + mc.getName() + "_synthetic.txt");
 				    File synthetic_rank_output = new File(output_base.getPath() + "_" + mc.getName() + "_synthetic_rank.txt");
 				    Hashtable<MatchVector,Integer> mv_counter = new Hashtable<MatchVector,Integer>();
