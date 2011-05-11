@@ -263,9 +263,13 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 					    	//System.out.println("=========== pair " + i + " ===========");
 					    	MatchResult mr = srg.getRecordPair();
 					    	String output_line = FileWritingMatcher.getOutputLine(mr, order);
+					    	String is_match = "false";
 					    	fout.write(output_line + "\n");
 					    	output_line = FileWritingMatcher.getOutputLine(mr, rank_order);
-					    	rfout.write(output_line + "\n");
+					    	if(mr.isMatch()){
+					    		is_match = "true";
+					    	}
+					    	rfout.write(is_match + "|" + output_line + "\n");
 					    	//System.out.println(r[0]);
 						    //System.out.println(r[1]);
 					    	Integer mv_count = mv_counter.get(mr.getMatchVector());

@@ -28,6 +28,7 @@ public class CharDelimFileReader implements DataSourceReader{
 	protected Record next_record;
 	protected char raw_file_sep;
 	protected int record_count;
+	protected String header;
 	
 	public static final String UNIQUE_ID = "uniq_id";
 	
@@ -41,6 +42,7 @@ public class CharDelimFileReader implements DataSourceReader{
 	public CharDelimFileReader(LinkDataSource lds){
 		data_source = lds;
 		record_count = 0;
+		header = null;
 		
 		File raw_file = new File(lds.getName());
 		
@@ -56,7 +58,11 @@ public class CharDelimFileReader implements DataSourceReader{
 		
 		try{
 			file_reader = new BufferedReader(new FileReader(switched_file));
-			next_record = line2Record(file_reader.readLine());
+			String line = file_reader.readLine();
+			if(header != null && header.equals(line)){
+				line = file_reader.readLine();
+			}
+			next_record = line2Record(line);
 		}
 		catch(IOException ioe){
 			file_reader = null;
@@ -101,11 +107,30 @@ public class CharDelimFileReader implements DataSourceReader{
 		// in order arrays at the index given by display_position, as long as
 		// display position is not NA
 		Iterator<DataColumn> it1 = dcs1.iterator();
+		boolean same = true;
+		int expected = 0;
 		while(it1.hasNext()){
 			DataColumn dc = it1.next();
 			if(dc.getIncludePosition() != DataColumn.INCLUDE_NA){
 				order1[dc.getIncludePosition()] = Integer.parseInt(dc.getColumnID());
 			}
+			if(dc.getIncludePosition() == expected){
+				same = false;
+				expected ++;
+			}
+		}
+		
+		if(same){
+			// save first header line to skip it later
+			try{
+				BufferedReader br = new BufferedReader(new FileReader(f));
+				header = br.readLine();
+				br.close();
+			}
+			catch(IOException ioe){
+				
+			}
+			return f;
 		}
 		
 		File switched = new File(data_source.getName() + ".switched");
@@ -142,6 +167,12 @@ public class CharDelimFileReader implements DataSourceReader{
 		try{
 			String line = file_reader.readLine();
 			if(line != null){
+				if(header != null && header.equals(line)){
+					line = file_reader.readLine();
+					if(line == null){
+						next_record = null;
+					}
+				}
 				next_record = line2Record(line);
 			} else {
 				next_record = null;

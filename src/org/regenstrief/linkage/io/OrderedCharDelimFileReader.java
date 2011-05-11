@@ -45,7 +45,7 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader implements O
 		this.mc = mc;
 		raw_file_sep = data_source.getAccess().charAt(0);
 		long modified_date = new File(data_source.getName()).lastModified();
-		File expected = getExpectedFile(new File(data_source.getName() + this.mc.getName()));
+		File expected = getExpectedFile(new File(data_source.getName()));
 		
 		// check if initReader() file exists, and if so, it's modification date isn't newer than modification date of original file
 		if(expected.exists()){
@@ -68,7 +68,29 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader implements O
 	}
 	
 	private File getExpectedFile(File f){
-		File switched = new File(f.getPath() + ".switched");
+		Iterator<DataColumn> it1 = data_source.getDataColumns().iterator();
+		boolean same = true;
+		int expected = 0;
+		while(it1.hasNext()){
+			DataColumn dc = it1.next();
+			same = dc.getIncludePosition() == expected && same;
+			expected ++;
+		}
+		
+		File switched;
+		if(same){
+			switched = f;
+			try{
+				BufferedReader br = new BufferedReader(new FileReader(f));
+				header = br.readLine();
+				br.close();
+			}
+			catch(IOException ioe){
+				
+			}
+		} else {
+			switched = new File(f.getPath() + ".switched");
+		}
 		String desc = mc.getBlockingHash();
 		File sorted = new File(switched.getPath() + desc + ".sorted");
 		return sorted;
@@ -85,7 +107,11 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader implements O
 		sorted_file = sortInputFile(switched_file, raw_file_sep);
 		try{
 			file_reader = new BufferedReader(new FileReader(sorted_file));
-			next_record = line2Record(file_reader.readLine());
+			String line = file_reader.readLine();
+			if(header != null && header.equals(line)){
+				line = file_reader.readLine();
+			}
+			next_record = line2Record(line);
 		}
 		catch(IOException ioe){
 			file_reader = null;
@@ -101,14 +127,30 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader implements O
 		// in order arrays at the index given by display_position, as long as
 		// display position is not NA
 		Iterator<DataColumn> it1 = dcs1.iterator();
+		boolean same = true;
+		int expected = 0;
 		while(it1.hasNext()){
 			DataColumn dc = it1.next();
 			if(dc.getIncludePosition() != DataColumn.INCLUDE_NA){
 				order1[dc.getIncludePosition()] = Integer.parseInt(dc.getColumnID());
 			}
+			same = dc.getIncludePosition() == expected && same;
+			expected ++;
 		}
 		
-		File switched = new File(data_source.getName() + this.mc.getName() + ".switched");
+		if(same){
+			try{
+				BufferedReader br = new BufferedReader(new FileReader(f));
+				header = br.readLine();
+				br.close();
+			}
+			catch(IOException ioe){
+				
+			}
+			return f;
+		}
+		
+		File switched = new File(data_source.getName() + ".switched");
 		try{
 			ColumnSwitcher cs = new ColumnSwitcher(f, switched, order1, data_source.getAccess().charAt(0));
 			cs.setAddIDColumn(add_id);

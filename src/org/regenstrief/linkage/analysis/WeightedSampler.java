@@ -42,4 +42,9 @@ public class WeightedSampler {
 		int index = rand.nextInt(space.size());
 		return space.get(index);
 	}
+	
+	public static String weightedRandomSample2(ValueFrequencyTable vft){
+		
+		return null;
+	}
 }

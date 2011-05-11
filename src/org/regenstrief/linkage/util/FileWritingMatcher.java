@@ -51,12 +51,18 @@ public class FileWritingMatcher {
 		
 		// set output order based on include position in lds
 		LinkDataSource lds = rmc.getLinkDataSource1();
-		String[] order = new String[lds.getIncludeCount()];
-		for(int i = 0; i < order.length; i++){
-			DataColumn dc = lds.getDataColumnByIncludePosition(i);
-			order[i] = dc.getName();
+		String[] order = new String[lds.getIncludeCount() - 1];
+		List<String> names = new ArrayList<String>();
+		Iterator<DataColumn> dc_it = lds.getDataColumns().iterator();
+		int i = 0;
+		while(dc_it.hasNext()){
+			DataColumn dc = dc_it.next();
+			if(!dc.getName().equals(lds.getUniqueID())){
+				names.add(dc.getName());
+			}
+			i++;
 		}
-		
+		order = names.toArray(order);
 		
 		Date report_time = new Date();
 		
