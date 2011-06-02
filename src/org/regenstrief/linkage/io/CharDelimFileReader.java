@@ -171,6 +171,7 @@ public class CharDelimFileReader implements DataSourceReader{
 					line = file_reader.readLine();
 					if(line == null){
 						next_record = null;
+						return ret;
 					}
 				}
 				next_record = line2Record(line);
