@@ -7,6 +7,7 @@ import org.regenstrief.linkage.MatchVector;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.LoggingObject;
 import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.MatchingConfigRow;
 import org.regenstrief.linkage.util.ScorePair;
 
 public class VectorValuesFrequencyAnalyzer extends RecordPairAnalyzer
@@ -40,7 +41,11 @@ public class VectorValuesFrequencyAnalyzer extends RecordPairAnalyzer
 				rf = new RecordFrequencies();
 				mvrf.setFrequencies(mv, rf);
 				// add dependent demographics
-				rf.setDependency("sex", "fn");
+				MatchingConfigRow sex_mcr = mc.getMatchingConfigRowByName("sex");
+				MatchingConfigRow fn_mcr = mc.getMatchingConfigRowByName("fn");
+				if(sex_mcr != null && fn_mcr != null && sex_mcr.isIncluded() && fn_mcr.isIncluded()){
+					rf.setDependency("sex", "fn");
+				}
 			}
 			
 			// increment count for record 1
