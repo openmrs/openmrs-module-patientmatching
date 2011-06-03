@@ -15,8 +15,12 @@ public class ValueFrequencyAnalyzer extends DataSourceAnalyzer {
 		super(lds,mc);
 		frequencies = new RecordFrequencies();
 		
-		// add dependent demographics
-		frequencies.setDependency("sex", "fn");
+		// add dependent demographics if both are included
+		MatchingConfigRow sex_mcr = mc.getMatchingConfigRowByName("sex");
+		MatchingConfigRow fn_mcr = mc.getMatchingConfigRowByName("fn");
+		if(sex_mcr != null && fn_mcr != null && sex_mcr.isIncluded() && fn_mcr.isIncluded()){
+			frequencies.setDependency("sex", "fn");
+		}
 	}
 	
 	public void finishAnalysis() {
