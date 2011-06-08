@@ -47,8 +47,10 @@ import org.regenstrief.linkage.io.FormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceReader;
 import org.regenstrief.linkage.io.ReaderProvider;
+import org.regenstrief.linkage.util.FSSyntheticRecordGenerator;
 import org.regenstrief.linkage.util.FileWritingMatcher;
 import org.regenstrief.linkage.util.LinkDataSource;
+import org.regenstrief.linkage.util.MUSyntheticRecordGenerator;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.RecMatchConfig;
 import org.regenstrief.linkage.util.SyntheticRecordGenerator;
@@ -223,7 +225,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 				String order[] = mc.getIncludedColumnsNames();
 				String rank_order[] = new String[order.length];
 				for(int i = 0; i < order.length; i++){
-					rank_order[i] = order[i] + SyntheticRecordGenerator.DEMOGRAPHIC_RANK_SUFFIX;
+					rank_order[i] = order[i] + FSSyntheticRecordGenerator.DEMOGRAPHIC_RANK_SUFFIX;
 				}
 				
 				if(odsr1 != null && odsr2 != null){
@@ -232,7 +234,17 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 					ValueFrequencyAnalyzer vfa = new ValueFrequencyAnalyzer(rm_conf.getLinkDataSource1(), mc);
 					dsa.addAnalyzer(vfa);
 					dsa.analyzeData();
-					RecordFrequencies rf = vfa.getRecordFrequencies();
+					RecordFrequencies rf1 = vfa.getRecordFrequencies();
+					RecordFrequencies rf2 = null;
+					
+					// analyze data source 2 if not de-duplication
+					if(!rm_conf.isDeduplication()){
+						dsa = new DataSourceAnalysis(odsr2);
+						vfa = new ValueFrequencyAnalyzer(rm_conf.getLinkDataSource1(), mc);
+						dsa.addAnalyzer(vfa);
+						dsa.analyzeData();
+						rf2 = vfa.getRecordFrequencies();
+					}
 					
 					// analyze frequencies of pairs second
 					odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
@@ -249,8 +261,11 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 				    VectorValuesFrequencyAnalyzer vvfa = new VectorValuesFrequencyAnalyzer(mc);
 				    pdsa.addAnalyzer(vvfa);
 				    pdsa.analyzeData();
-				    int count = pdsa.getRecordPairCount();
-				    SyntheticRecordGenerator srg = new SyntheticRecordGenerator(mc, count, rf, vvfa.getVectorFrequencies());
+				    SyntheticRecordGenerator srg = new MUSyntheticRecordGenerator(mc, rf1, mc.getP());
+				    //SyntheticRecordGenerator srg = new FSSyntheticRecordGenerator(mc, rf1, vvfa.getVectorFrequencies());
+				    if(!rm_conf.isDeduplication()){
+				    	srg.setRecordFrequencies2(rf2);
+				    }
 				    Date start = new Date();
 				    System.out.println("data analyzed, creating records at " + start);
 				    File synthetic_output = new File(output_base.getPath() + "_" + mc.getName() + "_synthetic.txt");
@@ -264,12 +279,12 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 					    	MatchResult mr = srg.getRecordPair();
 					    	String output_line = FileWritingMatcher.getOutputLine(mr, order);
 					    	String is_match = "false";
-					    	fout.write(output_line + "\n");
-					    	output_line = FileWritingMatcher.getOutputLine(mr, rank_order);
 					    	if(mr.isMatch()){
 					    		is_match = "true";
 					    	}
-					    	rfout.write(is_match + "|" + output_line + "\n");
+					    	fout.write(output_line + "|" + is_match + "\n");
+					    	output_line = FileWritingMatcher.getOutputLine(mr, rank_order);
+					    	rfout.write(output_line + "|" + is_match + "\n");
 					    	//System.out.println(r[0]);
 						    //System.out.println(r[1]);
 					    	Integer mv_count = mv_counter.get(mr.getMatchVector());

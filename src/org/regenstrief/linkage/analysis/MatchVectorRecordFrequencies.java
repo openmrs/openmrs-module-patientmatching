@@ -13,21 +13,34 @@ import org.regenstrief.linkage.MatchVector;
 
 public class MatchVectorRecordFrequencies {
 
-	protected Hashtable<MatchVector,RecordFrequencies> vectors;
+	public enum Side{ LEFT, RIGHT};
+	
+	protected Hashtable<MatchVector,RecordFrequencies> right_vectors;
+	protected Hashtable<MatchVector,RecordFrequencies> left_vectors;
 	
 	public MatchVectorRecordFrequencies(){
-		vectors = new Hashtable<MatchVector,RecordFrequencies>();
+		left_vectors = new Hashtable<MatchVector,RecordFrequencies>();
+		right_vectors = new Hashtable<MatchVector,RecordFrequencies>();
 	}
 	
-	public RecordFrequencies getFrequencies(MatchVector mv){
+	public RecordFrequencies getFrequencies(Side s, MatchVector mv){
+		Hashtable<MatchVector,RecordFrequencies> vectors;
+		if(s == Side.LEFT){
+			vectors = left_vectors;
+		} else {
+			vectors = right_vectors;
+		}
 		RecordFrequencies rf = vectors.get(mv);
-		//if(rf == null){
-		//	rf = new RecordFrequencies();
-		//}
 		return rf;
 	}
 	
-	public void setFrequencies(MatchVector mv, RecordFrequencies rf){
+	public void setFrequencies(Side s, MatchVector mv, RecordFrequencies rf){
+		Hashtable<MatchVector,RecordFrequencies> vectors;
+		if(s == Side.LEFT){
+			vectors = left_vectors;
+		} else {
+			vectors = right_vectors;
+		}
 		vectors.put(mv, rf);
 	}
 }

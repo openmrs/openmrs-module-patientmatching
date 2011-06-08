@@ -5,6 +5,7 @@ import java.util.Iterator;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.MatchVector;
 import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.analysis.MatchVectorRecordFrequencies.Side;
 import org.regenstrief.linkage.util.LoggingObject;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
@@ -35,11 +36,10 @@ public class VectorValuesFrequencyAnalyzer extends RecordPairAnalyzer
 		while(it.hasNext()){
 			String demographic = it.next();
 			String val1 = pair[0].getDemographic(demographic);
-			String val2 = pair[1].getDemographic(demographic);
-			RecordFrequencies rf = mvrf.getFrequencies(mv);
+			RecordFrequencies rf = mvrf.getFrequencies(Side.LEFT, mv);
 			if(rf == null){
 				rf = new RecordFrequencies();
-				mvrf.setFrequencies(mv, rf);
+				mvrf.setFrequencies(Side.LEFT, mv, rf);
 				// add dependent demographics
 				MatchingConfigRow sex_mcr = mc.getMatchingConfigRowByName("sex");
 				MatchingConfigRow fn_mcr = mc.getMatchingConfigRowByName("fn");
@@ -79,6 +79,18 @@ public class VectorValuesFrequencyAnalyzer extends RecordPairAnalyzer
 			vft.setFrequency(val1, current+1);
 			
 			// increment count for record 2
+			String val2 = pair[1].getDemographic(demographic);
+			rf = mvrf.getFrequencies(Side.RIGHT, mv);
+			if(rf == null){
+				rf = new RecordFrequencies();
+				mvrf.setFrequencies(Side.RIGHT, mv, rf);
+				// add dependent demographics
+				MatchingConfigRow sex_mcr = mc.getMatchingConfigRowByName("sex");
+				MatchingConfigRow fn_mcr = mc.getMatchingConfigRowByName("fn");
+				if(sex_mcr != null && fn_mcr != null && sex_mcr.isIncluded() && fn_mcr.isIncluded()){
+					rf.setDependency("sex", "fn");
+				}
+			}
 			vft = null;
 			if(rf.isDependent(demographic)){
 				// get the context the demographic depends on, increment frequency
@@ -108,19 +120,6 @@ public class VectorValuesFrequencyAnalyzer extends RecordPairAnalyzer
 			current = vft.getFrequency(val1);
 			vft.setFrequency(val2, current+1);
 			
-			/*ValueFrequencyTable vft = rf.getDemographicFrequencies(demographic);
-			if(vft == null){
-				vft = new ValueFrequencyTable();
-				rf.setDemographicFrequencies(demographic, vft);
-			}
-			// add 1 to frequency count for pair[0] demographic value
-			long l = vft.getFrequency(val1);
-			vft.setFrequency(val1, l + 1);
-			
-			// add 1 to frequency count for pair[1] demographic value
-			l = vft.getFrequency(val2);
-			vft.setFrequency(val2, l + 1);
-			*/
 		}
 
 	}
