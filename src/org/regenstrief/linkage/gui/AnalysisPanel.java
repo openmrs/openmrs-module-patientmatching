@@ -261,7 +261,11 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 				    VectorValuesFrequencyAnalyzer vvfa = new VectorValuesFrequencyAnalyzer(mc);
 				    pdsa.addAnalyzer(vvfa);
 				    pdsa.analyzeData();
-				    SyntheticRecordGenerator srg = new MUSyntheticRecordGenerator(mc, rf1, mc.getP());
+				    // two lines to remove UID field from MatchingConfig object.  synthetic records shouldn't have this generated like other fields, nor
+				    // is it in the frequency tables
+				    MatchingConfig mc_clone = (MatchingConfig)mc.clone();
+				    mc_clone.getMatchingConfigRows().remove(mc_clone.getMatchingConfigRowByName(rm_conf.getLinkDataSource1().getUniqueID()));
+				    SyntheticRecordGenerator srg = new MUSyntheticRecordGenerator(mc_clone, rf1, mc.getP());
 				    //SyntheticRecordGenerator srg = new FSSyntheticRecordGenerator(mc, rf1, vvfa.getVectorFrequencies());
 				    if(!rm_conf.isDeduplication()){
 				    	srg.setRecordFrequencies2(rf2);

@@ -111,7 +111,9 @@ public class MUSyntheticRecordGenerator extends SyntheticRecordGenerator {
 	}
 	
 	private void generateDemographicsLists(){
-		Iterator<MatchingConfigRow> it = mc.getIncludedColumns().iterator();
+		//Iterator<MatchingConfigRow> it = mc.getIncludedColumns().iterator();
+		Iterator<MatchingConfigRow> it = mc.getMatchingConfigRows().iterator();
+		
 		while(it.hasNext()){
 			String demographic = it.next().getName();
 			String context = rf1.getContext(demographic);
