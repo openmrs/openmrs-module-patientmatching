@@ -25,7 +25,7 @@ public class MatchingConfigRow implements Cloneable {
 	private int buffer_size;
 	private float sw_number;
 	private int algorithm;
-
+	private int setID;
 	
 	public static final int DEFAULT_BLOCK_ORDER = 0;
 	public static final int DEFAULT_BLOCK_CHARS = 40;
@@ -38,7 +38,8 @@ public class MatchingConfigRow implements Cloneable {
 	// Load all tokens by default
 	public static final Float DEFAULT_SW_NUMBER = new Float(1.0);
 	public static final ScaleWeightSetting DEFAULT_SW_SETTING = ScaleWeightSetting.TopNPercent;
-	public static final int DEFAULT_BUFFER_SIZE = 500;                                                   
+	public static final int DEFAULT_BUFFER_SIZE = 500;
+	public static final int NO_SET_ID = 0;
 	
 	/*
 	 * Requires the name of the row at least.
@@ -57,6 +58,15 @@ public class MatchingConfigRow implements Cloneable {
 		sw_number = DEFAULT_SW_NUMBER;
 		buffer_size = DEFAULT_BUFFER_SIZE;
 		trinomial_EM = DEFAULT_TRINOMIAL_EM;
+		setID = NO_SET_ID;
+	}
+	
+	public int getSetID(){
+		return setID;
+	}
+	
+	public void setSetID(int id){
+		setID = id;
 	}
 	
 	public String getName(){

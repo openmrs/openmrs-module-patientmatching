@@ -277,6 +277,10 @@ public class XMLTranslator {
 
 		ret.appendChild(block_order);
 		
+		Element set_id = doc.createElement("SetID");
+		set_id.setTextContent(Integer.toString(mcr.getSetID()));
+		ret.appendChild(set_id);
+		
 		Element blck_chars = doc.createElement("BlckChars");
 		blck_chars.setTextContent(Integer.toString(mcr.getBlockChars()));
 		ret.appendChild(blck_chars);
@@ -597,6 +601,9 @@ public class XMLTranslator {
 				if(!bo.equals("null")){
 					ret.setBlockOrder(Integer.parseInt(bo));
 				}
+			} else if(child_name.equals("SetID")){
+				String sid = child.getTextContent();
+				ret.setSetID(Integer.parseInt(sid));
 			} else if(child_name.equals("BlckChars")){
 				String bc = child.getTextContent();
 				ret.setBlockChars(Integer.parseInt(bc));
