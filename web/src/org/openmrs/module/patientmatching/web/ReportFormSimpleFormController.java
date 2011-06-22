@@ -8,9 +8,12 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.api.context.Context;
+import org.openmrs.api.AdministrationService;
 import org.openmrs.module.patientmatching.MatchingConstants;
 import org.openmrs.module.patientmatching.MatchingReportReader;
 import org.springframework.web.servlet.mvc.SimpleFormController;
+
 
 public class ReportFormSimpleFormController extends SimpleFormController {
 	
@@ -21,10 +24,10 @@ public class ReportFormSimpleFormController extends SimpleFormController {
 	protected String formBackingObject(HttpServletRequest request) throws Exception {
 		
 		//String text = Context.getService(HelloWorldService.class);
-		
+
 		String text = "Not used";
 		
-		log.debug("Returning text: " + text);
+		log.debug("************ " +text);
 		
 		return text;
 		
@@ -47,7 +50,9 @@ public class ReportFormSimpleFormController extends SimpleFormController {
         map.put("report", reader.getCurrentContent());
         
         map.put("useMinimalHeader", true);
-        
+        AdministrationService adminService = Context.getAdministrationService();
+        String productionServerUrl= adminService.getGlobalProperty("patientmatching.productionServerUrl", "http://10.11.33.175:8080/openmrs/admin/patients/mergePatients.form");
+        map.put("prodServerUrl",productionServerUrl);
         // then store all values to session to be used in the future
         HttpSession session = req.getSession();
         session.setAttribute("reportFilename", filename);

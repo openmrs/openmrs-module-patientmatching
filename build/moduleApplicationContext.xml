@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<!-- Beans to add to the current Application context definition -->
+  
+<beans>
+	
+    <bean id="patientMatchingUrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+        <property name="mappings">
+            <props>
+                <prop key="/module/patientmatching/config.list">matchConfig</prop>
+                <prop key="/module/patientmatching/config.form">configForm</prop>
+                <prop key="/module/patientmatching/schedule.list">matchSchedule</prop>
+                <prop key="/module/patientmatching/schedule.form">scheduleForm</prop>
+                <prop key="/module/patientmatching/dupes.list">matchDupes</prop>
+                <prop key="/module/patientmatching/report.form">reportDupes</prop>
+                 <prop key="/module/patientmatching/metadata.form">reportMetadata</prop>
+                 <prop key="/module/patientmatching/test.form">test</prop>
+			</props>
+		</property>
+	</bean>
+
+    <bean id="configForm" class="org.openmrs.module.patientmatching.web.ConfigurationSimpleFormController">
+        <property name="commandName"><value>patientMatchingConfiguration</value></property>
+        <property name="commandClass"><value>org.openmrs.module.patientmatching.PatientMatchingConfiguration</value></property>
+        <property name="formView"><value>/module/patientmatching/configForm</value></property>
+        <property name="successView"><value>redirect:/module/patientmatching/config.list</value></property>
+    </bean>
+      <bean id="test" class="org.openmrs.module.patientmatching.web.TestFormController">
+        <property name="formView"><value>/module/patientmatching/test</value></property>
+        <property name="successView"><value>/module/patientmatching/test</value></property>
+    </bean>
+
+    <bean id="matchConfig" class="org.openmrs.module.patientmatching.web.ConfigurationListSimpleFormController">
+        <property name="formView"><value>/module/patientmatching/configList</value></property>
+    </bean>
+
+    <bean id="matchSchedule" class="org.openmrs.module.patientmatching.web.ScheduleSimpleFormController">
+        <property name="formView"><value>/module/patientmatching/scheduleList</value></property>
+        <property name="successView"><value>schedule.list</value></property>
+    </bean>
+    <bean id="scheduleForm" class="org.openmrs.module.patientmatching.web.CreateScheduleFormController">
+    	<property name="commandName"><value>task</value></property>
+        <property name="formView"><value>/module/patientmatching/scheduleForm</value></property>
+        <property name="successView"><value>schedule.list</value></property>
+    </bean>
+
+    <bean id="matchDupes" class="org.openmrs.module.patientmatching.web.ReportSimpleFormController">
+        <property name="formView"><value>/module/patientmatching/dupesList</value></property>
+        <property name="successView"><value>/module/patientmatching/dupesList</value></property>
+    </bean>
+
+    <bean id="reportDupes" class="org.openmrs.module.patientmatching.web.ReportFormSimpleFormController">
+        <property name="formView"><value>/module/patientmatching/reportForm</value></property>
+        <property name="successView"><value>/module/patientmatching/reportForm</value></property>
+    </bean>
+    
+    <bean id="reportMetadata" class="org.openmrs.module.patientmatching.web.ReportMetadataSimpleFormController">
+        <property name="formView"><value>/module/patientmatching/metadataForm</value></property>
+        <property name="successView"><value>/module/patientmatching/metadataForm</value></property>
+    </bean>
+    
+    <bean class="org.openmrs.module.patientmatching.HibernateConnection">
+      <property name="sessionFactory"><ref bean="sessionFactory"/></property>	
+    </bean>
+      
+    <bean parent="serviceContext">
+<property name="moduleService">
+<list>
+<value>org.openmrs.module.patientmatching.PatientMatchingReportMetadataService</value>
+<bean class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+<property name="transactionManager"><ref bean="transactionManager"/></property>
+<property name="target">
+<bean class="org.openmrs.module.patientmatching.impl.PatientMatchingReportMetadataServiceImpl">
+<property name="PatientMatchingReportMetadataDao">
+<bean class="org.openmrs.module.patientmatching.db.hibernate.HibernatePatientMatchingReportMetadataDAO">
+<property name="sessionFactory"><ref bean="sessionFactory"/></property>
+</bean>
+</property>
+</bean>
+</property>
+<property name="preInterceptors">
+<ref bean="serviceInterceptors" />
+</property>
+<property name="transactionAttributeSource">
+<bean class="org.springframework.transaction.annotation.AnnotationTransactionAttributeSource"/>
+</property>
+</bean>
+</list>
+</property>
+</bean>
+</beans>

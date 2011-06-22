@@ -19,6 +19,8 @@
 		<column include_position="15" column_id="drln" label="drln" type="string"/>
 		<column include_position="16" column_id="drfn" label="drfn" type="string"/>
 		<column include_position="17" column_id="openmrs_id" label="openmrs_id" type="string"/>
+		<column include_position="18" column_id="concat1" label="concat1" type="string"/>
+		
 	</datasource>
 	<analysis type="scaleweight">
 	<init>database access string</init>

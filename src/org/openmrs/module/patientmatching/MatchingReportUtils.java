@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -22,7 +23,10 @@ import java.util.TreeSet;
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.hibernate.cfg.Configuration;
+import org.openmrs.api.context.Context;
 import org.openmrs.api.db.hibernate.HibernateSessionFactoryBean;
+import org.openmrs.module.patientmatching.PatientMatchingReportMetadata;
+import org.openmrs.module.patientmatching.web.dwr.DWRMatchingConfigUtilities;
 import org.openmrs.util.OpenmrsUtil;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;
@@ -53,13 +57,13 @@ public class MatchingReportUtils {
 	public static final String NO_PROCESS = "No running process";
 	public static final String END_PROCESS = "Report finished";
 	public static final String PREM_PROCESS = "Prematurely terminated process";
-
+	
 	/**
 	 * Field that need to be checked to see the current status of the creating
 	 * report process
 	 */
 	public static String status = NO_PROCESS;
-
+	public static int i;
 	/**
 	 * List of steps in the reporting process.
 	 */
@@ -72,7 +76,6 @@ public class MatchingReportUtils {
 			"Analyze pairs", 
 			"Score pairs",
 			"Write report", MatchingReportUtils.END_PROCESS };
-
 	/**
 	 * 
 	 * Get the list of steps (statuses) that the analysis has to go through
@@ -373,6 +376,8 @@ public class MatchingReportUtils {
 			groupId++;
 		}
 		writer.close();
+		persistReportInfo("dedup-report-"
+				+ configString + dateString,dateString);
 		return objects;
 	}	
 	//New Method9 End 10
@@ -439,5 +444,53 @@ public class MatchingReportUtils {
 
 		return reports;
 	}
+	/**
+	 * Method to persist report information
+	 */
+	
+	 public static void persistReportInfo(String rptName,String dateCreated)
+	 {   
+		 String proInfo="0ms";
+		 String uid= Context.getAuthenticatedUser().getUsername();
+         String strategies=DWRMatchingConfigUtilities.fileStrat;
+           for(int j=0;j<8;j++)
+		   {
+        	   proInfo=proInfo+","+DWRMatchingConfigUtilities.proTimeList.get(j)+"ms";
+		   }
+	          proInfo=proInfo+",96ms,0ms";
+		    PatientMatchingReportMetadata prm =new PatientMatchingReportMetadata();
+			prm.setReportName(rptName);
+			prm.setSelStrats(strategies);
+			prm.setProcessNT(proInfo);
+			prm.setCreatedBy(uid);
+			prm.setDateCreated(dateCreated);
+			HibernateSessionFactoryBean bean = new HibernateSessionFactoryBean();
+			Configuration cfg = bean.newConfiguration();
+			Properties c = cfg.getProperties();
+			String url = c.getProperty("hibernate.connection.url");
+			String user = c.getProperty("hibernate.connection.username");
+			String passwd = c.getProperty("hibernate.connection.password");
+			String driver = c.getProperty("hibernate.connection.driver_class");
+			MatchingConfigurationUtils.log.info("URL: " + url);
+			Connection databaseConnection = null;
+			try {
+				Class.forName(driver);
+				ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
+						url, user, passwd);
+				databaseConnection = connectionFactory.createConnection();
+				PreparedStatement ps=null;
+				ps = databaseConnection.prepareStatement("INSERT INTO openmrs.persistreportdata(report_name,strategies_used,process_name_time,createdby,datecreated) VALUES (?, ?, ?, ?,?)");
+				ps.setString(1,prm.getReportName());
+				ps.setString(2,prm.getSelstrategies());
+				ps.setString(3,prm.getpNameTime());
+				ps.setString(4,prm.getCreatedBy());
+				ps.setString(5,prm.getDateCreated());
+				 i=ps.executeUpdate();
+		      
+			} 
+			catch (Exception e) {
+			}
+		
+	 }
 
 }

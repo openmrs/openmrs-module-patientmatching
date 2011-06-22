@@ -54,14 +54,19 @@ public class DWRMatchingConfigUtilities {
 	static Calendar calendar;
 	static Boolean processStarted = false;
 	static String previousProcessTime = "0,0";
-	static List<Long> proTimeList;
+	public static List<Long> proTimeList;
 	static Long time;
 	static int reset;
 	static int index = 1;
 	static int currentStep;
 	static int size = 0;
 	static String[] selectedStrat;
-	
+	public static String fileStrat,rptname;
+	public static List<String> l1=new ArrayList<String>();
+	public static List<String> l2=new ArrayList<String>();
+	public static List<String> l3=new ArrayList<String>();
+	public static List<String> l4=new ArrayList<String>();
+	public static List<String> l5=new ArrayList<String>();    
 	/**
 	 * Constructor
 	 */
@@ -71,6 +76,7 @@ public class DWRMatchingConfigUtilities {
         sctx = ServerContextFactory.get(servletContext);
         org.directwebremoting.WebContext wctx = org.directwebremoting.WebContextFactory.get();
         currentPage = wctx.getCurrentPage();
+      
 	}
 	
 	/**
@@ -191,8 +197,10 @@ public class DWRMatchingConfigUtilities {
 				objects = MatchingReportUtils.ScoringData(objects);
 				break;
 
-			case 10:
+			case 10:{
 				objects = MatchingReportUtils.CreatingReport(objects);
+
+			}
 				break;
 
 			}
@@ -220,6 +228,7 @@ public class DWRMatchingConfigUtilities {
 	 * @see MatchingReportUtils#doAnalysis()
 	 */
 	public void doAnalysis(String selectedStrategies) {
+		fileStrat =selectedStrategies;
 		if(!timerTaskStarted){
 			selectedStrat = selectedStrategies.split(",");
 			proTimeList = new ArrayList<Long>();
@@ -246,7 +255,8 @@ public class DWRMatchingConfigUtilities {
 						j = 3;
 						previousProcessTime = j+","+time+"p";
 					}else{
-						previousProcessTime = j+","+time;
+						previousProcessTime = j+","+time
+						;
 					}
 					proTimeList.set((i-2),time);
 				}else{
@@ -276,6 +286,7 @@ public class DWRMatchingConfigUtilities {
 					currentStep = 0;
 				}
 			}
+			
 			processStarted = false;
 			currentStep = 0;
 			index = 1;
@@ -286,7 +297,6 @@ public class DWRMatchingConfigUtilities {
 			pages3.addFunctionCall("scheduledTaskRunning");
 		}
 	}
-
 	/**
 	 * Delete a particular report file from the server using DWR call
 	 * 
@@ -304,6 +314,14 @@ public class DWRMatchingConfigUtilities {
 		if (deleted) {
 			log.info("Config file deleted.");
 		}
+	}
+	
+	/**
+	 * Accessing report name using DWR call
+	 */
+	
+	public static void setReportName(String filename) {
+		rptname=filename;
 	}
 
 	/**
@@ -501,4 +519,27 @@ public class DWRMatchingConfigUtilities {
 		return currentContent;
 	}
 	
+	
+    
+	public void InterchangeableFields(String fieldName,String set)
+	{
+    if(set.equals("1"))
+    {l1.add(fieldName);
+    	
+    }
+    if(set.equals("2"))
+    {l2.add(fieldName);
+    }
+    if(set.equals("3"))
+    {l3.add(fieldName);
+    }
+    if(set.equals("4"))
+    {l4.add(fieldName);
+    }
+    if(set.equals("5"))
+    {l5.add(fieldName);
+    }
+
+	}
+
 }

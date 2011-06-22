@@ -260,9 +260,9 @@ public class MatchingConfigurationUtils {
             List<MatchingConfig> matchingConfigLists = recMatchConfig.getMatchingConfigs();
             for (MatchingConfig matchingConfig : matchingConfigLists) {
                 blockingRuns.add(matchingConfig.getName());
+                
             }
         }
-        
         return blockingRuns;
     }
     

@@ -14,7 +14,10 @@ import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.patientmatching.MatchingConfigurationUtils;
 import org.openmrs.module.patientmatching.MatchingConstants;
+import org.openmrs.module.patientmatching.MatchingReportUtils;
 import org.openmrs.module.patientmatching.PatientMatchingConfiguration;
+import org.openmrs.module.patientmatching.PatientMatchingReportMetadataService;
+import org.openmrs.module.patientmatching.web.dwr.DWRMatchingConfigUtilities;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.SimpleFormController;
@@ -55,7 +58,15 @@ public class ConfigurationSimpleFormController extends SimpleFormController {
             throws Exception {
         PatientMatchingConfiguration patientMatchingConfig = (PatientMatchingConfiguration) command;
         log.info("Saving patient matching config: " + patientMatchingConfig.getConfigurationName());
-
+         /*String set[]=request.getParameterValues("interchangeable");
+         String fieldName[]=request.getParameterValues("field");
+         
+        for (int i = 0; i < set.length; i++) 
+        {
+	         System.out.println("***"+set[i]+"---"+fieldName[i]);
+	         
+			
+		}*/
         /*
         for(ConfigurationEntry configEntry: patientMatchingConfig.getConfigurationEntries()) {
             log.info("response -- " + patientMatchingConfig.getConfigurationName() + ": " + configEntry.getFieldName() + ": " + configEntry.getInclusion() + "(blocking=" + new Boolean(configEntry.getInclusion() == "BLOCKING").toString() + ")");
@@ -67,5 +78,8 @@ public class ConfigurationSimpleFormController extends SimpleFormController {
         Map<String, String> model = new HashMap<String, String>();
         return new ModelAndView(getSuccessView(), model);
     }
+
+
+   
 	
 }

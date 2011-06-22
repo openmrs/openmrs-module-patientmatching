@@ -14,6 +14,8 @@
                 <prop key="/module/@MODULE_ID@/schedule.form">scheduleForm</prop>
                 <prop key="/module/@MODULE_ID@/dupes.list">matchDupes</prop>
                 <prop key="/module/@MODULE_ID@/report.form">reportDupes</prop>
+                 <prop key="/module/@MODULE_ID@/metadata.form">reportMetadata</prop>
+                 <prop key="/module/@MODULE_ID@/test.form">test</prop>
 			</props>
 		</property>
 	</bean>
@@ -23,6 +25,10 @@
         <property name="commandClass"><value>@MODULE_PACKAGE@.PatientMatchingConfiguration</value></property>
         <property name="formView"><value>/module/@MODULE_ID@/configForm</value></property>
         <property name="successView"><value>redirect:/module/@MODULE_ID@/config.list</value></property>
+    </bean>
+      <bean id="test" class="@MODULE_PACKAGE@.web.TestFormController">
+        <property name="formView"><value>/module/@MODULE_ID@/test</value></property>
+        <property name="successView"><value>/module/@MODULE_ID@/test</value></property>
     </bean>
 
     <bean id="matchConfig" class="@MODULE_PACKAGE@.web.ConfigurationListSimpleFormController">
@@ -49,7 +55,38 @@
         <property name="successView"><value>/module/@MODULE_ID@/reportForm</value></property>
     </bean>
     
+    <bean id="reportMetadata" class="@MODULE_PACKAGE@.web.ReportMetadataSimpleFormController">
+        <property name="formView"><value>/module/@MODULE_ID@/metadataForm</value></property>
+        <property name="successView"><value>/module/@MODULE_ID@/metadataForm</value></property>
+    </bean>
+    
     <bean class="org.openmrs.module.patientmatching.HibernateConnection">
       <property name="sessionFactory"><ref bean="sessionFactory"/></property>	
     </bean>
+      
+    <bean parent="serviceContext">
+<property name="moduleService">
+<list>
+<value>org.openmrs.module.patientmatching.PatientMatchingReportMetadataService</value>
+<bean class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+<property name="transactionManager"><ref bean="transactionManager"/></property>
+<property name="target">
+<bean class="org.openmrs.module.patientmatching.impl.PatientMatchingReportMetadataServiceImpl">
+<property name="PatientMatchingReportMetadataDao">
+<bean class="org.openmrs.module.patientmatching.db.hibernate.HibernatePatientMatchingReportMetadataDAO">
+<property name="sessionFactory"><ref bean="sessionFactory"/></property>
+</bean>
+</property>
+</bean>
+</property>
+<property name="preInterceptors">
+<ref bean="serviceInterceptors" />
+</property>
+<property name="transactionAttributeSource">
+<bean class="org.springframework.transaction.annotation.AnnotationTransactionAttributeSource"/>
+</property>
+</bean>
+</list>
+</property>
+</bean>
 </beans>
