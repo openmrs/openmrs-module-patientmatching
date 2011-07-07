@@ -25,7 +25,7 @@ public class MatchingConfigRow implements Cloneable {
 	private int buffer_size;
 	private float sw_number;
 	private int algorithm;
-	private int setID;
+	private String setID;
 	
 	public static final int DEFAULT_BLOCK_ORDER = 0;
 	public static final int DEFAULT_BLOCK_CHARS = 40;
@@ -39,7 +39,7 @@ public class MatchingConfigRow implements Cloneable {
 	public static final Float DEFAULT_SW_NUMBER = new Float(1.0);
 	public static final ScaleWeightSetting DEFAULT_SW_SETTING = ScaleWeightSetting.TopNPercent;
 	public static final int DEFAULT_BUFFER_SIZE = 500;
-	public static final int NO_SET_ID = 0;
+	public static final String NO_SET_ID = "0";
 	
 	/*
 	 * Requires the name of the row at least.
@@ -61,14 +61,22 @@ public class MatchingConfigRow implements Cloneable {
 		setID = NO_SET_ID;
 	}
 	
-	public int getSetID(){
+	public String getSetID(){
 		return setID;
 	}
 	
-	public void setSetID(int id){
+	public void setSetID(String id){
 		setID = id;
 	}
 	
+	public boolean isInterchangeable() {
+		if(setID=="0")
+		return false;
+		else
+	    return true;
+	}
+
+
 	public String getName(){
 		return name;
 	}
@@ -133,14 +141,11 @@ public class MatchingConfigRow implements Cloneable {
 		return include;
 	}
 
-
-
 	public void setInclude(boolean include) {
 		this.include = include;
 	}
-
-
-
+	
+	
 	public double getNonAgreement() {
 		return non_agreement;
 	}

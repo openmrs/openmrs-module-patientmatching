@@ -386,8 +386,10 @@ public class LinkDBConnections {
                     ret.addDemographic(("(Attribute) " + personAttributeType.getName()), "");
                 }
             }
+        	
+    		
 		}
-		
+		ret.getConcat1((int)id);
 		//cache.put(id, ret);
 		return ret;
 	}

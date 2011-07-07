@@ -19,6 +19,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.openmrs.module.patientmatching.web.dwr.DWRMatchingConfigUtilities;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -288,8 +289,16 @@ public class XMLUpdater {
 		Element algorithm = doc.createElement("Algorithm");
 		algorithm.setTextContent(MatchingConfig.ALGORITHMS[mcr.getAlgorithm()]);
 		ret.appendChild(algorithm);
-
-		return ret;
+		
+		Element Interchangable_ID = doc.createElement("SetID");
+		if(mcr.isInterchangeable()){
+			Interchangable_ID.setTextContent(mcr.getSetID());
+		} else {
+			include.setTextContent(MatchingConfigRow.NO_SET_ID);
+		}
+		ret.appendChild(Interchangable_ID);
+			
+			return ret;
 	}
 
 	public static RecMatchConfig createRecMatchConfig(Document doc){
@@ -442,6 +451,15 @@ public class XMLUpdater {
 				} else if(alg.equals(MatchingConfig.ALGORITHMS[MatchingConfig.LCS])){
 					ret.setAlgorithm(MatchingConfig.LCS);
 				}
+			}
+			else if (child_name.equals("SetID")) {	
+
+				String set_id=child.getTextContent();
+				if(set_id.equals(DWRMatchingConfigUtilities.setId))
+					ret.setSetID(DWRMatchingConfigUtilities.setId);
+				else
+					ret.setSetID(MatchingConfigRow.NO_SET_ID);
+				
 			}
 		}
 

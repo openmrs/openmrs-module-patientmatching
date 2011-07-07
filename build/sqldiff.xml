@@ -21,8 +21,7 @@
 			Creates linkage table needed by patient matching.
 		</description>
 		<sql>
-	DROP TABLE IF EXISTS `openmrs`.`linkagetable`;
-CREATE TABLE  `openmrs`.`linkagetable` (
+		CREATE TABLE `linkagetable` (
   `mrn` varchar(255) default NULL,
   `ln` varchar(255) default NULL,
   `lny` varchar(255) default NULL,
@@ -42,15 +41,12 @@ CREATE TABLE  `openmrs`.`linkagetable` (
   `drln` varchar(255) default NULL,
   `drfn` varchar(255) default NULL,
   `openmrs_id` varchar(255) NOT NULL,
-   `concat1` varchar(255) default NULL,
-  PRIMARY KEY  (`openmrs_id`)
+    PRIMARY KEY  (`openmrs_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 		</sql>
 	</diff>
-	
-	
 	<diff>
-		<version>6.2</version>
+		<version>1.7</version>
 		<author>gpingili</author>
 		<date>june 16 2011</date>
 		<description>

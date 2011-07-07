@@ -2,6 +2,12 @@ package org.regenstrief.linkage;
 
 import java.util.*;
 
+import org.openmrs.Patient;
+import org.openmrs.api.PatientService;
+import org.openmrs.api.context.Context;
+
+import sun.util.logging.resources.logging;
+
 /**
  * Record stores demographics associated with one entity. The values are stored
  * in a Hashtable indexed on the type of information. For example, an examlpe of
@@ -19,6 +25,9 @@ public class Record {
 	private Hashtable<String, String> demographics;
 	long uid;
 	String uidContext;
+	String concat1;
+	
+	
 
 	/**
 	 * Initializes the demographics Hashtable and stores the unique ID and ID
@@ -29,7 +38,7 @@ public class Record {
 		demographics = new Hashtable<String, String>();
 		uid = id;
 		uidContext = context;
-	}
+			}
 	
 	/**
 	 * Method returns true if any of the demographics in this Record has
@@ -56,6 +65,7 @@ public class Record {
 	 * @return the Record's unique ID
 	 */
 	public long getUID() {
+		
 		return uid;
 	}
 
@@ -116,7 +126,21 @@ public class Record {
 	public boolean isDemographicNull(String demographic) {
 		return getDemographic(demographic).length() == 0;
 	}
+	
+	public String getConcat1(int pid) {
+		PatientService ps= Context.getPatientService();
+		Patient p=ps.getPatient(pid);
+		concat1=p.getPersonName().getFamilyName()+p.getPersonName().getMiddleName()+p.getPersonName().getGivenName();
 
+		return concat1;
+	}
+	
+	
+//	public void addConcat(int pid){
+//	PatientService ps= Context.getPatientService();
+//		Patient p=ps.getPatient(pid);
+//		concat1=p.getPersonName().getFamilyName()+p.getPersonName().getMiddleName()+p.getPersonName().getGivenName();
+//	}
 	/**
 	 * Returns a string with each demographic name and its value
 	 */

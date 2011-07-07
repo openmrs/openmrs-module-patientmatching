@@ -42,11 +42,11 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
      * Whether this particular field will be ignored, included, or blocking in the
      * analysis for matching process
      */
-    private String inclusion;
+    private String inclusion,transposedSet;
     private final String IGNORED = "IGNORED";
     private final String INCLUDED = "INCLUDED";
     private final String BLOCKING = "BLOCKING";
-
+    private final String SET = "SET";
     /**
      * Default no argument constructor
      */
@@ -65,7 +65,16 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
 	 * @param level the inclusion level to set
 	 */
 	public void setInclusion(String level) {
+		System.out.println("set inclusion***********************************************");
 		this.inclusion = level;
+	}
+
+	public String getTransposedSet() {
+		return transposedSet;
+	}
+
+	public void setTransposedSet(String set) {
+		this.transposedSet = set;
 	}
 
 	/**
@@ -105,7 +114,16 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
     public void setBlocking() {
     	this.inclusion = BLOCKING;
     }
-
+    
+    
+    public boolean isTransposed() {
+    	return transposedSet.compareTo(SET) == 0;
+    }
+      
+    public void setTransposed() {
+    	this.transposedSet = SET;
+    }
+    
     /**
      * Get the current field's actual name. This string will be stored and
      * read from the configuration file.

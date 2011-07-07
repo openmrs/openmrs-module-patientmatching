@@ -15,7 +15,6 @@
                 <prop key="/module/patientmatching/dupes.list">matchDupes</prop>
                 <prop key="/module/patientmatching/report.form">reportDupes</prop>
                  <prop key="/module/patientmatching/metadata.form">reportMetadata</prop>
-                 <prop key="/module/patientmatching/test.form">test</prop>
 			</props>
 		</property>
 	</bean>
@@ -26,11 +25,6 @@
         <property name="formView"><value>/module/patientmatching/configForm</value></property>
         <property name="successView"><value>redirect:/module/patientmatching/config.list</value></property>
     </bean>
-      <bean id="test" class="org.openmrs.module.patientmatching.web.TestFormController">
-        <property name="formView"><value>/module/patientmatching/test</value></property>
-        <property name="successView"><value>/module/patientmatching/test</value></property>
-    </bean>
-
     <bean id="matchConfig" class="org.openmrs.module.patientmatching.web.ConfigurationListSimpleFormController">
         <property name="formView"><value>/module/patientmatching/configList</value></property>
     </bean>

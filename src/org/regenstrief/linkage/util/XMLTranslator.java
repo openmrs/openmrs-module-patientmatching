@@ -33,6 +33,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.openmrs.module.patientmatching.web.dwr.DWRMatchingConfigUtilities;
 import org.regenstrief.linkage.util.MatchingConfigRow.ScaleWeightSetting;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -278,7 +279,7 @@ public class XMLTranslator {
 		ret.appendChild(block_order);
 		
 		Element set_id = doc.createElement("SetID");
-		set_id.setTextContent(Integer.toString(mcr.getSetID()));
+		set_id.setTextContent(mcr.getSetID());
 		ret.appendChild(set_id);
 		
 		Element blck_chars = doc.createElement("BlckChars");
@@ -317,6 +318,14 @@ public class XMLTranslator {
 		Element algorithm = doc.createElement("Algorithm");
 		algorithm.setTextContent(MatchingConfig.ALGORITHMS[mcr.getAlgorithm()]);
 		ret.appendChild(algorithm);
+		
+	Element Interchangable_ID = doc.createElement("SetID");
+	if(mcr.isInterchangeable()){
+		Interchangable_ID.setTextContent(mcr.getSetID());
+	} else {
+		include.setTextContent(MatchingConfigRow.NO_SET_ID);
+	}
+	ret.appendChild(Interchangable_ID);
 		
 		return ret;
 	}
@@ -603,7 +612,7 @@ public class XMLTranslator {
 				}
 			} else if(child_name.equals("SetID")){
 				String sid = child.getTextContent();
-				ret.setSetID(Integer.parseInt(sid));
+				ret.setSetID(sid);
 			} else if(child_name.equals("BlckChars")){
 				String bc = child.getTextContent();
 				ret.setBlockChars(Integer.parseInt(bc));
@@ -658,9 +667,16 @@ public class XMLTranslator {
 				} else if(alg.equals(MatchingConfig.ALGORITHMS[MatchingConfig.LCS])){
 					ret.setAlgorithm(MatchingConfig.LCS);
 				}
+			}else if (child_name.equals("SetID")) {	
+				
+				String set_id=child.getTextContent();
+				if(set_id.equals(DWRMatchingConfigUtilities.setId))
+					ret.setSetID(DWRMatchingConfigUtilities.setId);
+				else
+					ret.setSetID(MatchingConfigRow.NO_SET_ID);
+				
+				}
 			}
-		}
-		
 		return ret;
 	}
 	

@@ -92,6 +92,7 @@ public class LinkDataSource implements Cloneable {
 	
 	public int getDisplayPositionByName(String name){
 		Iterator<DataColumn> it = column_settings.iterator();
+		
 		while(it.hasNext()){
 			DataColumn dc = it.next();
 			if(dc.getName().equals(name)){

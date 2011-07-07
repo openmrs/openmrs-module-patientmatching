@@ -15,7 +15,6 @@
                 <prop key="/module/@MODULE_ID@/dupes.list">matchDupes</prop>
                 <prop key="/module/@MODULE_ID@/report.form">reportDupes</prop>
                  <prop key="/module/@MODULE_ID@/metadata.form">reportMetadata</prop>
-                 <prop key="/module/@MODULE_ID@/test.form">test</prop>
 			</props>
 		</property>
 	</bean>
@@ -26,11 +25,6 @@
         <property name="formView"><value>/module/@MODULE_ID@/configForm</value></property>
         <property name="successView"><value>redirect:/module/@MODULE_ID@/config.list</value></property>
     </bean>
-      <bean id="test" class="@MODULE_PACKAGE@.web.TestFormController">
-        <property name="formView"><value>/module/@MODULE_ID@/test</value></property>
-        <property name="successView"><value>/module/@MODULE_ID@/test</value></property>
-    </bean>
-
     <bean id="matchConfig" class="@MODULE_PACKAGE@.web.ConfigurationListSimpleFormController">
         <property name="formView"><value>/module/@MODULE_ID@/configList</value></property>
     </bean>
