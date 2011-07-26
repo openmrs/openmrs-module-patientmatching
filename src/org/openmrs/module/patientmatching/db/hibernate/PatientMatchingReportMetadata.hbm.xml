@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
+
+<hibernate-mapping package="org.openmrs.module.patientmatching">
+
+	<class name="PatientMatchingReportMetadata" table="metadata_report">
+
+        <cache usage="read-write"/>
+
+		<id name="reportname" type="java.lang.String" column="report_name"/>
+
+		<discriminator column="report_name"/>
+
+		<property name="selstrategies" type="java.lang.String"
+			column="strategies_used" />
+
+		<property name="pNameTime" type="java.lang.String" column="process_name_time"
+		 length="255" />
+		 
+		<property name="createdBy" type="java.lang.String" column="createdby"
+		 length="255" />
+		 
+		 <property name="dateCreated" type="java.util.String" column="datecreated"
+		 length="255" />
+			
+		
+		
+	</class>
+</hibernate-mapping>
