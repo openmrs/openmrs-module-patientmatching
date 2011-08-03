@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<!-- Beans to add to the current Application context definition -->
+  
+<beans>
+	
+    <bean id="patientMatchingUrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+        <property name="mappings">
+            <props>
+                <prop key="/module/@MODULE_ID@/config.list">matchConfig</prop>
+                <prop key="/module/@MODULE_ID@/config.form">configForm</prop>
+                <prop key="/module/@MODULE_ID@/schedule.list">matchSchedule</prop>
+                <prop key="/module/@MODULE_ID@/schedule.form">scheduleForm</prop>
+                <prop key="/module/@MODULE_ID@/dupes.list">matchDupes</prop>
+                <prop key="/module/@MODULE_ID@/report.form">reportDupes</prop>
+                 <prop key="/module/@MODULE_ID@/metadata.form">reportMetadata</prop>
+			</props>
+		</property>
+	</bean>
+
+    <bean id="configForm" class="@MODULE_PACKAGE@.web.ConfigurationSimpleFormController">
+        <property name="commandName"><value>patientMatchingConfiguration</value></property>
+        <property name="commandClass"><value>@MODULE_PACKAGE@.PatientMatchingConfiguration</value></property>
+        <property name="formView"><value>/module/@MODULE_ID@/configForm</value></property>
+        <property name="successView"><value>redirect:/module/@MODULE_ID@/config.list</value></property>
+    </bean>
+    <bean id="matchConfig" class="@MODULE_PACKAGE@.web.ConfigurationListSimpleFormController">
+        <property name="formView"><value>/module/@MODULE_ID@/configList</value></property>
+    </bean>
+
+    <bean id="matchSchedule" class="@MODULE_PACKAGE@.web.ScheduleSimpleFormController">
+        <property name="formView"><value>/module/@MODULE_ID@/scheduleList</value></property>
+        <property name="successView"><value>schedule.list</value></property>
+    </bean>
+    <bean id="scheduleForm" class="@MODULE_PACKAGE@.web.CreateScheduleFormController">
+    	<property name="commandName"><value>task</value></property>
+        <property name="formView"><value>/module/@MODULE_ID@/scheduleForm</value></property>
+        <property name="successView"><value>schedule.list</value></property>
+    </bean>
+
+    <bean id="matchDupes" class="@MODULE_PACKAGE@.web.ReportSimpleFormController">
+        <property name="formView"><value>/module/@MODULE_ID@/dupesList</value></property>
+        <property name="successView"><value>/module/@MODULE_ID@/dupesList</value></property>
+    </bean>
+
+    <bean id="reportDupes" class="@MODULE_PACKAGE@.web.ReportFormSimpleFormController">
+        <property name="formView"><value>/module/@MODULE_ID@/reportForm</value></property>
+        <property name="successView"><value>/module/@MODULE_ID@/reportForm</value></property>
+    </bean>
+    
+    <bean id="reportMetadata" class="@MODULE_PACKAGE@.web.ReportMetadataSimpleFormController">
+        <property name="formView"><value>/module/@MODULE_ID@/metadataForm</value></property>
+        <property name="successView"><value>/module/@MODULE_ID@/metadataForm</value></property>
+    </bean>
+    
+    <bean class="org.openmrs.module.patientmatching.HibernateConnection">
+      <property name="sessionFactory"><ref bean="sessionFactory"/></property>	
+    </bean>
+      
+    <bean parent="serviceContext">
+<property name="moduleService">
+<list>
+<value>org.openmrs.module.patientmatching.PatientMatchingReportMetadataService</value>
+<bean class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+<property name="transactionManager"><ref bean="transactionManager"/></property>
+<property name="target">
+<bean class="org.openmrs.module.patientmatching.impl.PatientMatchingReportMetadataServiceImpl">
+<property name="PatientMatchingReportMetadataDao">
+<bean class="org.openmrs.module.patientmatching.db.hibernate.HibernatePatientMatchingReportMetadataDAO">
+<property name="sessionFactory"><ref bean="sessionFactory"/></property>
+</bean>
+</property>
+</bean>
+</property>
+<property name="preInterceptors">
+<ref bean="serviceInterceptors" />
+</property>
+<property name="transactionAttributeSource">
+<bean class="org.springframework.transaction.annotation.AnnotationTransactionAttributeSource"/>
+</property>
+</bean>
+</list>
+</property>
+</bean>
+</beans>
