@@ -93,7 +93,7 @@ public class Record {
 		if (value == null) {
 			value = "";
 		}
-		demographics.put(demographic, value);
+		demographics.put(demographic, value.toLowerCase());
 	}
 
 	/**
