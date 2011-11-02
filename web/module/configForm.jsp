@@ -128,18 +128,13 @@
 								</tr>
 								<c:forEach
 									items="${patientMatchingConfiguration.configurationEntries}"
-									var="configEntry" varStatus="entriesIndex">
-									<c:choose>
-										<c:when test="${(entriesIndex.count - 1) % 2 == 0}">
-
+									var="configEntry" varStatus="entriesIndex">		
+										<c:if test="${(entriesIndex.count - 1) % 2 == 0}">
 											<tr
 												<c:if test="${entriesIndex.count % 2 == 0}">class="oddRow"</c:if>
 												<c:if test="${entriesIndex.count % 2 != 0}">class="evenRow"</c:if>>
-										</c:when>
-										<spring:bind
-											path="patientMatchingConfiguration.configurationEntries[${entriesIndex.count - 1}].inclusion">
-
-
+										</c:if>				
+										<spring:bind path="patientMatchingConfiguration.configurationEntries[${entriesIndex.count-1}].inclusion">
 											<td nowrap="nowrap"
 												name="<c:out value="${status.expression}"/>" id="fieldName"
 												value="<spring:message code="${configEntry.fieldViewName}"/>">
@@ -188,15 +183,12 @@
 											</div>
 										</spring:bind>
 
-
-
 										<c:if test="${(entriesIndex.count - 1) % 2 < 1}">
 											<td>&nbsp;</td>
 										</c:if>
-										<c:when test="${(entriesIndex.count - 1) % 2 == 1}">
+										<c:if test="${(entriesIndex.count - 1) % 2 == 1}">
 											</tr>
-										</c:when>
-									</c:choose>
+										</c:if>									
 								</c:forEach>
 							</table>
 						</div>
