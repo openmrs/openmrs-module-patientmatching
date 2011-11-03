@@ -24,6 +24,7 @@ import org.regenstrief.linkage.analysis.VectorTable;
 import org.regenstrief.linkage.db.SavedResultDBConnection;
 import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.FormPairs;
+import org.regenstrief.linkage.io.NoMatchFilteringFormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceReader;
 import org.regenstrief.linkage.io.ReaderProvider;
@@ -44,10 +45,10 @@ public class FileWritingMatcher {
 	public static final String OUT_FILE = "linkage.out";
 	
 	public static File writeMatchResults(RecMatchConfig rmc){
-		return writeMatchResults(rmc, new File(OUT_FILE), true, false, false, false);
+		return writeMatchResults(rmc, new File(OUT_FILE), true, false, false, false, false);
 	}
 	
-	public static File writeMatchResults(RecMatchConfig rmc, File f, boolean write_xml, boolean write_db, boolean group_analysis, boolean vector_obs){
+	public static File writeMatchResults(RecMatchConfig rmc, File f, boolean write_xml, boolean write_db, boolean group_analysis, boolean vector_obs, boolean filter_pairs){
 		
 		// set output order based on include position in lds
 		LinkDataSource lds = rmc.getLinkDataSource1();
@@ -126,6 +127,11 @@ public class FileWritingMatcher {
 				        fp = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rmc.getLinkDataSource1().getTypeTable());
 				    }
 					
+				    if(filter_pairs){
+				    	NoMatchFilteringFormPairs nmffp = new NoMatchFilteringFormPairs(fp);
+				    	fp = nmffp;
+				    }
+				    
 					ScorePair sp = new ScorePair(mc);
 					
 					// check if scoring needs to be modified
@@ -156,6 +162,12 @@ public class FileWritingMatcher {
 						}
 						
 						count++;
+					}
+					
+					if(filter_pairs && fp instanceof NoMatchFilteringFormPairs){
+						NoMatchFilteringFormPairs nmffp = (NoMatchFilteringFormPairs)fp;
+						System.out.println("filtered " + nmffp.getFilteredCount());
+						System.out.println("allowed " + nmffp.getAllowedCount() + " pairs to output file");
 					}
 					
 					if(mrs instanceof DBMatchResultStore){

@@ -61,6 +61,7 @@ import org.regenstrief.linkage.analysis.DedupRandomSampleAnalyzer;
 import org.regenstrief.linkage.analysis.EMAnalyzer;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
+import org.regenstrief.linkage.io.BlockSizeFormPairs;
 import org.regenstrief.linkage.io.CommonPairFormPairs;
 import org.regenstrief.linkage.io.DataSourceReader;
 import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
@@ -101,6 +102,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
     private JCheckBox cbWriteXML;
     private JCheckBox write_db;
     private JCheckBox cbGrouping;
+    private JCheckBox filter_pairs;
 	private JRadioButton ucalc_closed, ucalc_rand, mcalc_lock, mcalc_uinclude;
     private ButtonGroup ucalc_group, mcalc_group;
     private JButton calculate_uvalue, calculate_mvalue;
@@ -272,6 +274,8 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         cbGrouping.addActionListener(this);
         write_db = new JCheckBox("Write Results To DB File");
         write_db.addActionListener(this);
+        filter_pairs = new JCheckBox("Filter Pairs When Writing Output");
+        filter_pairs.addActionListener(this);
         
         JButton run_link = new JButton();
         run_link.addActionListener(this);
@@ -544,10 +548,17 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 5, 0, 5);
         linkagePanel.add(write_db, gridBagConstraints);
-
+        
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(0, 5, 0, 5);
+        linkagePanel.add(filter_pairs, gridBagConstraints);
+
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.insets = new Insets(0, 5, 5, 5);
         linkagePanel.add(run_link, gridBagConstraints);
 
@@ -909,7 +920,8 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		if(ret == JFileChooser.APPROVE_OPTION){
 			out = out_chooser.getSelectedFile();
 			boolean db = write_db.isSelected();
-			match_file = FileWritingMatcher.writeMatchResults(rm_conf, out, write_xml, db, groupAnalysis, true);
+			boolean filter = filter_pairs.isSelected();
+			match_file = FileWritingMatcher.writeMatchResults(rm_conf, out, write_xml, db, groupAnalysis, true, filter);
             
             if(match_file == null){
                 JOptionPane.showMessageDialog(this,
@@ -1083,6 +1095,9 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		MatchingConfig mc = current_working_config;
 		
 		FormPairs fp2 = getFormPairs();
+		//BlockSizeFormPairs bsfp = new BlockSizeFormPairs(mc, fp2);
+		//bsfp.setSizeLimit(1000);
+		//fp2 = bsfp;
 		ApplyAnalyzerLoggingFrame frame = new ApplyAnalyzerLoggingFrame(mc, this);
 		PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
 		

@@ -19,12 +19,14 @@ public class NoMatchFilteringFormPairs extends FormPairs {
 	private FormPairs fp;
 	private ScorePair sp;
 	private String allowed_demographic;
+	private int filtered, printed;
 	
 	public NoMatchFilteringFormPairs(FormPairs fp){
 		super(fp.getMatchingConfig());
 		this.fp = fp;
 		sp = new ScorePair(fp.getMatchingConfig());
 		allowed_demographic = "gender";
+		printed = filtered = 0;
 	}
 	
 	public String getAllowedDemographic(){
@@ -46,6 +48,9 @@ public class NoMatchFilteringFormPairs extends FormPairs {
 			} else {
 				if(passesFilter(candidate)){
 					finished = true;
+					printed++;
+				} else {
+					filtered++;
 				}
 			}
 		}
@@ -67,6 +72,14 @@ public class NoMatchFilteringFormPairs extends FormPairs {
 		}
 		
 		return passes;
+	}
+	
+	public int getFilteredCount(){
+		return filtered;
+	}
+	
+	public int getAllowedCount(){
+		return printed;
 	}
 
 }
