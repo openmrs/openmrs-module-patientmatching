@@ -51,10 +51,12 @@
 		<date>june 16 2011</date>
 		<description>
 			A table for storing report data
+			Modified by surangak for version 1.2.4 release
+			Removed openmrs specific database references
 		</description>
 		<sql>
-			DROP TABLE IF EXISTS `openmrs`.`persistreportdata`;
-CREATE TABLE  `openmrs`.`persistreportdata` (
+			DROP TABLE IF EXISTS `persistreportdata`;
+CREATE TABLE  `persistreportdata` (
   `report_name` varchar(255) NOT NULL,
   `strategies_used` varchar(200) default NULL,
   `process_name_time` varchar(200) default NULL,
