@@ -365,7 +365,6 @@ public class LinkDBConnections {
                     	i++;
                     	concat+=value;}
                     if(i==3){
-                    	System.out.println(".........................."+concat);
                     	ret.addDemographic("concat1", concat);
                     	i=0;
                     	concat="";

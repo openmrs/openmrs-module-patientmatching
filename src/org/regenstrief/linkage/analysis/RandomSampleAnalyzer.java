@@ -57,6 +57,7 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer{
 	}
 	
 	protected void initAnalyzer(){
+		System.out.println("arrived ????");
 		rand = new Random();
 		
 		left_pair_entry = new Hashtable<Integer,List<Integer>>();
