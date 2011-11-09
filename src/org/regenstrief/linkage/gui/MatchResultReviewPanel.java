@@ -166,12 +166,27 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 		Record r1 = mr.getRecord1();
 		Record r2 = mr.getRecord2();
 		Object[][] data = new Object[2][demographics.length];
+		boolean[] matches = new boolean[demographics.length];
 		for(int i = 0; i < demographics.length; i++){
 			data[0][i] = r1.getDemographic(demographics[i]);
 			data[1][i] = r2.getDemographic(demographics[i]);
+			String val1 = r1.getDemographic(demographics[i]);
+			String val2 = r2.getDemographic(demographics[i]);
+			if(val1 == null){
+				val1 = "";
+			}
+			if(val2 == null){
+				val2 = "";
+			}
+			matches[i] = false;
+			if(val1.equals(val2) && !val1.equals("")){
+				matches[i] = true;
+			}
+			
 		}
 		DemographicReviewTableModel drtm = new DemographicReviewTableModel(data, demographics);
 		values.setModel(drtm);
+		values.setDefaultRenderer(Object.class, new MatchResultReviewTableCellRenderer(matches));
 		
 		// set column widths
 		int margin = 5;
