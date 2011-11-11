@@ -51,7 +51,8 @@ public class ReportFormSimpleFormController extends SimpleFormController {
         
         map.put("useMinimalHeader", true);
         AdministrationService adminService = Context.getAdministrationService();
-        String prodServerUrl= adminService.getGlobalProperty("patientmatching.urlProductionServer","http://link.regenstrief.org:8080/openmrs/admin/patients/mergePatients.form");
+        String contextPath = req.getContextPath();
+        String prodServerUrl= adminService.getGlobalProperty("patientmatching.urlProductionServer", contextPath +"/admin/patients/mergePatients.form");
         map.put("productionServerUrl",prodServerUrl);
         // then store all values to session to be used in the future
         HttpSession session = req.getSession();

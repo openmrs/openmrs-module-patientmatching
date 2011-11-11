@@ -202,7 +202,6 @@ function val(obj){
 
 function mergePatients(obj){
 	var check = confirm("Warning! This cannot be undone.Are you sure you want to merge patients?");
-	var url="${pageContext.request.contextPath}/admin/patients/mergePatients.form";
 	
 	if(check){
 		var patients = document.getElementById(obj.id+"hidden").value.split(',');
@@ -213,7 +212,7 @@ function mergePatients(obj){
 				querParams = querParams+"&";
 			}
 		}
-		window.location=url+"?"+querParams;
+		window.location="${productionServerUrl}"+"?"+querParams;
 		return true;
 	}else{
 		return false;
