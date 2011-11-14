@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.HashSet;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -162,14 +163,16 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 	public void setMatchResult(MatchResult mr){
 		this.mr = mr;
 		score.setText(Double.toString(mr.getScore()));
-		demographics = mr.getDemographics().toArray(demographics);
+		//demographics = mr.getDemographics().toArray(demographics);
+		HashSet<String> dem_set = new HashSet<String>();
+		dem_set.addAll(mr.getRecord1().getDemographics().keySet());
+		dem_set.addAll(mr.getRecord2().getDemographics().keySet());
+		demographics = dem_set.toArray(demographics);
 		Record r1 = mr.getRecord1();
 		Record r2 = mr.getRecord2();
 		Object[][] data = new Object[2][demographics.length];
 		boolean[] matches = new boolean[demographics.length];
 		for(int i = 0; i < demographics.length; i++){
-			data[0][i] = r1.getDemographic(demographics[i]);
-			data[1][i] = r2.getDemographic(demographics[i]);
 			String val1 = r1.getDemographic(demographics[i]);
 			String val2 = r2.getDemographic(demographics[i]);
 			if(val1 == null){
@@ -178,6 +181,8 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 			if(val2 == null){
 				val2 = "";
 			}
+			data[0][i] = val1;
+			data[1][i] = val2;
 			matches[i] = false;
 			if(val1.equals(val2) && !val1.equals("")){
 				matches[i] = true;
