@@ -73,7 +73,7 @@ public class PatientMatchingReportMetadataServiceImpl implements PatientMatching
 			databaseConnection = connectionFactory.createConnection();
 			
              PreparedStatement ps=null;
-			ps = databaseConnection.prepareStatement("SELECT * FROM openmrs.persistreportdata WHERE report_name =?");
+			ps = databaseConnection.prepareStatement("SELECT * FROM persistreportdata WHERE report_name =?");
 			ps.setString(1,reportName);
 			ps.execute();
 				while (ps.getResultSet().next()) {

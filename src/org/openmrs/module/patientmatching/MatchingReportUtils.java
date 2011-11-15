@@ -478,7 +478,7 @@ public class MatchingReportUtils {
 						url, user, passwd);
 				databaseConnection = connectionFactory.createConnection();
 				PreparedStatement ps=null;
-				ps = databaseConnection.prepareStatement("INSERT INTO openmrs.persistreportdata(report_name,strategies_used,process_name_time,createdby,datecreated) VALUES (?, ?, ?, ?,?)");
+				ps = databaseConnection.prepareStatement("INSERT INTO persistreportdata(report_name,strategies_used,process_name_time,createdby,datecreated) VALUES (?, ?, ?, ?,?)");
 				ps.setString(1,prm.getReportName());
 				ps.setString(2,prm.getSelstrategies());
 				ps.setString(3,prm.getpNameTime());
