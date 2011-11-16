@@ -1,14 +1,8 @@
 package org.regenstrief.linkage;
 
-import java.util.*;
-
-import org.openmrs.Patient;
-import org.openmrs.api.PatientService;
-import org.openmrs.api.context.Context;
-import org.openmrs.module.patientmatching.MatchingConfigurationUtils;
-import org.regenstrief.linkage.util.MatchingConfigRow;
-
-import sun.util.logging.resources.logging;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Iterator;
 
 /**
  * Record stores demographics associated with one entity. The values are stored
@@ -113,6 +107,9 @@ public class Record {
 	 * @return the value of the given demographic for this object
 	 */
 	public String getDemographic(String demographic) {
+		if(!demographics.contains(demographic)){
+			return null;
+		}
 		return demographics.get(demographic);
 	}
 
