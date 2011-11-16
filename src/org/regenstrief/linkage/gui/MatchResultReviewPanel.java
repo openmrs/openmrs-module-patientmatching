@@ -8,6 +8,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -44,12 +46,23 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 	JTextField certainty_val;
 	JTable values;
 	
+	List<String> order;
+	Set<String> no_display;
+	
 	String[] demographics;
 	MatchResult mr;
 	
 	public MatchResultReviewPanel(String[] demographics){
 		this.demographics = demographics;
 		initGUI();
+	}
+	
+	public void setOrder(List<String> order){
+		this.order = order;
+	}
+	
+	public void setNonDisplayFields(Set<String> fields){
+		no_display = fields;
 	}
 	
 	private void initGUI(){
@@ -135,7 +148,7 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 		certainty.addChangeListener(this);
 		certainty.addKeyListener(this);
 		certainty_val = new JTextField(1);
-		certainty_val.setEnabled(false);
+		certainty_val.setEditable(false);
 		certainty_val.addActionListener(this);
 		status_panel.add(not_reviewed);
 		status_panel.add(match);

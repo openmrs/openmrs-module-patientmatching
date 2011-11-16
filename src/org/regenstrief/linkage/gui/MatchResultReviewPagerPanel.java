@@ -19,6 +19,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -51,6 +52,10 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 	
 	private Hashtable<Integer,MatchResult> reviewed_match_results;
 	
+	private List<String> order;
+	private Set<String> no_display;
+	
+	
 	private Connection db;
 	
 	public MatchResultReviewPagerPanel(){
@@ -61,6 +66,14 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		view_index = 0;
 		reviewed_match_results = new Hashtable<Integer,MatchResult>();
 		initGUI();
+	}
+	
+	public void setOrder(List<String> order){
+		this.order = order;
+	}
+	
+	public void setNonDisplay(Set<String> fields){
+		no_display = fields;
 	}
 	
 	private Date chooseDate(List<Date> options){
@@ -174,9 +187,31 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		window.add(mrrpp);
 		window.setVisible(true);
 		
+		// parse arguments
+		if(args.length >= 1){
+			String arg_order = args[0];
+			List<String> order = parseOrder(arg_order);
+			mrrpp.setOrder(order);
+		}
+		if(args.length >= 2){
+			String arg_display = args[1];
+			Set<String> fields = parseNoDisplay(arg_display);
+			mrrpp.setNonDisplay(fields);
+		}
+		
 		// close database on exit, so implement window listener to close connection on exit
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.addWindowListener(mrrpp);
+	}
+	
+	private static List<String> parseOrder(String order){
+		
+		return null;
+	}
+	
+	private static Set<String> parseNoDisplay(String fields){
+		
+		return null;
 	}
 	
 	public MatchResultStore getMatchResultStore(){
