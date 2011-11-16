@@ -107,7 +107,7 @@ public class Record {
 	 * @return the value of the given demographic for this object
 	 */
 	public String getDemographic(String demographic) {
-		if(!demographics.contains(demographic)){
+		if(!demographics.keySet().contains(demographic)){
 			return null;
 		}
 		return demographics.get(demographic);
