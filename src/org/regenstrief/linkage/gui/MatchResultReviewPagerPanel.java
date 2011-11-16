@@ -16,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -55,7 +56,6 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 	private List<String> order;
 	private Set<String> no_display;
 	
-	
 	private Connection db;
 	
 	public MatchResultReviewPagerPanel(){
@@ -70,10 +70,20 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 	
 	public void setOrder(List<String> order){
 		this.order = order;
+		Iterator<MatchResultReviewPanel> it = rpanels.iterator();
+		while(it.hasNext()){
+			MatchResultReviewPanel mrrp = it.next();
+			mrrp.setOrder(this.order);
+		}
 	}
 	
 	public void setNonDisplay(Set<String> fields){
 		no_display = fields;
+		Iterator<MatchResultReviewPanel> it = rpanels.iterator();
+		while(it.hasNext()){
+			MatchResultReviewPanel mrrp = it.next();
+			mrrp.setNonDisplayFields(no_display);
+		}
 	}
 	
 	private Date chooseDate(List<Date> options){
@@ -205,13 +215,21 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 	}
 	
 	private static List<String> parseOrder(String order){
-		
-		return null;
+		String[] fields = order.split(",");
+		List<String> ret = new ArrayList<String>();
+		for(int i = 0; i < fields.length; i++){
+			ret.add(fields[i]);
+		}
+		return ret;
 	}
 	
 	private static Set<String> parseNoDisplay(String fields){
-		
-		return null;
+		String[] f = fields.split(",");
+		Set<String> ret = new HashSet<String>();
+		for(int i = 0; i < f.length; i++){
+			ret.add(f[i]);
+		}
+		return ret;
 	}
 	
 	public MatchResultStore getMatchResultStore(){

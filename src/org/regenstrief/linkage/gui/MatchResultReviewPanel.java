@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -180,7 +181,18 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 		HashSet<String> dem_set = new HashSet<String>();
 		dem_set.addAll(mr.getRecord1().getDemographics().keySet());
 		dem_set.addAll(mr.getRecord2().getDemographics().keySet());
-		demographics = dem_set.toArray(demographics);
+		List<String> fields = new ArrayList<String>();
+		
+		if(order != null){
+			fields.addAll(order);
+			dem_set.removeAll(fields);
+		}
+		
+		fields.addAll(dem_set);
+		if(no_display != null){
+			fields.removeAll(no_display);
+		}
+		demographics = fields.toArray(demographics);
 		Record r1 = mr.getRecord1();
 		Record r2 = mr.getRecord2();
 		Object[][] data = new Object[2][demographics.length];
