@@ -204,9 +204,33 @@ public class FileWritingMatcher {
 					if(vector_obs){
 						File vector_out = new File(f2.getPath() + "_vectors.txt");
 						BufferedWriter v_out = new BufferedWriter(new FileWriter(vector_out));
-						v_out.write("vector|score|true_prob|false_prob|expected|observed\n");
+						
+						// print header with vector details
 						Hashtable<MatchVector,Long> vectors = sp.getObservedVectors();
 						Iterator<MatchVector> mv_it = vectors.keySet().iterator();
+						while(mv_it.hasNext()){
+							MatchVector mv_obs = mv_it.next();
+							v_out.write(mv_obs + " = {");
+							Iterator<String> dem_it = mv_obs.getDemographics().iterator();
+							boolean first = true;
+							while(dem_it.hasNext()){
+								String dem = dem_it.next();
+								String match = "->0";
+								if(mv_obs.matchedOn(dem)){
+									match = "->1";
+								}
+								if(first){
+									v_out.write(dem + match);
+									first = false;
+								} else {
+									v_out.write("," + dem + match);
+								}
+							}
+							v_out.write("}\n");
+						}
+						
+						v_out.write("\nvector|score|true_prob|false_prob|expected|observed\n");
+						mv_it = vectors.keySet().iterator();
 						VectorTable vt = new VectorTable(mc);
 						while(mv_it.hasNext()){
 							MatchVector mv_obs = mv_it.next();
