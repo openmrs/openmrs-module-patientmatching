@@ -4,8 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
@@ -39,7 +37,7 @@ import org.regenstrief.linkage.db.SavedResultDBConnection;
 import org.regenstrief.linkage.matchresult.DBMatchResultStore;
 import org.regenstrief.linkage.matchresult.MatchResultStore;
 
-public class MatchResultReviewPagerPanel extends JPanel implements ActionListener, KeyListener, WindowListener{
+public class MatchResultReviewPagerPanel extends JPanel implements ActionListener, WindowListener{
 
 	public static int VIEWS_PER_PAGE = 5;
 	public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
@@ -75,6 +73,10 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 			MatchResultReviewPanel mrrp = it.next();
 			mrrp.setOrder(this.order);
 		}
+	}
+	
+	public int getViewIndex(){
+		return view_index;
 	}
 	
 	public void setNonDisplay(Set<String> fields){
@@ -187,6 +189,7 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		bottom.add(row);
 		
 		this.add(bottom, BorderLayout.PAGE_END);
+		MatchResultReviewKeyboardAccelerator.INSTANCE.setPagerPanel(this);
 	}
 	
 	
@@ -240,7 +243,7 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		this.mrs = mrs;
 	}
 	
-	private void updateView(int index){
+	public void updateView(int index){
 		// get VIEWS_PER_PAGE MatchResults out of MatchResult store beginning at given index
 		// set GUI elements to show new MatchResults
 		view_index = index;
@@ -268,6 +271,7 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 				reviewed_match_results.put(new Integer(view_index + i), mr);
 			}
 		}
+		
 	}
 	
 	private void showPrevPage(){
@@ -316,9 +320,9 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 					mrs.removeMatchResult(id);
 					mrs.addMatchResult(reviewed, id);
 				}
-				reviewed_match_results.remove(id);
+				
 			}
-			
+			reviewed_match_results.clear();
 		}
 	}
 	
@@ -334,6 +338,14 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 				System.err.println(sqle.getMessage());
 			}
 		}
+	}
+	
+	public boolean isOnFirstPage(){
+		return view_index == 0;
+	}
+	
+	public boolean isOnLastPage(){
+		return mrs.getSize() < VIEWS_PER_PAGE || view_index >= mrs.getSize() - VIEWS_PER_PAGE;
 	}
 
 	public void actionPerformed(ActionEvent ae) {
@@ -359,6 +371,7 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 						updateView(view_index);
 						setFirstUnreviewed();
 						setTotal();
+						rpanels.get(0).setFocus();
 					}
 				}
 			} else if(source == next_page){
@@ -381,18 +394,6 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 				updateView(index);
 			}
 		}
-	}
-
-	public void keyPressed(KeyEvent arg0) {
-		
-	}
-
-	public void keyReleased(KeyEvent arg0) {
-		
-	}
-
-	public void keyTyped(KeyEvent arg0) {
-		
 	}
 
 	public void windowActivated(WindowEvent arg0) {

@@ -1,6 +1,7 @@
 package org.regenstrief.linkage.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -12,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -32,6 +34,7 @@ import org.regenstrief.linkage.Record;
 
 public class MatchResultReviewPanel extends JPanel implements ActionListener, ChangeListener, KeyListener{
 	public static final int CERTAINTY_LEVELS = 5;
+	public static final Color FOCUS_COLOR = new Color(109,123,141);
 	
 	private static final String MATCH_STRING = "match";
 	private static final String NONMATCH_STRING = "nonmatch";
@@ -56,6 +59,11 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 	public MatchResultReviewPanel(String[] demographics){
 		this.demographics = demographics;
 		initGUI();
+	}
+	
+	public void setFocus(){
+		not_reviewed.requestFocus();
+		showBorder(true);
 	}
 	
 	public void setOrder(List<String> order){
@@ -119,7 +127,7 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 		
 		// init and add elements for match status panel
 		status_panel = new JPanel();
-		status_panel.addKeyListener(this);
+		//status_panel.addKeyListener(this);
 		status_panel.setLayout(new BoxLayout(status_panel, BoxLayout.PAGE_AXIS));
 		not_reviewed = new JRadioButton("Not-Reviewed");
 		not_reviewed.addActionListener(this);
@@ -154,9 +162,9 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 		status_panel.add(not_reviewed);
 		status_panel.add(match);
 		status_panel.add(not_match);
-		not_reviewed.addKeyListener(this);
-		match.addKeyListener(this);
-		not_match.addKeyListener(this);
+		//not_reviewed.addKeyListener(this);
+		//match.addKeyListener(this);
+		//not_match.addKeyListener(this);
 		JPanel cpanel = new JPanel();
 		//cpanel.add(certainty);
 		cpanel.add(new JLabel("Certainty:"));
@@ -282,6 +290,15 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 		return ret;
 	}
 	
+	public void showBorder(boolean display){
+		if(display){
+			this.setBorder(BorderFactory.createLineBorder(FOCUS_COLOR, 3));
+		} else {
+			this.setBorder(BorderFactory.createLineBorder(Color.BLACK, 0));
+		}
+		
+	}
+	
 	public void setAsMatch(){
 		match.doClick();
 	}
@@ -375,32 +392,9 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 	}
 
 	public void keyTyped(KeyEvent arg0) {
-		//System.out.println("key type event: " + arg0);
-		if(mr != null){
-			if(arg0.getSource() == note){
-				mr.setNote(note.getText());
-			} else if(arg0.getSource() == certainty){
-				try{
-					int c = Integer.parseInt(Character.toString(arg0.getKeyChar()));
-					if(c > 0 && c <= CERTAINTY_LEVELS){
-						mr.setCertainty(getMatchResultCertainty(c));
-						certainty_val.setText(Integer.toString(c));
-						certainty.setValue(c);
-					}
-				}
-				catch(NumberFormatException nfe){
-					
-				}
-			} else {
-				// set radio buttons or slider
-				if(arg0.getKeyCode() == KeyEvent.VK_M){
-					setAsMatch();
-				} else if(arg0.getKeyCode() == KeyEvent.VK_N){
-					setAsNonMatch();
-				} else if(arg0.getKeyCode() == KeyEvent.VK_R){
-					setAsNotReviewed();
-				}
-			}
+		// only handles typing in note field
+		if(arg0.getSource() == note){
+			mr.setNote(note.getText());
 		}
 	}
 }

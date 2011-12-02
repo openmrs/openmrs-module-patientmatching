@@ -15,13 +15,19 @@ public class MatchResultReviewKeyboardAccelerator implements KeyListener, Contai
 	public static final MatchResultReviewKeyboardAccelerator INSTANCE = new MatchResultReviewKeyboardAccelerator();
 	
 	private List<MatchResultReviewPanel> review_panels;
+	private MatchResultReviewPagerPanel pager;
+	private int focus_index;
 	
 	private MatchResultReviewKeyboardAccelerator(){
-		
+		resetIndices();
 	}
 	
 	public void setReviewPanelList(List<MatchResultReviewPanel> panels){
 		review_panels = panels;
+	}
+	
+	public void setPagerPanel(MatchResultReviewPagerPanel mrppp){
+		pager = mrppp;
 	}
 
 	public void componentAdded(ContainerEvent arg0) {
@@ -57,33 +63,84 @@ public class MatchResultReviewKeyboardAccelerator implements KeyListener, Contai
 			}
 		}
 	}
+	
+	public void resetIndices(){
+		focus_index = 0;
+	}
+	
+	public void setIndices(int index){
+		focus_index = index;
+	}
+	
+	public void nextFocus(){
+		MatchResultReviewPanel mrrp = review_panels.get(focus_index);
+		if(focus_index == review_panels.size() - 1){
+			if(!pager.isOnLastPage()){
+				mrrp.showBorder(false);
+				pager.updateView(pager.getViewIndex() + MatchResultReviewPagerPanel.VIEWS_PER_PAGE);
+				focus_index = 0;
+				mrrp = review_panels.get(focus_index);
+				mrrp.showBorder(true);
+			}
+		} else {
+			mrrp.showBorder(false);
+			focus_index++;
+			mrrp = review_panels.get(focus_index);
+			mrrp.showBorder(true);
+		}
+	}
+	
+	public void previousFocus(){
+		MatchResultReviewPanel mrrp = review_panels.get(focus_index);
+		if(focus_index == 0){
+			if(!pager.isOnFirstPage()){
+				mrrp.showBorder(false);
+				pager.updateView(pager.getViewIndex() - MatchResultReviewPagerPanel.VIEWS_PER_PAGE);
+				focus_index = review_panels.size() - 1;
+				review_panels.get(focus_index).showBorder(true);
+			}
+		} else {
+			mrrp.showBorder(false);
+			focus_index--;
+			mrrp = review_panels.get(focus_index);
+			mrrp.showBorder(true);
+		}
+	}
 
 	public void keyPressed(KeyEvent e) {
 		if(!(e.getSource() instanceof JTextField)){
-			Container c = (Container)e.getSource();
-			while(c != null && !(c instanceof MatchResultReviewPanel)){
-				c = c.getParent();
-			}
-			if(c != null){
-				int i = review_panels.indexOf(c);
-				MatchResultReviewPanel mrrp = review_panels.get(i);
-				if(e.getKeyCode() == KeyEvent.VK_M){
-					mrrp.setAsMatch();
-				} else if(e.getKeyCode() == KeyEvent.VK_N){
-					mrrp.setAsNonMatch();
-				} else if(e.getKeyCode() == KeyEvent.VK_R){
-					mrrp.setAsNotReviewed();
-				} else {
-					try{
-						int new_val =Integer.parseInt(Character.toString(e.getKeyChar()));
-						mrrp.setGUICertainty(new_val);
-					}
-					catch(NumberFormatException nfe){
-						
-					}
+			if(e.getKeyCode() == KeyEvent.VK_M){
+				MatchResultReviewPanel mrrp = review_panels.get(focus_index);
+				mrrp.setAsMatch();
+			} else if(e.getKeyCode() == KeyEvent.VK_N){
+				MatchResultReviewPanel mrrp = review_panels.get(focus_index);
+				mrrp.setAsNonMatch();
+			} else if(e.getKeyCode() == KeyEvent.VK_R){
+				MatchResultReviewPanel mrrp = review_panels.get(focus_index);
+				mrrp.setAsNotReviewed();
+			} else if(e.getKeyCode() == KeyEvent.VK_PAGE_UP){
+				pager.updateView(pager.getViewIndex() - MatchResultReviewPagerPanel.VIEWS_PER_PAGE);
+			} else if(e.getKeyCode() == KeyEvent.VK_PAGE_DOWN){
+				pager.updateView(pager.getViewIndex() + MatchResultReviewPagerPanel.VIEWS_PER_PAGE);
+			} else if(e.getKeyCode() == KeyEvent.VK_SPACE){
+				nextFocus();
+			} else if(e.getKeyCode() == KeyEvent.VK_ENTER){
+				nextFocus();
+			} else if(e.getKeyCode() == KeyEvent.VK_DOWN){
+				nextFocus();
+			} else if(e.getKeyCode() == KeyEvent.VK_UP){
+				previousFocus();
+			} else {
+				try{
+					int new_val =Integer.parseInt(Character.toString(e.getKeyChar()));
+					MatchResultReviewPanel mrrp = review_panels.get(focus_index);
+					mrrp.setGUICertainty(new_val);
 				}
-				
+				catch(NumberFormatException nfe){
+					
+				}
 			}
+			
 			
 		}
 	}
