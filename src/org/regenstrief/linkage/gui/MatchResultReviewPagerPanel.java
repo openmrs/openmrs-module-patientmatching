@@ -392,6 +392,7 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 					return;
 				}
 				updateView(index);
+				rpanels.get(0).setFocus();
 			}
 		}
 	}
