@@ -86,7 +86,7 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 		JLabel row_label = new JLabel("Row:");
 		row = new JTextField(5);
 		//row.setEditable(false);
-		row.setEnabled(false);
+		row.setEditable(false);
 		score = new JTextField(12);
 		score.setEditable(false);
 		spanel.add(row_label);
