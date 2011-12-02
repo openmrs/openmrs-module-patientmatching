@@ -1,6 +1,6 @@
 <%@ include file="/WEB-INF/template/include.jsp"%>
 
-<openmrs:require privilege="View Patients, View Patient Cohorts"
+<openmrs:require anyPrivilege="View Patients, View Patient Cohorts"
 	otherwise="/login.htm" redirect="/module/patientmatching/dupes.list" />
 
 <%@ include file="/WEB-INF/template/header.jsp"%>
