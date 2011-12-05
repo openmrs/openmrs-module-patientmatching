@@ -122,7 +122,7 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		// add top section
 		JPanel top = new JPanel();
 		top.setLayout(new BoxLayout(top, BoxLayout.LINE_AXIS));
-		open = new JButton("Open Fiile");
+		open = new JButton("Open File");
 		open.addActionListener(this);
 		save = new JButton("Save Changes");
 		save.addActionListener(this);
