@@ -344,6 +344,7 @@ public class MatchResultReviewPanel extends JPanel implements ActionListener, Ch
 			}
 		} else if(s instanceof JRadioButton){
 			if(mr != null){
+				MatchResultReviewKeyboardAccelerator.INSTANCE.setFocusIndex(MatchResultReviewKeyboardAccelerator.INSTANCE.getPanelIndex(this));
 				if(s == not_reviewed){
 					mr.setMatch_status(MatchResult.UNKNOWN);
 				} else if(s == match){

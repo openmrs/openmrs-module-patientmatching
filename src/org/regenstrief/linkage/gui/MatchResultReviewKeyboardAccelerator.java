@@ -19,7 +19,7 @@ public class MatchResultReviewKeyboardAccelerator implements KeyListener, Contai
 	private int focus_index;
 	
 	private MatchResultReviewKeyboardAccelerator(){
-		resetIndices();
+		focus_index = 0;
 	}
 	
 	public void setReviewPanelList(List<MatchResultReviewPanel> panels){
@@ -64,12 +64,19 @@ public class MatchResultReviewKeyboardAccelerator implements KeyListener, Contai
 		}
 	}
 	
-	public void resetIndices(){
-		focus_index = 0;
+	public void setFocusIndex(int index){
+		MatchResultReviewPanel mrrp = review_panels.get(focus_index);
+		mrrp.showBorder(false);
+		
+		focus_index = index;
+		
+		mrrp = review_panels.get(focus_index);
+		mrrp.showBorder(true);
 	}
 	
-	public void setIndices(int index){
-		focus_index = index;
+	public int getPanelIndex(MatchResultReviewPanel mrrp){
+		int ret = review_panels.indexOf(mrrp);
+		return ret;
 	}
 	
 	public void nextFocus(){

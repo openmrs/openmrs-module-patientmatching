@@ -128,10 +128,10 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		save.addActionListener(this);
 		JLabel first = new JLabel("First Unreviewed Row:");
 		first_unreviewed = new JTextField(6);
-		first_unreviewed.setEnabled(false);
+		first_unreviewed.setEditable(false);
 		JLabel total_label = new JLabel("Total Rows:");
 		total = new JTextField(6);
-		total.setEnabled(false);
+		total.setEditable(false);
 		
 		top.add(Box.createRigidArea(new Dimension(5,0)));
 		top.add(open);
