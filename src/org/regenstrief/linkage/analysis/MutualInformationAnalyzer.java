@@ -10,8 +10,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import jsc.util.Logarithm;
-
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.gui.SaveTextDisplayFrame;
 import org.regenstrief.linkage.gui.TextDisplayFrame;
