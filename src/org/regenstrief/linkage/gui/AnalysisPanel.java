@@ -31,6 +31,7 @@ import org.regenstrief.linkage.analysis.EntropyAnalyzer;
 import org.regenstrief.linkage.analysis.FrequencyAnalyzer;
 import org.regenstrief.linkage.analysis.MaximumEntropyAnalyzer;
 import org.regenstrief.linkage.analysis.MemoryBackedDataSourceFrequency;
+import org.regenstrief.linkage.analysis.MutualInformationAnalyzer;
 import org.regenstrief.linkage.analysis.NullAnalyzer;
 import org.regenstrief.linkage.analysis.ObservedVectorAnalyzer;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
@@ -69,7 +70,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 	
 	private JButton random_button;
 	
-	private JButton em_button, vector_button, summary_button, freq_button, closed_form_button, vector_obs_button, synthetic_button;
+	private JButton em_button, vector_button, summary_button, freq_button, closed_form_button, vector_obs_button, synthetic_button, mi_score_button;
 	
 	public AnalysisPanel(RecMatchConfig rmc){
 		super();
@@ -85,11 +86,14 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		FlowLayout fl = new FlowLayout();
 		JPanel row1 = new JPanel();
 		JPanel row2 = new JPanel();
+		JPanel row3 = new JPanel();
 		row1.setLayout(fl);
 		row2.setLayout(fl);
+		row3.setLayout(fl);
 		this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		this.add(row1);
 		this.add(row2);
+		this.add(row3);
 		
 	    random_button = new JButton("Perform Random Sampling");
         row1.add(random_button);
@@ -122,6 +126,10 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		synthetic_button = new JButton("Create Synthetic Data");
 		row2.add(synthetic_button);
 		synthetic_button.addActionListener(this);
+		
+		mi_score_button = new JButton("Calculate Mutual Information Score");
+		row3.add(mi_score_button);
+		mi_score_button.addActionListener(this);
 		
 		this.add(Box.createVerticalGlue());
 	}
@@ -326,6 +334,35 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		
 	}
 	
+	private void calculateMIScores() {		
+		DataSourceFrequency dsf = new MemoryBackedDataSourceFrequency();
+		rm_conf.setDataSourceFrequency1(dsf);
+		MutualInformationAnalyzer fa = new MutualInformationAnalyzer(rm_conf, rm_conf.getLinkDataSource1(), rm_conf.getDataSourceFrequency1());
+		ReaderProvider rp = ReaderProvider.getInstance();
+
+		System.out
+				.println("Calculating pairwise combinations for columns in Dataset...");
+		DataSourceAnalysis dsa = new DataSourceAnalysis(rp.getReader(rm_conf
+				.getLinkDataSource1()));
+		dsa.addAnalyzer(fa);
+		dsa.analyzeData();
+		
+		if(!rm_conf.isDeduplication()){
+			DataSourceFrequency dsf2 = new MemoryBackedDataSourceFrequency();
+			rm_conf.setDataSourceFrequency2(dsf2);
+			MutualInformationAnalyzer fa2 = new MutualInformationAnalyzer(rm_conf, rm_conf.getLinkDataSource2(), rm_conf.getDataSourceFrequencyf2());
+			ReaderProvider rp2 = ReaderProvider.getInstance();
+			System.out
+					.println("Calculating pairwise combinations for columns in Dataset...");
+			DataSourceAnalysis dsa2 = new DataSourceAnalysis(rp.getReader(rm_conf
+					.getLinkDataSource2()));
+			dsa2.addAnalyzer(fa2);
+			dsa2.analyzeData();
+		}
+	}
+	
+
+
 	private void displayVectorTables(){
 		Iterator<MatchingConfig> it = rm_conf.getMatchingConfigs().iterator();
 		while(it.hasNext()){
@@ -352,6 +389,8 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 			performVectorObsAnalysis();
 		} else if(ae.getSource() == synthetic_button){
 			createSyntheticData();
+		}else if (ae.getSource() == mi_score_button) {
+			calculateMIScores();
 		}
 	}
 	

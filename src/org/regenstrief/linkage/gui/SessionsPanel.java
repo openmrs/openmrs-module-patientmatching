@@ -57,8 +57,11 @@ import javax.swing.table.TableModel;
 import org.regenstrief.linkage.analysis.ClosedFormAnalyzer;
 import org.regenstrief.linkage.analysis.ClosedFormDedupAnalyzer;
 import org.regenstrief.linkage.analysis.DataSourceAnalysis;
+import org.regenstrief.linkage.analysis.DataSourceFrequency;
 import org.regenstrief.linkage.analysis.DedupRandomSampleAnalyzer;
 import org.regenstrief.linkage.analysis.EMAnalyzer;
+import org.regenstrief.linkage.analysis.FrequencyAnalyzer;
+import org.regenstrief.linkage.analysis.MemoryBackedDataSourceFrequency;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
 import org.regenstrief.linkage.io.BlockSizeFormPairs;
@@ -94,11 +97,12 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	 
 	MatchingConfig current_working_config;
 
-    private boolean write_xml, groupAnalysis, common_pairs_fp;
+    private boolean mutualInfoScore, write_xml, groupAnalysis, common_pairs_fp;
 	
     private JTextField randomSampleTextField;
     private JLabel randomSampleSizeLabel;
     private JTextField thresholdTextField;
+    private JCheckBox cbMutualInfoScore;
     private JCheckBox cbWriteXML;
     private JCheckBox write_db;
     private JCheckBox cbGrouping;
@@ -267,6 +271,9 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
          * ******************/
         JPanel linkagePanel = new JPanel();
         linkagePanel.setBorder(BorderFactory.createTitledBorder("Linkage Process"));
+        
+        cbMutualInfoScore = new JCheckBox("Calculate and use MI scores");
+        cbMutualInfoScore.addActionListener(this);
         
         cbWriteXML = new JCheckBox("Include XML When Writing Output");
         cbWriteXML.addActionListener(this);
@@ -527,38 +534,45 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
          * record is analyzed using EM with or without random sampling
          */
         linkagePanel.setLayout(new GridBagLayout());
-
+        
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(0, 5, 0, 5);
+        linkagePanel.add(cbMutualInfoScore, gridBagConstraints);
+        
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 5, 0, 5);
         linkagePanel.add(cbWriteXML, gridBagConstraints);
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 5, 0, 5);
         linkagePanel.add(cbGrouping, gridBagConstraints);
         
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 5, 0, 5);
         linkagePanel.add(write_db, gridBagConstraints);
         
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(0, 5, 0, 5);
         linkagePanel.add(filter_pairs, gridBagConstraints);
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.insets = new Insets(0, 5, 5, 5);
         linkagePanel.add(run_link, gridBagConstraints);
 
@@ -889,7 +903,9 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			}
 		} else if(ae.getSource() instanceof JCheckBox){
 			JCheckBox source = (JCheckBox)ae.getSource();
-			if(source.getText().equals("Include XML When Writing Output")){
+			if(source.getText().equals("Calculate and use MI scores")){
+				mutualInfoScore = cbMutualInfoScore.isSelected();
+			} else if(source.getText().equals("Include XML When Writing Output")){
 				write_xml = cbWriteXML.isSelected();
 			} else if(source.getText().equals("Perform Grouping When Writing Output")){
 				groupAnalysis = cbGrouping.isSelected();
