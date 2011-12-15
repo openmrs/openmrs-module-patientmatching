@@ -407,7 +407,13 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 	}
 
 	public void windowClosing(WindowEvent arg0) {
-		closeDBConnection();
+		if(db != null){
+			int n = JOptionPane.showConfirmDialog(this,"Save review changes before closing?","Exitting program",JOptionPane.YES_NO_OPTION);
+			if(n == JOptionPane.YES_OPTION){
+				saveChanges();
+			}
+			closeDBConnection();
+		}
 	}
 
 	public void windowDeactivated(WindowEvent arg0) {
