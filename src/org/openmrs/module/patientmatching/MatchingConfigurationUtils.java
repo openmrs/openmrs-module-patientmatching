@@ -38,6 +38,11 @@ import org.regenstrief.linkage.util.XMLTranslator;
  * <code>PatientMatchingConfiguration</code> object and the object will be sent
  * to the web page controller.
  * 
+ * During enhancements to move data stored in a flat file system to a database,
+ * we introduced several database related methods to this class.
+ * from these, the suffix '_db' was added to the end of methods which specifically 
+ * work with the new database tables.
+ * 
  */
 public class MatchingConfigurationUtils {
 
@@ -145,6 +150,7 @@ public class MatchingConfigurationUtils {
 					.getConfigurationEntries()) {
 				MatchingConfigRow configRow = matchingConfig
 						.getMatchingConfigRowByName(configEntry.getFieldName());
+				configEntry.setBlockOrder(configRow.getBlockOrder());
 
 				if (configRow.isIncluded() || configRow.getBlockOrder() > 0) {
 					configRow.setSetID(configRow.getSetID());
@@ -158,15 +164,59 @@ public class MatchingConfigurationUtils {
 
 				}
 			}
+			
+			PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
+			PatientMatchingConfiguration newMatchingConfiguration = service.findPatientMatchingConfigurationByName(name);
+			
 			Collections.sort(patientMatchingConfig.getConfigurationEntries());
-
+			Collections.sort(newMatchingConfiguration.getConfigurationEntries());
+			patientMatchingConfig.setConfigurationEntries(newMatchingConfiguration.getConfigurationEntries());
+			
 			patientMatchingConfig
-					.setConfigurationName(matchingConfig.getName());
-			patientMatchingConfig.setUsingRandomSample(matchingConfig
-					.isUsingRandomSampling());
-			patientMatchingConfig.setRandomSampleSize(matchingConfig
+					.setConfigurationName(newMatchingConfiguration.getConfigurationName());
+			patientMatchingConfig.setUsingRandomSample(newMatchingConfiguration
+					.isUsingRandomSample());
+			patientMatchingConfig.setRandomSampleSize(newMatchingConfiguration
 					.getRandomSampleSize());
 		}
+		return patientMatchingConfig;
+	}
+	
+	public static PatientMatchingConfiguration loadPatientMatchingConfig_db(
+			String name, List<String> listExcludedProperties) {
+
+		PatientMatchingConfiguration patientMatchingConfig = createPatientMatchingConfig(listExcludedProperties);
+		log.info("Loading PatientMatchingConfig with name: " + name);
+		
+		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
+		PatientMatchingConfiguration matchingConfiguration = service.findPatientMatchingConfigurationByName(name);
+		
+		for(ConfigurationEntry configEntry : matchingConfiguration.getConfigurationEntries()){
+			for(ConfigurationEntry configEntry2 : patientMatchingConfig.getConfigurationEntries()){
+				if(configEntry2.getFieldName().equals(configEntry.getFieldName())){
+
+					if (configEntry.isIncluded() || configEntry.getBlockOrder() > 0) {
+						configEntry2.setSET(configEntry.getFlag());
+					}
+					
+					configEntry2.setBlockOrder(configEntry.getBlockOrder());
+					
+					if(configEntry.isIncluded()){
+						configEntry2.setIncluded();
+					}
+					if (configEntry.getBlockOrder() > 0) {
+						configEntry2.setBlocking();
+					}								
+				}
+			}
+		}
+		
+		Collections.sort(patientMatchingConfig.getConfigurationEntries());
+		
+		patientMatchingConfig.setConfigurationName(matchingConfiguration.getConfigurationName());
+		patientMatchingConfig.setUsingRandomSample(matchingConfiguration.isUsingRandomSample());
+		patientMatchingConfig.setRandomSampleSize(matchingConfiguration.getRandomSampleSize());
+		
 		return patientMatchingConfig;
 	}
 
@@ -370,6 +420,7 @@ public class MatchingConfigurationUtils {
 				if (configEntry.isBlocking()) {
 
 					configRow.setBlockOrder(counterBlockOrder);
+					configEntry.setBlockOrder(counterBlockOrder);
 
 					counterBlockOrder++;
 
@@ -400,6 +451,7 @@ public class MatchingConfigurationUtils {
 
 				if (configEntry.isBlocking()) {
 					configRow.setBlockOrder(counterBlockOrder);
+					configEntry.setBlockOrder(counterBlockOrder);
 					counterBlockOrder++;
 
 				} else {
@@ -421,6 +473,10 @@ public class MatchingConfigurationUtils {
 					.getRandomSampleSize());
 			matchingConfigLists.add(matchingConfig);
 		}
+		
+		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
+		service.savePatientMatchingConfiguration(patientMatchingConfig);
+		
 		XMLTranslator.writeXMLDocToFile(XMLTranslator.toXML(recMatchConfig),
 				configFile);
 	}
@@ -454,6 +510,33 @@ public class MatchingConfigurationUtils {
 			}
 		}
 		return blockingRuns;
+	}
+	
+	/**
+	 * List all available blocking runs
+	 */
+	public static final List<String> listAvailableBlockingRuns_db() {
+		log.info("Listing all available blocking run");
+		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
+		List<String> blockingRunNames = new ArrayList<String>();
+		List<PatientMatchingConfiguration> list = service.getBlockingRuns();
+		for(PatientMatchingConfiguration  pmc : list){
+			blockingRunNames.add(pmc.getConfigurationName());
+		}
+		return blockingRunNames;
+	}
+	
+	/**
+	 * Method returns a list of all available PatientMatchingConfiguration names
+	 */
+	public static final List<String> listAvailableMatchingConfigs_db(){
+		List<String> matchingConfigNames = new ArrayList<String>();
+		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
+		List<PatientMatchingConfiguration> list = service.getMatchingConfigs();
+		for(PatientMatchingConfiguration pmc : list){
+			matchingConfigNames.add(pmc.getConfigurationName());
+		}
+		return matchingConfigNames;
 	}
 
 	/**
@@ -495,5 +578,12 @@ public class MatchingConfigurationUtils {
 				}
 			}
 		}
+	}
+	
+	
+	public static final void deleteBlockingRun_db(String name){
+		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
+		service.deletePatientMatchingConfigurationByName(name);
+		
 	}
 }

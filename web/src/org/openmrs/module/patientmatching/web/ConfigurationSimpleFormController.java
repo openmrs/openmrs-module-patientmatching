@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -14,10 +15,8 @@ import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.patientmatching.MatchingConfigurationUtils;
 import org.openmrs.module.patientmatching.MatchingConstants;
-import org.openmrs.module.patientmatching.MatchingReportUtils;
 import org.openmrs.module.patientmatching.PatientMatchingConfiguration;
-import org.openmrs.module.patientmatching.PatientMatchingReportMetadataService;
-import org.openmrs.module.patientmatching.web.dwr.DWRMatchingConfigUtilities;
+import org.openmrs.web.WebConstants;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.SimpleFormController;
@@ -39,7 +38,7 @@ public class ConfigurationSimpleFormController extends SimpleFormController {
         PatientMatchingConfiguration configuration = null;
         
 	    if (name != null) {
-            configuration = MatchingConfigurationUtils.loadPatientMatchingConfig(name, listExcludedProperties);
+	    	configuration = MatchingConfigurationUtils.loadPatientMatchingConfig_db(name, listExcludedProperties);
 	    } else {
 	        configuration = MatchingConfigurationUtils.createPatientMatchingConfig(listExcludedProperties);
 	    }
@@ -56,7 +55,10 @@ public class ConfigurationSimpleFormController extends SimpleFormController {
             HttpServletResponse response, Object command, BindException errors)
             throws Exception {
     	
+    	HttpSession httpSession = request.getSession();
         PatientMatchingConfiguration patientMatchingConfig = (PatientMatchingConfiguration) command;
+        
+        Map<String, String> model = new HashMap<String, String>();
         
         /*
         for(ConfigurationEntry configEntry: patientMatchingConfig.getConfigurationEntries()) {
@@ -64,11 +66,19 @@ public class ConfigurationSimpleFormController extends SimpleFormController {
         }
         */
         
-        
+        if(request.getParameter("edit") != null){
+        	MatchingConfigurationUtils.savePatientMatchingConfig(patientMatchingConfig);
+        	httpSession.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "patientmatching.strategy.update");
+        }
+        else{
+        List<String> pmcNames = MatchingConfigurationUtils.listAvailableMatchingConfigs_db();
+        if(pmcNames.contains(patientMatchingConfig.getConfigurationName())){
+        	log.error("Unable to save Strategy "+ patientMatchingConfig.getConfigurationName()+" as Strategy Name is a duplicate");
+			httpSession.setAttribute(WebConstants.OPENMRS_ERROR_ATTR, "patientmatching.strategy.save");
+			return showForm(request, response, errors);
+        }
         MatchingConfigurationUtils.savePatientMatchingConfig(patientMatchingConfig);
-        
-        Map<String, String> model = new HashMap<String, String>();
-        
+        }
         return new ModelAndView(getSuccessView(), model);
     }
 

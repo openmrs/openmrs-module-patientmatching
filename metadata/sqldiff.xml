@@ -46,7 +46,7 @@
 		</sql>
 	</diff>
 	<diff>
-		<version>1.7</version>
+		<version>1.7.1</version>
 		<author>gpingili</author>
 		<date>june 16 2011</date>
 		<description>
@@ -66,4 +66,65 @@ CREATE TABLE  `persistreportdata` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 		</sql>
 	</diff>
+	<diff>
+		<version>1.7.2</version>
+		<author>surangak</author>
+		<date>Jan 31 2012</date>
+		<description>
+			Adding several tables as part of efforts to move database 
+			reports into the database
+		</description>
+		<sql>
+			DROP TABLE IF EXISTS `patientmatching_configuration`;
+CREATE TABLE `patientmatching_configuration` (
+	`configuration_id` int AUTO_INCREMENT,
+	`configuration_name` varchar(255) default NULL,
+	`random_sample_size` int default NULL,
+	`using_random_sample` smallint(6) NOT NULL DEFAULT '0',
+	PRIMARY KEY (`configuration_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+			DROP TABLE IF EXISTS `patientmatching_configurationEntries`;
+CREATE TABLE `patientmatching_configurationEntries` (
+	`entry_id` int AUTO_INCREMENT PRIMARY KEY,
+	`field_view_name` varchar(255) default NULL,
+	`field_name` varchar(255) default NULL,
+	`inclusion` varchar(255) default NULL,
+	`block_order` int NOT NULL DEFAULT '0',
+	`flag` varchar(50) DEFAULT NULL,
+	`configuration_key` int default NULL,
+	INDEX `par_ind`(`configuration_key`),
+	FOREIGN KEY (`configuration_key`) REFERENCES `patientmatching_configuration`(`configuration_id`)
+  	ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+		</sql>
+	</diff>
+	<diff>
+		<version>1.7.3</version>
+		<author>surangak</author>
+		<date>Feb 2, 2012</date>
+		<description>
+			Adding several tables as part of efforts to move database 
+			reports into the database
+		</description>
+		<sql>
+				DROP TABLE IF EXISTS `patientmatching_report`;
+	CREATE TABLE `patientmatching_report` (
+		`report_id` int AUTO_INCREMENT,
+		`report_name` varchar(255) default NULL,
+		PRIMARY KEY (`report_id`)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+	DROP TABLE IF EXISTS `patientmatching_matchingset`;
+	CREATE TABLE `patientmatching_matchingset` (
+		`set_id` int AUTO_INCREMENT PRIMARY KEY,
+		`group_id` int NOT NULL,
+		`patient_id` int NOT NULL,
+		`configuration_key` int default NULL,
+	INDEX `par_ind`(`configuration_key`),
+	FOREIGN KEY (`configuration_key`) REFERENCES `patientmatching_report`(`report_id`)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+		</sql>
+	</diff>	
 </sqldiff>

@@ -21,6 +21,13 @@
 		<point>org.openmrs.admin.list</point>
 		<class>@MODULE_PACKAGE@.extension.html.AdminList</class>
 	</extension>
+	
+		<mappingFiles>
+		PatientMatchingConfiguration.hbm.xml
+		ConfigurationEntry.hbm.xml
+		Report.hbm.xml
+		MatchingSet.hbm.xml
+		</mappingFiles>
 
 	<!-- /Extensions -->
 

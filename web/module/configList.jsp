@@ -79,7 +79,7 @@ function buildTable() {
                         <c:out value="${file}" />
                     </td>
                     <td align="center">
-                        <a href="${pageContext.request.contextPath}/module/patientmatching/config.form?<c:out value="${parameter}" />=${file}">
+                        <a href="${pageContext.request.contextPath}/module/patientmatching/config.form?<c:out value="${parameter}" />=${file}&edit=TRUE">
                             <c:out value="Edit" />
                         </a>
                     </td>

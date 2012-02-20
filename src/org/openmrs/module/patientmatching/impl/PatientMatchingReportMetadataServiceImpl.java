@@ -16,6 +16,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.cfg.Configuration;
 
 import org.openmrs.api.db.hibernate.HibernateSessionFactoryBean;
+import org.openmrs.module.patientmatching.PatientMatchingConfiguration;
 import org.openmrs.module.patientmatching.PatientMatchingReportMetadataService;
 import org.openmrs.module.patientmatching.db.PatientMatchingReportMetadataDao;
 import org.openmrs.module.patientmatching.web.dwr.DWRMatchingConfigUtilities;
@@ -103,6 +104,28 @@ public class PatientMatchingReportMetadataServiceImpl implements PatientMatching
 				e.printStackTrace();
 			}
 			return reportMap;
+	}
+	
+	public void savePatientMatchingConfiguration(PatientMatchingConfiguration patientMatchingConfiguration){
+		dao.savePatientMatchingConfiguration(patientMatchingConfiguration);
+	}
+
+	public void deletePatientMatchingConfigurationByName(String name){
+		dao.deletePatientMatchingConfigurationByName(name);
+	}
+	
+	public PatientMatchingConfiguration findPatientMatchingConfigurationByName(
+			String name) {
+		return dao.findPatientMatchingConfigurationByName(name);
+	}
+	
+	public List<PatientMatchingConfiguration> getBlockingRuns(){
+		return dao.getBlockingRuns();
+	}
+
+	@Override
+	public List<PatientMatchingConfiguration> getMatchingConfigs() {
+		return dao.getMatchingConfigs();
 	}
 	
 }

@@ -30,6 +30,11 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
 
 	
 	/**
+	 * A unique entryId to identify configuration entries. 
+	 * Added during modifications to store ConfigurationEntries in a database
+	 */
+	private int entryId;
+	/**
 	 * String that will contains modified version of the field name. This string
 	 * mainly serve as the OpenMRS message properties rule
 	 */
@@ -47,6 +52,10 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
 	 */
 	private String inclusion;
 	/**
+     * blockOrder variable added during modifications to store ConfigurationEntries in a database
+	 */
+	private int blockOrder;
+	/**
 	 * Whether a particular field can be Interchanged or not
 	 */
 	private String flag;
@@ -63,7 +72,23 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
 	public ConfigurationEntry() {
 		super();
 	}
+	
+	public int getEntryId() {
+		return entryId;
+	}
 
+	public void setEntryId(int entryId) {
+		this.entryId = entryId;
+	}
+
+	public int getBlockOrder() {
+		return blockOrder;
+	}
+
+	public void setBlockOrder(int blockOrder) {
+		this.blockOrder = blockOrder;
+	}
+	
 	/**
 	 * @return the inclusion level
 	 */

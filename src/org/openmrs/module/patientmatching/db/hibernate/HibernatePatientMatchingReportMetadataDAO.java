@@ -7,12 +7,15 @@ import java.sql.SQLException;
 import java.util.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
 import org.hibernate.SessionFactory;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
+import org.hibernate.criterion.Restrictions;
 import org.openmrs.api.db.DAOException;
 import org.openmrs.module.patientmatching.db.PatientMatchingReportMetadataDao;
+import org.openmrs.module.patientmatching.PatientMatchingConfiguration;
 import org.openmrs.module.patientmatching.PatientMatchingReportMetadata;
+import org.openmrs.module.patientmatching.Report;
 
 public class HibernatePatientMatchingReportMetadataDAO implements PatientMatchingReportMetadataDao
 {
@@ -86,9 +89,53 @@ public class HibernatePatientMatchingReportMetadataDAO implements PatientMatchin
 						}
 					}
 			}*/
-
-	
+			
+			org.openmrs.module.patientmatching.Report r = new Report();
+			
+			r.setReportName(pri.getReportName());
+		
+			try{
+				Session session = null;
+				session = getSessionFactory().openSession();
+				session.beginTransaction();
+				session.save(r);
+				session.getTransaction().commit();
+				session.close();
+				}catch(Exception e){
+					e.printStackTrace();
+				}		
     }
     
+	public void savePatientMatchingConfiguration(PatientMatchingConfiguration patientMatchingConfiguration){	
+		Session session = getSessionFactory().openSession();
+		session.beginTransaction();
+		session.saveOrUpdate(patientMatchingConfiguration);
+		session.getTransaction().commit();
+		session.close();
+	}
 	
+	public void deletePatientMatchingConfigurationByName(String name){
+		PatientMatchingConfiguration pmc = findPatientMatchingConfigurationByName(name);
+		Session session = getSessionFactory().openSession();
+		session.beginTransaction();
+		session.delete(pmc);
+		session.getTransaction().commit();
+		session.close();
+	}
+
+	public PatientMatchingConfiguration findPatientMatchingConfigurationByName(String name){
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(PatientMatchingConfiguration.class);
+		criteria.add(Restrictions.eq("configurationName", name));	
+		return (PatientMatchingConfiguration) criteria.uniqueResult();	
+	}
+	
+	public List<PatientMatchingConfiguration> getBlockingRuns(){
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(PatientMatchingConfiguration.class);
+		return criteria.list();
+	}
+	@Override
+	public List<PatientMatchingConfiguration> getMatchingConfigs() {
+		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(PatientMatchingConfiguration.class);
+		return criteria.list();
+	}
 }

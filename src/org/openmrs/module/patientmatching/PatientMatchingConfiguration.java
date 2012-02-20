@@ -17,6 +17,10 @@ import java.util.List;
  */
 public class PatientMatchingConfiguration {
 
+	/**
+	 * A unique configuration Id to identify each PatientMatchingConfiguration.
+	 */
+	private long configurationId;
     /**
      * Current configuration name. Correspond to the "name" attribute of
      * the "run" tag in the configuration file.
@@ -71,6 +75,14 @@ public class PatientMatchingConfiguration {
     public void setConfigurationEntries(List<ConfigurationEntry> configurationEntries) {
         this.configurationEntries = configurationEntries;
     }
+    
+    public long getConfigurationId() {
+		return configurationId;
+	}
+
+	public void setConfigurationId(long configurationId) {
+		this.configurationId = configurationId;
+	}
 
     /**
      * Return the current configuration element name. Correspond to the "name"

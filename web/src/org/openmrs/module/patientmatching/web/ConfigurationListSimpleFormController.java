@@ -42,7 +42,7 @@ public class ConfigurationListSimpleFormController extends SimpleFormController 
 			throws Exception {
 		Map<String, Object> requestMap = new HashMap<String, Object>();
 		requestMap.put("files",
-				MatchingConfigurationUtils.listAvailableBlockingRuns());
+				MatchingConfigurationUtils.listAvailableBlockingRuns_db());
 		requestMap.put("parameter", MatchingConstants.PARAM_NAME);
 		return requestMap;
 	}

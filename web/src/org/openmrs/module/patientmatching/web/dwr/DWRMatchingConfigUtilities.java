@@ -79,7 +79,7 @@ public class DWRMatchingConfigUtilities {
 	 * @see MatchingConfigurationUtils#listAvailableBlockingRuns()
 	 */
 	public List<String> getAllBlockingRuns() {
-		return MatchingConfigurationUtils.listAvailableBlockingRuns();
+		return MatchingConfigurationUtils.listAvailableBlockingRuns_db();
 	}
 
 	/**
@@ -94,7 +94,7 @@ public class DWRMatchingConfigUtilities {
 	 */
 	public void deleteBlockingRun(String name) {
 		log.info("DWRMatchingConfigUtilities: deleting blocking run");
-		MatchingConfigurationUtils.deleteBlockingRun(name);
+		MatchingConfigurationUtils.deleteBlockingRun_db(name);
 	}
 	
 	/**
