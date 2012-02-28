@@ -7,7 +7,7 @@
 		</id>
   <property name="configurationName" column="configuration_name" length="255" unique="true" />
   <property name="randomSampleSize" column="random_sample_size" not-null="true" />
-  <property name="usingRandomSample" column="using_random_sample" not-null="true" />
+  <property name="usingRandomSample" column="using_random_sample" not-null="true"/>
     
             <bag name="configurationEntries" cascade="all" >
             <key column="configuration_key"/>

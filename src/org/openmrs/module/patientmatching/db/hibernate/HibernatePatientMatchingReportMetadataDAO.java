@@ -16,7 +16,9 @@ import org.openmrs.module.patientmatching.db.PatientMatchingReportMetadataDao;
 import org.openmrs.module.patientmatching.PatientMatchingConfiguration;
 import org.openmrs.module.patientmatching.PatientMatchingReportMetadata;
 import org.openmrs.module.patientmatching.Report;
+import org.springframework.transaction.annotation.Transactional;
 
+@Transactional
 public class HibernatePatientMatchingReportMetadataDAO implements PatientMatchingReportMetadataDao
 {
 
@@ -107,20 +109,12 @@ public class HibernatePatientMatchingReportMetadataDAO implements PatientMatchin
     }
     
 	public void savePatientMatchingConfiguration(PatientMatchingConfiguration patientMatchingConfiguration){	
-		Session session = getSessionFactory().openSession();
-		session.beginTransaction();
-		session.saveOrUpdate(patientMatchingConfiguration);
-		session.getTransaction().commit();
-		session.close();
+		sessionFactory.getCurrentSession().saveOrUpdate(patientMatchingConfiguration);
 	}
 	
 	public void deletePatientMatchingConfigurationByName(String name){
 		PatientMatchingConfiguration pmc = findPatientMatchingConfigurationByName(name);
-		Session session = getSessionFactory().openSession();
-		session.beginTransaction();
-		session.delete(pmc);
-		session.getTransaction().commit();
-		session.close();
+		sessionFactory.getCurrentSession().delete(pmc);
 	}
 
 	public PatientMatchingConfiguration findPatientMatchingConfigurationByName(String name){
