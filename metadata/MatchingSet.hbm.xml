@@ -1,0 +1,11 @@
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+  <class name="org.openmrs.module.patientmatching.MatchingSet" table="patientmatching_matchingset">
+  	<id name="setId" column="set_id"
+			unsaved-value="0">
+			<generator class="identity" />
+		</id>
+  <property name="groupId" column="group_id" not-null="true" />
+  <property name="patientId" column="patientId" not-null="true" />
+  </class>
+  </hibernate-mapping>
