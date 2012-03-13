@@ -13,13 +13,27 @@
 	<description>API project for Patient Matching</description>
 
 	<dependencies>
-		<!-- 
-		Add other dependencies from lib:
+
+		<!-- custom dependencies -->
+		
 		<dependency>
-			<groupId>org.other.library</groupId>
-			<artifactId>library-name</artifactId>
+			<groupId>uk.ac.shef.wit</groupId>
+			<artifactId>simmetrics</artifactId>
 		</dependency>
-		-->
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+		</dependency>
+		
+		<!-- OpenMRS dependencies -->
 		
 		<dependency>
 			<groupId>org.openmrs.api</groupId>
