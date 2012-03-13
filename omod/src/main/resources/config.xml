@@ -3,10 +3,10 @@
 <module configVersion="1.0">
 
 	<!-- Base Module Properties -->
-	<id>patientmatching</id>
-	<name>Patient Matching</name>
-	<version>1.2.4</version>
-	<package>org.openmrs.module.@MODULE_ID@</package>
+	<id>@MODULE_ID@</id>
+	<name>@MODULE_NAME@</name>
+	<version>@MODULE_VERSION@</version>
+	<package>@MODULE_PACKAGE@</package>
 	<author>James Egg</author>
 	<description>Patient matching module uses an external database for
 		probabilistic patient matching</description>
@@ -23,10 +23,7 @@
 	</extension>
 	
 		<mappingFiles>
-		PatientMatchingConfiguration.hbm.xml
-		ConfigurationEntry.hbm.xml
-		Report.hbm.xml
-		MatchingSet.hbm.xml
+		${omodHbmConfig}
 		</mappingFiles>
 
 	<!-- /Extensions -->
