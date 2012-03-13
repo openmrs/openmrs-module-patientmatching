@@ -19,6 +19,15 @@
 			<version>${project.parent.version}</version>
 		</dependency>
 		
+		<!-- custom dependencies -->
+		
+		<dependency>
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+		</dependency>
+		
+		<!-- OpenMRS dependencies -->
+		
 		<dependency>
 			<groupId>org.openmrs.api</groupId>
 			<artifactId>openmrs-api</artifactId>
