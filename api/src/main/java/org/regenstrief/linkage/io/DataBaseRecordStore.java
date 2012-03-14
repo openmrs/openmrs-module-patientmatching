@@ -7,6 +7,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.DataColumn;
@@ -32,6 +34,8 @@ public class DataBaseRecordStore implements RecordStore {
 	public static final String UID_COLUMN = "import_uid";
 	public static final String INVALID_COLUMN_CHARS = "\\W";
 	
+	protected final Log log = LogFactory.getLog(getClass());
+
 	/**
 	 * 
 	 * @param db	the database connection to create the table of Records
@@ -65,7 +69,6 @@ public class DataBaseRecordStore implements RecordStore {
 		} else {
 			insert_stmt = createInsertQuery();
 		}
-		
 	}
 	
 	public boolean clearRecords(){
@@ -121,9 +124,8 @@ public class DataBaseRecordStore implements RecordStore {
 	protected void dropTableIfExists(String table){
 		try{
 			db_connection.createStatement().execute("DROP TABLE " + table);
-		}
-		catch(SQLException sqle){
-			sqle.printStackTrace();
+		} catch(SQLException e){
+			log.warn("error dropping " + table + " table", e);
 		}
 	}
 	

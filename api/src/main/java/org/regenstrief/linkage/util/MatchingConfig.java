@@ -322,18 +322,15 @@ public class MatchingConfig implements Cloneable {
 	 * method to return the demographics of a particular interchangeable set
 	 * @return
 	 */
-	public List<String> getConcatenatedDemographics(String concatenatedFieldName)
-	{
-		List<String> ret=new ArrayList<String>();
+	public List<String> getConcatenatedDemographics(String concatenatedFieldName) {
+		List<String> ret = new ArrayList<String>();
 		Iterator<MatchingConfigRow> it = row_options.iterator();
-		while(it.hasNext()){
+		while (it.hasNext()) {
 			MatchingConfigRow mcr = it.next();
-			
-			if (concatenatedFieldName.equals("concat"+mcr.getSetID())) {
+			if (concatenatedFieldName.equals("concat" + mcr.getSetID())) {
 				ret.add(mcr.getName());
 			}
-			
-			}
+		}
 
 		return ret;
 	}
@@ -358,22 +355,16 @@ public class MatchingConfig implements Cloneable {
 		int num_rows = row_options.size();
 		Hashtable<String,Boolean> scale_weight_columns = new Hashtable<String,Boolean>(num_rows*2);
 		Iterator<MatchingConfigRow> it = row_options.iterator();
+		
 		// find rows in the config that have specified weight scaling
 		while(it.hasNext()) {
 			MatchingConfigRow mcr = it.next();
-			String col_name = mcr.getName();
-			if(mcr.isScaleWeight()){// && mcr.isIncluded()) {
-				scale_weight_columns.put(col_name, true);
-			}
-			else {
-				scale_weight_columns.put(col_name, false);
-			}
+			scale_weight_columns.put(mcr.getName(), mcr.isScaleWeight());
 		}
 	
-		if(scale_weight_columns.size() == 0){
+		if(scale_weight_columns.isEmpty()){
 			return null;
-		}
-		else {
+		} else {
 			return scale_weight_columns;
 		}
 	}

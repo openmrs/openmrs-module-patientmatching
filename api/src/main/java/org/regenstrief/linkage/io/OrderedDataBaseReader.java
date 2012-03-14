@@ -2,7 +2,10 @@ package org.regenstrief.linkage.io;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
+import org.openmrs.util.OpenmrsUtil;
 
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
@@ -55,11 +58,12 @@ public class OrderedDataBaseReader extends DataBaseReader  implements OrderedDat
 		buffer.append(quote_string).append(incl_cols.get(incl_cols.size() - 1).getName()).append(quote_string);
 		buffer.append(" FROM ").append(data_source.getName());
 		buffer.append(" ORDER BY ");
-		String[] b_columns = mc.getBlockingColumns();
-		for(int i = 0; i < b_columns.length - 1; i++){
-			buffer.append(quote_string).append(b_columns[i]).append(quote_string).append(", ");
-		}
-		buffer.append(quote_string).append(b_columns[b_columns.length - 1]).append(quote_string);
+		
+		// append a comma-separated list of quoted column names for blocking
+		List<String> quotedColumns = new ArrayList<String>();
+		for (String column: mc.getBlockingColumns())
+			quotedColumns.add(quote_string + column + quote_string);
+		buffer.append(OpenmrsUtil.join(quotedColumns, ", "));
 		
 		return buffer.toString();
 	}
