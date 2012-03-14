@@ -15,6 +15,7 @@ function deleteClicked(id) {
         buildTable();
         DWREngine.endBatch();
     }
+	return false;
 }
 
 function buildTable() {
@@ -72,19 +73,19 @@ function buildTable() {
                 <th colspan="2"><spring:message code="Operation"/></th>
             </tr>
             <tbody id="config-list">
-            <c:forEach items="${files}" var="file" varStatus="entriesIndex">
+            <c:forEach items="${files}" var="item" varStatus="entriesIndex">
                 <tr <c:if test="${entriesIndex.count % 2 == 0}">class="oddRow"</c:if>
                     <c:if test="${entriesIndex.count % 2 != 0}">class="evenRow"</c:if>>
                     <td>
-                        <c:out value="${file}" />
+                        <c:out value="${item}" />
                     </td>
                     <td align="center">
-                        <a href="${pageContext.request.contextPath}/module/patientmatching/config.form?<c:out value="${parameter}" />=${file}&edit=TRUE">
+                        <a href="${pageContext.request.contextPath}/module/patientmatching/config.form?<c:out value="${parameter}" />=${item}&edit=TRUE">
                             <c:out value="Edit" />
                         </a>
                     </td>
                     <td align="center">
-                        <a href="javascript:;" onClick="deleteClicked('<c:out value="${file}" />');">
+                        <a href="#" onClick="deleteClicked('<c:out value="${item}" />');">
                             <c:out value="Delete" />
                         </a>
                     </td>

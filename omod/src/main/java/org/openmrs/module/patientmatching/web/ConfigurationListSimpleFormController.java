@@ -12,12 +12,8 @@ import org.openmrs.module.patientmatching.MatchingConstants;
 import org.springframework.web.servlet.mvc.SimpleFormController;
 
 public class ConfigurationListSimpleFormController extends SimpleFormController {
-	static {
 
-		System.out
-				.println("ConfigurationListSimpleFormController entity called");
-	}
-	/** Logger for this class and subclasses */
+	// Logger for this class and subclasses
 	protected final Log log = LogFactory.getLog(getClass());
 
 	/**
@@ -26,12 +22,7 @@ public class ConfigurationListSimpleFormController extends SimpleFormController 
 	@Override
 	protected String formBackingObject(HttpServletRequest request)
 			throws Exception {
-
-		String text = "Not used";
-
-		log.debug("Returning hello world text: " + text);
-
-		return text;
+		return "Not used";
 	}
 
 	/**

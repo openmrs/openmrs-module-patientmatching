@@ -196,17 +196,15 @@ public class DWRMatchingConfigUtilities {
 
 		} catch (Exception e) {
 			LinkDBConnections.getInstance().releaseLock();
-			log.info("Exception caught during the analysis process ...");
-			log.error(e.getStackTrace().toString());
+			log.warn("Exception caught during the analysis process", e);
 			reset = -1;
 		} catch (Throwable t) {
 			LinkDBConnections.getInstance().releaseLock();
-			log.info("Throwable object caught during the analysis process ...");
-			log.error(t.getStackTrace().toString());
+			log.warn("Throwable object caught during the analysis process", t);
 			reset = -1;
 		}
 
-		time = (Calendar.getInstance().getTimeInMillis() - time);
+		time = Calendar.getInstance().getTimeInMillis() - time;
 	}
 
 	/**

@@ -60,29 +60,18 @@ public class ConfigurationSimpleFormController extends SimpleFormController {
         
         Map<String, String> model = new HashMap<String, String>();
         
-        /*
-        for(ConfigurationEntry configEntry: patientMatchingConfig.getConfigurationEntries()) {
-            log.info("response -- " + patientMatchingConfig.getConfigurationName() + ": " + configEntry.getFieldName() + ": " + configEntry.getInclusion() + "(blocking=" + new Boolean(configEntry.getInclusion() == "BLOCKING").toString() + ")");
-        }
-        */
-        
-        if(request.getParameter("edit") != null){
-        	MatchingConfigurationUtils.savePatientMatchingConfig(patientMatchingConfig);
-        	httpSession.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "patientmatching.strategy.update");
-        }
-        else{
-        List<String> pmcNames = MatchingConfigurationUtils.listAvailableMatchingConfigs_db();
-        if(pmcNames.contains(patientMatchingConfig.getConfigurationName())){
-        	log.error("Unable to save Strategy "+ patientMatchingConfig.getConfigurationName()+" as Strategy Name is a duplicate");
-			httpSession.setAttribute(WebConstants.OPENMRS_ERROR_ATTR, "patientmatching.strategy.save");
-			return showForm(request, response, errors);
-        }
-        MatchingConfigurationUtils.savePatientMatchingConfig(patientMatchingConfig);
-        }
-        return new ModelAndView(getSuccessView(), model);
-    }
-
-
-   
-	
+		if (request.getParameter("edit") != null) {
+			MatchingConfigurationUtils.savePatientMatchingConfig(patientMatchingConfig);
+			httpSession.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "patientmatching.strategy.update");
+		} else {
+			List<String> pmcNames = MatchingConfigurationUtils.listAvailableMatchingConfigs_db();
+			if (pmcNames.contains(patientMatchingConfig.getConfigurationName())) {
+				log.error("Unable to save Strategy " + patientMatchingConfig.getConfigurationName() + " as Strategy Name is a duplicate");
+				httpSession.setAttribute(WebConstants.OPENMRS_ERROR_ATTR, "patientmatching.strategy.save");
+				return showForm(request, response, errors);
+			}
+			MatchingConfigurationUtils.savePatientMatchingConfig(patientMatchingConfig);
+		}
+		return new ModelAndView(getSuccessView(), model);
+	}
 }
