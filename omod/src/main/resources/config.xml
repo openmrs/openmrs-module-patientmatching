@@ -22,13 +22,14 @@
 		<class>@MODULE_PACKAGE@.extension.html.AdminList</class>
 	</extension>
 	
-		<mappingFiles>
+	<mappingFiles>
 		${omodHbmConfig}
-		</mappingFiles>
+	</mappingFiles>
 
 	<!-- /Extensions -->
 
-	<require_version>1.1</require_version>
+	<require_version>1.7</require_version>
+	
 	<!-- AOP -->
 	<advice>
 		<point>org.openmrs.api.PatientService</point>
