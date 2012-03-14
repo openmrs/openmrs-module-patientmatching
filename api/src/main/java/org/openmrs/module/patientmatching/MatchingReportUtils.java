@@ -22,11 +22,11 @@ import java.util.TreeSet;
 
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.cfg.Configuration;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.hibernate.HibernateSessionFactoryBean;
-import org.openmrs.module.patientmatching.PatientMatchingReportMetadata;
-import org.openmrs.module.patientmatching.web.dwr.DWRMatchingConfigUtilities;
 import org.openmrs.util.OpenmrsUtil;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;
@@ -50,6 +50,8 @@ import org.regenstrief.linkage.util.XMLTranslator;
  */
 public class MatchingReportUtils {
 
+	protected final static Log log = LogFactory.getLog(MatchingReportUtils.class);
+
 	/**
 	 * Initial status of creating report process. The following are three main
 	 * status of the process.
@@ -59,7 +61,7 @@ public class MatchingReportUtils {
 	public static final String PREM_PROCESS = "Prematurely terminated process";
 	
 	/**
-	 * Field that need to be checked to see the current status of the creating
+	 * Fields that need to be checked to see the current status of the creating
 	 * report process
 	 */
 	public static String status = NO_PROCESS;
@@ -76,6 +78,7 @@ public class MatchingReportUtils {
 			"Analyze pairs", 
 			"Score pairs",
 			"Write report", MatchingReportUtils.END_PROCESS };
+	
 	/**
 	 * 
 	 * Get the list of steps (statuses) that the analysis has to go through
@@ -89,18 +92,17 @@ public class MatchingReportUtils {
 		}
 		return stepList;
 	}
+	
 	//New Method1 2
 	public static Map<String,Object> ReadConfigFile(Map<String,Object> objects,String[] selectedStrategies){
-		MatchingConfigurationUtils.log
-		.info("Starting generate report process sequence");
+		log.info("Starting generate report process sequence");
 		
 		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
 		File configFileFolder = OpenmrsUtil
 				.getDirectoryInApplicationDataDirectory(configLocation);
 		File configFile = new File(configFileFolder,
 				MatchingConstants.CONFIG_FILE_NAME);
-		MatchingConfigurationUtils.log
-		.info("Reading matching config file from "
+		log.info("Reading matching config file from "
 				+ configFile.getAbsolutePath());
 		RecMatchConfig recMatchConfig = XMLTranslator
 		.createRecMatchConfig(XMLTranslator
@@ -126,7 +128,7 @@ public class MatchingReportUtils {
 		String user = c.getProperty("hibernate.connection.username");
 		String passwd = c.getProperty("hibernate.connection.password");
 		String driver = c.getProperty("hibernate.connection.driver_class");
-		MatchingConfigurationUtils.log.info("URL: " + url);
+		log.info("URL: " + url);
 
 		Connection databaseConnection = null;
 		try {
@@ -135,11 +137,9 @@ public class MatchingReportUtils {
 					url, user, passwd);
 			databaseConnection = connectionFactory.createConnection();
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-			MatchingConfigurationUtils.log.warn("patientmatching:  error loading database driver to use when matching");
+			log.warn("patientmatching: error loading database driver to use when matching");
 		} catch (SQLException e) {
-			e.printStackTrace();
-			MatchingConfigurationUtils.log.warn("patientmatching:  error connectiong to database to do matching - \n" + e.getMessage());
+			log.warn("patientmatching: error connectiong to database to do matching - \n" + e.getMessage());
 		}
 		
 		objects.put("databaseConnection", databaseConnection);
@@ -165,7 +165,7 @@ public class MatchingReportUtils {
 		String user = (String) objects.get("user");
 		String passwd = (String) objects.get("passwd");
 		
-		MatchingConfigurationUtils.log.info("Initiating scratch table");
+		log.info("Initiating scratch table");
 		DataBaseRecordStore recordStore = new DataBaseRecordStore(
 				databaseConnection, recMatchConfig.getLinkDataSource1(),
 				driver, url, user, passwd);
@@ -193,9 +193,10 @@ public class MatchingReportUtils {
 	//New Method3 End 4
 	public static Map<String, Object> CreRanSamAnalyzer(Map<String,Object> objects){
 		RecMatchConfig recMatchConfig=(RecMatchConfig) objects.get("recMatchConfig");
-		MatchingConfigurationUtils.log
-				.info("Creating random sample analyzer");
-		OrderedDataSourceReader databaseReaderRandom = ((ReaderProvider) objects.get("rp")).getReader(((DataBaseRecordStore) objects.get("recordStore")).getRecordStoreLinkDataSource(), (MatchingConfig)objects.get("matchingConfig"));
+		log.info("Creating random sample analyzer");
+		OrderedDataSourceReader databaseReaderRandom = ((ReaderProvider) objects.get("rp")).getReader(
+				((DataBaseRecordStore) objects.get("recordStore")).getRecordStoreLinkDataSource(), 
+				(MatchingConfig)objects.get("matchingConfig"));
 		DedupOrderedDataSourceFormPairs formPairsRandom = new DedupOrderedDataSourceFormPairs(
 				databaseReaderRandom, (MatchingConfig)objects.get("matchingConfig"), recMatchConfig
 						.getLinkDataSource1().getTypeTable());
@@ -212,10 +213,10 @@ public class MatchingReportUtils {
 	//New Method4 5
 	public static Map<String, Object> CreAnalFormPairs(Map<String,Object> objects){
 		RecMatchConfig recMatchConfig=(RecMatchConfig) objects.get("recMatchConfig");
-		MatchingConfigurationUtils.log
-				.info("Creating analyzer form pairs");
-		OrderedDataSourceReader databaseReader = ((ReaderProvider) objects.get("rp")).getReader(((DataBaseRecordStore) objects.get("recordStore"))
-				.getRecordStoreLinkDataSource(), (MatchingConfig)objects.get("matchingConfig"));
+		log.info("Creating analyzer form pairs");
+		OrderedDataSourceReader databaseReader = ((ReaderProvider) objects.get("rp")).getReader(
+				((DataBaseRecordStore) objects.get("recordStore")).getRecordStoreLinkDataSource(), 
+				(MatchingConfig)objects.get("matchingConfig"));
 		DedupOrderedDataSourceFormPairs formPairs = new DedupOrderedDataSourceFormPairs(
 				databaseReader, (MatchingConfig)objects.get("matchingConfig"), recMatchConfig
 						.getLinkDataSource1().getTypeTable());
@@ -230,12 +231,10 @@ public class MatchingReportUtils {
 	public static Map<String, Object> CrePairdataSourAnalyzer(Map<String,Object> objects){
 		RandomSampleAnalyzer rsa= (RandomSampleAnalyzer) objects.get("rsa");
 		DedupOrderedDataSourceFormPairs formPairs= (DedupOrderedDataSourceFormPairs) objects.get("formPairs");
-		MatchingConfigurationUtils.log
-				.info("Creating pair data source analyzer");
+		log.info("Creating pair data source analyzer");
 		PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(formPairs);
 
-		MatchingConfigurationUtils.log
-				.info("Adding random sample analyzer");
+		log.info("Adding random sample analyzer");
 		pdsa.addAnalyzer(rsa);
 		
 		objects.put("pdsa", pdsa);
@@ -246,10 +245,10 @@ public class MatchingReportUtils {
 	//New Method6 7
 	public static Map<String, Object> CreEMAnalyzer(Map<String,Object> objects){
 		PairDataSourceAnalysis pdsa=(PairDataSourceAnalysis)objects.get("pdsa");
-		MatchingConfigurationUtils.log.info("Creating EM analyzer");
+		log.info("Creating EM analyzer");
 		EMAnalyzer ema = new EMAnalyzer((MatchingConfig)objects.get("matchingConfig"));
 
-		MatchingConfigurationUtils.log.info("Adding EM analyzer");
+		log.info("Adding EM analyzer");
 		pdsa.addAnalyzer(ema);
 		objects.put("pdsa", pdsa);
 		return objects;
@@ -260,10 +259,10 @@ public class MatchingReportUtils {
 	public static Map<String, Object> AnalyzingData(Map<String,Object> objects){
 		OrderedDataSourceReader databaseReader=(OrderedDataSourceReader)objects.get("databaseReader");
 		PairDataSourceAnalysis pdsa=(PairDataSourceAnalysis)objects.get("pdsa");
-		MatchingConfigurationUtils.log.info("Analyzing data");
+		log.info("Analyzing data");
 		pdsa.analyzeData();
 		int n = pdsa.getRecordPairCount();
-		MatchingConfigurationUtils.log.info("patientmatching:  analyzed " + n + " pairs of records");
+		log.info("patientmatching:  analyzed " + n + " pairs of records");
 		objects.put("pdsa", pdsa);
 		databaseReader.close();
 		return objects;
@@ -271,16 +270,17 @@ public class MatchingReportUtils {
 	//New Method7 End 8
 	
 	//New Method8 9
-	public static Map<String, Object> ScoringData(Map<String,Object> objects)throws IOException{
-		DedupMatchResultList handler = (DedupMatchResultList)objects.get("handler");
-		Set<String> globalIncludeColumns = (Set<String>)objects.get("globalIncludeColumns");
-		RecMatchConfig recMatchConfig=(RecMatchConfig) objects.get("recMatchConfig");
-		MatchingConfig matchingConfig = (MatchingConfig)objects.get("matchingConfig");
-		MatchingConfigurationUtils.log.info("Scoring data");
-		OrderedDataSourceReader databaseReaderScore = ((ReaderProvider) objects.get("rp")).getReader(((DataBaseRecordStore) objects.get("recordStore")).getRecordStoreLinkDataSource(), matchingConfig);
+	public static Map<String, Object> ScoringData(Map<String, Object> objects) throws IOException {
+		DedupMatchResultList handler = (DedupMatchResultList) objects.get("handler");
+		Set<String> globalIncludeColumns = (Set<String>) objects.get("globalIncludeColumns");
+		RecMatchConfig recMatchConfig = (RecMatchConfig) objects.get("recMatchConfig");
+		MatchingConfig matchingConfig = (MatchingConfig) objects.get("matchingConfig");
+		log.info("Scoring data");
+		OrderedDataSourceReader databaseReaderScore = ((ReaderProvider) objects.get("rp")).getReader(
+				((DataBaseRecordStore) objects.get("recordStore")).getRecordStoreLinkDataSource(), 
+				matchingConfig);
 		DedupOrderedDataSourceFormPairs formPairsScoring = new DedupOrderedDataSourceFormPairs(
-				databaseReaderScore, matchingConfig, recMatchConfig
-				.getLinkDataSource1().getTypeTable());
+				databaseReaderScore, matchingConfig, recMatchConfig.getLinkDataSource1().getTypeTable());
 		ScorePair sp = new ScorePair(matchingConfig);
 
 		Record[] pair;
@@ -295,23 +295,20 @@ public class MatchingReportUtils {
 
 		databaseReaderScore.close();
 
-		List<String> blockingColumns = Arrays.asList(matchingConfig
-				.getBlockingColumns());
+		List<String> blockingColumns = Arrays.asList(matchingConfig.getBlockingColumns());
 		globalIncludeColumns.addAll(blockingColumns);
-		List<String> includeColumns = Arrays.asList(matchingConfig
-				.getIncludedColumnsNames());
+		List<String> includeColumns = Arrays.asList(matchingConfig.getIncludedColumnsNames());
 		globalIncludeColumns.addAll(includeColumns);
-	//} For loop ended
 
-	objects.put("handler", handler);
-	objects.put("globalIncludeColumns", globalIncludeColumns);
-	return objects;
-	}	
+		objects.put("handler", handler);
+		objects.put("globalIncludeColumns", globalIncludeColumns);
+		return objects;
+	}
 	//New Method8 End 9
 
 	//New Method9 10
-	public static Map<String, Object> CreatingReport(Map<String,Object> objects)throws IOException{
-		MatchingConfigurationUtils.log.info("Creating report");
+	public static Map<String, Object> CreatingReport(Map<String,Object> objects) throws IOException{
+		log.info("Creating report");
 		
 		int groupId = 0;
 		String separator = "|";
@@ -329,14 +326,15 @@ public class MatchingReportUtils {
 			}
 		}
 		catch(Exception e){
-			
+			log.warn("error while rendering config string", e);
 		}
-		File configFileFolder=(File)objects.get("configFileFolder");
-		File reportFile = new File(configFileFolder, "dedup-report-"
-				+ configString + dateString);
+		
+		File configFileFolder = (File)objects.get("configFileFolder");
+		File reportFile = new File(configFileFolder, "dedup-report-" + configString + dateString);
 		BufferedWriter writer = new BufferedWriter(new FileWriter(reportFile));
-		DedupMatchResultList handler=(DedupMatchResultList)objects.get("handler");
-		Set<String> globalIncludeColumns=(Set<String>)objects.get("globalIncludeColumns");
+		DedupMatchResultList handler = (DedupMatchResultList)objects.get("handler");
+		Set<String> globalIncludeColumns = (Set<String>)objects.get("globalIncludeColumns");
+
 		handler.flattenPairIdList();
 		List<Set<Long>> groupedId = handler.getFlattenedPairIds();
 
@@ -351,9 +349,7 @@ public class MatchingReportUtils {
 		}
 		String headerLine = sb.toString();
 		headerLine = headerLine.substring(0, headerLine.length() - 1);
-		
-		
-		
+				
 		writer.write(headerLine);
 		writer.write(System.getProperty("line.separator"));
 
@@ -365,18 +361,14 @@ public class MatchingReportUtils {
 					MatchingReportUtils.generateReport(internalRecord,
 							globalIncludeColumns, groupId, separator, writer);
 				} catch (IOException e) {
-					MatchingConfigurationUtils.log
-							.info("Exception caught during the deserializing and writing report for id "
-									+ integer);
-					MatchingConfigurationUtils.log
-							.info("Skipping to the next record...");
+					log.info("Exception caught during the deserializing and writing report for id " + integer);
+					log.info("Skipping to the next record...");
 				}
 			}
 			groupId++;
 		}
 		writer.close();
-		persistReportInfo("dedup-report-"
-				+ configString + dateString,dateString);
+		persistReportInfo("dedup-report-" + configString + dateString, dateString);
 		return objects;
 	}	
 	//New Method9 End 10
@@ -424,8 +416,8 @@ public class MatchingReportUtils {
 	 * 
 	 * @return all available report in the server
 	 */
-	public static final List<String> listAvailableReport() {
-		MatchingConfigurationUtils.log.info("Listing all available report");
+	public static List<String> listAvailableReport() {
+		log.info("Listing all available report");
 		List<String> reports = new ArrayList<String>();
 
 		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
@@ -443,53 +435,52 @@ public class MatchingReportUtils {
 
 		return reports;
 	}
+
 	/**
 	 * Method to persist report information
 	 */
-	
-	 public static void persistReportInfo(String rptName,String dateCreated)
-	 {   
-		 String proInfo="0ms";
-		 String uid= Context.getAuthenticatedUser().getUsername();
-         String strategies=DWRMatchingConfigUtilities.fileStrat;
-           for(int j=0;j<8;j++)
-		   {
-        	   proInfo=proInfo+","+DWRMatchingConfigUtilities.proTimeList.get(j)+"ms";
-		   }
-	          proInfo=proInfo+",96ms,0ms";
-		    PatientMatchingReportMetadata prm =new PatientMatchingReportMetadata();
-			prm.setReportName(rptName);
-			prm.setSelStrats(strategies);
-			prm.setProcessNT(proInfo);
-			prm.setCreatedBy(uid);
-			prm.setDateCreated(dateCreated);
-			HibernateSessionFactoryBean bean = new HibernateSessionFactoryBean();
-			Configuration cfg = bean.newConfiguration();
-			Properties c = cfg.getProperties();
-			String url = c.getProperty("hibernate.connection.url");
-			String user = c.getProperty("hibernate.connection.username");
-			String passwd = c.getProperty("hibernate.connection.password");
-			String driver = c.getProperty("hibernate.connection.driver_class");
-			MatchingConfigurationUtils.log.info("URL: " + url);
-			Connection databaseConnection = null;
-			try {
-				Class.forName(driver);
-				ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
-						url, user, passwd);
-				databaseConnection = connectionFactory.createConnection();
-				PreparedStatement ps=null;
-				ps = databaseConnection.prepareStatement("INSERT INTO persistreportdata(report_name,strategies_used,process_name_time,createdby,datecreated) VALUES (?, ?, ?, ?,?)");
-				ps.setString(1,prm.getReportName());
-				ps.setString(2,prm.getSelstrategies());
-				ps.setString(3,prm.getpNameTime());
-				ps.setString(4,prm.getCreatedBy());
-				ps.setString(5,prm.getDateCreated());
-				 i=ps.executeUpdate();
-		      
-			} 
-			catch (Exception e) {
-			}
+	public static void persistReportInfo(String rptName, String dateCreated) {
+		List<Long> proTimeList = MatchingRunData.getInstance().getProTimeList();
 		
+		String proInfo = "0ms";
+		String uid = Context.getAuthenticatedUser().getUsername();
+		for (int j = 0; j < 8; j++) {
+			proInfo = proInfo + "," + proTimeList.get(j) + "ms";
+		}
+		proInfo = proInfo + ",96ms,0ms";
+		
+		PatientMatchingReportMetadata prm = new PatientMatchingReportMetadata();
+		prm.setReportName(rptName);
+		prm.setSelStrats(MatchingRunData.getInstance().getFileStrat());
+		prm.setProcessNT(proInfo);
+		prm.setCreatedBy(uid);
+		prm.setDateCreated(dateCreated);
+		HibernateSessionFactoryBean bean = new HibernateSessionFactoryBean();
+		Configuration cfg = bean.newConfiguration();
+		Properties c = cfg.getProperties();
+		String url = c.getProperty("hibernate.connection.url");
+		String user = c.getProperty("hibernate.connection.username");
+		String passwd = c.getProperty("hibernate.connection.password");
+		String driver = c.getProperty("hibernate.connection.driver_class");
+		log.info("URL: " + url);
+		try {
+			Class.forName(driver);
+			ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
+					url, user, passwd);
+			Connection databaseConnection = connectionFactory.createConnection();
+			PreparedStatement ps = databaseConnection.prepareStatement(
+					"INSERT INTO persistreportdata (report_name,strategies_used,process_name_time,createdby,datecreated)"
+					+ " VALUES (?, ?, ?, ?,?)");
+			ps.setString(1, prm.getReportName());
+			ps.setString(2, prm.getSelstrategies());
+			ps.setString(3, prm.getpNameTime());
+			ps.setString(4, prm.getCreatedBy());
+			ps.setString(5, prm.getDateCreated());
+			i = ps.executeUpdate();
+
+		} catch (Exception e) {
+			log.info("skipping error while persisting report info", e);
+		}
 	 }
 
 }
