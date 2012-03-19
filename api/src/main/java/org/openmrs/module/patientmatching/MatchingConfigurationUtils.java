@@ -7,9 +7,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.SortedSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -73,7 +75,7 @@ public class MatchingConfigurationUtils {
 
 		Class[] classes = { Patient.class, PersonAddress.class,
 				PersonName.class };
-		List<ConfigurationEntry> configurationEntries = new ArrayList<ConfigurationEntry>();
+		SortedSet<ConfigurationEntry> configurationEntries = new TreeSet<ConfigurationEntry>();
 		for (Class clazz : classes) {
 			configurationEntries.addAll(MatchingUtils.generateProperties(
 					listExcludedProperties, clazz));
@@ -105,7 +107,6 @@ public class MatchingConfigurationUtils {
 			configurationEntries.add(configurationEntry);
 		}
 
-		Collections.sort(configurationEntries);
 
 		patientMatchingConfig.setConfigurationEntries(configurationEntries);
 		patientMatchingConfig.setConfigurationName("new strategy");
@@ -125,7 +126,7 @@ public class MatchingConfigurationUtils {
 	 * @return <code>PatientMatchingObject</code> representing the selected
 	 *         blocking run
 	 */
-	public static PatientMatchingConfiguration loadPatientMatchingConfig(
+	public static final PatientMatchingConfiguration loadPatientMatchingConfig(
 			String name, List<String> listExcludedProperties) {
 		String configurationFolder = MatchingConstants.CONFIG_FOLDER_NAME;
 		File configurationFileFolder = OpenmrsUtil
@@ -163,12 +164,12 @@ public class MatchingConfigurationUtils {
 
 				}
 			}
-
+			
 			PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
 			PatientMatchingConfiguration newMatchingConfiguration = service.findPatientMatchingConfigurationByName(name);
-
-			Collections.sort(patientMatchingConfig.getConfigurationEntries());
-			Collections.sort(newMatchingConfiguration.getConfigurationEntries());
+			
+			//Collections.sort(patientMatchingConfig.getConfigurationEntries());
+			//Collections.sort(newMatchingConfiguration.getConfigurationEntries());
 			patientMatchingConfig.setConfigurationEntries(newMatchingConfiguration.getConfigurationEntries());
 
 			patientMatchingConfig
@@ -189,10 +190,10 @@ public class MatchingConfigurationUtils {
 
 		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
 		PatientMatchingConfiguration matchingConfiguration = service.findPatientMatchingConfigurationByName(name);
-
-		for (ConfigurationEntry configEntry : matchingConfiguration.getConfigurationEntries()) {
-			for (ConfigurationEntry configEntry2 : patientMatchingConfig.getConfigurationEntries()) {
-				if (configEntry2.getFieldName().equals(configEntry.getFieldName())) {
+		
+		for(ConfigurationEntry configEntry : matchingConfiguration.getConfigurationEntries()){
+			for(ConfigurationEntry configEntry2 : patientMatchingConfig.getConfigurationEntries()){
+				if(configEntry2.getFieldName().equals(configEntry.getFieldName())){
 
 					if (configEntry.isIncluded() || configEntry.getBlockOrder() > 0) {
 						configEntry2.setSET(configEntry.getFlag());
@@ -209,9 +210,6 @@ public class MatchingConfigurationUtils {
 				}
 			}
 		}
-
-		Collections.sort(patientMatchingConfig.getConfigurationEntries());
-
 		patientMatchingConfig.setConfigurationName(matchingConfiguration.getConfigurationName());
 		patientMatchingConfig.setUsingRandomSample(matchingConfiguration.isUsingRandomSample());
 		patientMatchingConfig.setRandomSampleSize(matchingConfiguration.getRandomSampleSize());
@@ -230,7 +228,7 @@ public class MatchingConfigurationUtils {
 	 * @return <code>MatchingConfig</code> represeniting the selected blocking
 	 *         run
 	 */
-	private static MatchingConfig findMatchingConfigByName(String name,
+	private static final MatchingConfig findMatchingConfigByName(String name,
 			List<MatchingConfig> matchingConfigs) {
 		MatchingConfig config = null;
 		for (MatchingConfig matchingConfig : matchingConfigs) {
@@ -286,9 +284,9 @@ public class MatchingConfigurationUtils {
 					.getConfigurationEntries()) {
 
 				if (!(configEntry.getSET().equals("0"))) {
-					if (!(configEntry.getSET().equals(""))) {
+					if (!(configEntry.getSET().equals("")))
 						s.add(configEntry.getSET());
-					}
+
 				}
 
 				DataColumn column = new DataColumn(String.valueOf(counter));
@@ -298,8 +296,8 @@ public class MatchingConfigurationUtils {
 				linkDataSource.addDataColumn(column);
 				counter++;
 			}
-
 			Iterator<String> it = s.iterator();
+
 			while (it.hasNext()) {
 				if (!s.contains("")) {
 					DataColumn column = new DataColumn(String.valueOf(counter));
@@ -315,17 +313,21 @@ public class MatchingConfigurationUtils {
 			recMatchConfig = new RecMatchConfig(linkDataSource, linkDataSource,
 					matchingConfigLists);
 		} else {
-			int counter = 0;
-			Set<String> s = new HashSet<String>();
-			for (ConfigurationEntry configEntry : patientMatchingConfig.getConfigurationEntries()) {
+			int counter = 0;		
+			SortedSet<String> s = new TreeSet<String>();		
+			for (ConfigurationEntry configEntry : patientMatchingConfig
+					.getConfigurationEntries()) {
+
+				
+
 				if (!(configEntry.getSET().equals("0"))) {
-					if (!(configEntry.getSET().equals(""))) {
+		
+					if (!(configEntry.getSET().equals("")))
 						s.add(configEntry.getSET());
-					}
 				}
 			}
-
 			Iterator<String> it = s.iterator();
+
 			while (it.hasNext()) {
 				if (!s.contains("")) {
 					DataColumn column = new DataColumn(String.valueOf(counter));
@@ -336,15 +338,17 @@ public class MatchingConfigurationUtils {
 					counter++;
 				}
 			}
+			List<MatchingConfig> matchingConfigLists = new ArrayList<MatchingConfig>();
 			
-//			List<MatchingConfig> matchingConfigLists = new ArrayList<MatchingConfig>();
-//			recMatchConfig = new RecMatchConfig(linkDataSource, linkDataSource,
-//					matchingConfigLists);
+			recMatchConfig = new RecMatchConfig(linkDataSource, linkDataSource,
+					matchingConfigLists);
+			recMatchConfig = XMLTranslator.createRecMatchConfig(XMLTranslator
+					.getXMLDocFromFile(configFile));
+			}
 
-			recMatchConfig = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(configFile));
-		}
-
-		List<MatchingConfig> matchingConfigLists = recMatchConfig.getMatchingConfigs();
+		
+		List<MatchingConfig> matchingConfigLists = recMatchConfig
+				.getMatchingConfigs();
 
 		MatchingConfig matchingConfig = findMatchingConfigByName(
 				patientMatchingConfig.getConfigurationName(),
@@ -356,8 +360,12 @@ public class MatchingConfigurationUtils {
 					+ patientMatchingConfig.getConfigurationName());
 			
 			// update blocking runs
-			matchingConfig.setUsingRandomSampling(patientMatchingConfig.isUsingRandomSample());
-			matchingConfig.setRandomSampleSize(patientMatchingConfig.getRandomSampleSize());
+
+			matchingConfig.setUsingRandomSampling(patientMatchingConfig
+					.isUsingRandomSample());
+
+			matchingConfig.setRandomSampleSize(patientMatchingConfig
+					.getRandomSampleSize());
 
 			int counterBlockOrder = 1;
 			for (ConfigurationEntry configEntry : patientMatchingConfig.getConfigurationEntries()) {
@@ -374,7 +382,9 @@ public class MatchingConfigurationUtils {
 					configEntry.setBlockOrder(counterBlockOrder);
 					counterBlockOrder++;
 				} else {
-					configRow.setBlockOrder(MatchingConfigRow.DEFAULT_BLOCK_ORDER);
+					configRow
+							.setBlockOrder(MatchingConfigRow.DEFAULT_BLOCK_ORDER);
+
 				}
 			}
 		} else {
@@ -428,7 +438,7 @@ public class MatchingConfigurationUtils {
 	 *
 	 * @return list of all blocking runs found in the configuration file
 	 */
-	public static List<String> listAvailableBlockingRuns() {
+	public static final List<String> listAvailableBlockingRuns() {
 		log.info("Listing all available blocking run");
 		List<String> blockingRuns = new ArrayList<String>();
 
@@ -451,12 +461,11 @@ public class MatchingConfigurationUtils {
 	/**
 	 * List all available blocking runs
 	 */
-	public static List<String> listAvailableBlockingRuns_db() {
+	public static final List<String> listAvailableBlockingRuns_db() {
 		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
-		
-		List<PatientMatchingConfiguration> list = service.getBlockingRuns();
 		List<String> blockingRunNames = new ArrayList<String>();
-		for (PatientMatchingConfiguration pmc: list) {
+		List<PatientMatchingConfiguration> list = service.getBlockingRuns();
+		for(PatientMatchingConfiguration  pmc : list){
 			blockingRunNames.add(pmc.getConfigurationName());
 		}
 		
@@ -466,7 +475,7 @@ public class MatchingConfigurationUtils {
 	/**
 	 * Method returns a list of all available PatientMatchingConfiguration names
 	 */
-	public static List<String> listAvailableMatchingConfigs_db() {
+	public static final List<String> listAvailableMatchingConfigs_db(){
 		List<String> matchingConfigNames = new ArrayList<String>();
 		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
 		List<PatientMatchingConfiguration> list = service.getMatchingConfigs();
@@ -484,7 +493,7 @@ public class MatchingConfigurationUtils {
 	 * @param name
 	 *            blocking run name that will be deleted
 	 */
-	public static void deleteBlockingRun(String name) {
+	public static final void deleteBlockingRun(String name) {
 		log.info("Deleting blocking run with name: " + name);
 		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
 		File configFileFolder = OpenmrsUtil
@@ -516,8 +525,8 @@ public class MatchingConfigurationUtils {
 			}
 		}
 	}
-
-	public static void deleteBlockingRun_db(String name) {
+	
+	public static final void deleteBlockingRun_db(String name){
 		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
 		service.deletePatientMatchingConfigurationByName(name);
 

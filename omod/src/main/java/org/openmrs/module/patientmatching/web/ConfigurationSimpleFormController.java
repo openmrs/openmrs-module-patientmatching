@@ -1,9 +1,14 @@
 package org.openmrs.module.patientmatching.web;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -11,8 +16,10 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.exception.ConstraintViolationException;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.patientmatching.ConfigurationEntry;
 import org.openmrs.module.patientmatching.MatchingConfigurationUtils;
 import org.openmrs.module.patientmatching.MatchingConstants;
 import org.openmrs.module.patientmatching.PatientMatchingConfiguration;
@@ -60,18 +67,29 @@ public class ConfigurationSimpleFormController extends SimpleFormController {
         
         Map<String, String> model = new HashMap<String, String>();
         
-		if (request.getParameter("edit") != null) {
-			MatchingConfigurationUtils.savePatientMatchingConfig(patientMatchingConfig);
-			httpSession.setAttribute(WebConstants.OPENMRS_MSG_ATTR, "patientmatching.strategy.update");
-		} else {
-			List<String> pmcNames = MatchingConfigurationUtils.listAvailableMatchingConfigs_db();
-			if (pmcNames.contains(patientMatchingConfig.getConfigurationName())) {
-				log.error("Unable to save Strategy " + patientMatchingConfig.getConfigurationName() + " as Strategy Name is a duplicate");
-				httpSession.setAttribute(WebConstants.OPENMRS_ERROR_ATTR, "patientmatching.strategy.save");
-				return showForm(request, response, errors);
-			}
-			MatchingConfigurationUtils.savePatientMatchingConfig(patientMatchingConfig);
-		}
-		return new ModelAndView(getSuccessView(), model);
-	}
+        List<String> pmcNames = MatchingConfigurationUtils.listAvailableMatchingConfigs_db();
+        try{
+        	Set<ConfigurationEntry> entries= patientMatchingConfig.getConfigurationEntries();
+        	Set<ConfigurationEntry> newEntries = new TreeSet();
+        	System.out.println("Size is " + entries.size());
+        	
+        	Iterator it = entries.iterator(); 
+        	while(it.hasNext()){
+        		ConfigurationEntry ce = (ConfigurationEntry) it.next();
+        		ce.setPatientMatchingConfiguration(patientMatchingConfig);
+        		newEntries.add(ce);
+        	}
+        patientMatchingConfig.getConfigurationEntries().clear();
+        patientMatchingConfig.setConfigurationEntries(newEntries);
+        MatchingConfigurationUtils.savePatientMatchingConfig(patientMatchingConfig);
+        }catch(ConstraintViolationException e){
+        	httpSession.setAttribute(WebConstants.OPENMRS_ERROR_ATTR, "patientmatching.strategyname.duplicate");
+        	return showForm(request, response, errors);
+        }
+        return new ModelAndView(getSuccessView(), model);
+    }
+
+
+   
+	
 }

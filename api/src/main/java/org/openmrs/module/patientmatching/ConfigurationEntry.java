@@ -59,6 +59,9 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
 	 * Whether a particular field can be Interchanged or not
 	 */
 	private String flag;
+	
+	private PatientMatchingConfiguration patientMatchingConfiguration;
+
 	// public static String flag1="0";
 	private final String IGNORED = "IGNORED";
 	private final String INCLUDED = "INCLUDED";
@@ -284,5 +287,14 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
 	 */
 	public int compareTo(ConfigurationEntry o) {
 		return fieldName.compareToIgnoreCase(o.getFieldName());
+	}
+	
+	public PatientMatchingConfiguration getPatientMatchingConfiguration() {
+		return patientMatchingConfiguration;
+	}
+
+	public void setPatientMatchingConfiguration(
+			PatientMatchingConfiguration patientMatchingConfiguration) {
+		this.patientMatchingConfiguration = patientMatchingConfiguration;
 	}
 }
