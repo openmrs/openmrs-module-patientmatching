@@ -12,7 +12,7 @@
 		
 		<!-- bi-directional one-to-many association -->
 		<set name="configurationEntries" lazy="true" inverse="true" cascade="all-delete-orphan" sort="natural">
-			<key column="configuration_key" not-null="true" />
+			<key column="configuration_id" not-null="true" />
 			<one-to-many class="org.openmrs.module.patientmatching.ConfigurationEntry" />
 		</set>
 		

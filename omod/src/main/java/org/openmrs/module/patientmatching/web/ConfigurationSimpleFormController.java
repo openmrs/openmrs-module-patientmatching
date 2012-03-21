@@ -67,11 +67,9 @@ public class ConfigurationSimpleFormController extends SimpleFormController {
         
         Map<String, String> model = new HashMap<String, String>();
         
-        List<String> pmcNames = MatchingConfigurationUtils.listAvailableMatchingConfigs_db();
         try{
         	Set<ConfigurationEntry> entries= patientMatchingConfig.getConfigurationEntries();
         	Set<ConfigurationEntry> newEntries = new TreeSet();
-        	System.out.println("Size is " + entries.size());
         	
         	Iterator it = entries.iterator(); 
         	while(it.hasNext()){

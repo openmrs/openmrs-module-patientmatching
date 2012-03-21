@@ -127,4 +127,38 @@ CREATE TABLE `patientmatching_configurationEntries` (
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 		</sql>
 	</diff>	
+	<diff>
+		<version>1.7.4</version>
+		<author>Surangak</author>
+		<date>March 19, 2012</date>
+		<description>
+			Add unique constraint to
+			patientmatching_configuration.configuration_name column
+		</description>
+		<sql>
+			DROP TABLE IF EXISTS `patientmatching_configurationEntries`;
+			DROP TABLE IF EXISTS `patientmatching_configuration`;
+
+			CREATE TABLE `patientmatching_configuration` (
+			`configuration_id` int AUTO_INCREMENT,
+			`configuration_name` varchar(255) default NULL UNIQUE,
+			`random_sample_size` int default NULL,
+			`using_random_sample` smallint(6) NOT NULL DEFAULT '0',
+			PRIMARY KEY (`configuration_id`)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+			CREATE TABLE `patientmatching_configurationEntries` (
+			`entry_id` int AUTO_INCREMENT PRIMARY KEY,
+			`configuration_id` int default NULL,
+			`field_view_name` varchar(255) default NULL,
+			`field_name` varchar(255) default NULL,
+			`inclusion` varchar(50) default NULL,
+			`block_order` int NOT NULL DEFAULT '0',
+			`flag` varchar(50) DEFAULT NULL,
+			KEY `configurationEntries_id` (`configuration_id`),
+			CONSTRAINT `configurationEntries_id` FOREIGN KEY (`configuration_id`)
+			REFERENCES `patientmatching_configuration` (`configuration_id`)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+		</sql>
+	</diff>
 </sqldiff>

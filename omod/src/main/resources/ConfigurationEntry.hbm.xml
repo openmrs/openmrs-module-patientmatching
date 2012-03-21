@@ -9,7 +9,7 @@
 		<discriminator column="entry_id" insert="false" />
 		
 		<many-to-one name="patientMatchingConfiguration" class="org.openmrs.module.patientmatching.PatientMatchingConfiguration" not-null="true">
-			<column name="configuration_key" />
+			<column name="configuration_id" />
 		</many-to-one>
 		
 		<property name="fieldViewName" column="field_view_name" length="255" unique="true" />
