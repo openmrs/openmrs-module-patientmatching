@@ -3,6 +3,9 @@
  */
 package org.openmrs.module.patientmatching;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * A class to represent a single configuration elements in the web page. A
  * single instance of this class represent one "row" tag in the actual
@@ -27,7 +30,6 @@ package org.openmrs.module.patientmatching;
  */
 
 public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
-
 	
 	/**
 	 * A unique entryId to identify configuration entries. 
@@ -51,10 +53,12 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
 	 * the analysis for matching process
 	 */
 	private String inclusion;
+	
 	/**
      * blockOrder variable added during modifications to store ConfigurationEntries in a database
 	 */
 	private int blockOrder;
+	
 	/**
 	 * Whether a particular field can be Interchanged or not
 	 */
@@ -69,6 +73,9 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
 
 	private final String SET = "0";
 
+	// logger
+	protected final Log log = LogFactory.getLog(getClass());
+	
 	/**
 	 * Default no argument constructor
 	 */
@@ -113,13 +120,10 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
 	 * @return
 	 */
 	public String getFlag() {
-
-		System.out
-				.println("Getflag() called from ConfigurationEntry Entity with value in it :"
-						+ flag);
+		if (log.isDebugEnabled())
+			log.debug("Getflag() called from ConfigurationEntry Entity with value in it :" + flag);
 
 		return flag;
-
 	}
 
 	/**
@@ -129,12 +133,10 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
 	 */
 
 	public void setFlag(String flag) {
-
-		System.out
-				.println("Setflag() called from ConfigurationEntry Entity with value in it :"
-						+ flag);
+		if (log.isDebugEnabled())
+			log.debug("Setflag() called from ConfigurationEntry Entity with value in it :" + flag);
+		
 		this.flag = flag;
-
 	}
 
 	/**
@@ -143,13 +145,10 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
 	 * @param sET
 	 */
 	public void setSET(String setvalue) {
-
-		System.out
-				.println("setSET() called from ConfigurationEntry Entity with value in it :"
-						+ SET);
+		if (log.isDebugEnabled())
+			log.debug("setSET() called from ConfigurationEntry Entity with value in it :" + SET);
 
 		this.flag = setvalue;
-
 	}
 
 	/**
@@ -159,7 +158,6 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
 	 */
 	public String getSET() {
         return flag;
-
 	}
 
 	/**
@@ -210,6 +208,7 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
 	// this.transposedSet = SET;
 	// }
 	//
+	
 	/**
 	 * Get the current field's actual name. This string will be stored and read
 	 * from the configuration file.
