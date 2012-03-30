@@ -22,15 +22,7 @@ public class ReportSimpleFormController extends SimpleFormController {
 
 	@Override
 	protected String formBackingObject(HttpServletRequest request) throws Exception {
-		
-		//String text = Context.getService(HelloWorldService.class);
-		
-		String text = "Not used";
-		
-		log.debug("Returning text: " + text);
-		
-		return text;
-		
+		return "Not used";
 	}
 
 	@Override
@@ -44,7 +36,6 @@ public class ReportSimpleFormController extends SimpleFormController {
         requestMap.put("endStatus", MatchingReportUtils.END_PROCESS);
         requestMap.put("stepList", MatchingReportUtils.listSteps());
 		return requestMap;
-		
 	}
 
     /**

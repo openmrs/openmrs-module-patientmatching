@@ -94,24 +94,23 @@ public class MatchingReportUtils {
 	}
 	
 	//New Method1 2
-	public static Map<String,Object> ReadConfigFile(Map<String,Object> objects,String[] selectedStrategies){
+	public static Map<String, Object> ReadConfigFile(Map<String,Object> objects, String[] selectedStrategies){
 		log.info("Starting generate report process sequence");
 		
+		// open the config.xml file
 		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
-		File configFileFolder = OpenmrsUtil
-				.getDirectoryInApplicationDataDirectory(configLocation);
-		File configFile = new File(configFileFolder,
-				MatchingConstants.CONFIG_FILE_NAME);
-		log.info("Reading matching config file from "
-				+ configFile.getAbsolutePath());
-		RecMatchConfig recMatchConfig = XMLTranslator
-		.createRecMatchConfig(XMLTranslator
-				.getXMLDocFromFile(configFile));
+		File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
+		File configFile = new File(configFileFolder, MatchingConstants.CONFIG_FILE_NAME);
+
+		log.info("Reading matching config file from " + configFile.getAbsolutePath());
+		
+		RecMatchConfig recMatchConfig = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(configFile));
 		List<MatchingConfig> matchConf = recMatchConfig.getMatchingConfigs();
 		List<MatchingConfig> matchingConfigLists = new ArrayList<MatchingConfig>();
-		for(String selectedStrat:selectedStrategies){
-			for(MatchingConfig conf:matchConf){
-				if(conf.getName().equals(selectedStrat)){
+
+		for (String selectedStrat : selectedStrategies) {
+			for (MatchingConfig conf : matchConf) {
+				if (OpenmrsUtil.nullSafeEquals(conf.getName(), selectedStrat)) {
 					matchingConfigLists.add(conf);
 				}
 			}
@@ -186,7 +185,6 @@ public class MatchingReportUtils {
 		MatchingConfig matchingConfig = ((List<MatchingConfig>)objects.get("matchingConfigLists")).get(0);
 		objects.put("matchingConfig", matchingConfig);
 		return objects;
-		
 	}
 	//New Method2 End 3
 	

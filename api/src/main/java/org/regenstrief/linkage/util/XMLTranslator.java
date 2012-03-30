@@ -371,13 +371,13 @@ public class XMLTranslator {
 			}
 		}
 		
-	
-		if(mc_configs.size() == 0) {
+		if(mc_configs.isEmpty()) {
 			mc_configs = analyzeAllColumns(lds1);
 		}
 
 		return new RecMatchConfig(lds1, lds2, mc_configs, analysis_config);
 	}
+	
 	/**
 	 * Method used when there are no matching configurations specified
 	 * Default behavior is to analyze all rows

@@ -21,9 +21,6 @@ public class Record {
 	private Hashtable<String, String> demographics;
 	long uid;
 	String uidContext;
-	
-	
-	
 
 	/**
 	 * Initializes the demographics Hashtable and stores the unique ID and ID
@@ -34,7 +31,7 @@ public class Record {
 		demographics = new Hashtable<String, String>();
 		uid = id;
 		uidContext = context;
-			}
+	}
 	
 	/**
 	 * Method returns true if any of the demographics in this Record has
@@ -61,7 +58,6 @@ public class Record {
 	 * @return the Record's unique ID
 	 */
 	public long getUID() {
-		
 		return uid;
 	}
 

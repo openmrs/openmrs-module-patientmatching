@@ -10,9 +10,8 @@
 <openmrs:htmlInclude file="/scripts/jquery-ui/css/redmond/jquery-ui-1.7.2.custom.css" />
 <openmrs:htmlInclude file="/scripts/jquery-ui/js/jquery-ui-1.7.2.custom.min.js" />
 <script type="text/javascript">
-var checkbox_choices = 0;
-var str="";
-
+	var checkbox_choices = 0;
+	var str="";
 
     function getNextPage() {
         DWRMatchingConfigUtilities.getNextPage(writeReports);

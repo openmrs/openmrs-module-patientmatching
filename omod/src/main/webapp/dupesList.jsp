@@ -15,11 +15,11 @@
 var n_steps = 11; // hard-coded for now; unlikely to change
 var s = 0;
 var count = 0;
-var actRA = "true";
+var actRightAway = "true";
 
 function runReport() {
-    if (confirm("Are you sure you want to generate a new report?")) {
-    	document.getElementById("openmrs_msg").style.display = "none";
+	if (confirm("Are you sure you want to generate a new report?")) {
+		document.getElementById("openmrs_msg").style.display = "none";
 		var blockList = document.getElementsByName("blockList");
 		var blListStr = "";
 		for(var i=0;i<blockList.length;i++){
@@ -27,12 +27,12 @@ function runReport() {
 				blListStr = blListStr+blockList[i].value+",";
 		}
 		if(blListStr != ""){
-			if(actRA=="true")
+			if(actRightAway=="true")
 				DWRMatchingConfigUtilities.doAnalysis(blListStr);
 			else
 				s = setTimeout("updateStatus()", 100);
-		}else alert("Select atleast one Strategy");
-    }
+		} else alert("Select atleast one Strategy");
+	}
 }
 
 function scheduledTaskRunning(){
@@ -100,7 +100,6 @@ function viewFile(file) {
         //updateStatus();
 }
 
-
 function viewMetadata(file) {
 
     DWRMatchingConfigUtilities.setReportName(file);
@@ -109,6 +108,7 @@ function viewMetadata(file) {
                 "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=no,copyhistory=no");
     //updateStatus();
 }
+
 function showRunReport(show) {
     var runReport = document.getElementById("runReport");
     if (show) {
@@ -145,26 +145,27 @@ function updateTimer() { // deprecated
         s = setTimeout("updateTimer()", refreshPeriod*1000);
     }    
 }
+
 function updateChecklist(nStr) {
 	var nSt = nStr.split(",");
 	if(nSt[0]!="0"){
-	n = parseInt(nSt[0])+1; // add one to correspond to the step ids in the HTML
-	if(nSt[1].indexOf('p') != -1){
-		var ti=nSt[1].split("p");
-		var processTime = document.getElementById("time9");
-		processTime.style.color = "red";
-		processTime.innerHTML = ti[0]+" ms";
-	}else{
-		var processTime = document.getElementById("time"+nSt[0]);
-		processTime.style.color = "red";
-		processTime.innerHTML = nSt[1]+" ms";
-	}
-	strikeStep(n);
-	if (n == n_steps) {
-        DWREngine.beginBatch();          
-        buildTable();
-        DWREngine.endBatch();
-	}
+		n = parseInt(nSt[0])+1; // add one to correspond to the step ids in the HTML
+		if(nSt[1].indexOf('p') != -1){
+			var ti=nSt[1].split("p");
+			var processTime = document.getElementById("time9");
+			processTime.style.color = "red";
+			processTime.innerHTML = ti[0]+" ms";
+		}else{
+			var processTime = document.getElementById("time"+nSt[0]);
+			processTime.style.color = "red";
+			processTime.innerHTML = nSt[1]+" ms";
+		}
+		strikeStep(n);
+		if (n == n_steps) {
+			DWREngine.beginBatch();          
+			buildTable();
+			DWREngine.endBatch();
+		}
 	}else if(nSt[0]=="0"){
 		strikeUpToStep(0);
 	}
@@ -202,7 +203,7 @@ function check(currentStep){
 			scheduledTaskRunning();
 			count++;
 		}
-		actRA == "false";
+		actRightAway == "false";
 		s = setTimeout("updateStatus()", 1000);
 	}
 }
@@ -226,6 +227,7 @@ function callOnloadFunctions(){
 function updateStatus() {
 	DWRMatchingConfigUtilities.getStep(check);
 }
+
 function strikeStep(n) {
 	var step = document.getElementById("step" + n);
 	step.style.color="green";
