@@ -31,9 +31,7 @@ import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.apache.commons.lang.StringUtils;
 
-import org.apache.log4j.Logger;
 import org.regenstrief.linkage.util.CharDelimLDSInspector;
 import org.regenstrief.linkage.util.DataBaseLDSInspector;
 import org.regenstrief.linkage.util.LinkDataSource;
