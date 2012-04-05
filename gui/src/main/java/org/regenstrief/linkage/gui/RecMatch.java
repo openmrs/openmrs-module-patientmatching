@@ -31,6 +31,7 @@ import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.apache.commons.lang.StringUtils;
 
 import org.apache.log4j.Logger;
 import org.regenstrief.linkage.util.CharDelimLDSInspector;
@@ -394,7 +395,11 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 				
 				// check if file name has .xml extension, adding it if it does
 				String file_name = possibility.getName();
-				String extension = file_name.substring(file_name.length() - 4);
+				String[] file_name_parts = file_name.split(".");
+				String extension = "";
+				if (file_name_parts.length > 0)
+					extension = file_name_parts[file_name_parts.length-1];
+				
 				if(extension.compareTo(".xml") != 0){
 					// append ".xml" to filename
 					possibility = new File(possibility.getPath() + ".xml");
