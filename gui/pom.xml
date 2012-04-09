@@ -47,7 +47,13 @@
 			<artifactId>log4j</artifactId>
 			<scope>compile</scope>
 		</dependency>
-					
+		
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<scope>compile</scope>
+		</dependency>
+		
 		<!-- OpenMRS dependencies -->
 		
 		<dependency>
