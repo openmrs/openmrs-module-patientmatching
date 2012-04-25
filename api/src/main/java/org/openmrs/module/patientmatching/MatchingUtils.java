@@ -2,9 +2,11 @@ package org.openmrs.module.patientmatching;
 
 import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * Utility class to perform various task related to the creating matching
@@ -27,33 +29,28 @@ public class MatchingUtils {
     public static List<String> introspectBean(List<String> listExcludedProperties, Class clazz) {
         PropertyDescriptor[] propertyDescriptors = PropertyUtils.getPropertyDescriptors(clazz);
     
-        List<String> list = new ArrayList<String>();
+        List<String> propertyList = new ArrayList<String>();
         for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
-            if (propertyDescriptor.getReadMethod() != null &&
-                    propertyDescriptor.getWriteMethod() != null) {
-                boolean exclude = false;
+			
+            if (propertyDescriptor.getReadMethod() != null && propertyDescriptor.getWriteMethod() != null) {    
+				boolean exclude = false;
                 String propertyName = propertyDescriptor.getName();
-                for (String excludedProperty : listExcludedProperties) {
-                    if (propertyName == null) {
-                        break;
-                    }
-                    if (excludedProperty.trim().length() == 0) {
-                        break;
-                    }
-                    if (propertyName.toUpperCase().contains(excludedProperty.toUpperCase())) {
-                        exclude = true;
-                        break;
-                    }
-                }
+				if (propertyName != null) {
+					Iterator<String> exclusions = listExcludedProperties.iterator();
+					while (!exclude && exclusions.hasNext()) {
+						String excludedProperty = exclusions.next().trim().toUpperCase();
+						exclude = StringUtils.isNotBlank(excludedProperty) && propertyName.toUpperCase().contains(excludedProperty);
+					}
+				}
                 if(!exclude) {
                     if (MatchingIntrospector.isSimpleProperty(propertyDescriptor.getPropertyType())) {
-                        list.add(clazz.getName() + "." + propertyDescriptor.getName());
+                        propertyList.add(clazz.getName() + "." + propertyDescriptor.getName());
                     }
                 }
             }
         }
         
-        return list;
+        return propertyList;
     }
 
     /**
