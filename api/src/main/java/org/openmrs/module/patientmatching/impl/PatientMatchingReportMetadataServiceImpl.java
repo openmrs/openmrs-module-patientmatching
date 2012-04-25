@@ -57,4 +57,12 @@ public class PatientMatchingReportMetadataServiceImpl implements PatientMatching
 	public List<PatientMatchingConfiguration> getMatchingConfigs() {
 		return dao.getMatchingConfigs();
 	}
+
+	public PatientMatchingConfiguration getPatientMatchingConfiguration(Long configurationId) {
+		return dao.getPatientMatchingConfiguration(configurationId);
+	}
+
+	public void deletePatientMatchingConfiguration(PatientMatchingConfiguration configuration) {
+		dao.deletePatientMatchingConfiguration(configuration);
+	}
 }
