@@ -3,9 +3,9 @@
  */
 package org.openmrs.module.patientmatching;
 
-import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * A single class that represent a configuration that will be displayed
@@ -64,6 +64,8 @@ public class PatientMatchingConfiguration {
      * @return the configEntries
      */
     public SortedSet<ConfigurationEntry> getConfigurationEntries() {
+		if (configurationEntries == null)
+			configurationEntries = new TreeSet<ConfigurationEntry>();
         return configurationEntries;
     }
 
@@ -74,14 +76,14 @@ public class PatientMatchingConfiguration {
      * 
      * @param configEntries the configEntries to set
      */
-    public void setConfigurationEntries(Set<ConfigurationEntry> newEntries) {
-    	if (this.configurationEntries == null)
-    		this.configurationEntries = (SortedSet<ConfigurationEntry>) newEntries;
-    		else{
-    		this.configurationEntries.retainAll(newEntries);
-    		this.configurationEntries.addAll(newEntries);
-    		}
-    }
+	public void setConfigurationEntries(Set<ConfigurationEntry> newEntries) {
+		if (this.configurationEntries == null) {
+			this.configurationEntries = (SortedSet<ConfigurationEntry>) newEntries;
+		} else {
+			this.configurationEntries.retainAll(newEntries);
+			this.configurationEntries.addAll(newEntries);
+		}
+	}
     
     public long getConfigurationId() {
 		return configurationId;
