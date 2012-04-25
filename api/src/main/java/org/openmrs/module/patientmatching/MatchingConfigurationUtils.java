@@ -5,11 +5,12 @@ package org.openmrs.module.patientmatching;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.SortedSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -20,6 +21,7 @@ import org.openmrs.PatientIdentifierType;
 import org.openmrs.PersonAddress;
 import org.openmrs.PersonAttributeType;
 import org.openmrs.PersonName;
+import org.openmrs.api.APIException;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.PersonService;
 import org.openmrs.api.context.Context;
@@ -492,6 +494,92 @@ public class MatchingConfigurationUtils {
 	public static final void deleteBlockingRun_db(String name) {
 		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
 		service.deletePatientMatchingConfigurationByName(name);
-		
 	}
+
+	/**
+	 * generates an updated set of configuration entries from the current data model.
+	 * 
+	 * @return 
+	 */
+	public static SortedSet<ConfigurationEntry> generateUpdatedConfigurationEntries(List<String> listExcludedProperties){
+		Class[] classes = { Patient.class, PersonAddress.class, PersonName.class };
+
+		SortedSet<ConfigurationEntry> configurationEntries = new TreeSet<ConfigurationEntry>();
+		for (Class clazz : classes) {
+			configurationEntries.addAll(MatchingUtils.generateProperties(listExcludedProperties, clazz));
+		}
+		
+		PatientService patientService = Context.getPatientService();
+		List<PatientIdentifierType> patientIdentifierTypes = patientService.getAllPatientIdentifierTypes();
+		for (PatientIdentifierType patientIdentifierType : patientIdentifierTypes) {
+			ConfigurationEntry configurationEntry = new ConfigurationEntry();
+			configurationEntry.setFieldName("(Identifier) " + patientIdentifierType.getName());
+			configurationEntry.setFieldViewName("(Identifier) " + patientIdentifierType.getName());
+			configurationEntry.setIgnored();
+			configurationEntries.add(configurationEntry);
+		}
+		
+		PersonService personService = Context.getPersonService();
+		List<PersonAttributeType> personAttributeTypes = personService.getAllPersonAttributeTypes();
+		for (PersonAttributeType personAttributeType : personAttributeTypes) {
+			ConfigurationEntry configurationEntry = new ConfigurationEntry();
+			configurationEntry.setFieldName("(Attribute) " + personAttributeType.getName());
+			configurationEntry.setFieldViewName("(Attribute) " + personAttributeType.getName());
+			configurationEntry.setIgnored();
+			configurationEntries.add(configurationEntry);
+		}
+		
+		//Collections.sort(configurationEntries);
+		return configurationEntries;
+	}
+	
+	/**
+	 * creates a hashmap of names to ConfigurationEntries for the purposes of quick lookup.
+	 * 
+	 * @param listExcludedProperties
+	 * @return 
+	 */
+	private static Map<String, ConfigurationEntry> generateUpdatedConfigurationEntriesMap(List<String> listExcludedProperties) {
+		Map<String, ConfigurationEntry> newConfigsMap = new HashMap<String, ConfigurationEntry>();
+		for (ConfigurationEntry ce : MatchingConfigurationUtils.generateUpdatedConfigurationEntries(listExcludedProperties))
+			newConfigsMap.put(ce.getFieldName(), ce);
+		return newConfigsMap;
+	}
+	
+	/**
+	 * refresh a PatientMatchingConfiguration with properties from current data model.
+	 * 
+	 * @param configuration
+	 * @param listExcludedProperties 
+	 * @should leave a configuration alone if no properties have changed
+	 * @should add properties if they are not in target configuration
+	 * @should leave properties alone if they no longer exist in the data model
+	 */
+	public static void refreshPatientMatchingConfig(PatientMatchingConfiguration configuration, List<String> listExcludedProperties) {
+		if (log.isDebugEnabled()) {
+			log.debug("refreshing PatientMatchingConfiguration \"" + configuration.getConfigurationName() + "\"");
+		}
+		
+		if (configuration == null)
+			throw new APIException("cannot refresh a null configuration");
+		
+		Map<String, ConfigurationEntry> newConfigsMap = MatchingConfigurationUtils
+				.generateUpdatedConfigurationEntriesMap(listExcludedProperties);
+		
+		// iterate through existing configs
+		for (ConfigurationEntry ce : configuration.getConfigurationEntries()) {
+			// remove from new ones if it already exists
+			if (newConfigsMap.containsKey(ce.getFieldName())) {
+				newConfigsMap.remove(ce.getFieldName());
+			} else {
+				// what do we do with ones that no longer exist?
+				// for now, leave them alone ...
+			}
+		}
+		
+		// add any new configs to the configuration
+		for (ConfigurationEntry ce : newConfigsMap.values())
+			configuration.getConfigurationEntries().add(ce);
+	}
+
 }
