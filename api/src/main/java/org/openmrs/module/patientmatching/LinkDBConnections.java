@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -24,12 +25,14 @@ import org.openmrs.api.AdministrationService;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.PersonService;
 import org.openmrs.api.context.Context;
+import org.openmrs.util.OpenmrsUtil;
 import org.regenstrief.linkage.MatchFinder;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.db.RecordDBManager;
 import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.RecMatchConfig;
 import org.regenstrief.linkage.util.XMLTranslator;
+import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -295,6 +298,13 @@ public class LinkDBConnections {
 		
 	}
 	
+	/**
+	 * converts a patient to a record
+	 * 
+	 * @param patient the patient to be converted
+	 * @return the resulting record
+	 * @should encode more than one identifier of the same type properly
+	 */
 	public Record patientToRecord(Patient patient){
 		// OpenMRS unique patient ID should be present if the patient is within
 		// the OpenMRS patient store, but if patient is new and being searched on
@@ -389,14 +399,11 @@ public class LinkDBConnections {
                     ret.addDemographic(property, value);
                 }
             }
-            for (PatientIdentifierType patientIdentifierType : patientIdentifierTypes) {
-                PatientIdentifier identifier = patient.getPatientIdentifier(patientIdentifierType.getName());
-                if (identifier != null) {
-                    ret.addDemographic(("(Identifier) " + patientIdentifierType.getName()), identifier.getIdentifier());
-                } else {
-                    ret.addDemographic(("(Identifier) " + patientIdentifierType.getName()), "");
-                }
-            }
+			for (PatientIdentifierType patientIdentifierType : patientIdentifierTypes) {
+				ret.addDemographic(
+						("(Identifier) " + patientIdentifierType.getName()), 
+						serializePatientIdentifiers(patient.getPatientIdentifiers(patientIdentifierType)));
+			}
 
             for (PersonAttributeType personAttributeType : personAttributeTypes) {
                 PersonAttribute attribute = patient.getAttribute(personAttributeType.getName());
@@ -412,7 +419,7 @@ public class LinkDBConnections {
 		return ret;
 	}
 
-    public Record patientToRecord(Object[] objs) {
+	public Record patientToRecord(Object[] objs) {
         
         Integer patientId = (Integer) objs[0];
         Record record = new Record(patientId, "OpenMRS");
@@ -459,4 +466,28 @@ public class LinkDBConnections {
           fieldCounter++;
         return patientToRecord(patient);
     }
+
+	/**
+	 * serializes a list of patient identifiers to a delimited string after sorting and removing blanks
+	 * 
+	 * @param identifiers the patient identifiers to be serialized
+	 * @return a string containing all non-blank identifier values delimited by {@link DELIMITER}
+	 */
+    private String serializePatientIdentifiers(List<PatientIdentifier> identifiers) {
+		List<String> idlist = new ArrayList<String>();
+		for (PatientIdentifier identifier: identifiers) {
+			String id = identifier.getIdentifier();
+			if (StringUtils.hasText(id))
+				idlist.add(id);
+		}
+		
+		if (idlist == null || idlist.isEmpty())
+			return "";
+
+		Collections.sort(idlist);
+
+		// TODO escape strings in list with DELIMITER before joining  
+		return OpenmrsUtil.join(idlist, MatchingConstants.MULTI_FIELD_DELIMITER);
+	}
+
 }
