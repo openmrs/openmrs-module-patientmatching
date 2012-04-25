@@ -7,8 +7,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openmrs.module.patientmatching.MatchingConfigurationUtils;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.patientmatching.MatchingConstants;
+import org.openmrs.module.patientmatching.PatientMatchingReportMetadataService;
 import org.springframework.web.servlet.mvc.SimpleFormController;
 
 public class ConfigurationListSimpleFormController extends SimpleFormController {
@@ -31,9 +32,10 @@ public class ConfigurationListSimpleFormController extends SimpleFormController 
 	@Override
 	protected Map<String, Object> referenceData(HttpServletRequest request)
 			throws Exception {
+		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
+		
 		Map<String, Object> requestMap = new HashMap<String, Object>();
-		requestMap.put("files",
-				MatchingConfigurationUtils.listAvailableBlockingRuns_db());
+		requestMap.put("configurations", service.getMatchingConfigs());
 		requestMap.put("parameter", MatchingConstants.PARAM_NAME);
 		return requestMap;
 	}

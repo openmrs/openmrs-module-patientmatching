@@ -8,29 +8,28 @@
 <openmrs:htmlInclude file="/dwr/util.js"/>
 
 <script type="text/javascript">
-function deleteClicked(id) {
-    if (confirm("Are you sure you want to delete \'" + id + "\'?")) {
-        DWREngine.beginBatch();
-        DWRMatchingConfigUtilities.deleteBlockingRun(id);
-        buildTable();
-        DWREngine.endBatch();
+function deleteClicked(id, name) {
+    if (confirm("Are you sure you want to delete \'" + name + "\'?")) {
+        DWRMatchingConfigUtilities.deleteBlockingRun(id, function(){
+	        buildTable();
+		});
     }
 	return false;
 }
 
 function buildTable() {
-    DWRMatchingConfigUtilities.getAllBlockingRuns(function writeBlockingRuns(block) {
+    DWRMatchingConfigUtilities.getAllPatientMatchingConfigurations(function writeBlockingRuns(block) {
         DWRUtil.removeAllRows("config-list");
         var cellFuncs = [
-            function(data) { return data; },
+            function(data) { return data[1]; },
             function(data) {
-                return "<a href=\"${pageContext.request.contextPath}/module/patientmatching/config.form?<c:out value="${parameter}" />=" + data + "\"><c:out value="Edit" /></a>";
+                return "<a href=\"${pageContext.request.contextPath}/module/patientmatching/config.form?<c:out value="${parameter}" />=" + data[0] + "\"><c:out value="Edit" /></a>";
             },
             function(data) {
-                return "<a href=\"javascript:;\" onClick=\"deleteClicked('" + data + "');\"><c:out value="Delete" /></a>";
+                return "<a href=\"#\" onClick=\"deleteClicked(" + data[0] + ",'" + data[1] + "');\"><c:out value="Delete" /></a>";
             }
         ];
-        DWRUtil.addRows( "config-list", block, cellFuncs, {
+        DWRUtil.addRows("config-list", block, cellFuncs, {
             rowCreator:function(options) {
                 var row = document.createElement("tr");
                 var index = options.rowIndex;
@@ -73,19 +72,19 @@ function buildTable() {
                 <th colspan="2"><spring:message code="Operation"/></th>
             </tr>
             <tbody id="config-list">
-            <c:forEach items="${files}" var="item" varStatus="entriesIndex">
+            <c:forEach items="${configurations}" var="config" varStatus="entriesIndex">
                 <tr <c:if test="${entriesIndex.count % 2 == 0}">class="oddRow"</c:if>
                     <c:if test="${entriesIndex.count % 2 != 0}">class="evenRow"</c:if>>
                     <td>
-                        <c:out value="${item}" />
+                        <c:out value="${config.configurationName}" />
                     </td>
                     <td align="center">
-                        <a href="${pageContext.request.contextPath}/module/patientmatching/config.form?<c:out value="${parameter}" />=${item}&edit=TRUE">
+                        <a href="${pageContext.request.contextPath}/module/patientmatching/config.form?<c:out value="${parameter}" />=${config.configurationId}&edit=TRUE">
                             <c:out value="Edit" />
                         </a>
                     </td>
                     <td align="center">
-                        <a href="#" onClick="deleteClicked('<c:out value="${item}" />');">
+                        <a href="#" onClick="deleteClicked('<c:out value="${config.configurationId}" />', '<c:out value="${config.configurationName}" />');">
                             <c:out value="Delete" />
                         </a>
                     </td>

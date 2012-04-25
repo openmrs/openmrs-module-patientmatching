@@ -28,12 +28,7 @@ import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.PersonAddress;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.patientmatching.LinkDBConnections;
-import org.openmrs.module.patientmatching.MatchingConfigurationUtils;
-import org.openmrs.module.patientmatching.MatchingConstants;
-import org.openmrs.module.patientmatching.MatchingReportReader;
-import org.openmrs.module.patientmatching.MatchingReportUtils;
-import org.openmrs.module.patientmatching.MatchingRunData;
+import org.openmrs.module.patientmatching.*;
 import org.openmrs.util.OpenmrsUtil;
 
 import org.regenstrief.linkage.util.MatchingConfig;
@@ -79,6 +74,23 @@ public class DWRMatchingConfigUtilities {
 	}
 
 	/**
+	 * returns a list of [id, name] arrays for all patient matching configurations.
+	 */
+	public List<Object[]> getAllPatientMatchingConfigurations() {
+		// get all configs
+		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
+		List<PatientMatchingConfiguration> configs = service.getMatchingConfigs();
+		
+		// convert to arrays of [id, name]
+		List<Object[]> results = new ArrayList<Object[]>();
+		for (PatientMatchingConfiguration config: configs)
+			results.add(new Object[]{ config.getConfigurationId(), config.getConfigurationName()});
+		
+		// send them back
+		return results;
+	}
+
+	/**
 	 * @see MatchingReportUtils#listAvailableReport()
 	 */
 	public List<String> getAllReports() {
@@ -86,11 +98,14 @@ public class DWRMatchingConfigUtilities {
 	}
 
 	/**
-	 * @see MatchingConfigurationUtils#deleteBlockingRun(String)
+	 * @see PatientMatchingReportMetadataService#deletePatientMatchingConfiguration(Long) 
 	 */
-	public void deleteBlockingRun(String name) {
-		log.info("DWRMatchingConfigUtilities: deleting blocking run");
-		MatchingConfigurationUtils.deleteBlockingRun_db(name);
+	public void deleteBlockingRun(Long id) {
+		log.info("DWRMatchingConfigUtilities: deleting blocking run #" + id);
+		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
+		PatientMatchingConfiguration configuration = service.getPatientMatchingConfiguration(id);
+		if (configuration != null)
+			service.deletePatientMatchingConfiguration(configuration);
 	}
 
 	/**

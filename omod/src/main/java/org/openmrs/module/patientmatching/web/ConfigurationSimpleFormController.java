@@ -1,9 +1,7 @@
 package org.openmrs.module.patientmatching.web;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -13,16 +11,14 @@ import java.util.TreeSet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import org.apache.commons.lang.StringUtils;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.exception.ConstraintViolationException;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.patientmatching.ConfigurationEntry;
-import org.openmrs.module.patientmatching.MatchingConfigurationUtils;
-import org.openmrs.module.patientmatching.MatchingConstants;
-import org.openmrs.module.patientmatching.PatientMatchingConfiguration;
+import org.openmrs.module.patientmatching.*;
 import org.openmrs.web.WebConstants;
 import org.springframework.validation.BindException;
 import org.springframework.web.servlet.ModelAndView;
@@ -35,23 +31,40 @@ public class ConfigurationSimpleFormController extends SimpleFormController {
 
 	@Override
 	protected PatientMatchingConfiguration formBackingObject(HttpServletRequest request) throws Exception {
-	    String name = request.getParameter(MatchingConstants.PARAM_NAME);
+		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
 	    
+		// pull excluded properties from the global property
         AdministrationService adminService = Context.getAdministrationService();
         String excludedProperties = adminService.getGlobalProperty(MatchingConstants.CONFIG_EXCLUDE_PROPERTIES);
         List<String> listExcludedProperties = Arrays.asList(excludedProperties.split(",", -1));
-        log.info("Excluded Property: " + excludedProperties);
-        
+        log.info("Excluded Properties: " + excludedProperties);
+
+		// get the existing config if the configuration id is available and properly formatted
         PatientMatchingConfiguration configuration = null;
-        
-	    if (name != null) {
-	    	configuration = MatchingConfigurationUtils.loadPatientMatchingConfig_db(name, listExcludedProperties);
-	    } else {
-	        configuration = MatchingConfigurationUtils.createPatientMatchingConfig(listExcludedProperties);
-	    }
-	    log.info("Config Name: " + configuration.toString());
-		return configuration;
+	    String configIdString = request.getParameter(MatchingConstants.PARAM_NAME);
 		
+		if (!StringUtils.isEmpty(configIdString) && StringUtils.isNumeric(configIdString)) {
+			try {
+				Long configurationId = Long.parseLong(configIdString);
+				configuration = service.getPatientMatchingConfiguration(configurationId);
+			} catch (NumberFormatException ex) {
+				log.error("could not convert '" + configIdString + "' to a long", ex);
+			}
+		}
+		
+		// create a new one if not found
+	    if (configuration == null) {
+			log.warn("creating new configuration");
+	        configuration = new PatientMatchingConfiguration();
+	    }
+		
+		log.warn("Configuration: " + configuration);
+		
+		// refresh the config with properties from current data model
+		MatchingConfigurationUtils.refreshPatientMatchingConfig(configuration, listExcludedProperties);
+	    log.info("Config Name: " + configuration.toString());
+		
+		return configuration;
 	}
 
     /**
@@ -87,7 +100,4 @@ public class ConfigurationSimpleFormController extends SimpleFormController {
         return new ModelAndView(getSuccessView(), model);
     }
 
-
-   
-	
 }

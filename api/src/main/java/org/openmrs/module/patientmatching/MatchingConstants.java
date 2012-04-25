@@ -13,17 +13,17 @@ public interface MatchingConstants {
      * Folder name to store the configuration file and temporary output of the
      * patient de-duplication process
      */
-    String CONFIG_FOLDER_NAME = "patient-matching";
+    public static final String CONFIG_FOLDER_NAME = "patient-matching";
     
     /**
      * Folder name for the output of <code>Record</code> serialization process
      */
-    String SERIAL_FOLDER_NAME = "patient-matching/serial";
+    public static final String SERIAL_FOLDER_NAME = "patient-matching/serial";
     
     /**
      * Default name for the configuration file name
      */
-    String CONFIG_FILE_NAME = "config.xml";
+    public static final String CONFIG_FILE_NAME = "config.xml";
     
     /**
      * Default key for the excluded properties of the OpenMRS's object that will
@@ -33,11 +33,16 @@ public interface MatchingConstants {
      * This is the key to the global property entry in the main OpenMRS global
      * property table.
      */
-    String CONFIG_EXCLUDE_PROPERTIES = "patientmatching.excludedProperties";
+    public static final String CONFIG_EXCLUDE_PROPERTIES = "patientmatching.excludedProperties";
     
     /**
      * List of parameters used in the patient de-duplication web page
      */
-    String PARAM_NAME = "config";
-    String PARAM_REPORT="report";
+    public static final String PARAM_NAME = "configurationId";
+    public static final String PARAM_REPORT = "report";
+    
+    /**
+     * Multiple-value delimiter
+     */
+    public static final String MULTI_FIELD_DELIMITER = ",";
 }
