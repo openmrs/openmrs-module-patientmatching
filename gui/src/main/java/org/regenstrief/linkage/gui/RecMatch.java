@@ -392,15 +392,10 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
 				File possibility = jfc.getSelectedFile();
 				
 				// check if file name has .xml extension, adding it if it does
-				String file_name = possibility.getName();
-				String[] file_name_parts = file_name.split(".");
-				String extension = "";
-				if (file_name_parts.length > 0)
-					extension = file_name_parts[file_name_parts.length-1];
+				String file_path = possibility.getPath();
 				
-				if(extension.compareTo(".xml") != 0){
-					// append ".xml" to filename
-					possibility = new File(possibility.getPath() + ".xml");
+				if(!file_path.endsWith(".xml")){
+						possibility = new File(file_path + ".xml");
 				}
 				
 				if(possibility.exists()){
