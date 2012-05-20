@@ -1,0 +1,28 @@
+PATIENTMATCHING MODULE: A Tutorial for Developers
+
+FELLEGI-SUNTER ALGORITHM
+
+The underlying matching algorithm was developed by Ivan Fellegi and Alan Sunter in the 1960s for general record linkage. Nowadays, we call it the Fellegi-Sunter Maximum Likelihood Algorithm (FS). If you are developing, it is extremely helpful to spend a few days parsing their original paper (ask Shaun Grannis for it). The time spent up front is worth the confusion it saves later.
+
+The fundamental assumption of FS is *conditional independence* -- that is, that different fields (e.g. name, gender, phone number) are totally independent. This assumption collapses on certain pairs of fields -- for example, because there aren't many women named "David", gender and name are non-independent.
+
+CONFIGURING THE ALGORITHM: FEATURE SELECTION
+
+When you want to start a patient matching schedule from scratch at a new site, there are many parameters (e.g. blocking fields) that need manual tweaking, many site-specific features that need to be understood. For example, one site may be normal, but another may have many female Davids. The process of combing the data and sculpting a nice site-specific configuration is called *feature selection*.
+
+If we want to answer quantitatively the question, "How dependent are name and gender on each other?" we use pre-built tools for computing the *mutual information* of two fields, and estimate by hand which fields are redundant. In this case, if name and gender have a high mutual information, then one of those fields contains information about the other -- if someone is named "David," there's a good chance that person is male, so we can drop the gender field.
+A statistical package called R (http://r-project.org) has routines for computing things like mutual information and entropy. Dump OpenMRS data into a pipe-delimited file and use the scripts in the ``stat`` directory.
+
+Pure Java implementations of these routines are in the works.
+
+COMPONENTS
+
+The patient matching module (PMM) consists of three main components:
+
+	(1) Program Logic. The Java implementation of the Fellegi-Sunter algorithm, as well as utility wrappers for the OpenMRS API (e.g. org.regenstrief.linkage.util.LinkDataSource).
+	(2) Web interface. As with the OpenMRS core, the PMM uses the Spring Model-View-Controller (MVC) framework (more on this below). The data model is stored in a database through Hibernate -- fortunately, this is abstracted away for you -- the view is in ``web/module``, and the controllers are available in ``web/src``. This view is intended for end users, so the emphasis is on ease of use and configuration of parameters. 
+	(3) Graphical interface (GUI). Module developers want closer interaction with the program logic than the web interface provides, so we use the GUI for developing and testing the program logic.
+		
+TROUBLESHOOTING
+
+When something goes wrong and you want to debug it, take a look at the module log. This log file is in ``$CATALINA_HOME/logs/link_module.log``. (On Windows and Mac OS X, this works as expected, but on Ubuntu Linux there is a known bug that may silently cause this to fail on setup. If this is the case, open the ``metadata/log4j.xml`` file, and change the parameter ``File`` to a desirable path on your machine, like ``/usr/share/tomcat6/logs/`` or ``/var/log/tomcat6``.)

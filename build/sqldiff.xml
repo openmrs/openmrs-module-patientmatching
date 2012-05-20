@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqldiff PUBLIC "-//OpenMRS//DTD OpenMRS SQL Diff Config 1.0//EN" "http://resources.openmrs.org/doctype/sqldiff-1.0.dtd">
+
+<sqldiff version="1.0">
+	<help>
+		USE:
+		The diffs are ordered by datamodel version number.
+		The script can be run in a top down fashion and is
+		expected to not failor overwrite old data
+
+		EXPECT:
+		- "use business-database-name;" was called prior to
+		calling this script
+	</help>
+
+	<diff>
+		<version>1.7.0</version>
+		<author>Tammy Dugan</author>
+		<date>April 9th 2008</date>
+		<description>
+			Creates linkage table needed by patient matching.
+		</description>
+		<sql>
+			CREATE TABLE `linkagetable` (
+			`mrn` varchar(255) default NULL,
+			`ln` varchar(255) default NULL,
+			`lny` varchar(255) default NULL,
+			`fn` varchar(255) default NULL,
+			`yb` varchar(255) default NULL,
+			`mb` varchar(255) default NULL,
+			`db` varchar(255) default NULL,
+			`sex` varchar(255) default NULL,
+			`race` varchar(255) default NULL,
+			`city` varchar(255) default NULL,
+			`st` varchar(255) default NULL,
+			`zip` varchar(255) default NULL,
+			`tel` varchar(255) default NULL,
+			`nkln` varchar(255) default NULL,
+			`nkfn` varchar(255) default NULL,
+			`drid` varchar(255) default NULL,
+			`drln` varchar(255) default NULL,
+			`drfn` varchar(255) default NULL,
+			`openmrs_id` varchar(255) NOT NULL,
+			PRIMARY KEY (`openmrs_id`)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+		</sql>
+	</diff>
+	<diff>
+		<version>1.7.1</version>
+		<author>gpingili</author>
+		<date>june 16 2011</date>
+		<description>
+			A table for storing report data
+			Modified by surangak for
+			version 1.2.4 release
+			Removed openmrs specific database references
+		</description>
+		<sql>
+			DROP TABLE IF EXISTS `persistreportdata`;
+			CREATE TABLE `persistreportdata` (
+			`report_name` varchar(255) NOT NULL,
+			`strategies_used` varchar(200) default NULL,
+			`process_name_time` varchar(200) default NULL,
+			`createdby` varchar(20) default NULL,
+			`datecreated` varchar(20) default NULL,
+			PRIMARY KEY (`report_name`)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+		</sql>
+	</diff>
+	<diff>
+		<version>1.7.2</version>
+		<author>surangak</author>
+		<date>Jan 31 2012</date>
+		<description>
+			Adding several tables as part of efforts to move database
+			reports into the database
+		</description>
+		<sql>
+			DROP TABLE IF EXISTS `patientmatching_configuration`;
+			CREATE TABLE `patientmatching_configuration` (
+			`configuration_id` int AUTO_INCREMENT,
+			`configuration_name` varchar(255) default NULL,
+			`random_sample_size` int default NULL,
+			`using_random_sample` smallint(6) NOT NULL DEFAULT '0',
+			PRIMARY KEY (`configuration_id`)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+			DROP TABLE IF EXISTS
+			`patientmatching_configurationEntries`;
+			CREATE TABLE `patientmatching_configurationEntries` (
+			`entry_id` int AUTO_INCREMENT PRIMARY KEY,
+			`field_view_name` varchar(255) default NULL,
+			`field_name` varchar(255) default NULL,
+			`inclusion` varchar(255) default NULL,
+			`block_order` int NOT NULL DEFAULT '0',
+			`flag` varchar(50) DEFAULT NULL,
+			`configuration_key` int default NULL,
+			INDEX `par_ind`(`configuration_key`),
+			FOREIGN KEY (`configuration_key`) REFERENCES
+			`patientmatching_configuration`(`configuration_id`)
+			ON DELETE CASCADE ON UPDATE CASCADE
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+		</sql>
+	</diff>
+	<diff>
+		<version>1.7.3</version>
+		<author>surangak</author>
+		<date>Feb 2, 2012</date>
+		<description>
+			Adding several tables as part of efforts to move database
+			reports into the database
+		</description>
+		<sql>
+			DROP TABLE IF EXISTS `patientmatching_report`;
+			CREATE TABLE `patientmatching_report` (
+			`report_id` int AUTO_INCREMENT,
+			`report_name` varchar(255) default NULL,
+			PRIMARY KEY (`report_id`)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+			DROP TABLE IF EXISTS `patientmatching_matchingset`;
+			CREATE TABLE `patientmatching_matchingset` (
+			`set_id` int AUTO_INCREMENT PRIMARY KEY,
+			`group_id` int NOT NULL,
+			`patient_id` int NOT NULL,
+			`configuration_key` int default NULL,
+			INDEX `par_ind`(`configuration_key`),
+			FOREIGN KEY (`configuration_key`) REFERENCES
+			`patientmatching_report`(`report_id`)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+		</sql>
+	</diff>
+	<diff>
+		<version>1.7.4</version>
+		<author>Surangak</author>
+		<date>March 19, 2012</date>
+		<description>
+			Add unique constraint to
+			patientmatching_configuration.configuration_name column
+		</description>
+		<sql>
+			DROP TABLE IF EXISTS `patientmatching_configurationEntries`;
+			DROP TABLE IF EXISTS `patientmatching_configuration`;
+
+			CREATE TABLE `patientmatching_configuration` (
+			`configuration_id` int AUTO_INCREMENT,
+			`configuration_name` varchar(255) default NULL UNIQUE,
+			`random_sample_size` int default NULL,
+			`using_random_sample` smallint(6) NOT NULL DEFAULT '0',
+			PRIMARY KEY (`configuration_id`)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+			CREATE TABLE `patientmatching_configurationEntries` (
+			`entry_id` int AUTO_INCREMENT PRIMARY KEY,
+			`configuration_id` int default NULL,
+			`field_view_name` varchar(255) default NULL,
+			`field_name` varchar(255) default NULL,
+			`inclusion` varchar(50) default NULL,
+			`block_order` int NOT NULL DEFAULT '0',
+			`flag` varchar(50) DEFAULT NULL,
+			KEY `configurationEntries_id` (`configuration_id`),
+			CONSTRAINT `configurationEntries_id` FOREIGN KEY (`configuration_id`)
+			REFERENCES `patientmatching_configuration` (`configuration_id`)
+			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+				
+		</sql>
+	</diff>
+
+</sqldiff>
