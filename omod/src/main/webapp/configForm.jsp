@@ -54,10 +54,10 @@
     }
     
     function checkConfiguration() {
-		var errorMessage = "Cannot proceed because of the following errors";
-		var warningMessage = "There are some non critical issues. Correcting them is recommended before saving.";
-		var noSMErrorMessage = "No \"Should match\" fields specified";
-		var noMMErrorMessage = "No \"Must match\" fields specified";
+		var errorMessage = "<spring:message code="patientmatching.config.new.selectionErrorMessage"/>";
+		var warningMessage = "<spring:message code="patientmatching.config.new.selectionWarningMessage"/>";
+		var noSMErrorMessage = "<spring:message code="patientmatching.config.new.noSMErrorMessage"/>";
+		var noMMErrorMessage = "<spring:message code="patientmatching.config.new.noMMErrorMessage"/>";
 		
 		//In case of js failure, user can still to save the stratergy with any selection
 		document.getElementById('submitButton').disabled = false;
