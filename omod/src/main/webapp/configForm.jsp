@@ -268,4 +268,7 @@
 	<br /> <input type="submit"
 				  value="<spring:message code="general.save" />" />
 </form>
+<script>
+	checkConfiguration();
+</script>
 <%@ include file="/WEB-INF/template/footer.jsp"%>
