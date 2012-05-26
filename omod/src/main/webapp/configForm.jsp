@@ -58,6 +58,10 @@
 		var warningMessage = "There are some non critical issues. Correcting them is recommended before saving.";
 		var noSMErrorMessage = "No \"Should match\" fields specified";
 		var noMMErrorMessage = "No \"Must match\" fields specified";
+		
+		//In case of js failure, user can still to save the stratergy with any selection
+		document.getElementById('submitButton').disabled = false;
+		
 		var shouldMatchExists = checkSMExists();
 		var mustMatchExists = checkMMExists();
 		var messageHTML = "";
@@ -71,6 +75,7 @@
 				messageHTML += "<li>" + noMMErrorMessage + "</li>";
 			}
 			messageHTML += "</ul>";
+			document.getElementById('submitButton').disabled = true;
 		}
 		document.getElementById('warningBox').innerHTML = messageHTML;
 	}
@@ -265,7 +270,7 @@
 			</div>
 		</td>
 	</div>
-	<br /> <input type="submit"
+	<br /> <input id="submitButton" type="submit"
 				  value="<spring:message code="general.save" />" />
 </form>
 <script>
