@@ -34,6 +34,7 @@
 		var c2b1=obj.name;
 		document.getElementById(c2b1).style.color="green";
 		document.getElementById(c2b1).style.fontWeight="bold";
+		checkConfiguration();
 
     }
     
@@ -41,6 +42,7 @@
 		var c2i1=obj.name;
 		document.getElementById(c2i1).style.color="red";
 		document.getElementById(c2i1).style.fontWeight="bold";
+		checkConfiguration();
 
     }
 	
@@ -48,7 +50,52 @@
 		var c2n1=obj.name;
 		document.getElementById(c2n1).style.color="black";
 		document.getElementById(c2n1).style.fontWeight="normal";
+		checkConfiguration();
     }
+    
+    function checkConfiguration() {
+		var errorMessage = "Cannot proceed because of the following errors";
+		var warningMessage = "There are some non critical issues. Correcting them is recommended before saving.";
+		var noSMErrorMessage = "No \"Should match\" fields specified";
+		var noMMErrorMessage = "No \"Must match\" fields specified";
+		var shouldMatchExists = checkSMExists();
+		var mustMatchExists = checkMMExists();
+		var messageHTML = "";
+		if (!shouldMatchExists || !mustMatchExists) {
+			messageHTML = errorMessage;
+			messageHTML += "<br/><ul>";
+			if (!shouldMatchExists) {
+				messageHTML += "<li>" + noSMErrorMessage + "</li>";
+			}
+			if (!mustMatchExists) {
+				messageHTML += "<li>" + noMMErrorMessage + "</li>";
+			}
+			messageHTML += "</ul>";
+		}
+		document.getElementById('warningBox').innerHTML = messageHTML;
+	}
+
+	function checkSMExists() {
+		return checkSelections("INCLUDED");
+	}
+
+	function checkMMExists() {
+		return checkSelections("BLOCKING");
+	}
+
+	function checkSelections(type) {
+		var count = 0;
+		var inputs = document.getElementsByTagName('input');
+		for(var i=0; i<inputs.length;i++){
+			if(inputs[i].name.indexOf('configurationEntries')==0 && 
+					inputs[i].value == type && 
+					inputs[i].checked){
+				count++;
+				}
+			}
+		count;
+		return count>0;
+	}
 </script>
 
 <form method="post">
@@ -213,6 +260,8 @@
 								code="patientmatching.config.new.fieldNameBlocking.description" />
 					</li>
 				</ul>
+			</div>
+			<div id="warningBox" class="box" style="padding-right: 10px;">
 			</div>
 		</td>
 	</div>
