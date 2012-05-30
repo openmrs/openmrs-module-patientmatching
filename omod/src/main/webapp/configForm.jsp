@@ -61,6 +61,7 @@
 		
 		//In case of js failure, user can still to save the stratergy with any selection
 		document.getElementById('submitButton').disabled = false;
+		document.getElementById('warningArea').style.display = "none";
 		
 		var shouldMatchExists = checkSMExists();
 		var mustMatchExists = checkMMExists();
@@ -76,6 +77,7 @@
 			}
 			messageHTML += "</ul>";
 			document.getElementById('submitButton').disabled = true;
+			document.getElementById('warningArea').style.display = "block";
 		}
 		document.getElementById('warningBox').innerHTML = messageHTML;
 	}
@@ -266,9 +268,14 @@
 					</li>
 				</ul>
 			</div>
+		</td>
+		<br/>
+		<div id="warningArea" valign="top" style="height: 150px;"><b
+				class="boxHeader"><spring:message
+					code="patientmatching.config.new.errorMessageBoxHeader" /> </b>
 			<div id="warningBox" class="box" style="padding-right: 10px;">
 			</div>
-		</td>
+		</div>
 	</div>
 	<br /> <input id="submitButton" type="submit"
 				  value="<spring:message code="general.save" />" />
