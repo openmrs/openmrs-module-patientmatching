@@ -80,6 +80,11 @@ public class ConfigurationSimpleFormController extends SimpleFormController {
         
         Map<String, String> model = new HashMap<String, String>();
         
+        if(patientMatchingConfig.getConfigurationName()==null || "".equals(patientMatchingConfig.getConfigurationName())){
+        	httpSession.setAttribute(WebConstants.OPENMRS_ERROR_ATTR, "patientmatching.config.new.noNameErrorMessage");
+        	return showForm(request, response, errors);
+        }
+        
         try{
         	Set<ConfigurationEntry> entries= patientMatchingConfig.getConfigurationEntries();
         	Set<ConfigurationEntry> newEntries = new TreeSet();
