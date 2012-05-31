@@ -269,8 +269,7 @@
 				</ul>
 			</div>
 		</td>
-		<br/>
-		<div id="warningArea" valign="top" style="height: 150px;"><b
+		<div id="warningArea" valign="top" style="padding-top:10px;"><b
 				class="boxHeader"><spring:message
 					code="patientmatching.config.new.errorMessageBoxHeader" /> </b>
 			<div id="warningBox" class="box" style="padding-right: 10px;">
