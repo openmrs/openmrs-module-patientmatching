@@ -121,7 +121,6 @@ public class HibernatePatientMatchingReportMetadataDAO implements PatientMatchin
 		return criteria.list();
 	}
 
-	@Override
 	public List<PatientMatchingConfiguration> getMatchingConfigs() {
 		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(PatientMatchingConfiguration.class);
 		return criteria.list();

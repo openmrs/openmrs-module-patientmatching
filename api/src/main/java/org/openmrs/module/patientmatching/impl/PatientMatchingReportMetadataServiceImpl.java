@@ -53,7 +53,6 @@ public class PatientMatchingReportMetadataServiceImpl implements PatientMatching
 		return dao.getBlockingRuns();
 	}
 
-	@Override
 	public List<PatientMatchingConfiguration> getMatchingConfigs() {
 		return dao.getMatchingConfigs();
 	}
