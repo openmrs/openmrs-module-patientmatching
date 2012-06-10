@@ -2,6 +2,7 @@ package org.openmrs.module.patientmatching;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,6 +23,7 @@ import org.openmrs.api.context.Context;
  */
 public class Estimator {
 	private long estimatedComparisons = -1L;
+	private long estimatedTimeToRun = -1L;
 	
 	/**
 	 * Calculates the estimated comparisons that the strategy will run using the configurations user has selected.
@@ -29,6 +31,9 @@ public class Estimator {
 	 * @param configurationEntries The set of configuration entries user has selected
 	 */
 	public void doEstimations(Set<ConfigurationEntry> configurationEntries) {
+		
+		Date startedAt = new Date();
+		
 		String select = "select count(distinct p1) from Patient p1, Patient p2";
 		String where = " where p1 <> p2 ";
 		String orderBy = " order by ";
@@ -101,6 +106,8 @@ public class Estimator {
 		
 		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
 		estimatedComparisons = service.getCustomCount(select);
+		Date finishedAt = new Date();
+		estimatedTimeToRun = finishedAt.getTime() - startedAt.getTime();
 	}
 	
 	/**
@@ -127,4 +134,14 @@ public class Estimator {
 		return estimatedComparisons;
 	}
 	
+	public long getEstimatedTimeToRun() {
+		//TODO check whether the estimations are done before calling this
+		return estimatedTimeToRun;
+	}
+	
+	public long getTotalRecords() {
+		String query = "select count(p1) from Patient p1";
+		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
+		return service.getCustomCount(query);		
+	}
 }
