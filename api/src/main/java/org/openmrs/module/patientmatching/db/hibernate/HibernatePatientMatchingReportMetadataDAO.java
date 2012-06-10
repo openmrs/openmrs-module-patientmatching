@@ -7,6 +7,7 @@ import java.util.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
+import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
@@ -132,5 +133,11 @@ public class HibernatePatientMatchingReportMetadataDAO implements PatientMatchin
 
 	public void deletePatientMatchingConfiguration(PatientMatchingConfiguration configuration) {
 		sessionFactory.getCurrentSession().delete(configuration);
+	}
+
+	public long getCustomCount(String query) {
+		Query countQuery = sessionFactory.getCurrentSession().createQuery(query);
+		Long count = (Long)countQuery.uniqueResult();
+		return count;
 	}
 }

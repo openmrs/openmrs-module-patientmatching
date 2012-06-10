@@ -64,4 +64,8 @@ public class PatientMatchingReportMetadataServiceImpl implements PatientMatching
 	public void deletePatientMatchingConfiguration(PatientMatchingConfiguration configuration) {
 		dao.deletePatientMatchingConfiguration(configuration);
 	}
+
+	public long getCustomCount(String query) {
+		return dao.getCustomCount(query);
+	}
 }
