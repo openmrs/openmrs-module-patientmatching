@@ -13,9 +13,21 @@ import org.openmrs.Person;
 import org.openmrs.PersonName;
 import org.openmrs.api.context.Context;
 
+/**
+ * Class to calculate various estimations of an strategy to give a feedback
+ * on the goodness of the strategy before it is used in de-duplication
+ *  
+ * @author pulasthi
+ *
+ */
 public class Estimator {
 	private long estimatedComparisons = -1L;
 	
+	/**
+	 * Calculates the estimated comparisons that the strategy will run using the configurations user has selected.
+	 *   
+	 * @param configurationEntries The set of configuration entries user has selected
+	 */
 	public void doEstimations(Set<ConfigurationEntry> configurationEntries) {
 		String select = "select count(distinct p1) from Patient p1, Patient p2";
 		String where = " where p1 <> p2 ";
@@ -91,6 +103,11 @@ public class Estimator {
 		estimatedComparisons = service.getCustomCount(select);
 	}
 	
+	/**
+	 * Returns the blocking entries of a given set of configuration entries
+	 * @param allEntries The set of all configuration entries
+	 * @return The set of blocking entries out of the input entries
+	 */
 	private Set<ConfigurationEntry> getBlockingEntries(Set<ConfigurationEntry> allEntries){
 		Set<ConfigurationEntry> blockingEntries = new TreeSet<ConfigurationEntry>();
 		for (ConfigurationEntry configurationEntry : allEntries) {
@@ -101,6 +118,10 @@ public class Estimator {
 		return blockingEntries;
 	}
 
+	/**
+	 * Get the estimated no of comparisons that the strategy would do. 
+	 * @return
+	 */
 	public long getEstimatedComparisons() {
 		//TODO check whether the estimations are done before calling this
 		return estimatedComparisons;
