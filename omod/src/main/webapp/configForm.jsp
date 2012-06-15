@@ -4,12 +4,16 @@
 				 otherwise="/login.htm" redirect="/module/patientmatching/config.list" />
 
 <%@ include file="/WEB-INF/template/header.jsp"%>
+<openmrs:htmlInclude file="/dwr/interface/DWREstimationUtilities.js"/>
+<openmrs:htmlInclude file="/dwr/engine.js"/>
+<openmrs:htmlInclude file="/dwr/util.js"/>
 <%@ include file="localHeader.jsp"%>
 
 <br />
 
 <script type="text/javascript">
-    function selectOnly(fieldName) {
+
+function selectOnly(fieldName) {
         var blocking = "blocking";
         var included = "included";
         
@@ -103,9 +107,45 @@
 		count;
 		return count>0;
 	}
+		
+	function showEstimations(){
+		var inputs = document.getElementsByTagName('input');
+		var blockingEntries = new Array();
+		for(var i=0; i < inputs.length; i++){
+			if(inputs[i].id.indexOf('MM')==0 && inputs[i].checked){
+				var entryName = inputs[i].id.substring(3);
+				blockingEntries.push(entryName);
+			}
+		}
+		DWREstimationUtilities.getEstimationInfomation(blockingEntries,handleCallBackData);
+		return false;
+	}
+	
+	function handleCallBackData(data){
+		var info;
+		var estimatedPairs;
+		var estimatedTimeToRun;
+		var totalRecords;
+		var splittedData = data.split(";");
+		info = splittedData[0];
+		estimatedPairs = splittedData[1];
+		estimatedTimeToRun = splittedData[2];
+		totalRecords = splittedData[3];
+		document.getElementsByName("estimatedPairs")[0].value = estimatedPairs;
+		document.getElementsByName("estimatedTime")[0].value = estimatedTimeToRun;
+		document.getElementsByName("totalRecords")[0].value = totalRecords;
+		
+		var message = info+"\n";
+		message += "Estimated Patient Pairs = "+estimatedPairs+"\n";
+		message += "Estimation Time = "+ estimatedTimeToRun;
+		var ready = confirm(message);
+		if(ready){
+			$j('#configForm').submit();
+		}				
+	}
+	
 </script>
-
-<form method="post">
+<form id="configForm" method="post">
 	<b class="boxHeader"><spring:message
 			code="patientmatching.config.new" /> </b>
 	<div class="box">
@@ -201,17 +241,17 @@
 													<spring:message code="${configEntry.fieldViewName}" />
 												</div> </b> </font>
 										</td>
-										<td align="center"><input type="radio"
+										<td align="center"><input type="radio" id="IG-${configEntry.fieldName}"
 																  name="<c:out value="${status.expression}"/>" value="IGNORED"
 																  onclick="ignore(this)"
 																  <c:if test='${status.value == "IGNORED"}'>checked</c:if> />
 											</td>
-											<td align="center"><input type="radio"
+											<td align="center"><input type="radio" id="SM-${configEntry.fieldName}"
 																	  name="<c:out value="${status.expression}"/>"
 												value="INCLUDED" onclick="changeSM(this)"
 												<c:if test='${status.value == "INCLUDED"}' >checked</c:if> />
 											</td>
-											<td align="center"><input type="radio"
+											<td align="center"><input type="radio" id="MM-${configEntry.fieldName}"
 																	  name="<c:out value="${status.expression}"/>"
 												value="BLOCKING" onclick="changeMM(this)"
 												<c:if test='${status.value == "BLOCKING"}'>checked</c:if> />
@@ -276,7 +316,11 @@
 			</div>
 		</div>
 	</div>
-	<br /> <input id="submitButton" type="submit"
+	<br /> 
+	<input name="estimatedPairs" type="hidden" value=""/>
+	<input name="estimatedTime" type="hidden" value=""/>
+	<input name="totalRecords" type="hidden" value=""/>	
+	<input id="submitButton" onclick="return showEstimations();" type="submit"
 				  value="<spring:message code="general.save" />" />
 </form>
 <script>

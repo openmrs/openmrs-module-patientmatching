@@ -96,10 +96,6 @@ public class ConfigurationSimpleFormController extends SimpleFormController {
         		newEntries.add(ce);
         	}
         
-        Estimator estimator = new Estimator();
-        estimator.doEstimations(newEntries);
-        long estimatedComparisions = estimator.getEstimatedComparisons();
-        	
         patientMatchingConfig.getConfigurationEntries().clear();
         patientMatchingConfig.setConfigurationEntries(newEntries);
         MatchingConfigurationUtils.savePatientMatchingConfig(patientMatchingConfig);

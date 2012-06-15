@@ -25,13 +25,8 @@ public class Estimator {
 	private long estimatedComparisons = -1L;
 	private long estimatedTimeToRun = -1L;
 	
-	/**
-	 * Calculates the estimated comparisons that the strategy will run using the configurations user has selected.
-	 *   
-	 * @param configurationEntries The set of configuration entries user has selected
-	 */
-	public void doEstimations(Set<ConfigurationEntry> configurationEntries) {
-		
+	
+	public void doEstimationsWithBlockingFields(List<String> entryNames){
 		Date startedAt = new Date();
 		
 		String select = "select count(distinct p1) from Patient p1, Patient p2";
@@ -40,10 +35,9 @@ public class Estimator {
 		
 		List<String> attributes = new ArrayList<String>();
 		
-		for (ConfigurationEntry blockingEntry : getBlockingEntries(configurationEntries)) {
-			String fieldName = blockingEntry.getFieldName();
-			String className = fieldName.substring(0,fieldName.lastIndexOf("."));
-			String attribute = fieldName.substring(fieldName.lastIndexOf(".")+1);
+		for (String entryName : entryNames ) {
+			String className = entryName.substring(0,entryName.lastIndexOf("."));
+			String attribute = entryName.substring(entryName.lastIndexOf(".")+1);
 			attributes.add(attribute);
 		}
 		
@@ -111,6 +105,20 @@ public class Estimator {
 	}
 	
 	/**
+	 * Calculates the estimated comparisons that the strategy will run using the configurations user has selected.
+	 *   
+	 * @param configurationEntries The set of configuration entries user has selected
+	 */
+	public void doEstimations(Set<ConfigurationEntry> configurationEntries) {
+		Set<ConfigurationEntry> blockingEntries = getBlockingEntries(configurationEntries);
+		List<String> blockingEntryNames = new ArrayList<String>(blockingEntries.size());
+		for (ConfigurationEntry entry : blockingEntries) {
+			blockingEntryNames.add(entry.getFieldName());
+		}
+		doEstimationsWithBlockingFields(blockingEntryNames);
+	}
+	
+	/**
 	 * Returns the blocking entries of a given set of configuration entries
 	 * @param allEntries The set of all configuration entries
 	 * @return The set of blocking entries out of the input entries
@@ -134,11 +142,19 @@ public class Estimator {
 		return estimatedComparisons;
 	}
 	
+	/**
+	 * Get the time taken to run the comparisons
+	 * @return Time taken to run the comparisons
+	 */
 	public long getEstimatedTimeToRun() {
 		//TODO check whether the estimations are done before calling this
 		return estimatedTimeToRun;
 	}
 	
+	/**
+	 * Get the no of patients in the database at the moment
+	 * @return No of patients in the database at the moment
+	 */
 	public long getTotalRecords() {
 		String query = "select count(p1) from Patient p1";
 		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
