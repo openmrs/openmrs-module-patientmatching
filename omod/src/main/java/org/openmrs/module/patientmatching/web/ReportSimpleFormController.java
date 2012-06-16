@@ -29,7 +29,7 @@ public class ReportSimpleFormController extends SimpleFormController {
 	protected Map<String, Object> referenceData(HttpServletRequest req) throws Exception {
 		Map<String, Object> requestMap = new HashMap<String, Object>();
 		requestMap.put("reportParam", MatchingConstants.PARAM_REPORT);
-        requestMap.put("blockingRuns", MatchingConfigurationUtils.listAvailableBlockingRuns_db());
+        requestMap.put("blockingRuns", MatchingConfigurationUtils.listAvailableBlockingRunConfigs());
         requestMap.put("reportResults", MatchingReportUtils.listAvailableReport());
         requestMap.put("defaultStatus", MatchingReportUtils.NO_PROCESS);
         requestMap.put("premStatus", MatchingReportUtils.PREM_PROCESS);

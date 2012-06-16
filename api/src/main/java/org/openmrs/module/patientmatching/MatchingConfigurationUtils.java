@@ -447,6 +447,16 @@ public class MatchingConfigurationUtils {
 	}
 	
 	/**
+	 * List all available blocking configurations
+	 * @return list of blocking configurations
+	 */
+	public static List<PatientMatchingConfiguration> listAvailableBlockingRunConfigs() {
+		log.info("Listing all available blocking confugurations");
+		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
+		return service.getBlockingRuns();
+	}
+	
+	/**
 	 * Method returns a list of all available PatientMatchingConfiguration names
 	 */
 	public static final List<String> listAvailableMatchingConfigs_db() {
