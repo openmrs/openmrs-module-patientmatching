@@ -19,7 +19,6 @@ public class DWREstimationUtilities {
 	}
 
 	public String getEstimationInfomation(List<String> blockingFields) {
-		System.out.println("in estimation info with "+ blockingFields);
 		runEstimationProcess(blockingFields);
 		long estimatedComparisions = estimator.getEstimatedComparisons();
 		long totalRecords = estimator.getTotalRecords();
