@@ -453,7 +453,10 @@ public class MatchingConfigurationUtils {
 	public static List<PatientMatchingConfiguration> listAvailableBlockingRunConfigs() {
 		log.info("Listing all available blocking confugurations");
 		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
-		return service.getBlockingRuns();
+		List<PatientMatchingConfiguration> configs = service.getBlockingRuns();
+		log.info("Updating estimations as necessary...");
+		new Estimator().updateStrategies(configs);
+		return configs;
 	}
 	
 	/**

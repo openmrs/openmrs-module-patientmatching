@@ -25,6 +25,7 @@ public class Estimator {
 	private long estimatedComparisons = -1L;
 	private long estimatedTimeToRun = -1L;
 	
+	private static final double RECALCULATE_IGNORE_FRACTION = 0.1;
 	
 	public void doEstimationsWithBlockingFields(List<String> entryNames){
 		Date startedAt = new Date();
@@ -158,6 +159,28 @@ public class Estimator {
 	public long getTotalRecords() {
 		String query = "select count(p1) from Patient p1";
 		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
-		return service.getCustomCount(query);		
+		return service.getCustomCount(query);
 	}
+	
+	/**
+	 * Update the estimation information of given list of PatientMatchingConfiguration
+	 * This update is done only if the total patient records is changed by
+	 * RECALCULATE_IGNORE_FRACTION (currently 0.1) of the number of records at the last time 
+	 * of the strategy update. Else it is kept unchanged to minimize the calculations.
+	 * @param configList The list of configurations to be updated
+	 */
+	public void updateStrategies(List<PatientMatchingConfiguration> configList){
+		long totalRecords = getTotalRecords();
+		for (PatientMatchingConfiguration configuration : configList) {
+			long configPreTotalRecs = configuration.getTotalRecords();
+			long recordDif = Math.abs(totalRecords-configPreTotalRecs);
+			if(recordDif > configPreTotalRecs * RECALCULATE_IGNORE_FRACTION){
+				doEstimations(configuration.getConfigurationEntries());
+				configuration.setEstimatedPairs(estimatedComparisons);
+				configuration.setEstimatedTime(estimatedTimeToRun);
+				configuration.setTotalRecords(totalRecords);
+				MatchingConfigurationUtils.savePatientMatchingConfig(configuration);
+			}
+		}
+	}	
 }
