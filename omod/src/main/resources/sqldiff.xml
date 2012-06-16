@@ -161,4 +161,17 @@ CREATE TABLE `patientmatching_configurationEntries` (
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 		</sql>
 	</diff>
+	<diff>
+		<version>1.7.5</version>
+		<author>pulasthi7</author>
+		<date>June 16, 2012</date>
+		<description>
+			Add columns to patientmatching_configuration to store estimation info
+		</description>
+		<sql>
+			ALTER TABLE patientmatching_configuration ADD COLUMN estimated_pairs int(11) DEFAULT 0;
+			ALTER TABLE patientmatching_configuration ADD COLUMN estimated_time int(11) DEFAULT 0;
+			ALTER TABLE patientmatching_configuration ADD COLUMN total_records int(11) DEFAULT 0;
+		</sql>
+	</diff>
 </sqldiff>

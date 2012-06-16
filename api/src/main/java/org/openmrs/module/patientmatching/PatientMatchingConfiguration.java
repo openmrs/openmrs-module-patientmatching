@@ -44,6 +44,24 @@ public class PatientMatchingConfiguration {
     private int randomSampleSize;
     
     /**
+     * The estimated number of pairs that the strategy will produce. The data is
+     * saved based on the calculations by the time of strategy creation. 
+     */
+    private long estimatedPairs;
+    
+    /**
+     * A rough estimation of the time that the strategy will take to run
+     */
+    private long estimatedTime;
+    
+    /**
+     * Total number of records of the database at the time the strategy is saved
+     * This will be taken into consideration to recalculate the estimations if the
+     * total number of records has been changed when the strategy is used.
+     */
+    private long totalRecords;
+    
+    /**
      * Define the list of configuration entries for the configuration. Correspond
      * to each element inside the "run" tag in the configuration file.
      */
@@ -156,6 +174,54 @@ public class PatientMatchingConfiguration {
     public void setRandomSampleSize(int randomSampleSize) {
         this.randomSampleSize = randomSampleSize;
     }
+    
+    /**
+     * Return the estimated number of pairs that the strategy will produce
+     * @return the estimated number of pairs
+     */
+    public long getEstimatedPairs() {
+		return estimatedPairs;
+	}
+    
+    /**
+     * Sets the estimated number of pairs that the strategy will produce
+     * @param estimatedPairs The estimated number of pairs
+     */
+    public void setEstimatedPairs(long estimatedPairs) {
+		this.estimatedPairs = estimatedPairs;
+	}
+    
+    /**
+     * Returns the estimated time (in milliseconds) that the strategy will take to run
+     * @return the time taken to run the strategy in ms
+     */
+    public long getEstimatedTime() {
+		return estimatedTime;
+	}
+    
+    /**
+     * Sets the estimated time to run the strategy in milliseconds
+     * @param estimatedTime time that will take to run the strategy
+     */
+    public void setEstimatedTime(long estimatedTime) {
+		this.estimatedTime = estimatedTime;
+	}
+    
+    /**
+     * Returns the total number of records in the database by the strategy creation time
+     * @return the total number of records in the database
+     */
+    public long getTotalRecords() {
+		return totalRecords;
+	}
+    
+    /**
+     * Sets the total number of patient records in the database by the strategy creation time
+     * @param totalRecords the total number of records in the database
+     */
+    public void setTotalRecords(long totalRecords) {
+		this.totalRecords = totalRecords;
+	}
     
     /**
      * Return <code>String</code> representation of the <code>PatientMatchingConfiguration</code>
