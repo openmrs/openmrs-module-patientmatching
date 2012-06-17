@@ -35,11 +35,19 @@ public class Estimator {
 		String orderBy = " order by ";
 		
 		List<String> attributes = new ArrayList<String>();
+		List<String> identifiers = new ArrayList<String>();
+		List<String> attrTypes = new ArrayList<String>();
 		
 		for (String entryName : entryNames ) {
-			String className = entryName.substring(0,entryName.lastIndexOf("."));
-			String attribute = entryName.substring(entryName.lastIndexOf(".")+1);
-			attributes.add(attribute);
+			if(entryName.startsWith("(Identifier) ")){
+				identifiers.add(entryName.substring("(Identifier) ".length()));
+			} else if(entryName.startsWith("(Attribute) ")){
+				attrTypes.add(entryName.substring("(Attribute) ".length()));
+			} else{
+				String className = entryName.substring(0,entryName.lastIndexOf("."));
+				String attribute = entryName.substring(entryName.lastIndexOf(".")+1);
+				attributes.add(attribute);
+			}
 		}
 		
 		Class<Patient> patient = Patient.class;
@@ -93,6 +101,27 @@ public class Estimator {
 				orderBy += "pi1." + s + ", ";
 			}
 		}
+		if(!identifiers.isEmpty()){
+			if (!select.contains("PatientIdentifier ")) {
+				select += ", PatientIdentifier pi1, PatientIdentifier pi2";
+				where += " and p1 = pi1.patient and p2 = pi2.patient ";
+			}
+			if (!select.contains("PatientIdentifierType")) {
+				select += ", PatientIdentifierType pit1, PatientIdentifierType pit2";
+				where += " and pit1 = pi1.identifierType and pit2 = pi2.identifierType and pi1.identifier = pi2.identifier" +
+						" and pit1.format=pit2.format";
+			}
+			int count = 0;
+			where += " and (";
+			for (String idType : identifiers) {
+				if(count>0){
+					where += " or";
+				}
+				where += " pit1.format = '" + idType+"'";
+				count++;
+			}
+			where +=")";
+		}		
 		
 		int index = orderBy.lastIndexOf(", ");
 		orderBy = orderBy.substring(0, index);
