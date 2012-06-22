@@ -126,17 +126,19 @@ function selectOnly(fieldName) {
 		var estimatedPairs;
 		var estimatedTimeToRun;
 		var totalRecords;
+		var pairRecordRatio;
 		var splittedData = data.split(";");
 		info = splittedData[0];
 		estimatedPairs = splittedData[1];
 		estimatedTimeToRun = splittedData[2];
 		totalRecords = splittedData[3];
+		pairRecordRatio = parseFloat(estimatedPairs)/parseFloat(totalRecords);
 		document.getElementsByName("estimatedPairs")[0].value = estimatedPairs;
 		document.getElementsByName("estimatedTime")[0].value = estimatedTimeToRun;
 		document.getElementsByName("totalRecords")[0].value = totalRecords;
 		
 		var message = info+"\n";
-		message += "Estimated Patient Pairs = "+estimatedPairs+"\n";
+		message += "Estimated Patient Pairs = "+estimatedPairs+" ("+ pairRecordRatio +" times total records)\n";
 		message += "Estimation Time = "+ estimatedTimeToRun;
 		var ready = confirm(message);
 		if(ready){
