@@ -30,9 +30,8 @@ public class Estimator {
 	public void doEstimationsWithBlockingFields(List<String> entryNames){
 		Date startedAt = new Date();
 		
-		String select = "select count(distinct p1) from Patient p1, Patient p2";
+		String select = "select count(p1) from Patient p1, Patient p2";
 		String where = " where p1 <> p2 ";
-		String orderBy = " order by ";
 		
 		List<String> attributes = new ArrayList<String>();
 		List<String> identifiers = new ArrayList<String>();
@@ -44,7 +43,6 @@ public class Estimator {
 			} else if(entryName.startsWith("(Attribute) ")){
 				attrTypes.add(entryName.substring("(Attribute) ".length()));
 			} else{
-				String className = entryName.substring(0,entryName.lastIndexOf("."));
 				String attribute = entryName.substring(entryName.lastIndexOf(".")+1);
 				attributes.add(attribute);
 			}
@@ -77,34 +75,33 @@ public class Estimator {
 		for (String s : attributes) {
 			if (patientFieldNames.contains(s)) {
 				where += " and p1." + s + " = p2." + s;
-				orderBy += "p1." + s + ", ";
 			} else if (personFieldNames.contains(s)) {
 				if (!select.contains("Person ")) {
 					select += ", Person person1, Person person2";
 					where += " and p1.patientId = person1.personId and p2.patientId = person2.personId ";
 				}
 				where += " and person1." + s + " = person2." + s;
-				orderBy += "person1." + s + ", ";
 			} else if (personNameFieldNames.contains(s)) {
 				if (!select.contains("PersonName")) {
 					select += ", PersonName pn1, PersonName pn2";
 					where += " and p1 = pn1.person and p2 = pn2.person ";
 				}
 				where += " and pn1." + s + " = pn2." + s;
-				orderBy += "pn1." + s + ", ";
 			} else if (identifierFieldNames.contains(s)) {
 				if (!select.contains("PatientIdentifier")) {
 					select += ", PatientIdentifier pi1, PatientIdentifier pi2";
 					where += " and p1 = pi1.patient and p2 = pi2.patient ";
 				}
 				where += " and pi1." + s + " = pi2." + s;
-				orderBy += "pi1." + s + ", ";
 			}
 		}
+
+        //The identifiers (Patient) and the attributes(Person) are not static fields. They are dynamic.
+        //Therefore there values are checked dynamically
 		if(!identifiers.isEmpty()){
 			if (!select.contains("PatientIdentifier ")) {
 				select += ", PatientIdentifier pi1, PatientIdentifier pi2";
-				where += " and p1 = pi1.patient and p2 = pi2.patient ";
+				where += " and p1 = pi1.patient and p2 = pi2.patient";
 			}
 			if (!select.contains("PatientIdentifierType")) {
 				select += ", PatientIdentifierType pit1, PatientIdentifierType pit2";
@@ -113,23 +110,54 @@ public class Estimator {
 			}
 			int count = 0;
 			where += " and (";
+            StringBuilder whereBuffer = new StringBuilder();
 			for (String idType : identifiers) {
 				if(count>0){
-					where += " or";
+					whereBuffer.append(" or");
 				}
-				where += " pit1.format = '" + idType+"'";
+				whereBuffer.append(" pit1.format = '");
+                whereBuffer.append(idType);
+                whereBuffer.append("'");
 				count++;
 			}
-			where +=")";
-		}		
+			where += whereBuffer.toString()+ ")";
+		}
+
+        if(!attrTypes.isEmpty()){
+            //In case Person not defined previously
+            if (!select.contains("Person ")) {
+                select += ", Person person1, Person person2";
+                where += " and p1.patientId = person1.personId and p2.patientId = person2.personId ";
+            }
+            if (!select.contains("PersonAttribute")){
+                select += ", PersonAttribute pa1, PersonAttribute pa2";
+                where += " and person1 = pa1.person and person2 = pa2.person";
+            }
+            if (!select.contains("PersonAttributeType")){
+                select += ", PersonAttributeType pat1, PersonAttributeType pat2";
+                where += " and pat1 = pa1.attributeType and pat2 = pa2.attributeType" +
+                    " and pat1.format = pat2.format";
+            }
+
+            int count = 0;
+            where += " and (";
+            StringBuilder whereBuffer = new StringBuilder();
+            for (String attrType : attrTypes) {
+                if(count>0){
+                    whereBuffer.append(" or");
+                }
+                whereBuffer.append(" pat1.format = '");
+                whereBuffer.append(attrType);
+                whereBuffer.append("'");
+                count++;
+            }
+            where += whereBuffer.toString()+ ")";
+        }
 		
-		int index = orderBy.lastIndexOf(", ");
-		orderBy = orderBy.substring(0, index);
-		
-		select = select + where + orderBy;
+		select = select + where;
 		
 		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
-		estimatedComparisons = service.getCustomCount(select);
+		estimatedComparisons = service.getCustomCount(select) / 2;
 		Date finishedAt = new Date();
 		estimatedTimeToRun = finishedAt.getTime() - startedAt.getTime();
 	}
@@ -165,7 +193,7 @@ public class Estimator {
 
 	/**
 	 * Get the estimated no of comparisons that the strategy would do. 
-	 * @return
+	 * @return the estimated no of comparisons
 	 */
 	public long getEstimatedComparisons() {
 		//TODO check whether the estimations are done before calling this
