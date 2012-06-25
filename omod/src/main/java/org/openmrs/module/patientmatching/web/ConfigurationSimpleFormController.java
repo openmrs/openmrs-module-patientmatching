@@ -100,7 +100,7 @@ public class ConfigurationSimpleFormController extends SimpleFormController {
         patientMatchingConfig.setConfigurationEntries(newEntries);
         MatchingConfigurationUtils.savePatientMatchingConfig(patientMatchingConfig);
         }catch(ConstraintViolationException e){
-        	httpSession.setAttribute(WebConstants.OPENMRS_ERROR_ATTR, "patientmatching.strategyname.duplicate");
+        	httpSession.setAttribute(WebConstants.OPENMRS_ERROR_ATTR, "patientmatching.strategy.duplicate");
         	return showForm(request, response, errors);
         }
         return new ModelAndView(getSuccessView(), model);
