@@ -106,7 +106,11 @@ public class HibernatePatientMatchingReportMetadataDAO implements PatientMatchin
 		sessionFactory.getCurrentSession().saveOrUpdate(patientMatchingConfiguration);
 	}
 
-	public void deletePatientMatchingConfigurationByName(String name) {
+    public void savePatientMatchingReport(Report report) {
+        sessionFactory.getCurrentSession().saveOrUpdate(report);
+    }
+
+    public void deletePatientMatchingConfigurationByName(String name) {
 		PatientMatchingConfiguration pmc = findPatientMatchingConfigurationByName(name);
 		sessionFactory.getCurrentSession().delete(pmc);
 	}

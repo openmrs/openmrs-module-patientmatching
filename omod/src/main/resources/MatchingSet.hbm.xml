@@ -5,7 +5,11 @@
 			unsaved-value="0">
 			<generator class="identity" />
 		</id>
-  <property name="groupId" column="group_id" not-null="true" />
-  <property name="patientId" column="patientId" not-null="true" />
+  <property name="groupId" type="java.lang.Integer"  column="group_id" not-null="true" />
+      <property name="patient" type="org.openmrs.Patient" column="patient_id" not-null="true" />
+      <many-to-one name="report" class="org.openmrs.module.patientmatching.Report" not-null="true">
+          <column name="report_id" />
+      </many-to-one>
+      <property name="markedFalse" type="java.lang.Boolean" column="marked_false" not-null="true"/>
   </class>
   </hibernate-mapping>

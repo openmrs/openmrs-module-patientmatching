@@ -16,6 +16,6 @@
 		<property name="fieldName" column="field_name" not-null="true" />
 		<property name="inclusion" column="inclusion" not-null="false" />
 		<property name="blockOrder" column="block_order" not-null="false" />
-		<property name="flag" column="flag" not-null="true" />
+		<property name="flag" column="flag" not-null="false" />
 	</class>
 </hibernate-mapping>

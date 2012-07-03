@@ -7,13 +7,20 @@ package org.openmrs.module.patientmatching;
  * However, reports are being moved into the database as part of plans
  * to move all external flat files into a database.
  */
-import java.util.ArrayList;
+
+import org.openmrs.User;
+
+import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 public class Report {
 	private Long reportId;
 	private String reportName;
+    private User createdBy;
+    private Date createdOn;
 	private List<MatchingSet> matchingSetList;
+    private Set<PatientMatchingConfiguration> usedConfigurationList;
 	
 	public Long getReportId() {
 		return reportId;
@@ -33,4 +40,28 @@ public class Report {
 	public void setMatchingSetList(List<MatchingSet> matchingSet) {	
 		this.matchingSetList = matchingSet;
 	}
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Date getCreatedOn() {
+        return createdOn;
+    }
+
+    public void setCreatedOn(Date createdOn) {
+        this.createdOn = createdOn;
+    }
+
+    public Set<PatientMatchingConfiguration> getUsedConfigurationList() {
+        return usedConfigurationList;
+    }
+
+    public void setUsedConfigurationList(Set<PatientMatchingConfiguration> usedConfigurationList) {
+        this.usedConfigurationList = usedConfigurationList;
+    }
 }

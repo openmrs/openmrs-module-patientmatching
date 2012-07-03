@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -178,7 +177,7 @@ public class MatchingReportUtils {
 		reader.close();
 		
 		ReaderProvider rp = ReaderProvider.getInstance();
-		
+
 		objects.put("recordStore", recordStore);
 		objects.put("rp", rp);
 		objects.put("recMatchConfig", recMatchConfig);
@@ -202,7 +201,7 @@ public class MatchingReportUtils {
 				formPairsRandom);
 		databaseReaderRandom.close();
 		objects.put("recMatchConfig", recMatchConfig);
-		
+
 		objects.put("rsa", rsa);
 		return objects;
 	}
@@ -433,52 +432,37 @@ public class MatchingReportUtils {
 
 		return reports;
 	}
-
 	/**
 	 * Method to persist report information
 	 */
 	public static void persistReportInfo(String rptName, String dateCreated) {
-		List<Long> proTimeList = MatchingRunData.getInstance().getProTimeList();
-		
-		String proInfo = "0ms";
-		String uid = Context.getAuthenticatedUser().getUsername();
-		for (int j = 0; j < 8; j++) {
-			proInfo = proInfo + "," + proTimeList.get(j) + "ms";
-		}
-		proInfo = proInfo + ",96ms,0ms";
-		
-		PatientMatchingReportMetadata prm = new PatientMatchingReportMetadata();
-		prm.setReportName(rptName);
-		prm.setSelStrats(MatchingRunData.getInstance().getFileStrat());
-		prm.setProcessNT(proInfo);
-		prm.setCreatedBy(uid);
-		prm.setDateCreated(dateCreated);
-		HibernateSessionFactoryBean bean = new HibernateSessionFactoryBean();
-		Configuration cfg = bean.newConfiguration();
-		Properties c = cfg.getProperties();
-		String url = c.getProperty("hibernate.connection.url");
-		String user = c.getProperty("hibernate.connection.username");
-		String passwd = c.getProperty("hibernate.connection.password");
-		String driver = c.getProperty("hibernate.connection.driver_class");
-		log.info("URL: " + url);
-		try {
-			Class.forName(driver);
-			ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
-					url, user, passwd);
-			Connection databaseConnection = connectionFactory.createConnection();
-			PreparedStatement ps = databaseConnection.prepareStatement(
-					"INSERT INTO persistreportdata (report_name,strategies_used,process_name_time,createdby,datecreated)"
-					+ " VALUES (?, ?, ?, ?,?)");
-			ps.setString(1, prm.getReportName());
-			ps.setString(2, prm.getSelstrategies());
-			ps.setString(3, prm.getpNameTime());
-			ps.setString(4, prm.getCreatedBy());
-			ps.setString(5, prm.getDateCreated());
-			i = ps.executeUpdate();
+//		List<Long> proTimeList = MatchingRunData.getInstance().getProTimeList();
 
-		} catch (Exception e) {
-			log.info("skipping error while persisting report info", e);
-		}
+        Report report = new Report();
+        report.setCreatedBy(Context.getAuthenticatedUser());
+        report.setReportName(rptName);
+        report.setCreatedOn(new Date());
+        String selectedStrategies = MatchingRunData.getInstance().getFileStrat();
+        String[] selectedStrategyNamesArray = selectedStrategies.split(",");
+        Set<PatientMatchingConfiguration> usedConfigurations = new TreeSet<PatientMatchingConfiguration>();
+        PatientMatchingReportMetadataService reportMetadataService = Context.getService(PatientMatchingReportMetadataService.class);
+
+        for(String strategyName : selectedStrategyNamesArray){
+            PatientMatchingConfiguration configuration = reportMetadataService.findPatientMatchingConfigurationByName(strategyName);
+            usedConfigurations.add(configuration);
+        }
+
+        report.setUsedConfigurationList(usedConfigurations);
+        //TODO set the matching sets
+
+        reportMetadataService.savePatientMatchingReport(report);
+
+//		String proInfo = "0ms";
+//		String uid = Context.getAuthenticatedUser().getUsername();
+//		for (int j = 0; j < 8; j++) {
+//			proInfo = proInfo + "," + proTimeList.get(j) + "ms";
+//		}
+//		proInfo = proInfo + ",96ms,0ms";
 	 }
 
 }

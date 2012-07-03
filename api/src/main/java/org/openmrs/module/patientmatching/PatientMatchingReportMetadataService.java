@@ -10,6 +10,8 @@ public interface PatientMatchingReportMetadataService {
 
 	public void savePatientMatchingConfiguration(PatientMatchingConfiguration patientMatchingConfiguration);
 
+    public void savePatientMatchingReport(Report report);
+
 	public void deletePatientMatchingConfigurationByName(String name);
 
 	@Transactional(readOnly=true)

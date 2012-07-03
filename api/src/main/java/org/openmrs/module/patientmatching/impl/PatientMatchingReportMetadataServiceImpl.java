@@ -3,10 +3,10 @@ package org.openmrs.module.patientmatching.impl;
 import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.openmrs.module.patientmatching.PatientMatchingConfiguration;
 import org.openmrs.module.patientmatching.PatientMatchingReportMetadata;
 import org.openmrs.module.patientmatching.PatientMatchingReportMetadataService;
+import org.openmrs.module.patientmatching.Report;
 import org.openmrs.module.patientmatching.db.PatientMatchingReportMetadataDao;
 
 public class PatientMatchingReportMetadataServiceImpl implements PatientMatchingReportMetadataService {
@@ -68,4 +68,8 @@ public class PatientMatchingReportMetadataServiceImpl implements PatientMatching
 	public long getCustomCount(String query) {
 		return dao.getCustomCount(query);
 	}
+
+    public void savePatientMatchingReport(Report report) {
+        dao.savePatientMatchingReport(report);
+    }
 }

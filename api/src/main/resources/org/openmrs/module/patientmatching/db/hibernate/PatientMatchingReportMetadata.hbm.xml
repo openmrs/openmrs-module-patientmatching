@@ -9,7 +9,7 @@
 
         <cache usage="read-write"/>
 
-		<id name="reportname" type="java.lang.String" column="report_name"/>
+		<id name="reportName" type="java.lang.String" column="report_name"/>
 
 		<discriminator column="report_name"/>
 
@@ -22,7 +22,7 @@
 		<property name="createdBy" type="java.lang.String" column="createdby"
 		 length="255" />
 		 
-		 <property name="dateCreated" type="java.util.String" column="datecreated"
+		 <property name="dateCreated" type="java.lang.String" column="datecreated"
 		 length="255" />
 			
 		

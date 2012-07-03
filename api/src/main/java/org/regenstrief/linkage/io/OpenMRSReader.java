@@ -202,7 +202,7 @@ public class OpenMRSReader implements DataSourceReader {
      */
     public boolean close() {
         createHibernateSession().clear();
-        createHibernateSession().close();
+        //createHibernateSession().close();     //Causing a session closed exception in report generation
     	patients = null;
     	return (patients == null);
     }

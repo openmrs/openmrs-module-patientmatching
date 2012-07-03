@@ -138,7 +138,7 @@ function selectOnly(fieldName) {
 		document.getElementsByName("totalRecords")[0].value = totalRecords;
 		
 		var message = info+"\n";
-		message += "Estimated Patient Pairs = "+estimatedPairs+" ("+ pairRecordRatio +" times total records)\n";
+		message += "Estimated Patient Pairs = "+estimatedPairs+" ("+ pairRecordRatio.toFixed(3) +" times total records)\n";
 		message += "Estimation Time = "+ estimatedTimeToRun;
 		var ready = confirm(message);
 		if(ready){
@@ -312,7 +312,7 @@ function selectOnly(fieldName) {
 			</div>
 		</td>
 		<div id="warningArea" valign="top" style="padding-top:10px;"><b
-				class="boxHeader"><spring:message
+				class="boxHeaderRed"><spring:message
 					code="patientmatching.config.new.errorMessageBoxHeader" /> </b>
 			<div id="warningBox" class="box" style="padding-right: 10px;">
 			</div>
