@@ -24,6 +24,7 @@ import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.cfg.Configuration;
+import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.hibernate.HibernateSessionFactoryBean;
 import org.openmrs.util.OpenmrsUtil;
@@ -199,7 +200,7 @@ public class MatchingReportUtils {
 						.getLinkDataSource1().getTypeTable());
 		RandomSampleAnalyzer rsa = new RandomSampleAnalyzer((MatchingConfig)objects.get("matchingConfig"),
 				formPairsRandom);
-		databaseReaderRandom.close();
+		databaseReaderRandom.close();      //TODO
 		objects.put("recMatchConfig", recMatchConfig);
 
 		objects.put("rsa", rsa);
@@ -365,7 +366,7 @@ public class MatchingReportUtils {
 			groupId++;
 		}
 		writer.close();
-		persistReportInfo("dedup-report-" + configString + dateString, dateString);
+		persistReportInfo("dedup-report-" + configString + dateString, dateString, groupedId);
 		return objects;
 	}	
 	//New Method9 End 10
@@ -435,7 +436,7 @@ public class MatchingReportUtils {
 	/**
 	 * Method to persist report information
 	 */
-	public static void persistReportInfo(String rptName, String dateCreated) {
+	public static void persistReportInfo(String rptName, String dateCreated, List<Set<Long>> matchingPairs) {
 //		List<Long> proTimeList = MatchingRunData.getInstance().getProTimeList();
 
         Report report = new Report();
@@ -453,8 +454,20 @@ public class MatchingReportUtils {
         }
 
         report.setUsedConfigurationList(usedConfigurations);
-        //TODO set the matching sets
-
+        PatientService patientService = Context.getPatientService();
+        Set<MatchingSet> matchingSets = new TreeSet<MatchingSet>();
+        for (int j = 0; j < matchingPairs.size(); j++) {
+            Set<Long> matchSet = matchingPairs.get(j);
+            for(Long patientId: matchSet){
+                MatchingSet matchingSetEntry = new MatchingSet();
+                matchingSetEntry.setGroupId(j);
+                matchingSetEntry.setState("PENDING");   //TODO move to a constant
+                matchingSetEntry.setPatient(patientService.getPatient(patientId.intValue()));
+                matchingSetEntry.setReport(report);
+                matchingSets.add(matchingSetEntry);
+            }
+        }
+        report.setMatchingSet(matchingSets);
         reportMetadataService.savePatientMatchingReport(report);
 
 //		String proInfo = "0ms";

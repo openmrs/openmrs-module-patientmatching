@@ -13,7 +13,7 @@
           <column name="created_by" />
       </many-to-one>
 
-      <set name="matchingSetList" lazy="true" inverse="true" cascade="all-delete-orphan" sort="natural">
+      <set name="MatchingSet" lazy="true" inverse="true" cascade="all-delete-orphan" sort="natural">
           <key column="report_id" not-null="true"/>
           <one-to-many class="org.openmrs.module.patientmatching.MatchingSet"/>
       </set>

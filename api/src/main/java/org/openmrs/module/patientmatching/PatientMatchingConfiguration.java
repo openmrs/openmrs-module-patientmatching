@@ -22,7 +22,7 @@ public class PatientMatchingConfiguration {
 	/**
 	 * A unique configuration Id to identify each PatientMatchingConfiguration.
 	 */
-	private long configurationId;
+	private int configurationId;
     /**
      * Current configuration name. Correspond to the "name" attribute of
      * the "run" tag in the configuration file.
@@ -103,11 +103,11 @@ public class PatientMatchingConfiguration {
 		}
 	}
     
-    public long getConfigurationId() {
+    public int getConfigurationId() {
 		return configurationId;
 	}
 
-	public void setConfigurationId(long configurationId) {
+	public void setConfigurationId(int configurationId) {
 		this.configurationId = configurationId;
 	}
 

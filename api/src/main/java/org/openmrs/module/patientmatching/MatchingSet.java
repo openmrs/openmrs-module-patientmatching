@@ -2,10 +2,10 @@ package org.openmrs.module.patientmatching;
 
 import org.openmrs.Patient;
 
-public class MatchingSet {
+public class MatchingSet implements Comparable<MatchingSet> {
 	private int setId;
 	private int groupId;
-    private boolean markedFalse;
+    private String state;
 	private Patient patient;
     private Report report;
 	
@@ -38,11 +38,22 @@ public class MatchingSet {
         this.report = report;
     }
 
-    public boolean isMarkedFalse() {
-        return markedFalse;
+    public String getState() {
+        return state;
     }
 
-    public void setMarkedFalse(boolean markedFalse) {
-        this.markedFalse = markedFalse;
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public int compareTo(MatchingSet o) {
+        if(o instanceof MatchingSet){
+            MatchingSet newSet = (MatchingSet) o;
+            if(report.getReportId()== newSet.report.getReportId() && groupId==newSet.groupId &&
+                    patient.getId()==newSet.patient.getId()){
+                return 0;
+            }
+        }
+        return 1;
     }
 }

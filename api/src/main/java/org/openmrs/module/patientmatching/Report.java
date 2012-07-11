@@ -13,19 +13,21 @@ import org.openmrs.User;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 
 public class Report {
-	private Long reportId;
+	private int reportId;
 	private String reportName;
     private User createdBy;
     private Date createdOn;
-	private List<MatchingSet> matchingSetList;
+	private Set<MatchingSet> matchingSet;
     private Set<PatientMatchingConfiguration> usedConfigurationList;
+//    private SortedSet<ReportGenerationStage> reportGenerationStages;
 	
-	public Long getReportId() {
+	public int getReportId() {
 		return reportId;
 	}
-	public void setReportId(Long reportId) {
+	public void setReportId(int reportId) {
 		this.reportId = reportId;
 	}
 	public String getReportName() {
@@ -34,11 +36,16 @@ public class Report {
 	public void setReportName(String reportName) {
 		this.reportName = reportName;
 	}
-	public List<MatchingSet> getMatchingSetList() {
-		return matchingSetList;
+	public Set<MatchingSet> getMatchingSet() {
+		return matchingSet;
 	}
-	public void setMatchingSetList(List<MatchingSet> matchingSet) {	
-		this.matchingSetList = matchingSet;
+
+//    public SortedSet<ReportGenerationStage> getReportGenerationStages(){
+//        return reportGenerationStages;
+//    }
+
+	public void setMatchingSet(Set<MatchingSet> matchingSet) {
+		this.matchingSet = matchingSet;
 	}
 
     public User getCreatedBy() {
@@ -64,4 +71,8 @@ public class Report {
     public void setUsedConfigurationList(Set<PatientMatchingConfiguration> usedConfigurationList) {
         this.usedConfigurationList = usedConfigurationList;
     }
+
+//    public void setReportGenerationStages(SortedSet<ReportGenerationStage> reportGenerationStages){
+//        this.reportGenerationStages = reportGenerationStages;
+//    }
 }
