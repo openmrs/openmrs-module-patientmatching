@@ -20,7 +20,7 @@ public class Report {
     private Date createdOn;
 	private Set<MatchingRecord> matchingRecordSet;
     private Set<PatientMatchingConfiguration> usedConfigurationList;
-//    private SortedSet<ReportGenerationStage> reportGenerationStages;
+    private Set<ReportGenerationStep> reportGenerationSteps;
 	
 	public int getReportId() {
 		return reportId;
@@ -38,9 +38,9 @@ public class Report {
 		return matchingRecordSet;
 	}
 
-//    public SortedSet<ReportGenerationStage> getReportGenerationStages(){
-//        return reportGenerationStages;
-//    }
+    public Set<ReportGenerationStep> getReportGenerationSteps(){
+        return reportGenerationSteps;
+    }
 
 	public void setMatchingRecordSet(Set<MatchingRecord> matchingRecordSet) {
 		this.matchingRecordSet = matchingRecordSet;
@@ -70,7 +70,7 @@ public class Report {
         this.usedConfigurationList = usedConfigurationList;
     }
 
-//    public void setReportGenerationStages(SortedSet<ReportGenerationStage> reportGenerationStages){
-//        this.reportGenerationStages = reportGenerationStages;
-//    }
+    public void setReportGenerationSteps(Set<ReportGenerationStep> reportGenerationSteps){
+        this.reportGenerationSteps = reportGenerationSteps;
+    }
 }

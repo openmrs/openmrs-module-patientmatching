@@ -18,6 +18,11 @@
           <one-to-many class="org.openmrs.module.patientmatching.MatchingRecord"/>
       </set>
 
+      <set name="reportGenerationSteps" lazy="true" inverse="true" cascade="all-delete-orphan" sort="natural">
+          <key column="report_id" not-null="true"/>
+          <one-to-many class="org.openmrs.module.patientmatching.ReportGenerationStep"/>
+      </set>
+
       <set name="usedConfigurationList" table="patientmatching_report_configuration" cascade="all">
           <key column="report_id"/>
           <many-to-many column="configuration_id"

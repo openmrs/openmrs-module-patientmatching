@@ -59,6 +59,17 @@ public class MatchingReportUtils {
 	public static final String NO_PROCESS = "No running process";
 	public static final String END_PROCESS = "Report finished";
 	public static final String PREM_PROCESS = "Prematurely terminated process";
+
+    public static final String[] REPORT_GEN_STAGES = {
+            "Read configuration file",
+            "Create scratch table",
+            "Create random sample analyzer",
+            "Create analyzer form pairs",
+            "Create pair data source analyzer",
+            "Create expectation maximization (EM) analyzer",
+            "Analyze pairs",
+            "Score pairs",
+    };
 	
 	/**
 	 * Fields that need to be checked to see the current status of the creating
@@ -437,8 +448,6 @@ public class MatchingReportUtils {
 	 * Method to persist report information
 	 */
 	public static void persistReportInfo(String rptName, String dateCreated, List<Set<Long>> matchingPairs) {
-//		List<Long> proTimeList = MatchingRunData.getInstance().getProTimeList();
-
         Report report = new Report();
         report.setCreatedBy(Context.getAuthenticatedUser());
         report.setReportName(rptName);
@@ -468,6 +477,19 @@ public class MatchingReportUtils {
             }
         }
         report.setMatchingRecordSet(matchingRecordSet);
+
+        Set<ReportGenerationStep> reportGenerationSteps = new TreeSet<ReportGenerationStep>();
+        List<Long> proTimeList = MatchingRunData.getInstance().getProTimeList();
+        int noOfStages = Math.min(proTimeList.size(),REPORT_GEN_STAGES.length);
+        for (int j = 0; j < noOfStages; j++) {
+            ReportGenerationStep step = new ReportGenerationStep();
+            step.setProcessName(REPORT_GEN_STAGES[j]);
+            step.setTimeTaken(proTimeList.get(j).intValue());
+            step.setReport(report);
+            step.setSequenceNo(j);
+            reportGenerationSteps.add(step);
+        }
+        report.setReportGenerationSteps(reportGenerationSteps);
         reportMetadataService.savePatientMatchingReport(report);
 
 //		String proInfo = "0ms";
