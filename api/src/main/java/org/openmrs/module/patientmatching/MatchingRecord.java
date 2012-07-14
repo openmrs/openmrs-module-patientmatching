@@ -2,7 +2,7 @@ package org.openmrs.module.patientmatching;
 
 import org.openmrs.Patient;
 
-public class MatchingSet implements Comparable<MatchingSet> {
+public class MatchingRecord implements Comparable<MatchingRecord> {
 	private int setId;
 	private int groupId;
     private String state;
@@ -46,14 +46,7 @@ public class MatchingSet implements Comparable<MatchingSet> {
         this.state = state;
     }
 
-    public int compareTo(MatchingSet o) {
-        if(o instanceof MatchingSet){
-            MatchingSet newSet = (MatchingSet) o;
-            if(report.getReportId()== newSet.report.getReportId() && groupId==newSet.groupId &&
-                    patient.getId()==newSet.patient.getId()){
-                return 0;
-            }
-        }
-        return 1;
+    public int compareTo(MatchingRecord o) {
+        return 1;   //Ignored
     }
 }

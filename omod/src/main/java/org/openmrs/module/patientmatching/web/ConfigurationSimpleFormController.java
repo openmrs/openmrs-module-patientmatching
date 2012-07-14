@@ -45,7 +45,7 @@ public class ConfigurationSimpleFormController extends SimpleFormController {
 		
 		if (!StringUtils.isEmpty(configIdString) && StringUtils.isNumeric(configIdString)) {
 			try {
-				Long configurationId = Long.parseLong(configIdString);
+				int configurationId = Integer.parseInt(configIdString);
 				configuration = service.getPatientMatchingConfiguration(configurationId);
 			} catch (NumberFormatException ex) {
 				log.error("could not convert '" + configIdString + "' to a long", ex);

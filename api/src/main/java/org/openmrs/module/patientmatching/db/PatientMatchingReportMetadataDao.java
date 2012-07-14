@@ -16,7 +16,7 @@ public interface PatientMatchingReportMetadataDao {
 	public PatientMatchingConfiguration findPatientMatchingConfigurationByName(String name);
 	public List<PatientMatchingConfiguration> getBlockingRuns();
 	public List<PatientMatchingConfiguration> getMatchingConfigs();
-	public PatientMatchingConfiguration getPatientMatchingConfiguration(Long configurationId);
+	public PatientMatchingConfiguration getPatientMatchingConfiguration(int configurationId);
 	public void deletePatientMatchingConfiguration(PatientMatchingConfiguration configuration);
 	public long getCustomCount(String query);
 }

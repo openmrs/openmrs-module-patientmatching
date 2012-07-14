@@ -24,7 +24,7 @@ public interface PatientMatchingReportMetadataService {
 	public List<PatientMatchingConfiguration> getMatchingConfigs();
 
 	@Transactional(readOnly=true)
-	public PatientMatchingConfiguration getPatientMatchingConfiguration(Long configurationId);
+	public PatientMatchingConfiguration getPatientMatchingConfiguration(int configurationId);
 
 	public void deletePatientMatchingConfiguration(PatientMatchingConfiguration configuration);
 	

@@ -455,19 +455,19 @@ public class MatchingReportUtils {
 
         report.setUsedConfigurationList(usedConfigurations);
         PatientService patientService = Context.getPatientService();
-        Set<MatchingSet> matchingSets = new TreeSet<MatchingSet>();
+        Set<MatchingRecord> matchingRecordSet = new TreeSet<MatchingRecord>();
         for (int j = 0; j < matchingPairs.size(); j++) {
             Set<Long> matchSet = matchingPairs.get(j);
             for(Long patientId: matchSet){
-                MatchingSet matchingSetEntry = new MatchingSet();
-                matchingSetEntry.setGroupId(j);
-                matchingSetEntry.setState("PENDING");   //TODO move to a constant
-                matchingSetEntry.setPatient(patientService.getPatient(patientId.intValue()));
-                matchingSetEntry.setReport(report);
-                matchingSets.add(matchingSetEntry);
+                MatchingRecord matchingRecord = new MatchingRecord();
+                matchingRecord.setGroupId(j);
+                matchingRecord.setState("PENDING");   //TODO move to a constant
+                matchingRecord.setPatient(patientService.getPatient(patientId.intValue()));
+                matchingRecord.setReport(report);
+                matchingRecordSet.add(matchingRecord);
             }
         }
-        report.setMatchingSet(matchingSets);
+        report.setMatchingRecordSet(matchingRecordSet);
         reportMetadataService.savePatientMatchingReport(report);
 
 //		String proInfo = "0ms";

@@ -11,16 +11,14 @@ package org.openmrs.module.patientmatching;
 import org.openmrs.User;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
 
 public class Report {
 	private int reportId;
 	private String reportName;
     private User createdBy;
     private Date createdOn;
-	private Set<MatchingSet> matchingSet;
+	private Set<MatchingRecord> matchingRecordSet;
     private Set<PatientMatchingConfiguration> usedConfigurationList;
 //    private SortedSet<ReportGenerationStage> reportGenerationStages;
 	
@@ -36,16 +34,16 @@ public class Report {
 	public void setReportName(String reportName) {
 		this.reportName = reportName;
 	}
-	public Set<MatchingSet> getMatchingSet() {
-		return matchingSet;
+	public Set<MatchingRecord> getMatchingRecordSet() {
+		return matchingRecordSet;
 	}
 
 //    public SortedSet<ReportGenerationStage> getReportGenerationStages(){
 //        return reportGenerationStages;
 //    }
 
-	public void setMatchingSet(Set<MatchingSet> matchingSet) {
-		this.matchingSet = matchingSet;
+	public void setMatchingRecordSet(Set<MatchingRecord> matchingRecordSet) {
+		this.matchingRecordSet = matchingRecordSet;
 	}
 
     public User getCreatedBy() {

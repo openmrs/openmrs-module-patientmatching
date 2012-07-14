@@ -103,7 +103,7 @@ public class DWRMatchingConfigUtilities {
 	public void deleteBlockingRun(Long id) {
 		log.info("DWRMatchingConfigUtilities: deleting blocking run #" + id);
 		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
-		PatientMatchingConfiguration configuration = service.getPatientMatchingConfiguration(id);
+		PatientMatchingConfiguration configuration = service.getPatientMatchingConfiguration(id.intValue());
 		if (configuration != null)
 			service.deletePatientMatchingConfiguration(configuration);
 	}

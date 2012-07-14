@@ -131,7 +131,7 @@ public class HibernatePatientMatchingReportMetadataDAO implements PatientMatchin
 		return criteria.list();
 	}
 
-	public PatientMatchingConfiguration getPatientMatchingConfiguration(Long configurationId) {
+	public PatientMatchingConfiguration getPatientMatchingConfiguration(int configurationId) {
 		return (PatientMatchingConfiguration) sessionFactory.getCurrentSession().get(PatientMatchingConfiguration.class, configurationId);
 	}
 
