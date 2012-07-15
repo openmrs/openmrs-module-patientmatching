@@ -32,10 +32,6 @@ public class PatientMatchingReportMetadataServiceImpl implements PatientMatching
 		return dao;
 	}
 
-	public void saveReportDetails(PatientMatchingReportMetadata pri) {
-		dao.saveReportDetails(pri);
-	}
-
 	public void savePatientMatchingConfiguration(PatientMatchingConfiguration patientMatchingConfiguration) {
 		dao.savePatientMatchingConfiguration(patientMatchingConfiguration);
 	}
@@ -68,6 +64,10 @@ public class PatientMatchingReportMetadataServiceImpl implements PatientMatching
 	public long getCustomCount(String query) {
 		return dao.getCustomCount(query);
 	}
+
+    public java.util.List<String> getReportNames() {
+        return dao.getReportNames();
+    }
 
     public void savePatientMatchingReport(Report report) {
         dao.savePatientMatchingReport(report);

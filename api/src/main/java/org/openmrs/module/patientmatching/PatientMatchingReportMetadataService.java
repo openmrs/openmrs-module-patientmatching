@@ -6,8 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public interface PatientMatchingReportMetadataService {
 
-	public void saveReportDetails(PatientMatchingReportMetadata pri);
-
 	public void savePatientMatchingConfiguration(PatientMatchingConfiguration patientMatchingConfiguration);
 
     public void savePatientMatchingReport(Report report);
@@ -29,4 +27,6 @@ public interface PatientMatchingReportMetadataService {
 	public void deletePatientMatchingConfiguration(PatientMatchingConfiguration configuration);
 	
 	public long getCustomCount(String query);
+
+    public List<String> getReportNames();
 }

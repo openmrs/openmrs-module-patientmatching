@@ -30,7 +30,7 @@ public class ReportSimpleFormController extends SimpleFormController {
 		Map<String, Object> requestMap = new HashMap<String, Object>();
 		requestMap.put("reportParam", MatchingConstants.PARAM_REPORT);
         requestMap.put("blockingRuns", MatchingConfigurationUtils.listAvailableBlockingRunConfigs());
-        requestMap.put("reportResults", MatchingReportUtils.listAvailableReport());
+        requestMap.put("reportResults", MatchingReportUtils.listAvailableReportNamesInDB());
         requestMap.put("defaultStatus", MatchingReportUtils.NO_PROCESS);
         requestMap.put("premStatus", MatchingReportUtils.PREM_PROCESS);
         requestMap.put("endStatus", MatchingReportUtils.END_PROCESS);
@@ -50,7 +50,7 @@ public class ReportSimpleFormController extends SimpleFormController {
         Map<String, Object> model = new HashMap<String, Object>();
         model.put("reportParam", MatchingConstants.PARAM_REPORT);
         model.put("blockingRuns", MatchingConfigurationUtils.listAvailableBlockingRuns());
-        model.put("reportResults", MatchingReportUtils.listAvailableReport());
+        model.put("reportResults", MatchingReportUtils.listAvailableReportNamesInDB());
         model.put("defaultStatus", MatchingReportUtils.NO_PROCESS);
         model.put("premStatus", MatchingReportUtils.PREM_PROCESS);
         model.put("endStatus", MatchingReportUtils.END_PROCESS);

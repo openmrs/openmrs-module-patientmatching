@@ -1,22 +1,18 @@
 package org.openmrs.module.patientmatching.db.hibernate;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.SessionFactory;
-import org.hibernate.Session;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
-import org.openmrs.api.db.DAOException;
-import org.openmrs.module.patientmatching.db.PatientMatchingReportMetadataDao;
 import org.openmrs.module.patientmatching.PatientMatchingConfiguration;
-import org.openmrs.module.patientmatching.PatientMatchingReportMetadata;
 import org.openmrs.module.patientmatching.Report;
+import org.openmrs.module.patientmatching.db.PatientMatchingReportMetadataDao;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Transactional
 public class HibernatePatientMatchingReportMetadataDAO implements PatientMatchingReportMetadataDao {
@@ -34,72 +30,6 @@ public class HibernatePatientMatchingReportMetadataDAO implements PatientMatchin
 
 	public HibernatePatientMatchingReportMetadataDAO() {
 		super();
-	}
-
-	public void saveReportDetails(PatientMatchingReportMetadata pri) throws DAOException {
-		sessionFactory.getCurrentSession().beginTransaction();
-		Connection connection = sessionFactory.getCurrentSession().connection();
-		PreparedStatement ps = null;
-
-		try {
-			ps = connection.prepareStatement("INSERT INTO  metadata_report (report_name,strategies_used,process_name_time,createdby,datecreated) VALUES (?, ?, ?, ?,?)");
-			ps.setString(1, pri.getReportName());
-			ps.setString(2, pri.getSelstrategies());
-			ps.setString(3, pri.getpNameTime());
-			ps.setString(4, pri.getCreatedBy());
-			ps.setString(5, pri.getDateCreated());
-
-			int i = ps.executeUpdate();
-
-
-
-		} catch (SQLException e) {
-			log.error("Error while inserting", e);
-		}
-		if (ps != null) {
-			try {
-				ps.close();
-			} catch (SQLException e) {
-				log.error("Error generated while closing", e);
-			}
-		}
-
-		/*
-			public void showReportDetails(String reportName) throws DAOException
-			{
-				Connection connection = sessionFactory.getCurrentSession().connection();
-				PreparedStatement ps = null;
-				try {
-					ps = connection.prepareStatement("SELECT * FROM metadata_report WHERE report_name =?");
-					ps.setString(1,reportName);
-					ps.execute();
-					catch (SQLException e) {
-						log.error("Error while trying to see if this role is already created", e);
-			}
-					if (ps != null) {
-						try {
-							ps.close();
-						}
-						catch (SQLException e) {
-							log.error("Error generated while closing", e);
-						}
-					}
-			}*/
-
-		org.openmrs.module.patientmatching.Report r = new Report();
-
-		r.setReportName(pri.getReportName());
-
-		try {
-			Session session = null;
-			session = getSessionFactory().openSession();
-			session.beginTransaction();
-			session.save(r);
-			session.getTransaction().commit();
-			session.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 
 	public void savePatientMatchingConfiguration(PatientMatchingConfiguration patientMatchingConfiguration) {
@@ -144,4 +74,9 @@ public class HibernatePatientMatchingReportMetadataDAO implements PatientMatchin
 		Long count = (Long)countQuery.uniqueResult();
 		return count;
 	}
+
+    public java.util.List<String> getReportNames() {
+        Criteria criteria = sessionFactory.getCurrentSession().createCriteria(Report.class).setProjection(Projections.property("reportName"));
+        return criteria.list();
+    }
 }

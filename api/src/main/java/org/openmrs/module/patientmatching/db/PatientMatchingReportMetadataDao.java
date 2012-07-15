@@ -7,9 +7,6 @@ import org.openmrs.module.patientmatching.Report;
 
 
 public interface PatientMatchingReportMetadataDao {
-	public void saveReportDetails(PatientMatchingReportMetadata pri) throws DAOException;
-	//public void showReportDetails(String reportName) throws DAOException;
-
 	public void savePatientMatchingConfiguration(PatientMatchingConfiguration patientMatchingConfiguration);
     public void savePatientMatchingReport(Report report);
 	public void deletePatientMatchingConfigurationByName(String name);
@@ -19,5 +16,6 @@ public interface PatientMatchingReportMetadataDao {
 	public PatientMatchingConfiguration getPatientMatchingConfiguration(int configurationId);
 	public void deletePatientMatchingConfiguration(PatientMatchingConfiguration configuration);
 	public long getCustomCount(String query);
+    public List<String> getReportNames();
 }
 

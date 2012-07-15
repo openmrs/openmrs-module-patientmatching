@@ -91,10 +91,10 @@ public class DWRMatchingConfigUtilities {
 	}
 
 	/**
-	 * @see MatchingReportUtils#listAvailableReport()
+	 * @see MatchingReportUtils#listAvailableReportNamesInDB()
 	 */
 	public List<String> getAllReports() {
-		return MatchingReportUtils.listAvailableReport();
+		return MatchingReportUtils.listAvailableReportNamesInDB();
 	}
 
 	/**
