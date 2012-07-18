@@ -29,4 +29,6 @@ public interface PatientMatchingReportMetadataService {
 	public long getCustomCount(String query);
 
     public List<String> getReportNames();
+
+    public Report getReportByName(String reportName);
 }

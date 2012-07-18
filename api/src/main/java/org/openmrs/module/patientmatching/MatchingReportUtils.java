@@ -413,4 +413,32 @@ public class MatchingReportUtils {
         reportMetadataService.savePatientMatchingReport(report);
 	 }
 
+    public static Set<String> getAllFieldsUsed(Report report){
+        Set<String> fieldsUsed = new TreeSet<String>();
+        for(PatientMatchingConfiguration configuration: report.getUsedConfigurationList()){
+            for(ConfigurationEntry entry : configuration.getConfigurationEntries()){
+                fieldsUsed.add(entry.getFieldName());
+            }
+        }
+        return fieldsUsed;
+    }
+
+    public static List<List<String>> prepareMatchList(Report report){
+        Set<MatchingRecord> recordSet = report.getMatchingRecordSet();
+        List<List<String>> formattedMatchRecords = new ArrayList<List<String>>();
+        Set<String> usedFileds = getAllFieldsUsed(report);
+        for(MatchingRecord record : recordSet){
+            List<String> formattedRecord = new ArrayList<String>();
+            formattedRecord.add(record.getPatient().isVoided().toString());
+            formattedRecord.add(record.getPatient().getPatientId().toString());
+            formattedRecord.add(Integer.toString(record.getGroupId()));
+            formattedRecord.add(record.getPatient().getPatientId().toString());
+            for (String field : usedFileds){
+                formattedRecord.add(MatchingUtils.getPatientAttributeValue(record.getPatient(),field));
+            }
+            formattedMatchRecords.add(formattedRecord);
+        }
+        return  formattedMatchRecords;
+    }
+
 }

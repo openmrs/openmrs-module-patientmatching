@@ -79,4 +79,8 @@ public class HibernatePatientMatchingReportMetadataDAO implements PatientMatchin
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(Report.class).setProjection(Projections.property("reportName"));
         return criteria.list();
     }
+
+    public Report getReportByName(String name) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
 }
