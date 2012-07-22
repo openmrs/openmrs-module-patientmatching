@@ -430,7 +430,9 @@ public class MatchingReportUtils {
         Set<String> fieldsUsed = new TreeSet<String>();
         for(PatientMatchingConfiguration configuration: report.getUsedConfigurationList()){
             for(ConfigurationEntry entry : configuration.getConfigurationEntries()){
-                fieldsUsed.add(entry.getFieldName());
+                if(!entry.isIgnored()){
+                    fieldsUsed.add(entry.getFieldName());
+                }
             }
         }
         return fieldsUsed;

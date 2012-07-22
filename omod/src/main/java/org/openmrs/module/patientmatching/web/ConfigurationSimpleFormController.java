@@ -88,13 +88,11 @@ public class ConfigurationSimpleFormController extends SimpleFormController {
         try{
         	Set<ConfigurationEntry> entries= patientMatchingConfig.getConfigurationEntries();
         	Set<ConfigurationEntry> newEntries = new TreeSet();
-        	
-        	Iterator it = entries.iterator(); 
-        	while(it.hasNext()){
-        		ConfigurationEntry ce = (ConfigurationEntry) it.next();
-        		ce.setPatientMatchingConfiguration(patientMatchingConfig);
-        		newEntries.add(ce);
-        	}
+
+            for (ConfigurationEntry ce : entries) {
+                ce.setPatientMatchingConfiguration(patientMatchingConfig);
+                newEntries.add(ce);
+            }
         
         patientMatchingConfig.getConfigurationEntries().clear();
         patientMatchingConfig.setConfigurationEntries(newEntries);

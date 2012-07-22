@@ -23,7 +23,7 @@
           <one-to-many class="org.openmrs.module.patientmatching.ReportGenerationStep"/>
       </set>
 
-      <set name="usedConfigurationList" table="patientmatching_report_configuration" cascade="all">
+      <set name="usedConfigurationList" table="patientmatching_report_configuration" cascade="none">
           <key column="report_id"/>
           <many-to-many column="configuration_id"
                         class="org.openmrs.module.patientmatching.PatientMatchingConfiguration"/>
