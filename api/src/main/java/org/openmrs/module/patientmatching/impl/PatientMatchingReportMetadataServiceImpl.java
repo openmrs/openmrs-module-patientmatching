@@ -72,6 +72,10 @@ public class PatientMatchingReportMetadataServiceImpl implements PatientMatching
         return dao.getReportByName(reportName);
     }
 
+    public void deleteReport(Report report) {
+        dao.deleteReport(report);
+    }
+
     public void savePatientMatchingReport(Report report) {
         dao.savePatientMatchingReport(report);
     }

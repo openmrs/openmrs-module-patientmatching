@@ -18,5 +18,6 @@ public interface PatientMatchingReportMetadataDao {
 	public long getCustomCount(String query);
     public List<String> getReportNames();
     public Report getReportByName(String name);
+    public void deleteReport(Report report);
 }
 

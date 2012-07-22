@@ -85,4 +85,8 @@ public class HibernatePatientMatchingReportMetadataDAO implements PatientMatchin
         criteria.add(Restrictions.eq("reportName", name));
         return (Report) criteria.uniqueResult();
     }
+
+    public void deleteReport(Report report) {
+        sessionFactory.getCurrentSession().delete(report);
+    }
 }

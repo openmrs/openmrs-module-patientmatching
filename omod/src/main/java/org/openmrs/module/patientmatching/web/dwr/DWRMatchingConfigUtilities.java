@@ -297,15 +297,14 @@ public class DWRMatchingConfigUtilities {
 	 * @param filename report file that will be deleted
 	 */
 	public void deleteReportFile(String filename) {
-		log.info("DWRMatchingConfigUtilities: deleting file " + filename);
-		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
-		File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
-		File reportFile = new File(configFileFolder, filename);
-		log.info("Report file to be deleted: " + reportFile.getAbsolutePath());
-		boolean deleted = reportFile.delete();
-		if (deleted) {
-			log.info("Config file deleted.");
-		}
+		log.info("DWRMatchingConfigUtilities: deleting report " + filename);
+		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
+        Report report = service.getReportByName(filename);
+
+        if(report!=null){
+            service.deleteReport(report);
+            log.info("Report Deleted from database");
+        }
 	}
 
 	/**

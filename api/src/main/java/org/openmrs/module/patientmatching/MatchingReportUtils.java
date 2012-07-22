@@ -323,7 +323,7 @@ public class MatchingReportUtils {
 			log.warn("error while rendering config string", e);
 		}
 
-        String reportName = "dedup-report"+configString+dateString;
+        String reportName = "dedup-report-"+configString+dateString;
 		DedupMatchResultList handler = (DedupMatchResultList)objects.get("handler");
 
 		handler.flattenPairIdList();

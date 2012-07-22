@@ -31,4 +31,6 @@ public interface PatientMatchingReportMetadataService {
     public List<String> getReportNames();
 
     public Report getReportByName(String reportName);
+
+    public void deleteReport(Report report);
 }
