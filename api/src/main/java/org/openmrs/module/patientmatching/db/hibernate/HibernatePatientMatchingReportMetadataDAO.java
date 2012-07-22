@@ -81,6 +81,8 @@ public class HibernatePatientMatchingReportMetadataDAO implements PatientMatchin
     }
 
     public Report getReportByName(String name) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        Criteria criteria = sessionFactory.getCurrentSession().createCriteria(Report.class);
+        criteria.add(Restrictions.eq("reportName", name));
+        return (Report) criteria.uniqueResult();
     }
 }

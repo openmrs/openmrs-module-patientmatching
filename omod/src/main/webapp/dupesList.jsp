@@ -12,7 +12,7 @@
 
 <script type="text/javascript">
 
-var n_steps = 11; // hard-coded for now; unlikely to change
+var n_steps = 10; // hard-coded for now; unlikely to change
 var s = 0;
 var count = 0;
 var actRightAway = "true";

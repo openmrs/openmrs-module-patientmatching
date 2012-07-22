@@ -2,6 +2,7 @@ package org.openmrs.module.patientmatching.web;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -10,8 +11,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.AdministrationService;
+import org.openmrs.module.patientmatching.DataBaseReportReader;
 import org.openmrs.module.patientmatching.MatchingConstants;
-import org.openmrs.module.patientmatching.MatchingReportReader;
+import org.openmrs.module.patientmatching.ReportReader;
 import org.springframework.web.servlet.mvc.SimpleFormController;
 
 
@@ -30,10 +32,10 @@ public class ReportFormSimpleFormController extends SimpleFormController {
 		
 		Map<String, Object> map = new HashMap<String, Object>();
 		
-		String filename = req.getParameter(MatchingConstants.PARAM_REPORT);
-        
-        MatchingReportReader reader = new MatchingReportReader(filename);
-        
+		String reportName = req.getParameter(MatchingConstants.PARAM_REPORT);
+        ReportReader reader = new DataBaseReportReader();
+        reader.setReport(reportName);
+
         // must call getHeader first to skip first line
         map.put("reportHeader", reader.getHeader());
         
@@ -48,7 +50,7 @@ public class ReportFormSimpleFormController extends SimpleFormController {
         map.put("productionServerUrl",prodServerUrl);
         // then store all values to session to be used in the future
         HttpSession session = req.getSession();
-        session.setAttribute("reportFilename", filename);
+        session.setAttribute("reportFilename", reportName);
         session.setAttribute("reportPagePosition", reader.getPagePos());
         session.setAttribute("reportCurrentPage", reader.getCurrentPage());
         session.setAttribute("isReportEOF", reader.isEof());

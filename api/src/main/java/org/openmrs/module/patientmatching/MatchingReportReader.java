@@ -26,18 +26,18 @@ import org.openmrs.util.OpenmrsUtil;
  * singleton pattern and create only a single instance of this class to read the
  * entire content.
  */
-public class MatchingReportReader {
+public class MatchingReportReader implements ReportReader {
     /**
      * Logger instance
      */
     protected final Log log = LogFactory.getLog(getClass());
-    
+
     /**
      * Default paging size of the report. This indicate the total number of lines
      * that will be displayed in the show report web page.
      */
     public static final int REPORT_PAGE_SIZE = 20;
-    
+
     /**
      * Cache for each page offset from the start of the file. Element i-th will
      * contains the page offset of the i-th page of the report.
@@ -85,16 +85,16 @@ public class MatchingReportReader {
      * 
      * Future implementation might combine the fetchContent(int) and the call
      * to getCurrentContent()
-     * 
-     * @param filename report file name that will be loaded
      */
-    public MatchingReportReader(String filename) {
+    public MatchingReportReader() {
         pagePos = new ArrayList<Long>();
         pagePos.add(0L);
         
         currentContent = new ArrayList<List<String>>();
-        
-        setReportFile(filename);
+    }
+
+    public void setReport(String reportName) {
+        setReportFile(reportName);
     }
     
     /**

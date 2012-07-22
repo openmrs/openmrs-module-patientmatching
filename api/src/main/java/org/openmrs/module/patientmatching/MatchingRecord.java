@@ -2,12 +2,15 @@ package org.openmrs.module.patientmatching;
 
 import org.openmrs.Patient;
 
+import java.util.Set;
+
 public class MatchingRecord implements Comparable<MatchingRecord> {
 	private int setId;
 	private int groupId;
     private String state;
 	private Patient patient;
     private Report report;
+    private Set<MatchingRecordAttribute> matchingRecordAttributeSet;
 	
 	public int getSetId() {
 		return setId;
@@ -48,5 +51,13 @@ public class MatchingRecord implements Comparable<MatchingRecord> {
 
     public int compareTo(MatchingRecord o) {
         return 1;   //Ignored
+    }
+
+    public Set<MatchingRecordAttribute> getMatchingRecordAttributeSet() {
+        return matchingRecordAttributeSet;
+    }
+
+    public void setMatchingRecordAttributeSet(Set<MatchingRecordAttribute> matchingRecordAttributeSet) {
+        this.matchingRecordAttributeSet = matchingRecordAttributeSet;
     }
 }

@@ -1,6 +1,7 @@
 package org.openmrs.module.patientmatching;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -309,6 +310,7 @@ public class MatchingReportUtils {
 
 		SimpleDateFormat format = new SimpleDateFormat("MM-dd-yyyy--HH-mm-ss");
 		String dateString = format.format(new Date());
+        Set<String> globalIncludeColumns = (Set<String>)objects.get("globalIncludeColumns");
 		
 		String configString = new String();
 		try{
@@ -326,7 +328,7 @@ public class MatchingReportUtils {
 
 		handler.flattenPairIdList();
 		List<Set<Long>> matchingPairs = handler.getFlattenedPairIds();
-		persistReportToDB(reportName, matchingPairs);
+		persistReportToDB(reportName, matchingPairs, globalIncludeColumns);
 		return objects;
 	}	
 	//New Method9 End 10
@@ -367,7 +369,7 @@ public class MatchingReportUtils {
      * @param rptName The report name of the new report
      * @param matchingPairs A list of the matching pair sets
      */
-	public static void persistReportToDB(String rptName, List<Set<Long>> matchingPairs) {
+	public static void persistReportToDB(String rptName, List<Set<Long>> matchingPairs, Set<String> includeColumns) throws FileNotFoundException {
         Report report = new Report();
         report.setCreatedBy(Context.getAuthenticatedUser());
         report.setReportName(rptName);
@@ -393,6 +395,17 @@ public class MatchingReportUtils {
                 matchingRecord.setState("PENDING");   //TODO move to a constant
                 matchingRecord.setPatient(patientService.getPatient(patientId.intValue()));
                 matchingRecord.setReport(report);
+
+                Set<MatchingRecordAttribute> matchingRecordAttributeSet = new TreeSet<MatchingRecordAttribute>();
+                Record record = RecordSerializer.deserialize(String.valueOf(patientId));
+                for(String includedColumn:includeColumns){
+                    MatchingRecordAttribute matchingRecordAttribute = new MatchingRecordAttribute();
+                    matchingRecordAttribute.setFieldName(includedColumn);
+                    matchingRecordAttribute.setFieldValue(record.getDemographic(includedColumn));
+                    matchingRecordAttribute.setMatchingRecord(matchingRecord);
+                    matchingRecordAttributeSet.add(matchingRecordAttribute);
+                }
+                matchingRecord.setMatchingRecordAttributeSet(matchingRecordAttributeSet);
                 matchingRecordSet.add(matchingRecord);
             }
         }
