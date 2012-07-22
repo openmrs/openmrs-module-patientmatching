@@ -174,4 +174,77 @@ CREATE TABLE `patientmatching_configurationEntries` (
 			ALTER TABLE patientmatching_configuration ADD COLUMN total_records int(11) DEFAULT 0;
 		</sql>
 	</diff>
+    <diff>
+        <version>1.7.6</version>
+        <author>pulasthi7</author>
+        <date>July 22, 2012</date>
+        <description>
+            Add tables to store the reports
+        </description>
+        <sql>
+           DROP TABLE IF EXISTS `patientmatching_matchingset`;
+            DROP TABLE IF EXISTS `patientmatching_report`;
+
+            CREATE TABLE IF NOT EXISTS `patientmatching_matchingset` (
+            `set_id` int(11) NOT NULL AUTO_INCREMENT,
+            `group_id` int(11) NOT NULL,
+            `patient_id` int(11) NOT NULL,
+            `report_id` int(11) NOT NULL,
+            `state` varchar(10) NOT NULL,
+            PRIMARY KEY (`set_id`),
+            KEY `par_ind` (`report_id`),
+            KEY `report_id` (`report_id`),
+            KEY `patient_id` (`patient_id`)
+            ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+            CREATE TABLE IF NOT EXISTS `patientmatching_match_attrib` (
+            `record_attrib_id` int(11) NOT NULL AUTO_INCREMENT,
+            `matching_record_id` int(11) NOT NULL,
+            `field_name` varchar(100) NOT NULL,
+            `field_value` varchar(100) NOT NULL,
+            PRIMARY KEY (`record_attrib_id`),
+            KEY `matching_record_id` (`matching_record_id`)
+            ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ;
+
+            CREATE TABLE IF NOT EXISTS `patientmatching_report` (
+            `report_id` int(11) NOT NULL AUTO_INCREMENT,
+            `report_name` varchar(255) DEFAULT NULL,
+            `created_on` datetime NOT NULL,
+            `created_by` int(11) NOT NULL,
+            PRIMARY KEY (`report_id`)
+            ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+            CREATE TABLE IF NOT EXISTS `patientmatching_report_configuration` (
+            `report_id` int(11) NOT NULL,
+            `configuration_id` int(11) NOT NULL,
+            KEY `report_id` (`report_id`,`configuration_id`),
+            KEY `configuration_id` (`configuration_id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+            CREATE TABLE IF NOT EXISTS `patientmatching_report_gen_step` (
+            `step_id` int(11) NOT NULL AUTO_INCREMENT,
+            `report_id` int(11) NOT NULL,
+            `process_name` varchar(50) NOT NULL,
+            `sequence_number` int(11) NOT NULL,
+            `time_taken` int(11) NOT NULL,
+            PRIMARY KEY (`step_id`),
+            KEY `report_id` (`report_id`)
+            ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+
+            ALTER TABLE `patientmatching_matchingset`
+            ADD CONSTRAINT `patientmatching_matchingset_ibfk_1` FOREIGN KEY (`report_id`) REFERENCES `patientmatching_report` (`report_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+            ADD CONSTRAINT `patientmatching_matchingset_ibfk_2` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`patient_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+            ALTER TABLE `patientmatching_match_attrib`
+            ADD CONSTRAINT `patientmatching_match_attrib_ibfk_1` FOREIGN KEY (`matching_record_id`) REFERENCES `patientmatching_matchingset` (`set_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+            ALTER TABLE `patientmatching_report_configuration`
+            ADD CONSTRAINT `patientmatching_report_configuration_ibfk_1` FOREIGN KEY (`report_id`) REFERENCES `patientmatching_report` (`report_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+            ADD CONSTRAINT `patientmatching_report_configuration_ibfk_2` FOREIGN KEY (`configuration_id`) REFERENCES `patientmatching_configuration` (`configuration_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+            ALTER TABLE `patientmatching_report_gen_step`
+            ADD CONSTRAINT `patientmatching_report_gen_step_ibfk_1` FOREIGN KEY (`report_id`) REFERENCES `patientmatching_report` (`report_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+        </sql>
+    </diff>
 </sqldiff>
