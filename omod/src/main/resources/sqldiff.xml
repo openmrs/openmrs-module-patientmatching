@@ -197,12 +197,12 @@ CREATE TABLE `patientmatching_configurationEntries` (
             KEY `patient_id` (`patient_id`)
             ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
-            CREATE TABLE IF NOT EXISTS `patientmatching_match_attrib` (
-            `record_attrib_id` int(11) NOT NULL AUTO_INCREMENT,
+            CREATE TABLE IF NOT EXISTS `patientmatching_matching_attribute` (
+            `record_attribute_id` int(11) NOT NULL AUTO_INCREMENT,
             `matching_record_id` int(11) NOT NULL,
             `field_name` varchar(100) NOT NULL,
             `field_value` varchar(100) NOT NULL,
-            PRIMARY KEY (`record_attrib_id`),
+            PRIMARY KEY (`record_attribute_id`),
             KEY `matching_record_id` (`matching_record_id`)
             ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 ;
 
@@ -221,7 +221,7 @@ CREATE TABLE `patientmatching_configurationEntries` (
             KEY `configuration_id` (`configuration_id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-            CREATE TABLE IF NOT EXISTS `patientmatching_report_gen_step` (
+            CREATE TABLE IF NOT EXISTS `patientmatching_report_generation_step` (
             `step_id` int(11) NOT NULL AUTO_INCREMENT,
             `report_id` int(11) NOT NULL,
             `process_name` varchar(50) NOT NULL,
@@ -236,15 +236,15 @@ CREATE TABLE `patientmatching_configurationEntries` (
             ADD CONSTRAINT `patientmatching_matchingset_ibfk_1` FOREIGN KEY (`report_id`) REFERENCES `patientmatching_report` (`report_id`) ON DELETE CASCADE ON UPDATE CASCADE,
             ADD CONSTRAINT `patientmatching_matchingset_ibfk_2` FOREIGN KEY (`patient_id`) REFERENCES `patient` (`patient_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-            ALTER TABLE `patientmatching_match_attrib`
+            ALTER TABLE `patientmatching_matching_attribute`
             ADD CONSTRAINT `patientmatching_match_attrib_ibfk_1` FOREIGN KEY (`matching_record_id`) REFERENCES `patientmatching_matchingset` (`set_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
             ALTER TABLE `patientmatching_report_configuration`
             ADD CONSTRAINT `patientmatching_report_configuration_ibfk_1` FOREIGN KEY (`report_id`) REFERENCES `patientmatching_report` (`report_id`) ON DELETE CASCADE ON UPDATE CASCADE,
             ADD CONSTRAINT `patientmatching_report_configuration_ibfk_2` FOREIGN KEY (`configuration_id`) REFERENCES `patientmatching_configuration` (`configuration_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-            ALTER TABLE `patientmatching_report_gen_step`
-            ADD CONSTRAINT `patientmatching_report_gen_step_ibfk_1` FOREIGN KEY (`report_id`) REFERENCES `patientmatching_report` (`report_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+            ALTER TABLE `patientmatching_report_generation_step`
+            ADD CONSTRAINT `patientmatching_report_generation_step_ibfk_1` FOREIGN KEY (`report_id`) REFERENCES `patientmatching_report` (`report_id`) ON DELETE CASCADE ON UPDATE CASCADE;
         </sql>
     </diff>
 </sqldiff>

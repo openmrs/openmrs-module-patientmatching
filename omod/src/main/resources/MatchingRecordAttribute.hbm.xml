@@ -1,7 +1,7 @@
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping auto-import="false">
-    <class name="org.openmrs.module.patientmatching.MatchingRecordAttribute" table="patientmatching_match_attrib">
-        <id name="recordAttribId" column="record_attrib_id"
+    <class name="org.openmrs.module.patientmatching.MatchingRecordAttribute" table="patientmatching_matching_attribute">
+        <id name="recordAttributeId" column="record_attribute_id"
             unsaved-value="0">
             <generator class="identity" />
         </id>
