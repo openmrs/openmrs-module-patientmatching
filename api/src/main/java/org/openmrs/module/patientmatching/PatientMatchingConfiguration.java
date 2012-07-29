@@ -17,7 +17,7 @@ import java.util.TreeSet;
  * configuration file saved in the file system.
  * 
  */
-public class PatientMatchingConfiguration {
+public class PatientMatchingConfiguration implements Comparable<PatientMatchingConfiguration>{
 
 	/**
 	 * A unique configuration Id to identify each PatientMatchingConfiguration.
@@ -92,7 +92,7 @@ public class PatientMatchingConfiguration {
      * current matching page. Correspond to each element in the "run" tag of the
      * the configuration file.
      * 
-     * @param configEntries the configEntries to set
+     * @param newEntries the configEntries to set
      */
 	public void setConfigurationEntries(Set<ConfigurationEntry> newEntries) {
 		if (this.configurationEntries == null) {
@@ -125,7 +125,7 @@ public class PatientMatchingConfiguration {
      * Change the current configuration element name. Correspond to the "name"
      * attribute of the "run" tag in the configuration file.
      * 
-     * @param configName the configName to set
+     * @param configurationName the configName to set
      */
     public void setConfigurationName(String configurationName) {
         this.configurationName = configurationName;
@@ -147,7 +147,7 @@ public class PatientMatchingConfiguration {
      * process or not. Correspond to the "random-sample" attribute of the "run"
      * tag in the configuration file.
      * 
-     * @param useRandomSampling the useRandomSampling to set
+     * @param usingRandomSample the useRandomSampling to set
      */
     public void setUsingRandomSample(boolean usingRandomSample) {
         this.usingRandomSample = usingRandomSample;
@@ -233,4 +233,7 @@ public class PatientMatchingConfiguration {
         return this.configurationName;
     }
 
+    public int compareTo(PatientMatchingConfiguration o) {
+        return 1;
+    }
 }
