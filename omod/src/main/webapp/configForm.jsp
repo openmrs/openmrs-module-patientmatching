@@ -139,7 +139,7 @@ function selectOnly(fieldName) {
 		
 		var message = info+"\n";
 		message += "Estimated Patient Pairs = "+estimatedPairs+" ("+ pairRecordRatio.toFixed(3) +" times total records)\n";
-		message += "Estimation Time = "+ estimatedTimeToRun;
+		message += "Estimation Pair Creation Time = "+ estimatedTimeToRun + " ms";
 		var ready = confirm(message);
 		if(ready){
 			$j('#configForm').submit();

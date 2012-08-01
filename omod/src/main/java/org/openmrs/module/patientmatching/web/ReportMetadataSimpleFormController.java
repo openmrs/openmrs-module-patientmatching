@@ -38,7 +38,6 @@ public class ReportMetadataSimpleFormController extends SimpleFormController {
 	protected Map<String, Object> referenceData(HttpServletRequest req) throws Exception {
 		Map<String, Object> map = showReportDetails(MatchingRunData.getInstance().getRptname());
 		map.put("reportParam", MatchingConstants.PARAM_REPORT);
-		map.put("stepList", MatchingReportUtils.listSteps());
 		return map;
 	}
 
@@ -61,11 +60,13 @@ public class ReportMetadataSimpleFormController extends SimpleFormController {
         reportMap.put("createdBy",report.getCreatedBy().getUsername());
         reportMap.put("date", report.getCreatedOn().toString());
         List<String> processList = new ArrayList<String>();
+        List<String> stepList = new ArrayList<String>();
         for (ReportGenerationStep step: report.getReportGenerationSteps()){
             processList.add(step.getTimeTaken()+" ms");
+            stepList.add(step.getProcessName());
         }
         reportMap.put("processlist", processList);
-
+        reportMap.put("stepList",stepList);
 		return reportMap;
 	}
 }
