@@ -2,11 +2,17 @@ package org.openmrs.module.patientmatching;
 
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.cfg.Configuration;
 import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.hibernate.HibernateSessionFactoryBean;
 import org.openmrs.util.OpenmrsUtil;
+import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.MatchingConfigRow;
+import org.regenstrief.linkage.util.RecMatchConfig;
+import org.regenstrief.linkage.util.XMLTranslator;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -27,7 +33,10 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class ReportMigrationUtils {
+    protected static final Log log = LogFactory.getLog(ReportMigrationUtils.class);
+
     public static void migrateFlatFilesToDB(){
+        migrateConfigurations();
         String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
         File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
         for(File file : configFileFolder.listFiles()){
@@ -43,6 +52,7 @@ public class ReportMigrationUtils {
     public static Report flatFileToReport(File reportFile){
         if(reportFile.exists()&&reportFile.isFile()){
             try {
+                log.info("Moving " + reportFile.getName() + " to database");
                 BufferedReader reader = new BufferedReader(new FileReader(reportFile));
                 Report report = new Report();
                 report.setReportName(reportFile.getName());
@@ -65,6 +75,7 @@ public class ReportMigrationUtils {
                     int uniqueId = Integer.parseInt(matchItemAttributes[1]);
                     Patient patient = Context.getPatientService().getPatient(uniqueId);
                     if(patient==null){
+                        log.warn("Patient with id " + uniqueId + " does not exist in the database");
                         continue;
                     }
                     matchingRecord.setPatient(patient);
@@ -161,6 +172,59 @@ public class ReportMigrationUtils {
             //TODO log and handle
         } catch (ParseException e) {
             //TODO log and handle
+        }
+    }
+
+    public static void migrateConfigurations() {
+        String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
+        File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
+        File configFile = new File(configFileFolder, MatchingConstants.CONFIG_FILE_NAME);
+
+        RecMatchConfig recMatchConfig = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(configFile));
+        List<MatchingConfig> matchConf = recMatchConfig.getMatchingConfigs();
+
+        PatientMatchingReportMetadataService metadataService = Context.getService(PatientMatchingReportMetadataService.class);
+
+        List<String> existingConfigList = MatchingConfigurationUtils.listAvailableBlockingRuns_db();
+
+        for (MatchingConfig conf : matchConf) {
+            if (existingConfigList.contains(conf.getName())) {
+                log.warn("There exists a configuration in the database with same name as " + conf.getName() + ". The configuration Ignored.");
+                continue;
+            }
+            PatientMatchingConfiguration configuration = new PatientMatchingConfiguration();
+            List<MatchingConfig> matchingConfigLists = new ArrayList<MatchingConfig>();
+            configuration.setConfigurationName(conf.getName());
+            Set<ConfigurationEntry> configurationEntries = new TreeSet<ConfigurationEntry>();
+            for (MatchingConfigRow row : conf.getMatchingConfigRows()) {
+                if (row.isIncluded()) {
+                    ConfigurationEntry entry = new ConfigurationEntry();
+                    entry.setFieldName(row.getName());
+                    entry.setSET(row.getSetID());
+                    entry.setPatientMatchingConfiguration(configuration);
+
+                    //set name and view name
+                    if (row.getName().startsWith("org.openmrs")) {
+                        entry.setFieldViewName("patientmatching." + row.getName());
+                    } else {
+                        entry.setFieldViewName(row.getName());
+                    }
+
+                    //Check whether must match field or should match field
+                    if (row.getBlockOrder() > 0) {
+                        entry.setBlocking();
+                        entry.setBlockOrder(row.getBlockOrder());
+                    } else {
+                        entry.setIncluded();
+                    }
+                    configurationEntries.add(entry);
+                }
+            }
+            configuration.setConfigurationEntries(configurationEntries);
+            configuration.setUsingRandomSample(conf.isUsingRandomSampling());
+            configuration.setRandomSampleSize(conf.getRandomSampleSize());
+            metadataService.savePatientMatchingConfiguration(configuration);
+            log.info("Configuration " + conf.getName() + " successfully migrated to database");
         }
     }
 }
