@@ -37,14 +37,23 @@ public class ReportMigrationUtils {
 
     public static void migrateFlatFilesToDB(){
         migrateConfigurations();
+        migrateReports();
+    }
+
+    public static void migrateReports() {
         String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
         File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
-        for(File file : configFileFolder.listFiles()){
-            if(file.isFile() && file.getName().startsWith("dedup")){
+        for (File file : configFileFolder.listFiles()) {
+            if (file.isFile() && file.getName().startsWith("dedup")) {
                 Report report = flatFileToReport(file);
-                if(report!=null){
+                if (report != null) {
                     Context.getService(PatientMatchingReportMetadataService.class).savePatientMatchingReport(report);
                 }
+
+                //Backup report file
+                String backupFileName = "backup-" + file.getName();
+                file.renameTo(new File(configFileFolder, backupFileName));
+                log.info("Report migrated to database. File backed up as " + backupFileName);
             }
         }
     }
@@ -99,10 +108,8 @@ public class ReportMigrationUtils {
                 report.setMatchingRecordSet(matchingRecordSet);
                 assignOldReportMetadata(report);
                 return report;
-            } catch (FileNotFoundException e) {
-                //TODO log and handle
             } catch (IOException e) {
-                //TODO log and handle
+                log.error("IO Error ", e);
             }
         }
         return null;
@@ -167,11 +174,11 @@ public class ReportMigrationUtils {
             }
             report.setReportGenerationSteps(reportGenerationSteps);
         } catch (ClassNotFoundException e) {
-            //TODO log and handle
+            log.error("MySQL driver not found", e);
         } catch (SQLException e) {
-            //TODO log and handle
+            log.error("SQL error", e);
         } catch (ParseException e) {
-            //TODO log and handle
+            log.error("Invalid date format ", e);
         }
     }
 
