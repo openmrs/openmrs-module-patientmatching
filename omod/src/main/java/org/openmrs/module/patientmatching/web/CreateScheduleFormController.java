@@ -113,7 +113,7 @@ public class CreateScheduleFormController extends SimpleFormController {
 			map.put("startTime", sdf.format(new Date()));
 		}
 		
-		map.put("blockingRuns", MatchingConfigurationUtils.listAvailableBlockingRuns());
+		map.put("blockingRuns", MatchingConfigurationUtils.listAvailableBlockingRuns_db());
 		
 		return map;
 	}

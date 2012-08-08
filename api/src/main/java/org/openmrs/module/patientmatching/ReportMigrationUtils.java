@@ -16,7 +16,6 @@ import org.regenstrief.linkage.util.XMLTranslator;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
@@ -233,5 +232,66 @@ public class ReportMigrationUtils {
             metadataService.savePatientMatchingConfiguration(configuration);
             log.info("Configuration " + conf.getName() + " successfully migrated to database");
         }
+    }
+
+    public static PatientMatchingConfiguration matchingConfToPMConfiguration(MatchingConfig conf){
+        PatientMatchingConfiguration configuration = new PatientMatchingConfiguration();
+        List<MatchingConfig> matchingConfigLists = new ArrayList<MatchingConfig>();
+        configuration.setConfigurationName(conf.getName());
+        Set<ConfigurationEntry> configurationEntries = new TreeSet<ConfigurationEntry>();
+        for (MatchingConfigRow row : conf.getMatchingConfigRows()) {
+            if (row.isIncluded()) {
+                ConfigurationEntry entry = new ConfigurationEntry();
+                entry.setFieldName(row.getName());
+                entry.setSET(row.getSetID());
+                entry.setPatientMatchingConfiguration(configuration);
+
+                //set name and view name
+                if (row.getName().startsWith("org.openmrs")) {
+                    entry.setFieldViewName("patientmatching." + row.getName());
+                } else {
+                    entry.setFieldViewName(row.getName());
+                }
+
+                //Check whether must match field or should match field
+                if (row.getBlockOrder() > 0) {
+                    entry.setBlocking();
+                    entry.setBlockOrder(row.getBlockOrder());
+                } else {
+                    entry.setIncluded();
+                }
+                configurationEntries.add(entry);
+            }
+        }
+        configuration.setConfigurationEntries(configurationEntries);
+        configuration.setUsingRandomSample(conf.isUsingRandomSampling());
+        configuration.setRandomSampleSize(conf.getRandomSampleSize());
+        return configuration;
+    }
+
+    public static MatchingConfig ptConfigurationToMatchingConfig(PatientMatchingConfiguration configuration){
+        List<MatchingConfigRow> matchingConfigRows = new ArrayList<MatchingConfigRow>();
+        int blockOrderCount = 1;
+        for (ConfigurationEntry entry : configuration.getConfigurationEntries()){
+            MatchingConfigRow row = new MatchingConfigRow(entry.getFieldName());
+            if(entry.isBlocking()){
+                row.setInclude(true);
+                row.setBlockOrder(blockOrderCount);
+                blockOrderCount++;
+            }else if( entry.isIncluded()){
+                row.setInclude(true);
+            }else {
+                row.setInclude(false);
+            }
+            row.setBlockChars(40);
+            row.setAlgorithm(MatchingConfig.EXACT_MATCH);
+            row.setAgreement(0.9);
+            row.setNonAgreement(0.1);
+            matchingConfigRows.add(row);
+        }
+        MatchingConfig matchingConfig = new MatchingConfig(configuration.getConfigurationName(),
+                matchingConfigRows.toArray(new MatchingConfigRow[matchingConfigRows.size()]));
+        return matchingConfig;
+
     }
 }

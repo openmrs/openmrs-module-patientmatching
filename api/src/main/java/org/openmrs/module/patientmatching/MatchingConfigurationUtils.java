@@ -211,200 +211,13 @@ public class MatchingConfigurationUtils {
 	}
 	
 	/**
-	 * Method to save blocking run to the configuration file. This method will convert the
-	 * <code>PatientMatchingConfiguration</code> object to blocking run. If no configuration file in
-	 * the file system, this method will create a new configuration file, create the data source
-	 * element and the append the blocking run to it. If the file exist, the method will update the
-	 * blocking run element in accordance to the <code>PatientMatchingConfiguration</code> object.
+	 * Method to save blocking run to the database.
 	 * 
 	 * @param patientMatchingConfig
 	 */
 	public static final void savePatientMatchingConfig(PatientMatchingConfiguration patientMatchingConfig) {
-		
-		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
-		
-		File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
-		
-		File configFile = new File(configFileFolder, MatchingConstants.CONFIG_FILE_NAME);
-		
-		// TODO: need to do checking on the column count to know whether the
-		// structure is changed and we need
-		// to update the data source element as well
-		
-		RecMatchConfig recMatchConfig = null;
-		LinkDataSource linkDataSource = new LinkDataSource("dummy", "dummy", "dummy", 1);
-		
-		if (!configFile.exists()) {
-			int counter = 0;
-			Set<String> s = new HashSet<String>();
-			
-			for (ConfigurationEntry configEntry : patientMatchingConfig.getConfigurationEntries()) {
-				
-				if (!(configEntry.getSET().equals("0"))) {
-					if (!(configEntry.getSET().equals("")))
-						s.add(configEntry.getSET());
-					
-				}
-				
-				DataColumn column = new DataColumn(String.valueOf(counter));
-				
-				column.setIncludePosition(counter);
-				
-				column.setName(configEntry.getFieldName());
-				
-				column.setType(DataColumn.STRING_TYPE);
-				
-				linkDataSource.addDataColumn(column);
-				
-				counter++;
-				
-			}
-			
-			Iterator<String> it = s.iterator();
-			
-			while (it.hasNext()) {
-				
-				if (!s.contains("")) {
-					
-					DataColumn column = new DataColumn(String.valueOf(counter));
-					
-					column.setIncludePosition(counter);
-					
-					column.setName("concat" + it.next());
-					
-					column.setType(DataColumn.STRING_TYPE);
-					
-					linkDataSource.addDataColumn(column);
-					
-					counter++;
-					
-				}
-			}
-			List<MatchingConfig> matchingConfigLists = new ArrayList<MatchingConfig>();
-			
-			recMatchConfig = new RecMatchConfig(linkDataSource, linkDataSource, matchingConfigLists);
-			
-		} else {
-			int counter = 0;
-			
-			SortedSet<String> s = new TreeSet<String>();
-			
-			for (ConfigurationEntry configEntry : patientMatchingConfig.getConfigurationEntries()) {
-				
-				if (!(configEntry.getSET().equals("0"))) {
-					
-					if (!(configEntry.getSET().equals("")))
-						s.add(configEntry.getSET());
-				}
-			}
-			Iterator<String> it = s.iterator();
-			
-			while (it.hasNext()) {
-				
-				if (!s.contains("")) {
-					
-					DataColumn column = new DataColumn(String.valueOf(counter));
-					
-					column.setIncludePosition(counter);
-					
-					column.setName("concat" + it.next());
-					
-					column.setType(DataColumn.STRING_TYPE);
-					
-					linkDataSource.addDataColumn(column);
-					
-					counter++;
-					
-				}
-			}
-			List<MatchingConfig> matchingConfigLists = new ArrayList<MatchingConfig>();
-			
-			recMatchConfig = new RecMatchConfig(linkDataSource, linkDataSource, matchingConfigLists);
-			recMatchConfig = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(configFile));
-		}
-		
-		List<MatchingConfig> matchingConfigLists = recMatchConfig.getMatchingConfigs();
-		
-		MatchingConfig matchingConfig = findMatchingConfigByName(patientMatchingConfig.getConfigurationName(),
-		    matchingConfigLists);
-		
-		if (matchingConfig != null) {
-			
-			System.out.println("Updating new blocking run with name: " + patientMatchingConfig.getConfigurationName());
-			// update blocking runs
-			
-			matchingConfig.setUsingRandomSampling(patientMatchingConfig.isUsingRandomSample());
-			
-			matchingConfig.setRandomSampleSize(patientMatchingConfig.getRandomSampleSize());
-			
-			int counterBlockOrder = 1;
-			
-			for (ConfigurationEntry configEntry : patientMatchingConfig.getConfigurationEntries()) {
-				
-				MatchingConfigRow configRow = matchingConfig.getMatchingConfigRowByName(configEntry.getFieldName());
-				
-				configRow.setInclude(configEntry.isIncluded() || configEntry.isBlocking());
-				
-				if (configEntry.isIncluded() || configEntry.isBlocking()) {
-					
-					configRow.setSetID(configEntry.getSET());
-					
-				} else {
-					
-					configRow.setSetID(MatchingConfigRow.NO_SET_ID);
-					
-				}
-				
-				if (configEntry.isBlocking()) {
-					
-					configRow.setBlockOrder(counterBlockOrder);
-					configEntry.setBlockOrder(counterBlockOrder);
-					
-					counterBlockOrder++;
-					
-				} else {
-					configRow.setBlockOrder(MatchingConfigRow.DEFAULT_BLOCK_ORDER);
-					
-				}
-			}
-		} else {
-			log.info("Creating new blocking run with name: " + patientMatchingConfig.getConfigurationName());
-			// create blocking runs
-			List<MatchingConfigRow> matchingConfigRows = new ArrayList<MatchingConfigRow>();
-			int counterBlockOrder = 1;
-			for (ConfigurationEntry configEntry : patientMatchingConfig.getConfigurationEntries()) {
-				MatchingConfigRow configRow = new MatchingConfigRow(configEntry.getFieldName());
-				configRow.setInclude(configEntry.isIncluded() || configEntry.isBlocking());
-				if (configEntry.isIncluded() || configEntry.isBlocking()) {
-					configRow.setSetID(configEntry.getSET());
-				} else {
-					
-					configRow.setSetID(MatchingConfigRow.NO_SET_ID);
-				}
-				
-				if (configEntry.isBlocking()) {
-					configRow.setBlockOrder(counterBlockOrder);
-					configEntry.setBlockOrder(counterBlockOrder);
-					counterBlockOrder++;
-					
-				} else {
-					configRow.setBlockOrder(MatchingConfigRow.DEFAULT_BLOCK_ORDER);
-				}
-				matchingConfigRows.add(configRow);
-			}
-			MatchingConfigRow[] matchingConfigRowArray = matchingConfigRows.toArray(new MatchingConfigRow[matchingConfigRows
-			        .size()]);
-			matchingConfig = new MatchingConfig(patientMatchingConfig.getConfigurationName(), matchingConfigRowArray);
-			matchingConfig.setName(patientMatchingConfig.getConfigurationName());
-			matchingConfig.setUsingRandomSampling(patientMatchingConfig.isUsingRandomSample());
-			matchingConfig.setRandomSampleSize(patientMatchingConfig.getRandomSampleSize());
-			matchingConfigLists.add(matchingConfig);
-		}
-		
 		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
 		service.savePatientMatchingConfiguration(patientMatchingConfig);
-		
-		XMLTranslator.writeXMLDocToFile(XMLTranslator.toXML(recMatchConfig), configFile);
 	}
 	
 	/**
@@ -412,7 +225,9 @@ public class MatchingConfigurationUtils {
 	 * used to display all blocking run for further modification or deletion from the web front end.
 	 * 
 	 * @return list of all blocking runs found in the configuration file
+     * @deprecated Use listAvailableBlockingRuns_db
 	 */
+    @Deprecated
 	public static final List<String> listAvailableBlockingRuns() {
 		log.info("Listing all available blocking run");
 		List<String> blockingRuns = new ArrayList<String>();

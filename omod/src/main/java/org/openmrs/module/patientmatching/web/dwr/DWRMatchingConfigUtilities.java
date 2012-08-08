@@ -67,7 +67,7 @@ public class DWRMatchingConfigUtilities {
 	}
 
 	/**
-	 * @see MatchingConfigurationUtils#listAvailableBlockingRuns()
+	 * @see org.openmrs.module.patientmatching.MatchingConfigurationUtils#listAvailableBlockingRuns_db()
 	 */
 	public List<String> getAllBlockingRuns() {
 		return MatchingConfigurationUtils.listAvailableBlockingRuns_db();

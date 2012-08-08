@@ -105,13 +105,13 @@ public class MatchingReportUtils {
 		log.info("Reading matching config file from " + configFile.getAbsolutePath());
 		
 		RecMatchConfig recMatchConfig = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(configFile));
-		List<MatchingConfig> matchConf = recMatchConfig.getMatchingConfigs();
-		List<MatchingConfig> matchingConfigLists = new ArrayList<MatchingConfig>();
+		List<PatientMatchingConfiguration> configList = Context.getService(PatientMatchingReportMetadataService.class).getMatchingConfigs();
+        List<MatchingConfig> matchingConfigLists = new ArrayList<MatchingConfig>();
 
 		for (String selectedStrat : selectedStrategies) {
-			for (MatchingConfig conf : matchConf) {
-				if (OpenmrsUtil.nullSafeEquals(conf.getName(), selectedStrat)) {
-					matchingConfigLists.add(conf);
+			for (PatientMatchingConfiguration config : configList) {
+				if (OpenmrsUtil.nullSafeEquals(config.getConfigurationName(), selectedStrat)) {
+					matchingConfigLists.add(ReportMigrationUtils.ptConfigurationToMatchingConfig(config));
 				}
 			}
 		}

@@ -49,7 +49,7 @@ public class ReportSimpleFormController extends SimpleFormController {
         
         Map<String, Object> model = new HashMap<String, Object>();
         model.put("reportParam", MatchingConstants.PARAM_REPORT);
-        model.put("blockingRuns", MatchingConfigurationUtils.listAvailableBlockingRuns());
+        model.put("blockingRuns", MatchingConfigurationUtils.listAvailableBlockingRuns_db());
         model.put("reportResults", MatchingReportUtils.listAvailableReportNamesInDB());
         model.put("defaultStatus", MatchingReportUtils.NO_PROCESS);
         model.put("premStatus", MatchingReportUtils.PREM_PROCESS);
