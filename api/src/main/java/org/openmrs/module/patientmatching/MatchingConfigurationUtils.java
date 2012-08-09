@@ -216,8 +216,107 @@ public class MatchingConfigurationUtils {
 	 * @param patientMatchingConfig
 	 */
 	public static final void savePatientMatchingConfig(PatientMatchingConfiguration patientMatchingConfig) {
+
+		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
+
+		File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
+
+		File configFile = new File(configFileFolder, MatchingConstants.CONFIG_FILE_NAME);
+
+		RecMatchConfig recMatchConfig = null;
+		LinkDataSource linkDataSource = new LinkDataSource("dummy", "dummy", "dummy", 1);
+
+		if (!configFile.exists()) {
+			int counter = 0;
+			Set<String> s = new HashSet<String>();
+
+			for (ConfigurationEntry configEntry : patientMatchingConfig.getConfigurationEntries()) {
+
+				if (!(configEntry.getSET().equals("0"))) {
+					if (!(configEntry.getSET().equals("")))
+						s.add(configEntry.getSET());
+
+				}
+
+				DataColumn column = new DataColumn(String.valueOf(counter));
+
+				column.setIncludePosition(counter);
+
+				column.setName(configEntry.getFieldName());
+
+				column.setType(DataColumn.STRING_TYPE);
+
+				linkDataSource.addDataColumn(column);
+
+				counter++;
+
+			}
+
+			Iterator<String> it = s.iterator();
+
+			while (it.hasNext()) {
+
+				if (!s.contains("")) {
+
+					DataColumn column = new DataColumn(String.valueOf(counter));
+
+					column.setIncludePosition(counter);
+
+					column.setName("concat" + it.next());
+
+					column.setType(DataColumn.STRING_TYPE);
+
+					linkDataSource.addDataColumn(column);
+
+					counter++;
+
+				}
+			}
+			List<MatchingConfig> matchingConfigLists = new ArrayList<MatchingConfig>();
+
+			recMatchConfig = new RecMatchConfig(linkDataSource, linkDataSource, matchingConfigLists);
+
+		} else {
+			int counter = 0;
+
+			SortedSet<String> s = new TreeSet<String>();
+
+			for (ConfigurationEntry configEntry : patientMatchingConfig.getConfigurationEntries()) {
+
+				if (!(configEntry.getSET().equals("0"))) {
+
+					if (!(configEntry.getSET().equals("")))
+						s.add(configEntry.getSET());
+				}
+			}
+			Iterator<String> it = s.iterator();
+
+			while (it.hasNext()) {
+
+				if (!s.contains("")) {
+
+					DataColumn column = new DataColumn(String.valueOf(counter));
+
+					column.setIncludePosition(counter);
+
+					column.setName("concat" + it.next());
+
+					column.setType(DataColumn.STRING_TYPE);
+
+					linkDataSource.addDataColumn(column);
+
+					counter++;
+
+				}
+			}
+
+			recMatchConfig = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(configFile));
+		}
+
 		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
 		service.savePatientMatchingConfiguration(patientMatchingConfig);
+
+		XMLTranslator.writeXMLDocToFile(XMLTranslator.toXML(recMatchConfig), configFile);
 	}
 	
 	/**
