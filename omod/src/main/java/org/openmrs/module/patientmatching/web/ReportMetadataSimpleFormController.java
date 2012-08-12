@@ -55,9 +55,15 @@ public class ReportMetadataSimpleFormController extends SimpleFormController {
         for(PatientMatchingConfiguration configuration: report.getUsedConfigurationList()){
             strategyList.add(configuration.getConfigurationName());
         }
+        String createdBy;
+        if (report.getCreatedBy() == null){
+            createdBy = "Unknown user";
+        } else {
+            createdBy = report.getCreatedBy().getUsername();
+        }
         reportMap.put("reportName", report.getReportName());
         reportMap.put("strategylist", strategyList);
-        reportMap.put("createdBy",report.getCreatedBy().getUsername());
+        reportMap.put("createdBy",createdBy);
         reportMap.put("date", report.getCreatedOn().toString());
         List<String> processList = new ArrayList<String>();
         List<String> stepList = new ArrayList<String>();
