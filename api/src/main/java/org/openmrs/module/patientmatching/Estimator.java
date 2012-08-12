@@ -106,7 +106,7 @@ public class Estimator {
 			if (!select.contains("PatientIdentifierType")) {
 				select += ", PatientIdentifierType pit1, PatientIdentifierType pit2";
 				where += " and pit1 = pi1.identifierType and pit2 = pi2.identifierType and pi1.identifier = pi2.identifier" +
-						" and pit1.format=pit2.format";
+						" and pit1.name=pit2.name";
 			}
 			int count = 0;
 			where += " and (";
@@ -115,7 +115,7 @@ public class Estimator {
 				if(count>0){
 					whereBuffer.append(" or");
 				}
-				whereBuffer.append(" pit1.format = '");
+				whereBuffer.append(" pit1.name = '");
                 whereBuffer.append(idType);
                 whereBuffer.append("'");
 				count++;
@@ -136,7 +136,7 @@ public class Estimator {
             if (!select.contains("PersonAttributeType")){
                 select += ", PersonAttributeType pat1, PersonAttributeType pat2";
                 where += " and pat1 = pa1.attributeType and pat2 = pa2.attributeType" +
-                    " and pat1.format = pat2.format";
+                    " and pat1.name = pat2.name";
             }
 
             int count = 0;
@@ -146,7 +146,7 @@ public class Estimator {
                 if(count>0){
                     whereBuffer.append(" or");
                 }
-                whereBuffer.append(" pat1.format = '");
+                whereBuffer.append(" pat1.name = '");
                 whereBuffer.append(attrType);
                 whereBuffer.append("'");
                 count++;
