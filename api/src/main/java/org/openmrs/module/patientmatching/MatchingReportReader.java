@@ -26,7 +26,7 @@ import org.openmrs.util.OpenmrsUtil;
  * singleton pattern and create only a single instance of this class to read the
  * entire content.
  */
-public class MatchingReportReader implements ReportReader {
+public class MatchingReportReader{
     /**
      * Logger instance
      */

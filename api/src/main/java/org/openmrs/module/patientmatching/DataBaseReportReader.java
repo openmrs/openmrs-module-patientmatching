@@ -6,12 +6,52 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Implementation of ReportReader class to work with reports saved in database
+ * Class to work with reports saved in database
  */
-public class DataBaseReportReader implements ReportReader {
+public class DataBaseReportReader {
+
+    private static final int GROUPS_PER_PAGE = 20;
 
     private Report report;
     private Set<String> includedFields;
+    private Map<Integer,Integer> paginationMap;
+    private int lastPage;
+
+    public DataBaseReportReader(String reportName){
+        this(reportName, new HashMap<Integer, Integer>());
+        buildCache();
+    }
+
+    public DataBaseReportReader(String reportName, Map<Integer,Integer> paginationMap){
+        setReport(reportName);
+        setIncludedFields();
+        this.paginationMap = paginationMap;
+        this.lastPage = paginationMap.size() - 1;   //No of entries minus 0 th entry
+    }
+
+    private void buildCache(){
+        int groupCount = 0;
+        int recordCount = 0;
+        int lastGroup = 0;
+        int lastPage = 0;
+        paginationMap.put(0, 0);
+        for(MatchingRecord record : report.getMatchingRecordSet()){
+            recordCount ++;
+            if(record.getGroupId()!=lastGroup){
+                groupCount ++;
+                lastGroup = record.getGroupId();
+                if(groupCount % GROUPS_PER_PAGE == 0){
+                    lastPage++;
+                    paginationMap.put(lastPage, recordCount + 1);
+                }
+            }
+        }
+        if (!paginationMap.containsValue(recordCount +1)){
+            lastPage++;
+            paginationMap.put(lastPage,recordCount);
+        }
+        this.lastPage = lastPage;
+    }
 
     /**
      * Set Report name to fetch from Database
@@ -21,44 +61,42 @@ public class DataBaseReportReader implements ReportReader {
         report = Context.getService(PatientMatchingReportMetadataService.class).getReportByName(reportName);
     }
 
-    public boolean isEof() {
-        return false;       //TODO : To be implemented
+    public int getLastPage() {
+        return lastPage;
     }
 
-    public void setEof(boolean eof) {
-        //TODO : To be implemented
+    public Map<Integer,Integer> getPaginationMap() {
+        return paginationMap;
     }
 
-    public List<Long> getPagePos() {
-        return new ArrayList<Long>(Arrays.asList(new Long[]{0L}));
-        //TODO : To be completed
-    }
-
-    public void setPagePos(List<Long> pagePos) {
-        //TODO : To be implemented
-    }
-
-    public int getCurrentPage() {
-        return 0;  //TODO : To be implemented
-    }
-
-    public void setCurrentPage(int currentPage) {
-        //TODO : To be implemented
-    }
-
-    public List<String> getHeader() throws IOException {
+    public List<String> getHeader(){
+        setIncludedFields();
         List<String> header = new ArrayList<String>();
         header.add("Group Id");
         header.add("Unique Id");
-        includedFields = MatchingReportUtils.getAllFieldsUsed(report);
         header.addAll(includedFields);
         header.add("Action");
         return header;
     }
 
-    public List<List<String>> getCurrentContent() {
+    private void setIncludedFields(){
+        includedFields = MatchingReportUtils.getAllFieldsUsed(report);
+    }
+
+    public List<List<String>> fetchContent(int page) throws IOException {
+        if(page>lastPage){
+            page = lastPage;
+        }
+
+        if(page<=0){
+            page=1;
+        }
+
+        int start = paginationMap.get(page-1);
+        int end = paginationMap.get(page);
+        List<MatchingRecord> records = new ArrayList<MatchingRecord>(report.getMatchingRecordSet()).subList(start,end);
         List<List<String>> content = new ArrayList<List<String>>();
-        for(MatchingRecord record : report.getMatchingRecordSet()){
+        for(MatchingRecord record : records){
             List<String> recordData = new ArrayList<String>();
             recordData.add(record.getPatient().getVoided().toString());
             recordData.add(record.getPatient().getPatientId().toString());
@@ -74,9 +112,5 @@ public class DataBaseReportReader implements ReportReader {
             content.add(recordData);
         }
         return content;
-    }
-
-    public void fetchContent(int page) throws IOException {
-        //TODO : To be implemented
     }
 }

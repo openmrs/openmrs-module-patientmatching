@@ -50,7 +50,11 @@ public class MatchingRecord implements Comparable<MatchingRecord> {
     }
 
     public int compareTo(MatchingRecord o) {
-        return 1;   //Ignored
+        //Sort by group first and then by patient
+        if(groupId == o.groupId){
+            return patient.getId() - o.patient.getId();
+        }
+        return groupId - o.groupId;
     }
 
     public Set<MatchingRecordAttribute> getMatchingRecordAttributeSet() {

@@ -3,9 +3,7 @@
  */
 package org.openmrs.module.patientmatching.web.dwr;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -29,7 +27,6 @@ import org.openmrs.PatientIdentifier;
 import org.openmrs.PersonAddress;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.patientmatching.*;
-import org.openmrs.util.OpenmrsUtil;
 
 import org.regenstrief.linkage.util.MatchingConfig;
 
@@ -325,37 +322,26 @@ public class DWRMatchingConfigUtilities {
 		WebContext context = WebContextFactory.get();
 		HttpSession session = context.getSession();
 		String filename = (String) session.getAttribute("reportFilename");
-		List<Long> pagePos = (List<Long>) session.getAttribute("reportPagePosition");
+        Map<Integer,Integer> pageCache = (Map<Integer,Integer>) session.getAttribute("reportPagePosition");
 		int thisPage = (Integer) session.getAttribute("reportCurrentPage");
-		boolean eof = (Boolean) session.getAttribute("isReportEOF");
 
 		List<List<String>> currentContent = new ArrayList<List<String>>();
 		// init with error message
 		List<String> s = new ArrayList<String>();
 		s.add("Unable to get the report data, please retry or re-open the report page");
 		currentContent.add(s);
-
-		MatchingReportReader reader = new MatchingReportReader(thisPage,
-				eof, pagePos, filename);
+        DataBaseReportReader reader = new DataBaseReportReader(filename,pageCache);
 		try {
-			if (eof) {
-				reader.fetchContent(thisPage);
-				if (session.getAttribute("endPage") == null) {
-					session.setAttribute("endPage", thisPage);
-				}
-			} else {
-				reader.fetchContent(thisPage + 1);
-			}
-			// only update the value when succeed
-			session.setAttribute("reportPagePosition", reader.getPagePos());
-			session.setAttribute("reportCurrentPage", reader.getCurrentPage());
-			session.setAttribute("isReportEOF", reader.isEof());
-			// this will replace error message if the process is done
-			currentContent = reader.getCurrentContent();
-		} catch (IOException e) {
-			log.warn("error fetching content or setting session attributes", e);
-		}
-		return currentContent;
+            if(thisPage<reader.getLastPage()){
+                session.setAttribute("reportCurrentPage",thisPage+1);
+                currentContent = reader.fetchContent(thisPage+1);
+            }else{
+                currentContent = reader.fetchContent(thisPage);
+            }
+        }catch (IOException e){
+            log.warn("error fetching content or setting session attributes", e);
+        }
+        return currentContent;
 	}
 
 	/**
@@ -369,10 +355,8 @@ public class DWRMatchingConfigUtilities {
 		WebContext context = WebContextFactory.get();
 		HttpSession session = context.getSession();
 		String filename = (String) session.getAttribute("reportFilename");
-		List<Long> pagePos = (List<Long>) session.getAttribute("reportPagePosition");
+        Map<Integer, Integer> pageCache = (Map<Integer, Integer>) session.getAttribute("reportPagePosition");
 		int thisPage = (Integer) session.getAttribute("reportCurrentPage");
-		// pressing previous button always makes the eof false
-		boolean eof = false;
 
 		List<List<String>> currentContent = new ArrayList<List<String>>();
 		// init with error message
@@ -380,25 +364,18 @@ public class DWRMatchingConfigUtilities {
 		s.add("Unable to get the report data, please retry or re-open the report page");
 		currentContent.add(s);
 
-		MatchingReportReader reader = new MatchingReportReader(thisPage,
-				eof, pagePos, filename);
+		DataBaseReportReader reader = new DataBaseReportReader(filename,pageCache);
 		try {
 			if (thisPage > 1) {
-				reader.fetchContent(thisPage - 1);
+                session.setAttribute("reportCurrentPage",thisPage-1);
+				currentContent = reader.fetchContent(thisPage - 1);
 			} else {
-				reader.fetchContent(thisPage);
+                currentContent = reader.fetchContent(thisPage);
 			}
-			// only update the value when succeed
-			session.setAttribute("reportPagePosition", reader.getPagePos());
-			session.setAttribute("reportCurrentPage", reader.getCurrentPage());
-			session.setAttribute("isReportEOF", reader.isEof());
-			// this will replace error message if the process is done
-			currentContent = reader.getCurrentContent();
 		} catch (IOException e) {
 			log.warn("error fetching content or setting session attributes", e);
 		}
-		
-		return currentContent;
+        return currentContent;
 	}
 
 	public List<List<String>> getStartPage() {
@@ -406,9 +383,8 @@ public class DWRMatchingConfigUtilities {
 		HttpSession session = context.getSession();
 
 		String filename = (String) session.getAttribute("reportFilename");
-		List<Long> pagePos = (List<Long>) session.getAttribute("reportPagePosition");
+        Map<Integer, Integer> pageCache = (Map<Integer, Integer>) session.getAttribute("reportPagePosition");
 		int thisPage = 1;
-		boolean eof = false;
 
 		List<List<String>> currentContent = new ArrayList<List<String>>();
 		// init with error message
@@ -416,18 +392,17 @@ public class DWRMatchingConfigUtilities {
 		s.add("Unable to get the report data, please retry or re-open the report page");
 		currentContent.add(s);
 
-		MatchingReportReader reader = new MatchingReportReader(thisPage, eof, pagePos, filename);
+		DataBaseReportReader reader = new DataBaseReportReader(filename, pageCache);
 
 		try {
 			reader.fetchContent(thisPage);
 
 			// only update the value when succeed
-			session.setAttribute("reportPagePosition", reader.getPagePos());
-			session.setAttribute("reportCurrentPage", reader.getCurrentPage());
-			session.setAttribute("isReportEOF", reader.isEof());
+			session.setAttribute("reportPagePosition", reader.getPaginationMap());
+			session.setAttribute("reportCurrentPage", 1);
 
 			// this will replace error message if the process is done
-			currentContent = reader.getCurrentContent();
+			currentContent = reader.fetchContent(1);
 			
 		} catch (IOException e) {
 			log.warn("error fetching content or setting session attributes", e);
@@ -438,6 +413,10 @@ public class DWRMatchingConfigUtilities {
 
 	public List<List<String>> getEndPage() {
 		List<List<String>> currentContent = new ArrayList<List<String>>();
+        // init with error message
+        List<String> s = new ArrayList<String>();
+        s.add("Unable to get the report data, please retry or re-open the report page");
+        currentContent.add(s);
 
 		try {
 
@@ -445,67 +424,16 @@ public class DWRMatchingConfigUtilities {
 			HttpSession session = context.getSession();
 
 			String filename = (String) session.getAttribute("reportFilename");
-			int thisPage = (Integer) session.getAttribute("reportCurrentPage");
-			boolean eof = (Boolean) session.getAttribute("isReportEOF");
-			List<Long> pagePos = (List<Long>) session.getAttribute("reportPagePosition");
+			Map<Integer,Integer> pageCache = (Map<Integer, Integer>) session.getAttribute("reportPagePosition");
 
-			if (session.getAttribute("endPage") == null) {
-				String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
-				File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
-				File reportFile = new File(configFileFolder, filename);
+            DataBaseReportReader reader = new DataBaseReportReader(filename,pageCache);
+            int currentPage = reader.getLastPage();
+            session.setAttribute("reportCurrentPage", currentPage);
 
-				RandomAccessFile raf = new RandomAccessFile(reportFile, "r");
-				double count = -1;
-				while (raf.readLine() != null)
-					++count;
-
-				int totalPages = (int) Math.ceil(count / MatchingReportReader.REPORT_PAGE_SIZE);
-				int counter = 0;
-				long offset = pagePos.get(thisPage);
-				raf.seek(offset);
-
-				while (raf.readLine() != null) {
-					++counter;
-					if (counter >= MatchingReportReader.REPORT_PAGE_SIZE) {
-						thisPage++;
-						counter = 0;
-						boolean incl = false;
-						try {
-							pagePos.get(thisPage);
-						} catch (IndexOutOfBoundsException e) {
-							incl = true;
-						}
-						if (incl) {
-							pagePos.add(raf.getFilePointer());
-						}
-					}
-				}
-				thisPage = totalPages;
-				session.setAttribute("endPage", totalPages);
-			} else {
-				thisPage = (Integer) session.getAttribute("endPage");
-			}
-			
-			// init with error message
-			List<String> s = new ArrayList<String>();
-			s.add("Unable to get the report data, please retry or re-open the report page");
-			currentContent.add(s);
-
-			MatchingReportReader reader = new MatchingReportReader(thisPage, eof, pagePos, filename);
-
-			reader.fetchContent(thisPage);
-
-			session.setAttribute("reportPagePosition", reader.getPagePos());
-			session.setAttribute("reportCurrentPage", reader.getCurrentPage());
-			session.setAttribute("isReportEOF", reader.isEof());
-			
-			// this will replace error message if the process is done
-			currentContent = reader.getCurrentContent();
-
+            currentContent = reader.fetchContent(currentPage);
 		} catch (IOException e) {
-			log.info(e.getLocalizedMessage(), e);
+            log.warn("error fetching content or setting session attributes", e);
 		}
-
 		return currentContent;
 	}
 }
