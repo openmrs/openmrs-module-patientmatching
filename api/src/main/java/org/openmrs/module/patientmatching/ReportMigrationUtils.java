@@ -31,18 +31,33 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+/**
+ * Utility class that contains methods to migrate the old report files and configurations to the database
+ * Also contains the necessary conversion methods
+ */
 public class ReportMigrationUtils {
     protected static final Log log = LogFactory.getLog(ReportMigrationUtils.class);
 
+    /**
+     * This is called in the module activator. This method calls the methods to migrate old reports and configurations
+     * from flat files to the database.
+     */
     public static void migrateFlatFilesToDB(){
         migrateConfigurations();
         migrateReports();
     }
 
+    /**
+     * Method to migrate the old reports to the database
+     */
     public static void migrateReports() {
         String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
         File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
         for (File file : configFileFolder.listFiles()) {
+            /*
+            only the files that has the name stating with dedup are considered
+            So the backup files that were already moved and any other files are ignored
+            */
             if (file.isFile() && file.getName().startsWith("dedup")) {
                 Report report = flatFileToReport(file);
                 if (report != null) {
@@ -57,6 +72,11 @@ public class ReportMigrationUtils {
         }
     }
 
+    /**
+     * Get the data from the given file which contains old report and create a report object with the data from it
+     * @param reportFile the file that contains an old report
+     * @return A new Report object created using the data in the file
+     */
     public static Report flatFileToReport(File reportFile){
         if(reportFile.exists()&&reportFile.isFile()){
             try {
@@ -114,6 +134,10 @@ public class ReportMigrationUtils {
         return null;
     }
 
+    /**
+     * Gets the old report metadata associated with the given report and reassign that metadata to report
+     * @param report
+     */
     private static void assignOldReportMetadata(Report report){
         String reportName = report.getReportName();
 
@@ -151,7 +175,7 @@ public class ReportMigrationUtils {
                         usedStrategySet.add(configuration);
                     }
                 } catch (Exception e) {
-                    //Strategy does not exist
+                    log.warn("The configuration "+ strategy+ " used by the report "+reportName+" is not available now");
                 }
             }
             report.setUsedConfigurationList(usedStrategySet);
@@ -181,6 +205,9 @@ public class ReportMigrationUtils {
         }
     }
 
+    /**
+     * This method migrates the old configurations from the config.xml to the database
+     */
     public static void migrateConfigurations() {
         String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
         File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
@@ -199,7 +226,6 @@ public class ReportMigrationUtils {
                 continue;
             }
             PatientMatchingConfiguration configuration = new PatientMatchingConfiguration();
-            List<MatchingConfig> matchingConfigLists = new ArrayList<MatchingConfig>();
             configuration.setConfigurationName(conf.getName());
             Set<ConfigurationEntry> configurationEntries = new TreeSet<ConfigurationEntry>();
             for (MatchingConfigRow row : conf.getMatchingConfigRows()) {
@@ -234,6 +260,12 @@ public class ReportMigrationUtils {
         }
     }
 
+    /**
+     * Conversion method from MatchingConfig, MatchingConfigRow classes
+     * to PatientMatchingConfiguration, ConfigurationEntry classes
+     * @param conf the MatchingConfig class to convert
+     * @return The converted PatientMatchingConfiguration class
+     */
     public static PatientMatchingConfiguration matchingConfToPMConfiguration(MatchingConfig conf){
         PatientMatchingConfiguration configuration = new PatientMatchingConfiguration();
         List<MatchingConfig> matchingConfigLists = new ArrayList<MatchingConfig>();
@@ -269,6 +301,12 @@ public class ReportMigrationUtils {
         return configuration;
     }
 
+    /**
+     * Conversion method from PatientMatchingConfiguration, ConfigurationEntry classes
+     * to MatchingConfig, MatchingConfigRow classes
+     * @param configuration the PatientMatchingConfiguration class to convert
+     * @return The converted MatchingConfig class
+     */
     public static MatchingConfig ptConfigurationToMatchingConfig(PatientMatchingConfiguration configuration){
         List<MatchingConfigRow> matchingConfigRows = new ArrayList<MatchingConfigRow>();
         int blockOrderCount = 1;

@@ -353,7 +353,7 @@ public class MatchingConfigurationUtils {
 		log.info("Listing all available blocking run");
 		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
 		List<String> blockingRunNames = new ArrayList<String>();
-		List<PatientMatchingConfiguration> list = service.getBlockingRuns();
+		List<PatientMatchingConfiguration> list = service.getMatchingConfigs();
 		for (PatientMatchingConfiguration pmc : list) {
 			blockingRunNames.add(pmc.getConfigurationName());
 		}
@@ -367,25 +367,12 @@ public class MatchingConfigurationUtils {
 	public static List<PatientMatchingConfiguration> listAvailableBlockingRunConfigs() {
 		log.info("Listing all available blocking confugurations");
 		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
-		List<PatientMatchingConfiguration> configs = service.getBlockingRuns();
+		List<PatientMatchingConfiguration> configs = service.getMatchingConfigs();
 		log.info("Updating estimations as necessary...");
 		new Estimator().updateStrategies(configs);
 		return configs;
 	}
-	
-	/**
-	 * Method returns a list of all available PatientMatchingConfiguration names
-	 */
-	public static final List<String> listAvailableMatchingConfigs_db() {
-		List<String> matchingConfigNames = new ArrayList<String>();
-		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
-		List<PatientMatchingConfiguration> list = service.getMatchingConfigs();
-		for (PatientMatchingConfiguration pmc : list) {
-			matchingConfigNames.add(pmc.getConfigurationName());
-		}
-		return matchingConfigNames;
-	}
-	
+
 	/**
 	 * Method to delete a particular blocking run from the configuration file. If the blocking run
 	 * is the last entry in the configuration file, the configuration file will also be deleted.

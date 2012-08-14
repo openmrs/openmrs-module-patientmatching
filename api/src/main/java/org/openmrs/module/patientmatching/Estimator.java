@@ -26,7 +26,11 @@ public class Estimator {
 	private long estimatedTimeToRun = -1L;
 	
 	private static final double RECALCULATE_IGNORE_FRACTION = 0.1;
-	
+
+    /**
+     * Calculate the number of comparisons when the blocking field names are given
+     * @param entryNames The list of the names of the blocking fields
+     */
 	public void doEstimationsWithBlockingFields(List<String> entryNames){
 		Date startedAt = new Date();
 		
@@ -47,7 +51,8 @@ public class Estimator {
 				attributes.add(attribute);
 			}
 		}
-		
+
+        //Get the attributes from the Patient, Person, PersonName, PatientIdentifier classes
 		Class<Patient> patient = Patient.class;
 		Set<String> patientFieldNames = new HashSet<String>(patient.getDeclaredFields().length);
 		for (Field f : patient.getDeclaredFields()) {
@@ -71,7 +76,8 @@ public class Estimator {
 		for (Field f : identifier.getDeclaredFields()) {
 			identifierFieldNames.add(f.getName());
 		}
-	
+
+        //build the HQL query from the above attributes
 		for (String s : attributes) {
 			if (patientFieldNames.contains(s)) {
 				where += " and p1." + s + " = p2." + s;

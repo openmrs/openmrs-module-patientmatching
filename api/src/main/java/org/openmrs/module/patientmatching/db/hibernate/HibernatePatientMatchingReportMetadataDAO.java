@@ -51,11 +51,6 @@ public class HibernatePatientMatchingReportMetadataDAO implements PatientMatchin
 		return (PatientMatchingConfiguration) criteria.uniqueResult();
 	}
 
-	public List<PatientMatchingConfiguration> getBlockingRuns() {
-		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(PatientMatchingConfiguration.class);
-		return criteria.list();
-	}
-
 	public List<PatientMatchingConfiguration> getMatchingConfigs() {
 		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(PatientMatchingConfiguration.class);
 		return criteria.list();

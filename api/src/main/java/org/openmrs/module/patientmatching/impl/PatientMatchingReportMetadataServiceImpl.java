@@ -8,6 +8,9 @@ import org.openmrs.module.patientmatching.PatientMatchingReportMetadataService;
 import org.openmrs.module.patientmatching.Report;
 import org.openmrs.module.patientmatching.db.PatientMatchingReportMetadataDao;
 
+/**
+ * The Implementation of the service class PatientMatchingReportMetadataService
+ */
 public class PatientMatchingReportMetadataServiceImpl implements PatientMatchingReportMetadataService {
 
 	private PatientMatchingReportMetadataDao dao;
@@ -42,10 +45,6 @@ public class PatientMatchingReportMetadataServiceImpl implements PatientMatching
 	public PatientMatchingConfiguration findPatientMatchingConfigurationByName(
 			String name) {
 		return dao.findPatientMatchingConfigurationByName(name);
-	}
-
-	public List<PatientMatchingConfiguration> getBlockingRuns() {
-		return dao.getBlockingRuns();
 	}
 
 	public List<PatientMatchingConfiguration> getMatchingConfigs() {

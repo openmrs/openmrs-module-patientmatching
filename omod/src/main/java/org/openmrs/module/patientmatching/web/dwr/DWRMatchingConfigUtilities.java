@@ -3,7 +3,6 @@
  */
 package org.openmrs.module.patientmatching.web.dwr;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -26,8 +25,15 @@ import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.PersonAddress;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.patientmatching.*;
 
+import org.openmrs.module.patientmatching.DataBaseReportReader;
+import org.openmrs.module.patientmatching.LinkDBConnections;
+import org.openmrs.module.patientmatching.MatchingConfigurationUtils;
+import org.openmrs.module.patientmatching.MatchingReportUtils;
+import org.openmrs.module.patientmatching.MatchingRunData;
+import org.openmrs.module.patientmatching.PatientMatchingConfiguration;
+import org.openmrs.module.patientmatching.PatientMatchingReportMetadataService;
+import org.openmrs.module.patientmatching.Report;
 import org.regenstrief.linkage.util.MatchingConfig;
 
 import uk.ltd.getahead.dwr.WebContext;
@@ -95,8 +101,8 @@ public class DWRMatchingConfigUtilities {
 	}
 
 	/**
-	 * @see PatientMatchingReportMetadataService#deletePatientMatchingConfiguration(Long) 
-	 */
+     * @see PatientMatchingReportMetadataService#deletePatientMatchingConfiguration(org.openmrs.module.patientmatching.PatientMatchingConfiguration)
+     */
 	public void deleteBlockingRun(Long id) {
 		log.info("DWRMatchingConfigUtilities: deleting blocking run #" + id);
 		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
@@ -105,9 +111,6 @@ public class DWRMatchingConfigUtilities {
 			service.deletePatientMatchingConfiguration(configuration);
 	}
 
-	/**
-	 * @see MatchingReportUtils#resetStep()
-	 */
 	public void resetStep() {
 		log.info("DWRMatchingConfigUtilities: resetting to first step");
 		reset = -1;
@@ -117,9 +120,6 @@ public class DWRMatchingConfigUtilities {
 		pages.addFunctionCall("reset");
 	}
 
-	/**
-	 * @see MatchingReportUtils#getStep()
-	 */
 	public String getStep() {
 		boolean timerTaskStarted = MatchingRunData.getInstance().isTimerTaskStarted();
 		
@@ -219,9 +219,6 @@ public class DWRMatchingConfigUtilities {
 		time = Calendar.getInstance().getTimeInMillis() - time;
 	}
 
-	/**
-	 * @see MatchingReportUtils#doAnalysis()
-	 */
 	public void doAnalysis(String selectedStrategies) {
 		MatchingRunData.getInstance().setFileStrat(selectedStrategies);
 		if (!MatchingRunData.getInstance().isTimerTaskStarted()) {
@@ -331,16 +328,12 @@ public class DWRMatchingConfigUtilities {
 		s.add("Unable to get the report data, please retry or re-open the report page");
 		currentContent.add(s);
         DataBaseReportReader reader = new DataBaseReportReader(filename,pageCache);
-		try {
             if(thisPage<reader.getLastPage()){
                 session.setAttribute("reportCurrentPage",thisPage+1);
                 currentContent = reader.fetchContent(thisPage+1);
             }else{
                 currentContent = reader.fetchContent(thisPage);
             }
-        }catch (IOException e){
-            log.warn("error fetching content or setting session attributes", e);
-        }
         return currentContent;
 	}
 
@@ -365,19 +358,19 @@ public class DWRMatchingConfigUtilities {
 		currentContent.add(s);
 
 		DataBaseReportReader reader = new DataBaseReportReader(filename,pageCache);
-		try {
-			if (thisPage > 1) {
-                session.setAttribute("reportCurrentPage",thisPage-1);
-				currentContent = reader.fetchContent(thisPage - 1);
-			} else {
-                currentContent = reader.fetchContent(thisPage);
-			}
-		} catch (IOException e) {
-			log.warn("error fetching content or setting session attributes", e);
-		}
+        if (thisPage > 1) {
+            session.setAttribute("reportCurrentPage", thisPage - 1);
+            currentContent = reader.fetchContent(thisPage - 1);
+        } else {
+            currentContent = reader.fetchContent(thisPage);
+        }
         return currentContent;
 	}
 
+    /**
+     * Get the data of the last page of the report
+     * @return
+     */
 	public List<List<String>> getStartPage() {
 		WebContext context = WebContextFactory.get();
 		HttpSession session = context.getSession();
@@ -394,23 +387,22 @@ public class DWRMatchingConfigUtilities {
 
 		DataBaseReportReader reader = new DataBaseReportReader(filename, pageCache);
 
-		try {
-			reader.fetchContent(thisPage);
+        reader.fetchContent(thisPage);
 
-			// only update the value when succeed
-			session.setAttribute("reportPagePosition", reader.getPaginationMap());
-			session.setAttribute("reportCurrentPage", 1);
+        // only update the value when succeed
+        session.setAttribute("reportPagePosition", reader.getPaginationMap());
+        session.setAttribute("reportCurrentPage", 1);
 
-			// this will replace error message if the process is done
-			currentContent = reader.fetchContent(1);
-			
-		} catch (IOException e) {
-			log.warn("error fetching content or setting session attributes", e);
-		}
-		
-		return currentContent;
+        // this will replace error message if the process is done
+        currentContent = reader.fetchContent(1);
+
+        return currentContent;
 	}
 
+    /**
+     * Get the data of the last page of the report
+     * @return
+     */
 	public List<List<String>> getEndPage() {
 		List<List<String>> currentContent = new ArrayList<List<String>>();
         // init with error message
@@ -418,22 +410,17 @@ public class DWRMatchingConfigUtilities {
         s.add("Unable to get the report data, please retry or re-open the report page");
         currentContent.add(s);
 
-		try {
+        WebContext context = WebContextFactory.get();
+        HttpSession session = context.getSession();
 
-			WebContext context = WebContextFactory.get();
-			HttpSession session = context.getSession();
+        String filename = (String) session.getAttribute("reportFilename");
+        Map<Integer,Integer> pageCache = (Map<Integer, Integer>) session.getAttribute("reportPagePosition");
 
-			String filename = (String) session.getAttribute("reportFilename");
-			Map<Integer,Integer> pageCache = (Map<Integer, Integer>) session.getAttribute("reportPagePosition");
+        DataBaseReportReader reader = new DataBaseReportReader(filename,pageCache);
+        int currentPage = reader.getLastPage();
+        session.setAttribute("reportCurrentPage", currentPage);
 
-            DataBaseReportReader reader = new DataBaseReportReader(filename,pageCache);
-            int currentPage = reader.getLastPage();
-            session.setAttribute("reportCurrentPage", currentPage);
-
-            currentContent = reader.fetchContent(currentPage);
-		} catch (IOException e) {
-            log.warn("error fetching content or setting session attributes", e);
-		}
-		return currentContent;
+        currentContent = reader.fetchContent(currentPage);
+        return currentContent;
 	}
 }
