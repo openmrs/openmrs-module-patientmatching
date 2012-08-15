@@ -45,7 +45,7 @@ public class ConfigurationSimpleFormController extends SimpleFormController {
 		
 		if (!StringUtils.isEmpty(configIdString) && StringUtils.isNumeric(configIdString)) {
 			try {
-				Long configurationId = Long.parseLong(configIdString);
+				int configurationId = Integer.parseInt(configIdString);
 				configuration = service.getPatientMatchingConfiguration(configurationId);
 			} catch (NumberFormatException ex) {
 				log.error("could not convert '" + configIdString + "' to a long", ex);
@@ -80,21 +80,25 @@ public class ConfigurationSimpleFormController extends SimpleFormController {
         
         Map<String, String> model = new HashMap<String, String>();
         
+        if(patientMatchingConfig.getConfigurationName()==null || "".equals(patientMatchingConfig.getConfigurationName())){
+        	httpSession.setAttribute(WebConstants.OPENMRS_ERROR_ATTR, "patientmatching.config.new.noNameErrorMessage");
+        	return showForm(request, response, errors);
+        }
+        
         try{
         	Set<ConfigurationEntry> entries= patientMatchingConfig.getConfigurationEntries();
         	Set<ConfigurationEntry> newEntries = new TreeSet();
-        	
-        	Iterator it = entries.iterator(); 
-        	while(it.hasNext()){
-        		ConfigurationEntry ce = (ConfigurationEntry) it.next();
-        		ce.setPatientMatchingConfiguration(patientMatchingConfig);
-        		newEntries.add(ce);
-        	}
+
+            for (ConfigurationEntry ce : entries) {
+                ce.setPatientMatchingConfiguration(patientMatchingConfig);
+                newEntries.add(ce);
+            }
+        
         patientMatchingConfig.getConfigurationEntries().clear();
         patientMatchingConfig.setConfigurationEntries(newEntries);
         MatchingConfigurationUtils.savePatientMatchingConfig(patientMatchingConfig);
         }catch(ConstraintViolationException e){
-        	httpSession.setAttribute(WebConstants.OPENMRS_ERROR_ATTR, "patientmatching.strategyname.duplicate");
+        	httpSession.setAttribute(WebConstants.OPENMRS_ERROR_ATTR, "patientmatching.strategy.duplicate");
         	return showForm(request, response, errors);
         }
         return new ModelAndView(getSuccessView(), model);

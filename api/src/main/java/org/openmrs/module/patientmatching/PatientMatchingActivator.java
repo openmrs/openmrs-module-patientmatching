@@ -13,6 +13,7 @@ import org.openmrs.api.PatientService;
 import org.openmrs.api.PatientSetService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.Activator;
+import org.openmrs.module.ModuleActivator;
 import org.openmrs.module.patientmatching.advice.PatientMatchingAdvice;
 import org.openmrs.scheduler.SchedulerException;
 import org.openmrs.scheduler.TaskDefinition;
@@ -55,7 +56,7 @@ import org.springframework.aop.support.StaticMethodMatcherPointcutAdvisor;
  * 	"drln" - Dr. last name 
  *
  */
-public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor implements Activator, Advisor{
+public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor implements ModuleActivator, Advisor{
 	
 	/**
 	 * generated serial version uid
@@ -78,61 +79,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	private Log log = LogFactory.getLog(this.getClass());
 	public static final String FILE_LOG = "patient_matching_file_log";
 	
-	/**
-	 * Method calls the disconnect method in the LinkDBManager object.
-	 */
-	public void shutdown() {
-		log.info("Shutting down Patient Matching Module");
-		
-		Collection<TaskDefinition> rTasks = Context.getSchedulerService().getRegisteredTasks();
-		for(TaskDefinition td:rTasks){
-			if(td.getName().contains(extention)){
-				try {
-					Context.getSchedulerService().shutdownTask(td);
-				} catch (SchedulerException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-		
-		LinkDBConnections ldb_con = LinkDBConnections.getInstance();
-		RecordDBManager link_db = ldb_con.getRecDBManager();
-		link_db.disconnect();
-	}
-	
-	/**
-	 * At startup, module parses the configuration file and makes sure the
-	 * record linkage table is populated with the existing patients in OpenMRS.
-	 */
-	public void startup() {
-		log.info("Starting Patient Matching Module");
-		
-		try{
-			// get privileges
-			Context.addProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PATIENTS);
-	        Context.addProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PATIENT_COHORTS);
-	        Context.addProxyPrivilege(OpenmrsConstants.PRIV_VIEW_IDENTIFIER_TYPES);
-	        Context.addProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PERSON_ATTRIBUTE_TYPES);
-			
-			log.info("Starting to populate matching table");
-			if(LinkDBConnections.getInstance().getRecDBManager() != null){
-				populateMatchingTable();
-				log.info("Matching table populated");
-			} else {
-				log.warn("Error parsing config file and creating linkage objects");
-			}
-		}
-		finally{
-			Context.removeProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PATIENTS);
-	        Context.removeProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PATIENT_COHORTS);
-	        Context.removeProxyPrivilege(OpenmrsConstants.PRIV_VIEW_IDENTIFIER_TYPES);
-	        Context.removeProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PERSON_ATTRIBUTE_TYPES);
-		}
-		
-		
-	}
-	
+
 	/**
 	 * Method iterates through existing Patient objects and adds them to the linkage
 	 * database for use when matching.  Method also creates the table, if needed,
@@ -197,5 +144,70 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		log.debug("Returning new advice object from " + this);
 		return new PatientMatchingAdvice();
 	}
-	
+
+    public void willRefreshContext() {
+    }
+
+    public void contextRefreshed() {
+    }
+
+    /**
+     * At startup, module parses the configuration file and makes sure the
+     * record linkage table is populated with the existing patients in OpenMRS.
+     */
+    public void willStart() {
+        log.info("Starting Patient Matching Module");
+
+        try{
+            // get privileges
+            Context.addProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PATIENTS);
+            Context.addProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PATIENT_COHORTS);
+            Context.addProxyPrivilege(OpenmrsConstants.PRIV_VIEW_IDENTIFIER_TYPES);
+            Context.addProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PERSON_ATTRIBUTE_TYPES);
+
+            log.info("Starting to populate matching table");
+            if(LinkDBConnections.getInstance().getRecDBManager() != null){
+                populateMatchingTable();
+                log.info("Matching table populated");
+            } else {
+                log.warn("Error parsing config file and creating linkage objects");
+            }
+        }
+        finally{
+            Context.removeProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PATIENTS);
+            Context.removeProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PATIENT_COHORTS);
+            Context.removeProxyPrivilege(OpenmrsConstants.PRIV_VIEW_IDENTIFIER_TYPES);
+            Context.removeProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PERSON_ATTRIBUTE_TYPES);
+        }
+    }
+
+    public void started() {
+        ReportMigrationUtils.migrateFlatFilesToDB();
+    }
+
+    /**
+     * Method calls the disconnect method in the LinkDBManager object.
+     */
+    public void willStop() {
+        log.info("Shutting down Patient Matching Module");
+
+        Collection<TaskDefinition> rTasks = Context.getSchedulerService().getRegisteredTasks();
+        for(TaskDefinition td:rTasks){
+            if(td.getName().contains(extention)){
+                try {
+                    Context.getSchedulerService().shutdownTask(td);
+                } catch (SchedulerException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        LinkDBConnections ldb_con = LinkDBConnections.getInstance();
+        RecordDBManager link_db = ldb_con.getRecDBManager();
+        link_db.disconnect();
+    }
+
+    public void stopped() {
+    }
 }

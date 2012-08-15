@@ -3,12 +3,14 @@ package org.openmrs.module.patientmatching.impl;
 import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.openmrs.module.patientmatching.PatientMatchingConfiguration;
-import org.openmrs.module.patientmatching.PatientMatchingReportMetadata;
 import org.openmrs.module.patientmatching.PatientMatchingReportMetadataService;
+import org.openmrs.module.patientmatching.Report;
 import org.openmrs.module.patientmatching.db.PatientMatchingReportMetadataDao;
 
+/**
+ * The Implementation of the service class PatientMatchingReportMetadataService
+ */
 public class PatientMatchingReportMetadataServiceImpl implements PatientMatchingReportMetadataService {
 
 	private PatientMatchingReportMetadataDao dao;
@@ -32,10 +34,6 @@ public class PatientMatchingReportMetadataServiceImpl implements PatientMatching
 		return dao;
 	}
 
-	public void saveReportDetails(PatientMatchingReportMetadata pri) {
-		dao.saveReportDetails(pri);
-	}
-
 	public void savePatientMatchingConfiguration(PatientMatchingConfiguration patientMatchingConfiguration) {
 		dao.savePatientMatchingConfiguration(patientMatchingConfiguration);
 	}
@@ -49,20 +47,35 @@ public class PatientMatchingReportMetadataServiceImpl implements PatientMatching
 		return dao.findPatientMatchingConfigurationByName(name);
 	}
 
-	public List<PatientMatchingConfiguration> getBlockingRuns() {
-		return dao.getBlockingRuns();
-	}
-
-	@Override
 	public List<PatientMatchingConfiguration> getMatchingConfigs() {
 		return dao.getMatchingConfigs();
 	}
 
-	public PatientMatchingConfiguration getPatientMatchingConfiguration(Long configurationId) {
+	public PatientMatchingConfiguration getPatientMatchingConfiguration(int configurationId) {
 		return dao.getPatientMatchingConfiguration(configurationId);
 	}
 
 	public void deletePatientMatchingConfiguration(PatientMatchingConfiguration configuration) {
 		dao.deletePatientMatchingConfiguration(configuration);
 	}
+
+	public long getCustomCount(String query) {
+		return dao.getCustomCount(query);
+	}
+
+    public java.util.List<String> getReportNames() {
+        return dao.getReportNames();
+    }
+
+    public Report getReportByName(String reportName) {
+        return dao.getReportByName(reportName);
+    }
+
+    public void deleteReport(Report report) {
+        dao.deleteReport(report);
+    }
+
+    public void savePatientMatchingReport(Report report) {
+        dao.savePatientMatchingReport(report);
+    }
 }

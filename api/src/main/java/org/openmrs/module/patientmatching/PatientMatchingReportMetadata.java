@@ -1,11 +1,12 @@
 package org.openmrs.module.patientmatching;
-import java.util.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+@Deprecated
 public class PatientMatchingReportMetadata {
 	private final Log log = LogFactory.getLog(this.getClass());
-	private String reportname;
+	private String reportName;
 	private String selstrategies;
 	private String createdBy;
 	private String dateCreated;
@@ -24,7 +25,7 @@ public class PatientMatchingReportMetadata {
 			return createdBy;
 		}
 		public String getReportName() {
-			return reportname;
+			return reportName;
 		}
 		public String getpNameTime() {
 			return pNameTime;
@@ -42,7 +43,7 @@ public class PatientMatchingReportMetadata {
 	    }
 	    public void	setReportName(String reportname)
 	    {
-	    this.reportname=reportname;
+	    this.reportName=reportname;
 	    }
 	    public void	setSelStrats(String selstrategies)
 	    {

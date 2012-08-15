@@ -43,7 +43,7 @@ function viewReport(file) {
     		<tr> <th><spring:message code="patientmatching.report.info.pname"/></th>
     		     <th><spring:message code="patientmatching.report.info.ptime"/></th>
     		</tr>
-		<tr><td valign="top"></br>
+		<tr><td valign="top">
 		<ul>
 			<c:forEach items="${stepList}" var="step" varStatus="entriesIndex">
 				<li><span id="step${entriesIndex.count}" style="color:black"><c:out

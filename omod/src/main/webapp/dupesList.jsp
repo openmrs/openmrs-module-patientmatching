@@ -12,7 +12,7 @@
 
 <script type="text/javascript">
 
-var n_steps = 11; // hard-coded for now; unlikely to change
+var n_steps = 10; // hard-coded for now; unlikely to change
 var s = 0;
 var count = 0;
 var actRightAway = "true";
@@ -44,6 +44,7 @@ function selectAll(){
 	for(var i=0;i<box.length;i++){
 		box[i].checked = true;
 	}
+    updateEstimations();
 }
 
 function deselectAll(){
@@ -51,6 +52,7 @@ function deselectAll(){
 	for(var i=0;i<box.length;i++){
 		box[i].checked = false;
 	}
+    updateEstimations();
 }
 
 function reportProcessStarted(){
@@ -222,6 +224,7 @@ function callOnloadFunctions(){
 		}
 	<%}%>
 	updateStatus();
+	updateEstimations();
 }
 
 function updateStatus() {
@@ -328,6 +331,26 @@ function storeSelStrategy(){
 		DWRMatchingConfigUtilities.selStrategy(selected);
 }
 
+function updateEstimations(){
+	var box = document.getElementsByName("blockList");
+	var estimatedTotalPairs = 0;
+	var estimatedTotalTime = 0;
+	var selectedBoxCount = 0;
+	for(var i=0;i<box.length;i++){
+		if(box[i].checked){
+			selectedBoxCount++;
+			estimatedTotalPairs += parseInt(document.getElementById("EP-"+box[i].value).innerHTML);
+			estimatedTotalTime += parseInt(document.getElementById("ETR-"+box[i].value).innerHTML);
+		}
+	}
+	if(selectedBoxCount>0){
+		document.getElementById("totalEstimations").innerHTML = "Selected strategies will make "+estimatedTotalPairs+" comparisions in "+estimatedTotalTime+" ms (approx.)";
+	} else{
+		document.getElementById("totalEstimations").innerHTML = "No Strategies Selected yet, Please select at least one";
+	}
+	
+}
+
 window.onload = callOnloadFunctions;
 window.onbeforeunload = storeSelStrategy;
 </script>
@@ -345,19 +368,22 @@ window.onbeforeunload = storeSelStrategy;
 		<th colspan="2"><spring:message
 			code="patientmatching.report.blocking" /></th>
 	</tr>
-	<tr>
-		<td colspan="2">
-		<ol>
-			<c:forEach items="${blockingRuns}" var="blockingRun"
+		<th>Stratergy name</th>
+		<th align="center">Estimated resulting pairs</th>
+		<th align="center">Estimated time to run (ms)</th>
+		<c:forEach items="${blockingRuns}" var="blockingRun"
 				varStatus="entriesIndex">
-				<li style="list-style-type: none"><input type="checkbox" id="${blockingRun}" name="blockList" value="${blockingRun}"/>${entriesIndex.index+1}.&nbsp;<c:out value="${blockingRun}" /></li>
-			</c:forEach>
-		</ol>
-		</td>
-	</tr>
+				<tr>
+				<td ><input type="checkbox" id="${blockingRun.configurationName}" name="blockList" value="${blockingRun.configurationName}" onclick="updateEstimations()"/>${entriesIndex.index+1}.&nbsp;<c:out value="${blockingRun.configurationName}" /></td>
+				<td align="center" id="EP-${blockingRun.configurationName}" ><c:out value="${blockingRun.estimatedPairs}" /></td>
+				<td align="center" id="ETR-${blockingRun.configurationName}"><c:out value="${blockingRun.estimatedTime}" /></td>
+				</tr>
+		</c:forEach>
 	<tr><td><input type="button" value="Select All" onclick="selectAll()"/><input type="button" value="Deselect All" onclick="deselectAll()"/></td></tr>
 </table>
-
+<br/>
+<div id="totalEstimations"></div>
+<br/>
 <table cellspacing="2" cellpadding="2">
 	<tr>
 		<td colspan="2"><span style="font-weight: bold;"> <spring:message
@@ -435,6 +461,6 @@ window.onbeforeunload = storeSelStrategy;
 
 </div>
 </form>
-<br />
+<br/>
 
 <%@ include file="/WEB-INF/template/footer.jsp"%>

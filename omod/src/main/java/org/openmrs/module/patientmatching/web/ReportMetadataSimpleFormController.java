@@ -16,10 +16,9 @@ import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.cfg.Configuration;
+import org.openmrs.api.context.Context;
 import org.openmrs.api.db.hibernate.HibernateSessionFactoryBean;
-import org.openmrs.module.patientmatching.MatchingConstants;
-import org.openmrs.module.patientmatching.MatchingReportUtils;
-import org.openmrs.module.patientmatching.MatchingRunData;
+import org.openmrs.module.patientmatching.*;
 import org.springframework.web.servlet.mvc.SimpleFormController;
 
 public class ReportMetadataSimpleFormController extends SimpleFormController {
@@ -39,7 +38,6 @@ public class ReportMetadataSimpleFormController extends SimpleFormController {
 	protected Map<String, Object> referenceData(HttpServletRequest req) throws Exception {
 		Map<String, Object> map = showReportDetails(MatchingRunData.getInstance().getRptname());
 		map.put("reportParam", MatchingConstants.PARAM_REPORT);
-		map.put("stepList", MatchingReportUtils.listSteps());
 		return map;
 	}
 
@@ -51,50 +49,30 @@ public class ReportMetadataSimpleFormController extends SimpleFormController {
 	 */
 	private Map<String, Object> showReportDetails(String reportName) {
 
-		HibernateSessionFactoryBean bean = new HibernateSessionFactoryBean();
-		Configuration cfg = bean.newConfiguration();
-		Properties c = cfg.getProperties();
-		String url = c.getProperty("hibernate.connection.url");
-		String user = c.getProperty("hibernate.connection.username");
-		String passwd = c.getProperty("hibernate.connection.password");
-		String driver = c.getProperty("hibernate.connection.driver_class");
-		Map<String, Object> reportMap = new HashMap<String, Object>();
-		List<String> strategyList = new ArrayList<String>();
-		List<String> processList = new ArrayList<String>();
-
-		try {
-			Class.forName(driver);
-
-			ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
-					url, user, passwd);
-			Connection databaseConnection = connectionFactory.createConnection();
-
-			PreparedStatement ps = databaseConnection.prepareStatement("SELECT * FROM persistreportdata WHERE report_name =?");
-			ps.setString(1, reportName);
-			ps.execute();
-			
-			while (ps.getResultSet().next()) {
-				reportMap.put("reportName", MatchingRunData.getInstance().getRptname());
-				reportMap.put("createdBy", ps.getResultSet().getString("createdby"));
-				reportMap.put("date", ps.getResultSet().getString("datecreated"));
-				
-				String strats = ps.getResultSet().getString("strategies_used");
-				String pInfo = ps.getResultSet().getString("process_name_time");
-				
-				String[] strategy = strats.split(",");
-				String[] process = pInfo.split(",");
-				
-				strategyList.addAll(Arrays.asList(strategy));
-				reportMap.put("strategylist", strategyList);
-				
-				processList.addAll(Arrays.asList(process));
-				reportMap.put("processlist", processList);
-			}
-
-		} catch (Exception e) {
-			log.warn("error while showing report details", e);
-		}
-		
+        Map<String, Object> reportMap = new HashMap<String, Object>();
+        Report report = Context.getService(PatientMatchingReportMetadataService.class).getReportByName(reportName);
+        List<String> strategyList = new ArrayList<String>();
+        for(PatientMatchingConfiguration configuration: report.getUsedConfigurationList()){
+            strategyList.add(configuration.getConfigurationName());
+        }
+        String createdBy;
+        if (report.getCreatedBy() == null){
+            createdBy = "Unknown user";
+        } else {
+            createdBy = report.getCreatedBy().getUsername();
+        }
+        reportMap.put("reportName", report.getReportName());
+        reportMap.put("strategylist", strategyList);
+        reportMap.put("createdBy",createdBy);
+        reportMap.put("date", report.getCreatedOn().toString());
+        List<String> processList = new ArrayList<String>();
+        List<String> stepList = new ArrayList<String>();
+        for (ReportGenerationStep step: report.getReportGenerationSteps()){
+            processList.add(step.getTimeTaken()+" ms");
+            stepList.add(step.getProcessName());
+        }
+        reportMap.put("processlist", processList);
+        reportMap.put("stepList",stepList);
 		return reportMap;
 	}
 }

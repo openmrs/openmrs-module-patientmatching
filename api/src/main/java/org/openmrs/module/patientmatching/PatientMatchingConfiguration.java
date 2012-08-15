@@ -17,12 +17,12 @@ import java.util.TreeSet;
  * configuration file saved in the file system.
  * 
  */
-public class PatientMatchingConfiguration {
+public class PatientMatchingConfiguration implements Comparable<PatientMatchingConfiguration>{
 
 	/**
 	 * A unique configuration Id to identify each PatientMatchingConfiguration.
 	 */
-	private long configurationId;
+	private int configurationId;
     /**
      * Current configuration name. Correspond to the "name" attribute of
      * the "run" tag in the configuration file.
@@ -42,6 +42,24 @@ public class PatientMatchingConfiguration {
      * tag in the configuration file.
      */
     private int randomSampleSize;
+    
+    /**
+     * The estimated number of pairs that the strategy will produce. The data is
+     * saved based on the calculations by the time of strategy creation. 
+     */
+    private long estimatedPairs;
+    
+    /**
+     * A rough estimation of the time that the strategy will take to run
+     */
+    private long estimatedTime;
+    
+    /**
+     * Total number of records of the database at the time the strategy is saved
+     * This will be taken into consideration to recalculate the estimations if the
+     * total number of records has been changed when the strategy is used.
+     */
+    private long totalRecords;
     
     /**
      * Define the list of configuration entries for the configuration. Correspond
@@ -74,7 +92,7 @@ public class PatientMatchingConfiguration {
      * current matching page. Correspond to each element in the "run" tag of the
      * the configuration file.
      * 
-     * @param configEntries the configEntries to set
+     * @param newEntries the configEntries to set
      */
 	public void setConfigurationEntries(Set<ConfigurationEntry> newEntries) {
 		if (this.configurationEntries == null) {
@@ -85,11 +103,11 @@ public class PatientMatchingConfiguration {
 		}
 	}
     
-    public long getConfigurationId() {
+    public int getConfigurationId() {
 		return configurationId;
 	}
 
-	public void setConfigurationId(long configurationId) {
+	public void setConfigurationId(int configurationId) {
 		this.configurationId = configurationId;
 	}
 
@@ -107,7 +125,7 @@ public class PatientMatchingConfiguration {
      * Change the current configuration element name. Correspond to the "name"
      * attribute of the "run" tag in the configuration file.
      * 
-     * @param configName the configName to set
+     * @param configurationName the configName to set
      */
     public void setConfigurationName(String configurationName) {
         this.configurationName = configurationName;
@@ -129,7 +147,7 @@ public class PatientMatchingConfiguration {
      * process or not. Correspond to the "random-sample" attribute of the "run"
      * tag in the configuration file.
      * 
-     * @param useRandomSampling the useRandomSampling to set
+     * @param usingRandomSample the useRandomSampling to set
      */
     public void setUsingRandomSample(boolean usingRandomSample) {
         this.usingRandomSample = usingRandomSample;
@@ -158,6 +176,54 @@ public class PatientMatchingConfiguration {
     }
     
     /**
+     * Return the estimated number of pairs that the strategy will produce
+     * @return the estimated number of pairs
+     */
+    public long getEstimatedPairs() {
+		return estimatedPairs;
+	}
+    
+    /**
+     * Sets the estimated number of pairs that the strategy will produce
+     * @param estimatedPairs The estimated number of pairs
+     */
+    public void setEstimatedPairs(long estimatedPairs) {
+		this.estimatedPairs = estimatedPairs;
+	}
+    
+    /**
+     * Returns the estimated time (in milliseconds) that the strategy will take to run
+     * @return the time taken to run the strategy in ms
+     */
+    public long getEstimatedTime() {
+		return estimatedTime;
+	}
+    
+    /**
+     * Sets the estimated time to run the strategy in milliseconds
+     * @param estimatedTime time that will take to run the strategy
+     */
+    public void setEstimatedTime(long estimatedTime) {
+		this.estimatedTime = estimatedTime;
+	}
+    
+    /**
+     * Returns the total number of records in the database by the strategy creation time
+     * @return the total number of records in the database
+     */
+    public long getTotalRecords() {
+		return totalRecords;
+	}
+    
+    /**
+     * Sets the total number of patient records in the database by the strategy creation time
+     * @param totalRecords the total number of records in the database
+     */
+    public void setTotalRecords(long totalRecords) {
+		this.totalRecords = totalRecords;
+	}
+    
+    /**
      * Return <code>String</code> representation of the <code>PatientMatchingConfiguration</code>
      * object
      * 
@@ -167,4 +233,7 @@ public class PatientMatchingConfiguration {
         return this.configurationName;
     }
 
+    public int compareTo(PatientMatchingConfiguration o) {
+        return 1;
+    }
 }

@@ -1,18 +1,15 @@
 package org.openmrs.module.patientmatching;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +22,7 @@ import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.cfg.Configuration;
+import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.hibernate.HibernateSessionFactoryBean;
 import org.openmrs.util.OpenmrsUtil;
@@ -59,6 +57,20 @@ public class MatchingReportUtils {
 	public static final String NO_PROCESS = "No running process";
 	public static final String END_PROCESS = "Report finished";
 	public static final String PREM_PROCESS = "Prematurely terminated process";
+
+    /**
+     * List of steps in the reporting process.
+     */
+    public static final String[] REPORT_GEN_STAGES = {
+            "Read configuration file",
+            "Create scratch table",
+            "Create random sample analyzer",
+            "Create analyzer form pairs",
+            "Create pair data source analyzer",
+            "Create expectation maximization (EM) analyzer",
+            "Analyze pairs",
+            "Score pairs",
+    };
 	
 	/**
 	 * Fields that need to be checked to see the current status of the creating
@@ -66,19 +78,7 @@ public class MatchingReportUtils {
 	 */
 	public static String status = NO_PROCESS;
 	public static int i;
-	/**
-	 * List of steps in the reporting process.
-	 */
-	public static final String[] steps = { MatchingReportUtils.NO_PROCESS,
-			"Read configuration file", "Create scratch table",
-			"Create random sample analyzer",
-			"Create analyzer form pairs",
-			"Create pair data source analyzer",
-			"Create expectation maximization (EM) analyzer",
-			"Analyze pairs", 
-			"Score pairs",
-			"Write report", MatchingReportUtils.END_PROCESS };
-	
+
 	/**
 	 * 
 	 * Get the list of steps (statuses) that the analysis has to go through
@@ -87,9 +87,9 @@ public class MatchingReportUtils {
 	 */
 	public static List<String> listSteps() {
 		List<String> stepList = new ArrayList<String>();
-		for (String step : MatchingReportUtils.steps) {
-			stepList.add(step);
-		}
+        stepList.add(NO_PROCESS);
+        stepList.addAll(Arrays.asList(REPORT_GEN_STAGES));
+        stepList.add(END_PROCESS);
 		return stepList;
 	}
 	
@@ -105,13 +105,13 @@ public class MatchingReportUtils {
 		log.info("Reading matching config file from " + configFile.getAbsolutePath());
 		
 		RecMatchConfig recMatchConfig = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(configFile));
-		List<MatchingConfig> matchConf = recMatchConfig.getMatchingConfigs();
-		List<MatchingConfig> matchingConfigLists = new ArrayList<MatchingConfig>();
+		List<PatientMatchingConfiguration> configList = Context.getService(PatientMatchingReportMetadataService.class).getMatchingConfigs();
+        List<MatchingConfig> matchingConfigLists = new ArrayList<MatchingConfig>();
 
 		for (String selectedStrat : selectedStrategies) {
-			for (MatchingConfig conf : matchConf) {
-				if (OpenmrsUtil.nullSafeEquals(conf.getName(), selectedStrat)) {
-					matchingConfigLists.add(conf);
+			for (PatientMatchingConfiguration config : configList) {
+				if (OpenmrsUtil.nullSafeEquals(config.getConfigurationName(), selectedStrat)) {
+					matchingConfigLists.add(ReportMigrationUtils.ptConfigurationToMatchingConfig(config));
 				}
 			}
 		}
@@ -178,7 +178,7 @@ public class MatchingReportUtils {
 		reader.close();
 		
 		ReaderProvider rp = ReaderProvider.getInstance();
-		
+
 		objects.put("recordStore", recordStore);
 		objects.put("rp", rp);
 		objects.put("recMatchConfig", recMatchConfig);
@@ -202,7 +202,7 @@ public class MatchingReportUtils {
 				formPairsRandom);
 		databaseReaderRandom.close();
 		objects.put("recMatchConfig", recMatchConfig);
-		
+
 		objects.put("rsa", rsa);
 		return objects;
 	}
@@ -307,106 +307,31 @@ public class MatchingReportUtils {
 	//New Method9 10
 	public static Map<String, Object> CreatingReport(Map<String,Object> objects) throws IOException{
 		log.info("Creating report");
-		
-		int groupId = 0;
-		String separator = "|";
 
 		SimpleDateFormat format = new SimpleDateFormat("MM-dd-yyyy--HH-mm-ss");
 		String dateString = format.format(new Date());
+        Set<String> globalIncludeColumns = (Set<String>)objects.get("globalIncludeColumns");
 		
 		String configString = new String();
 		try{
 			List<MatchingConfig> mcs = (List<MatchingConfig>)objects.get("matchingConfigLists");
-			Iterator<MatchingConfig> it = mcs.iterator();
-			while(it.hasNext()){
-				MatchingConfig mc = it.next();
-				configString += mc.getName() + "-";
-			}
+            for(MatchingConfig mc : mcs){
+                configString += mc.getName() + "-";
+            }
 		}
 		catch(Exception e){
 			log.warn("error while rendering config string", e);
 		}
-		
-		File configFileFolder = (File)objects.get("configFileFolder");
-		File reportFile = new File(configFileFolder, "dedup-report-" + configString + dateString);
-		BufferedWriter writer = new BufferedWriter(new FileWriter(reportFile));
+
+        String reportName = "dedup-report-"+configString+dateString;
 		DedupMatchResultList handler = (DedupMatchResultList)objects.get("handler");
-		Set<String> globalIncludeColumns = (Set<String>)objects.get("globalIncludeColumns");
 
 		handler.flattenPairIdList();
-		List<Set<Long>> groupedId = handler.getFlattenedPairIds();
-
-		StringBuffer sb = new StringBuffer();
-		sb.append("Group Id|");
-		sb.append("Unique Id|");
-		for (String include : globalIncludeColumns) {
-			if (include.indexOf("(") < 0) {
-				sb.append("patientmatching.");
-			}
-			sb.append(include).append(separator);
-		}
-		String headerLine = sb.toString();
-		headerLine = headerLine.substring(0, headerLine.length() - 1);
-				
-		writer.write(headerLine);
-		writer.write(System.getProperty("line.separator"));
-
-		for (Set<Long> set : groupedId) {
-			for (Long integer : set) {
-				try {
-					Record internalRecord = RecordSerializer.deserialize(String
-							.valueOf(integer));
-					MatchingReportUtils.generateReport(internalRecord,
-							globalIncludeColumns, groupId, separator, writer);
-				} catch (IOException e) {
-					log.info("Exception caught during the deserializing and writing report for id " + integer);
-					log.info("Skipping to the next record...");
-				}
-			}
-			groupId++;
-		}
-		writer.close();
-		persistReportInfo("dedup-report-" + configString + dateString, dateString);
+		List<Set<Long>> matchingPairs = handler.getFlattenedPairIds();
+		persistReportToDB(reportName, matchingPairs, globalIncludeColumns);
 		return objects;
 	}	
 	//New Method9 End 10
-
-	/**
-	 * Method to write a single line report entry in the report file. A single
-	 * line in the report entry correspond to a preselected properties of a
-	 * <code>Record</code> object
-	 * 
-	 * @param r
-	 *            <code>Record</code> object that will be written to the report
-	 *            file
-	 * @param globalIncludeColumns
-	 *            selected properties of the <code>Record</code> object
-	 * @param groupId
-	 *            grouping id for the current <code>Record</code>
-	 * @param separator
-	 *            separator character to separate each property
-	 * @param writer
-	 *            pointer to the report file
-	 * @throws IOException
-	 */
-	private static void generateReport(Record r,
-			Set<String> globalIncludeColumns, int groupId, String separator,
-			BufferedWriter writer) throws IOException {
-
-		StringBuffer buffer = new StringBuffer();
-		buffer.append(groupId).append(separator);
-
-		buffer.append(r.getUID()).append(separator);
-
-		Hashtable<String, String> h = r.getDemographics();
-		for (String demographic : globalIncludeColumns) {
-			buffer.append(h.get(demographic)).append(separator);
-		}
-		String report = buffer.toString();
-		report = report.substring(0, report.length() - 1);
-		writer.write(report);
-		writer.write(System.getProperty("line.separator"));
-	}
 
 	/**
 	 * Method to get the list of the available report for display. The method
@@ -414,6 +339,7 @@ public class MatchingReportUtils {
 	 * 
 	 * @return all available report in the server
 	 */
+    @Deprecated
 	public static List<String> listAvailableReport() {
 		log.info("Listing all available report");
 		List<String> reports = new ArrayList<String>();
@@ -434,51 +360,81 @@ public class MatchingReportUtils {
 		return reports;
 	}
 
-	/**
-	 * Method to persist report information
-	 */
-	public static void persistReportInfo(String rptName, String dateCreated) {
-		List<Long> proTimeList = MatchingRunData.getInstance().getProTimeList();
-		
-		String proInfo = "0ms";
-		String uid = Context.getAuthenticatedUser().getUsername();
-		for (int j = 0; j < 8; j++) {
-			proInfo = proInfo + "," + proTimeList.get(j) + "ms";
-		}
-		proInfo = proInfo + ",96ms,0ms";
-		
-		PatientMatchingReportMetadata prm = new PatientMatchingReportMetadata();
-		prm.setReportName(rptName);
-		prm.setSelStrats(MatchingRunData.getInstance().getFileStrat());
-		prm.setProcessNT(proInfo);
-		prm.setCreatedBy(uid);
-		prm.setDateCreated(dateCreated);
-		HibernateSessionFactoryBean bean = new HibernateSessionFactoryBean();
-		Configuration cfg = bean.newConfiguration();
-		Properties c = cfg.getProperties();
-		String url = c.getProperty("hibernate.connection.url");
-		String user = c.getProperty("hibernate.connection.username");
-		String passwd = c.getProperty("hibernate.connection.password");
-		String driver = c.getProperty("hibernate.connection.driver_class");
-		log.info("URL: " + url);
-		try {
-			Class.forName(driver);
-			ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
-					url, user, passwd);
-			Connection databaseConnection = connectionFactory.createConnection();
-			PreparedStatement ps = databaseConnection.prepareStatement(
-					"INSERT INTO persistreportdata (report_name,strategies_used,process_name_time,createdby,datecreated)"
-					+ " VALUES (?, ?, ?, ?,?)");
-			ps.setString(1, prm.getReportName());
-			ps.setString(2, prm.getSelstrategies());
-			ps.setString(3, prm.getpNameTime());
-			ps.setString(4, prm.getCreatedBy());
-			ps.setString(5, prm.getDateCreated());
-			i = ps.executeUpdate();
+    public static List<String> listAvailableReportNamesInDB(){
+        return Context.getService(PatientMatchingReportMetadataService.class).getReportNames();
+    }
 
-		} catch (Exception e) {
-			log.info("skipping error while persisting report info", e);
-		}
+    /**
+     * Method to persist the report to the database
+     * @param rptName The report name of the new report
+     * @param matchingPairs A list of the matching pair sets
+     */
+	public static void persistReportToDB(String rptName, List<Set<Long>> matchingPairs, Set<String> includeColumns) throws FileNotFoundException {
+        Report report = new Report();
+        report.setCreatedBy(Context.getAuthenticatedUser());
+        report.setReportName(rptName);
+        report.setCreatedOn(new Date());
+        String selectedStrategies = MatchingRunData.getInstance().getFileStrat();
+        String[] selectedStrategyNamesArray = selectedStrategies.split(",");
+        Set<PatientMatchingConfiguration> usedConfigurations = new TreeSet<PatientMatchingConfiguration>();
+        PatientMatchingReportMetadataService reportMetadataService = Context.getService(PatientMatchingReportMetadataService.class);
+
+        for(String strategyName : selectedStrategyNamesArray){
+            PatientMatchingConfiguration configuration = reportMetadataService.findPatientMatchingConfigurationByName(strategyName);
+            usedConfigurations.add(configuration);
+        }
+
+        report.setUsedConfigurationList(usedConfigurations);
+        PatientService patientService = Context.getPatientService();
+        Set<MatchingRecord> matchingRecordSet = new TreeSet<MatchingRecord>();
+        for (int j = 0; j < matchingPairs.size(); j++) {
+            Set<Long> matchSet = matchingPairs.get(j);
+            for(Long patientId: matchSet){
+                MatchingRecord matchingRecord = new MatchingRecord();
+                matchingRecord.setGroupId(j);
+                matchingRecord.setState("PENDING");   //TODO move to a constant
+                matchingRecord.setPatient(patientService.getPatient(patientId.intValue()));
+                matchingRecord.setReport(report);
+
+                Set<MatchingRecordAttribute> matchingRecordAttributeSet = new TreeSet<MatchingRecordAttribute>();
+                Record record = RecordSerializer.deserialize(String.valueOf(patientId));
+                for(String includedColumn:includeColumns){
+                    MatchingRecordAttribute matchingRecordAttribute = new MatchingRecordAttribute();
+                    matchingRecordAttribute.setFieldName(includedColumn);
+                    matchingRecordAttribute.setFieldValue(record.getDemographic(includedColumn));
+                    matchingRecordAttribute.setMatchingRecord(matchingRecord);
+                    matchingRecordAttributeSet.add(matchingRecordAttribute);
+                }
+                matchingRecord.setMatchingRecordAttributeSet(matchingRecordAttributeSet);
+                matchingRecordSet.add(matchingRecord);
+            }
+        }
+        report.setMatchingRecordSet(matchingRecordSet);
+
+        Set<ReportGenerationStep> reportGenerationSteps = new TreeSet<ReportGenerationStep>();
+        List<Long> proTimeList = MatchingRunData.getInstance().getProTimeList();
+        int noOfSteps = Math.min(proTimeList.size(),REPORT_GEN_STAGES.length);
+        for (int j = 0; j < noOfSteps; j++) {
+            ReportGenerationStep step = new ReportGenerationStep();
+            step.setProcessName(REPORT_GEN_STAGES[j]);
+            step.setTimeTaken(proTimeList.get(j).intValue());
+            step.setReport(report);
+            step.setSequenceNo(j);
+            reportGenerationSteps.add(step);
+        }
+        report.setReportGenerationSteps(reportGenerationSteps);
+        reportMetadataService.savePatientMatchingReport(report);
 	 }
 
+    public static Set<String> getAllFieldsUsed(Report report){
+        Set<String> fieldsUsed = new TreeSet<String>();
+        for(PatientMatchingConfiguration configuration: report.getUsedConfigurationList()){
+            for(ConfigurationEntry entry : configuration.getConfigurationEntries()){
+                if(!entry.isIgnored()){
+                    fieldsUsed.add(entry.getFieldName());
+                }
+            }
+        }
+        return fieldsUsed;
+    }
 }

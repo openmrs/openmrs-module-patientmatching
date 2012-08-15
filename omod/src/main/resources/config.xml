@@ -163,6 +163,13 @@
 				<include method="selStrategy" />
 				<include method="getPatient" />				
 			</create>
+			<create creator="new" javascript="DWREstimationUtilities">
+				<param name="class" value="@MODULE_PACKAGE@.web.dwr.DWREstimationUtilities"></param>
+				<include method="getEstimationInfomation"/>
+				<include method="getEstimatedPairs"/>
+				<include method="getEstimatedTimeToRun"/>
+				<include method="getTotalRecords"/>
+			</create>
 		</allow>
 
 		<signatures>
@@ -170,6 +177,7 @@
                 import java.util.List;
 				import java.util.Set;
                 import @MODULE_PACKAGE@.web.dwr.DWRMatchingConfigUtilities;
+                import @MODULE_PACKAGE@.web.dwr.DWREstimationUtilities;
                 DWRMatchingConfigUtilities.getAllBlockingRuns()
 				DWRMatchingConfigUtilities.getAllPatientMatchingConfigurations()
                 DWRMatchingConfigUtilities.getAllReports()
@@ -186,6 +194,10 @@
                 DWRMatchingConfigUtilities.getEndPage()
                 DWRMatchingConfigUtilities.selStrategy(String)
                 DWRMatchingConfigUtilities.getPatient(String)
+                DWREstimationUtilities.getEstimationInfomation(array)
+                DWREstimationUtilities.getEstimatedPairs()
+                DWREstimationUtilities.getEstimatedTimeToRun()
+                DWREstimationUtilities.getTotalRecords()
                 ]]>
 		</signatures>
 	</dwr>

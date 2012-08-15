@@ -4,12 +4,16 @@
 				 otherwise="/login.htm" redirect="/module/patientmatching/config.list" />
 
 <%@ include file="/WEB-INF/template/header.jsp"%>
+<openmrs:htmlInclude file="/dwr/interface/DWREstimationUtilities.js"/>
+<openmrs:htmlInclude file="/dwr/engine.js"/>
+<openmrs:htmlInclude file="/dwr/util.js"/>
 <%@ include file="localHeader.jsp"%>
 
 <br />
 
 <script type="text/javascript">
-    function selectOnly(fieldName) {
+
+function selectOnly(fieldName) {
         var blocking = "blocking";
         var included = "included";
         
@@ -34,6 +38,7 @@
 		var c2b1=obj.name;
 		document.getElementById(c2b1).style.color="green";
 		document.getElementById(c2b1).style.fontWeight="bold";
+		checkConfiguration();
 
     }
     
@@ -41,6 +46,7 @@
 		var c2i1=obj.name;
 		document.getElementById(c2i1).style.color="red";
 		document.getElementById(c2i1).style.fontWeight="bold";
+		checkConfiguration();
 
     }
 	
@@ -48,10 +54,100 @@
 		var c2n1=obj.name;
 		document.getElementById(c2n1).style.color="black";
 		document.getElementById(c2n1).style.fontWeight="normal";
+		checkConfiguration();
     }
-</script>
+    
+    function checkConfiguration() {
+		var errorMessage = "<spring:message code="patientmatching.config.new.selectionErrorMessage"/>";
+		var warningMessage = "<spring:message code="patientmatching.config.new.selectionWarningMessage"/>";
+		var noSMErrorMessage = "<spring:message code="patientmatching.config.new.noSMErrorMessage"/>";
+		var noMMErrorMessage = "<spring:message code="patientmatching.config.new.noMMErrorMessage"/>";
+		
+		//In case of js failure, user can still to save the stratergy with any selection
+		document.getElementById('submitButton').disabled = false;
+		document.getElementById('warningArea').style.display = "none";
+		
+		var shouldMatchExists = checkSMExists();
+		var mustMatchExists = checkMMExists();
+		var messageHTML = "";
+		if (!shouldMatchExists || !mustMatchExists) {
+			messageHTML = errorMessage;
+			messageHTML += "<br/><ul>";
+			if (!shouldMatchExists) {
+				messageHTML += "<li>" + noSMErrorMessage + "</li>";
+			}
+			if (!mustMatchExists) {
+				messageHTML += "<li>" + noMMErrorMessage + "</li>";
+			}
+			messageHTML += "</ul>";
+			document.getElementById('submitButton').disabled = true;
+			document.getElementById('warningArea').style.display = "block";
+		}
+		document.getElementById('warningBox').innerHTML = messageHTML;
+	}
 
-<form method="post">
+	function checkSMExists() {
+		return checkSelections("INCLUDED");
+	}
+
+	function checkMMExists() {
+		return checkSelections("BLOCKING");
+	}
+
+	function checkSelections(type) {
+		var count = 0;
+		var inputs = document.getElementsByTagName('input');
+		for(var i=0; i<inputs.length;i++){
+			if(inputs[i].name.indexOf('configurationEntries')==0 && 
+					inputs[i].value == type && 
+					inputs[i].checked){
+				count++;
+				}
+			}
+		count;
+		return count>0;
+	}
+		
+	function showEstimations(){
+		var inputs = document.getElementsByTagName('input');
+		var blockingEntries = new Array();
+		for(var i=0; i < inputs.length; i++){
+			if(inputs[i].id.indexOf('MM')==0 && inputs[i].checked){
+				var entryName = inputs[i].id.substring(3);
+				blockingEntries.push(entryName);
+			}
+		}
+		DWREstimationUtilities.getEstimationInfomation(blockingEntries,handleCallBackData);
+		return false;
+	}
+	
+	function handleCallBackData(data){
+		var info;
+		var estimatedPairs;
+		var estimatedTimeToRun;
+		var totalRecords;
+		var pairRecordRatio;
+		var splittedData = data.split(";");
+		info = splittedData[0];
+		estimatedPairs = splittedData[1];
+		estimatedTimeToRun = splittedData[2];
+		totalRecords = splittedData[3];
+		pairRecordRatio = parseFloat(estimatedPairs)/parseFloat(totalRecords);
+		document.getElementsByName("estimatedPairs")[0].value = estimatedPairs;
+		document.getElementsByName("estimatedTime")[0].value = estimatedTimeToRun;
+		document.getElementsByName("totalRecords")[0].value = totalRecords;
+		
+		var message = info+"\n";
+		message += "Estimated Patient Pairs = "+estimatedPairs+" ("+ pairRecordRatio.toFixed(3) +" times total records)\n";
+		message += "Estimation Pair Creation Time = "+ estimatedTimeToRun + " ms";
+		var ready = confirm(message);
+		if(ready){
+			$j('#configForm').submit();
+		}				
+	}
+	
+</script>
+<form id="configForm" method="post">
 	<b class="boxHeader"><spring:message
 			code="patientmatching.config.new" /> </b>
 	<div class="box">
@@ -147,17 +243,17 @@
 													<spring:message code="${configEntry.fieldViewName}" />
 												</div> </b> </font>
 										</td>
-										<td align="center"><input type="radio"
+										<td align="center"><input type="radio" id="IG-${configEntry.fieldName}"
 																  name="<c:out value="${status.expression}"/>" value="IGNORED"
 																  onclick="ignore(this)"
 																  <c:if test='${status.value == "IGNORED"}'>checked</c:if> />
 											</td>
-											<td align="center"><input type="radio"
+											<td align="center"><input type="radio" id="SM-${configEntry.fieldName}"
 																	  name="<c:out value="${status.expression}"/>"
 												value="INCLUDED" onclick="changeSM(this)"
 												<c:if test='${status.value == "INCLUDED"}' >checked</c:if> />
 											</td>
-											<td align="center"><input type="radio"
+											<td align="center"><input type="radio" id="MM-${configEntry.fieldName}"
 																	  name="<c:out value="${status.expression}"/>"
 												value="BLOCKING" onclick="changeMM(this)"
 												<c:if test='${status.value == "BLOCKING"}'>checked</c:if> />
@@ -215,8 +311,21 @@
 				</ul>
 			</div>
 		</td>
+		<div id="warningArea" valign="top" style="padding-top:10px;"><b
+				class="boxHeaderRed"><spring:message
+					code="patientmatching.config.new.errorMessageBoxHeader" /> </b>
+			<div id="warningBox" class="box" style="padding-right: 10px;">
+			</div>
+		</div>
 	</div>
-	<br /> <input type="submit"
+	<br /> 
+	<input name="estimatedPairs" type="hidden" value=""/>
+	<input name="estimatedTime" type="hidden" value=""/>
+	<input name="totalRecords" type="hidden" value=""/>	
+	<input id="submitButton" onclick="return showEstimations();" type="submit"
 				  value="<spring:message code="general.save" />" />
 </form>
+<script>
+	checkConfiguration();
+</script>
 <%@ include file="/WEB-INF/template/footer.jsp"%>
