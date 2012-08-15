@@ -44,6 +44,7 @@ function selectAll(){
 	for(var i=0;i<box.length;i++){
 		box[i].checked = true;
 	}
+    updateEstimations();
 }
 
 function deselectAll(){
@@ -51,6 +52,7 @@ function deselectAll(){
 	for(var i=0;i<box.length;i++){
 		box[i].checked = false;
 	}
+    updateEstimations();
 }
 
 function reportProcessStarted(){
