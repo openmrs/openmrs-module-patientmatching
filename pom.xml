@@ -4,7 +4,7 @@
 
 	<groupId>org.openmrs.module</groupId>
 	<artifactId>patientmatching</artifactId>
-	<version>1.2.4-SNAPSHOT</version>
+	<version>1.2.4</version>
 	<packaging>pom</packaging>
 	<name>Patient Matching</name>
 	<description>Parent project for Patient Matching</description>
@@ -12,9 +12,9 @@
 	<url>http://openmrs.org</url>
 
 	<scm>
-		<connection>scm:svn:http://svn.openmrs.org/openmrs-modules/patientmatching/trunk/</connection>
-		<developerConnection>scm:svn:http://svn.openmrs.org/openmrs-modules/patientmatching/trunk/</developerConnection>
-		<url>http://svn.openmrs.org/openmrs-modules/patientmatching/trunk/</url>
+		<connection>scm:svn:http://svn.openmrs.org/openmrs-modules/patientmatching/tags/patientmatching-1.2.4</connection>
+		<developerConnection>scm:svn:http://svn.openmrs.org/openmrs-modules/patientmatching/tags/patientmatching-1.2.4</developerConnection>
+		<url>http://svn.openmrs.org/openmrs-modules/patientmatching/tags/patientmatching-1.2.4</url>
 	</scm>
 
 	<modules>
