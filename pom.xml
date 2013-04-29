@@ -12,9 +12,9 @@
 	<url>http://openmrs.org</url>
 
 	<scm>
-		<connection>scm:svn:http://svn.openmrs.org/openmrs-modules/patientmatching/trunk/</connection>
-		<developerConnection>scm:svn:http://svn.openmrs.org/openmrs-modules/patientmatching/trunk/</developerConnection>
-		<url>http://svn.openmrs.org/openmrs-modules/patientmatching/trunk/</url>
+		<connection>scm:git:https://github.com/openmrs/openmrs-module-patientmatching</connection>
+		<developerConnection>scm:git:https://github.com/openmrs/openmrs-module-patientmatching</developerConnection>
+		<url>https://github.com/openmrs/openmrs-module-patientmatching</url>
 	</scm>
 
 	<modules>
