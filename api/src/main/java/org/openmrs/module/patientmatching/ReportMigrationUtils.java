@@ -213,6 +213,10 @@ public class ReportMigrationUtils {
         File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
         File configFile = new File(configFileFolder, MatchingConstants.CONFIG_FILE_NAME);
 
+        if(!configFile.exists()){
+           return;
+        }
+
         RecMatchConfig recMatchConfig = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(configFile));
         List<MatchingConfig> matchConf = recMatchConfig.getMatchingConfigs();
 
