@@ -121,18 +121,18 @@ function validate(){
                 <td><spring:message code="patientmatching.schedule.name" />:</td>
                 <td>
                     <input type="text" 
-                        name="name" size="30" id="name" value="${name}" />&nbsp;<span class="error" id="nameError" style="display:none">Schedule Name is a required field.</span>
+                        name="name" size="30" id="name" value="${name}" />&nbsp;<span class="error" id="nameError" style="display:none"><spring:message code="patientmatching.schedule.nameRequired"/></span>
                 </td>
             </tr>
             <tr><td><spring:message code="general.description"/>:</td><td>
-            	<textarea name="description" id="description" rows="3" cols="60">${description}</textarea>&nbsp;<span class="error" id="descriptionError" style="display:none">Description is a required field.</span></td>
+            	<textarea name="description" id="description" rows="3" cols="60">${description}</textarea>&nbsp;<span class="error" id="descriptionError" style="display:none"><spring:message code="patientmatching.schedule.descriptionRequired"/></span></td>
             </tr>
             <tr>
             	<td>
 	            	<table cellspacing="2" cellpadding="2">
 						<tr>
 							<th colspan="2"><spring:message
-								code="patientmatching.report.blocking" />&nbsp;<span class="error" id="blockListError" style="display:none">Select atleast one Strategy</span></th>
+								code="patientmatching.report.blocking" />&nbsp;<span class="error" id="blockListError" style="display:none"><spring:message code="patientmatching.schedule.strategyRequired"/></span></th>
 						</tr>
 						<tr>
 							<td colspan="2">
@@ -158,12 +158,12 @@ function validate(){
 				<td><spring:message code="patientmatching.schedule.date"/>:</td>
 				<td>
 						<input type="text" id="startTime" name="startTime" size="25" value="${startTime}"/>
-						&nbsp;<span class="error" id="startTimeError" style="display:none">Schedule Date is a required field.</span>
+						&nbsp;<span class="error" id="startTimeError" style="display:none"><spring:message code="patientmatching.schedule.dateRequired"/></span>
 				</td>
 			</tr>
 			<tr>
-				<td>Repeat interval:</td>
-				<td><input type="text" id="repeatInterval" name="repeatInterval" size="10" value="${repeatInterval}"/>&nbsp;<select name="repeatIntervalUnits"><option value="days" <c:if test="${repeatIntervalUnits=='days'}">selected</c:if>>days</option><option value="weeks" <c:if test="${repeatIntervalUnits=='weeks'}">selected</c:if>>weeks</option></select>&nbsp;<span class="error" id="intervalError1" style="display:none">Repeat interval is a required field.</span><span class="error" id="intervalError2" style="display:none">Should not start with <b>0</b>. Do not use decimals or characters.</span></td>
+				<td><spring:message code="patientmatching.schedule.repeatInterval"/></td>
+				<td><input type="text" id="repeatInterval" name="repeatInterval" size="10" value="${repeatInterval}"/>&nbsp;<select name="repeatIntervalUnits"><option value="days" <c:if test="${repeatIntervalUnits=='days'}">selected</c:if>>days</option><option value="weeks" <c:if test="${repeatIntervalUnits=='weeks'}">selected</c:if>>weeks</option></select>&nbsp;<span class="error" id="intervalError1" style="display:none"><spring:message code="patientmatching.schedule.repeatRequired"/></span><span class="error" id="intervalError2" style="display:none"><spring:message code="patientmatching.schedule.startWith"/></span></td>
 			</tr>
             <tr>
                 <td colspan="2">

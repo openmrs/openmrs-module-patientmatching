@@ -17,7 +17,7 @@ function viewReport(file) {
 
 <html>
 <head>
-<title>Patient Matching Report Information</title>
+<title><spring:message code="patientmatching.report.info.title"/></title>
 </head>
 <body>
 <h2><spring:message code="patientmatching.report.info.title"/></h2>
@@ -59,9 +59,9 @@ function viewReport(file) {
 	</dl></td><tr></div>
  </table>
 <a href="javascript:;"
-					onClick="viewReport('<c:out value="${reportName}"/>');"> View Report </a>
+					onClick="viewReport('<c:out value="${reportName}"/>');"><spring:message code="patientmatching.list.viewReport"/> </a>
 </div>
 </div>
-<a href="javascript:window.close()" title="Close This Window">Close This Window</a>
+<a href="javascript:window.close()" title="Close This Window"><spring:message code="patientmatching.report.info.close"/></a>
 </body>
 </html>

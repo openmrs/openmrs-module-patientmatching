@@ -368,9 +368,9 @@ window.onbeforeunload = storeSelStrategy;
 		<th colspan="2"><spring:message
 			code="patientmatching.report.blocking" /></th>
 	</tr>
-		<th>Stratergy name</th>
-		<th align="center">Estimated resulting pairs</th>
-		<th align="center">Estimated time to run (ms)</th>
+		<th><spring:message code="patientmatching.report.strategy"/></th>
+		<th align="center"><spring:message code="patientmatching.report.resultingPairs"/></th>
+		<th align="center"><spring:message code="patientmatching.report.runtime"/></th>
 		<c:forEach items="${blockingRuns}" var="blockingRun"
 				varStatus="entriesIndex">
 				<tr>
@@ -426,13 +426,13 @@ window.onbeforeunload = storeSelStrategy;
 	</tr>
 </table>
 
-<b class="boxHeader">Available Reports</b>
+<b class="boxHeader"><spring:message code="patientmatching.report.availableReports"/></b>
 <div class="box">
 <table cellspacing="2" cellpadding="2">
 	<tr>
-		<th>Report</th>
+		<th><spring:message code="patientmatching.report.report"/></th>
 		<th>&nbsp;&nbsp;&nbsp;&nbsp;</th>
-		<th colspan="2">Operation</th>
+		<th colspan="2"><spring:message code="patientmatching.report.operation"/></th>
 	</tr>
 
 	<tbody id="report-list">
@@ -443,14 +443,14 @@ window.onbeforeunload = storeSelStrategy;
 				<td><c:out value="${reportResult}" /></td>
 				<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
 				<td><a href="javascript:;"
-					onClick="viewFile('<c:out value="${reportResult}" />');"> View Report 
+					onClick="viewFile('<c:out value="${reportResult}" />');"><spring:message code="patientmatching.report.viewReport"/> 
 				</a></td>
 				<td><form><input type="hidden" name="reportname" id="reportname"/></form><a href="javascript:;"
-					onClick="viewMetadata('<c:out value="${reportResult}"/>');"> View Statistics 
+					onClick="viewMetadata('<c:out value="${reportResult}"/>');"><spring:message code="patientmatching.report.viewStatistics"/> 
 				</a></td>
 				<td><a href="javascript:;"
 					onClick="deleteFile('<c:out value="${reportResult}" />');">
-				Delete Report</a></td>
+				<spring:message code="patientmatching.report.deleteReport"/></a></td>
 			
 			</tr>
 		</c:forEach>
