@@ -341,7 +341,7 @@ $(document).ready(function() {
 </div>
 </div>
 <br />
-<a href="javascript:window.close()" title="Close This Window">Close This Window</a>
+<a href="javascript:window.close()" title="Close This Window"><spring:message code="patientmatching.report.info.close"/></a>
 <br />
 <br />
 
@@ -350,7 +350,7 @@ $(document).ready(function() {
         <table cellspacing="2" cellpadding="2" id="report-header">
             <tr style="background-color: #E7E7E7;">
             	<td>
-                    <label>Checkbox</label>
+                    <label><spring:message code="patientmatching.report.checkbox/></label>
                 </td>
                 <c:forEach items="${reportHeader}" var="headerCell">
                     <td>

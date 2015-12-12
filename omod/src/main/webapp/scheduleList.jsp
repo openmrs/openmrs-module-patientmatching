@@ -37,19 +37,19 @@ function validate(obj){
 </style>
 
 <br/>
-<a href="schedule.form">Create Schedule</a>
+<a href="schedule.form"><spring:message code="patientmatching.schedule.create"/></a>
 <br/>
 <br/>
-<b class="boxHeader"><spring:message code="patientmatching.schedule.list" /></b>
+<b class="boxHeader"><spring:message code="patientmatching.schedule.list"/></b>
 <div>
 <form method="post">
     <table cellspacing="2" class="box">
         <tr class="top">
             <th></th>
-            <th>Status</th>
-            <th>Tasks</th>
-            <th>Schedule</th>
-            <th>Last Execution</th>
+            <th><spring:message code="patientmatching.schedule.status"/></th>
+            <th><spring:message code="patientmatching.schedule.tasks"/></th>
+            <th><spring:message code="patientmatching.schedule.schedule"/></th>
+            <th><spring:message code="patientmatching.schedule.last"/></th>
         </tr>
         <c:forEach items="${allTasks}" var="selectedTask" varStatus="taskIndex">
         
@@ -61,22 +61,22 @@ function validate(obj){
         	<td><input type="checkbox" size="3" name="taskId" value="${selectedTask.task.id}"/></td>
         	<td valign="top" align="center"><c:choose>
 					<c:when test="${selectedTask.task.started}">
-						<font color="green"><strong>Started</strong></font><br>										
+						<font color="green"><strong><spring:message code="patientmatching.schedule.started"/></strong></font><br>										
 						<c:if test="${selectedTask.task.startTime!=null}">
-							<i>Runs again in <strong>${selectedTask.task.secondsUntilNextExecutionTime}s</strong></i>
+							<i><spring:message code="patientmatching.schedule.againIn"/><strong>${selectedTask.task.secondsUntilNextExecutionTime}s</strong></i>
 						</c:if>
 					</c:when>
 					<c:otherwise>
-						<font color="red"><strong>Stopped</strong></font>
+						<font color="red"><strong><spring:message code="patientmatching.schedule.stopped"/></strong></font>
 					</c:otherwise>
 				</c:choose></td>
             <td class="left"><a href="schedule.form?taskId=${selectedTask.task.id}"><strong>${selectedTask.name}</strong></a></td>
-            <td class="left">Runs every <strong>${intervals[selectedTask.task]}</strong> 
+            <td class="left"><spring:message code="patientmatching.schedule.runsEvery"/><strong>${intervals[selectedTask.task]}</strong> 
 				<c:if test="${selectedTask.task.startTime!=null}">	
 						<fmt:formatDate var="taskStartTime" pattern="hh:mm:ssa" value="${selectedTask.task.startTime}" />
 						<fmt:formatDate var="taskStartDate" pattern="MMM dd yyyy" value="${selectedTask.task.startTime}" />							 	
 				 	 from <strong>${taskStartTime}</strong>, 
-				 	<br/>starting on <strong>${taskStartDate}</strong>
+				 	<br/><spring:message code="patientmatching.schedule.startingOn"/><strong>${taskStartDate}</strong>
 				</c:if>							
 			</td>
             <td class="left"><openmrs:formatDate date="${selectedTask.task.lastExecutionTime}" type="long" /></td>
