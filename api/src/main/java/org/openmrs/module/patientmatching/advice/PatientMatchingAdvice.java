@@ -19,37 +19,37 @@ import org.regenstrief.linkage.db.RecordDBManager;
  * Class provides AOP advice for the OpenMRS PatientService methods
  * of createPatient, updatePatient, and findPatient using
  * around advice.
- * 
+ *
  * If the class intercepts the findPatient method, then it might return
  * a different patient than core based on how the MatchFinder object
  * scores a match.  For the other two methods, the return value is
  * not changed.  It intercepts these methods to keep the record linkage
  * table consistent with the OpenMRS Patient table.
- *  
+ *
  * @author jegg
  *
  */
 
 public class PatientMatchingAdvice implements MethodInterceptor {
-	
+
 	private Log log = LogFactory.getLog(this.getClass());
 	//private Logger file_log = Logger.getLogger(PatientMatchingActivator.FILE_LOG);
-	
+
 	public PatientMatchingAdvice(){
-		
+
 	}
-	
+
 	/**
 	 * Method intercepts the OpenMRS method invocation and depending on which
 	 * method is intercepts, uses the MatchFinder or LinkDBManager objects.
-	 * 
+	 *
 	 * If MethodInvocation name matches PatientMatchingActivator.CREATE_METHOD,
 	 * the LinkDBManager object is used to add the patient to the record linkage table.
-	 * 
+	 *
 	 * If MethodInvocation name matches PatientMatchingActivator.UPDATE_METHOD,
 	 * the LinkDBManager object is used to update patients in the record linkage table
 	 * that match on the key demographic.
-	 * 
+	 *
 	 * If MethodInvocation name matches PatientMatchingActivator.FIND_METHOD,
 	 * the MatchFinder object is used to try to find a better match.  The linkage
 	 * table should be storing the unique OpenMRS patient ID and the method uses
@@ -58,23 +58,23 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 	public Object invoke(MethodInvocation invocation) throws Throwable {
 		log.debug("Advice intercepting " + invocation.getMethod().getName());
 		Object[] args = invocation.getArguments();
-		
+
 		LinkDBConnections ldb_con = LinkDBConnections.getInstance();
 		MatchFinder matcher = ldb_con.getFinder();
 		RecordDBManager link_db = ldb_con.getRecDBManager();
-		
+
 		// for two of the methods, need to let invocation proceed, so go ahead and let it
 		Object o = invocation.proceed();
-		
+
 		if(link_db == null || matcher == null){
 			log.warn("Advice has null objects for link database or matchfinder; returning default invocation object");
 			return o;
 		}
-		
+
 		if(args[0] != null && args[0] instanceof Patient){
 			Patient to_match = (Patient)args[0];
 			String method_name = invocation.getMethod().getName();
-			
+
 			if(method_name.equals(PatientMatchingActivator.CREATE_METHOD)){
 				log.debug("Trying to add patient to link table");
 				if(o instanceof Patient){
@@ -86,7 +86,7 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 					} else {
 						log.warn("Error when using LinkDBManager object to add patient " + just_added.getPatientId() + " to linkage table");
 					}
-					
+
 				}
 			} else if(method_name.equals(PatientMatchingActivator.FIND_METHOD) || method_name.equals(PatientMatchingActivator.GET_PATIENT_METHOD)){
 				try{
@@ -100,7 +100,7 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 						log.warn("Score vector for " + mr.getScore() + ":\t" + mr.getScoreVector());
 						//file_log.info("Match with patient " + key_demographic + " - score: " + mr.getScore() + "\tTprob: " + mr.getTrueProbability() + "\tFprob: " + mr.getFalseProbability() + "\tSens: " + mr.getSensitivity() + "\tSpec: " + mr.getSpecificity() + "\tBlock: " + which_mc);
 						//file_log.info("Score vector for " + mr.getScore() + ":\t" + mr.getScoreVector());
-						
+
 						TwinAnalyzer ta = new TwinAnalyzer();
 						boolean are_twins = ta.areTwins(rec_match, r);
 						if(are_twins){
@@ -109,7 +109,7 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 							//file_log.info("Match analyzed as being twins, returning default OpenMRS invocation match");
 							return o;
 						}
-						
+
 						Patient patient_match = Context.getPatientService().getPatient(new Integer(rec_match.getDemographic(PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC)));
 						return patient_match;
 					} else {
@@ -126,13 +126,13 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 					log.warn(e.getClass().toString() + " exception when trying to match against link table: " + e.getMessage() + ", returning default invocation result");
 					return o;
 				}
-				
-				
+
+
 			} else if(method_name.equals(PatientMatchingActivator.UPDATE_METHOD)){
 				log.debug("Updating patient");
 				if(o instanceof Patient){
 					Patient just_updated = (Patient)o;
-					
+
 					Record ju = LinkDBConnections.getInstance().patientToRecord(just_updated);
 					if(link_db.updateRecord(ju, PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC)){
 						if(log.isDebugEnabled()){
@@ -142,13 +142,13 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 						log.warn("Update of Patient " + just_updated.getPatientId() + " to link db failed");
 					}
 				}
-				
+
 			} else if(method_name.equals(PatientMatchingActivator.MERGE_METHOD)){
 				// when merging, need to remove the not preferred patient from scratch table
 				// update the preferred patient to reflect the data from the merge
 				Patient preferred = to_match;
 				Patient not_preferred = (Patient)args[1];
-				
+
 				link_db.deleteRecord(LinkDBConnections.getInstance().patientToRecord(not_preferred), PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC);
 				Record pref = LinkDBConnections.getInstance().patientToRecord(preferred);
 				if(link_db.addRecordToDB(pref)){
@@ -162,7 +162,7 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 				log.debug("Updating patient");
 				if(o instanceof Patient){
 					Patient saved = (Patient)o;
-					
+
 					link_db.deleteRecord(LinkDBConnections.getInstance().patientToRecord(saved), PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC);
 					Record pref = LinkDBConnections.getInstance().patientToRecord(saved);
 					if(link_db.addRecordToDB(pref)){
@@ -174,10 +174,10 @@ public class PatientMatchingAdvice implements MethodInterceptor {
 					}
 				}
 			}
-			
+
 		}
-		
+
 		return o;
 	}
-	
+
 }

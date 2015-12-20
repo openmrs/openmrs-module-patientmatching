@@ -15,12 +15,13 @@ import java.util.Set;
 public class DataBaseReportReader {
 
     /**
-     * Number of matching record groups to show in a single page,
-     * The page will display roughly twice records as this number
-     * As page breaks are defined by the groups and not by the pairs, This will build up a map with details of
-     * where the pages should be divided and store it in the session,
-     * That map will be used in the next reads and it will avoid recalculating where the pages are broken
-     * and what should be displayed in the given page.
+     * Number of matching record groups to show in a single page.
+     * The page will display roughly twice the amount of records as this number
+     * as page breaks are defined by the groups and not by the pairs.
+     * This class build up a map with details such as
+     * where the pages should be divided and store it in the session.
+     * That map will be used in the next reads and this avoid recalculating where the pages are "breaked"
+     * and what should be displayed in each given page.
      */
     private static final int GROUPS_PER_PAGE = 20;
 
@@ -30,7 +31,7 @@ public class DataBaseReportReader {
     private int lastPage;
 
     /**
-     * Constructor that is called when the report is first displayed. Calulate and build the mapping for the next pages
+     * Constructor that is called when the report is first displayed. Calculate and build the mapping for the next pages
      * @param reportName name of the report to read
      */
     public DataBaseReportReader(String reportName){
@@ -48,32 +49,32 @@ public class DataBaseReportReader {
         setReport(reportName);
         setIncludedFields();
         this.paginationMap = paginationMap;
-        this.lastPage = paginationMap.size() - 1;   //No of entries minus 0 th entry
+        this.lastPage = paginationMap.size() - 1;   //Number of entries counting the "0th" entry
     }
 
     /**
-     * build the mapping of records to the pages
+     * build the mapping of records to the pages they should be in
      */
     private void buildCache(){
         int groupCount = 0;
         int recordCount = 0;
         int lastGroup = -1;
         int lastPage = 0;
-        paginationMap.put(0, 0); //first page starts from the 0 th record
-        for(MatchingRecord record : report.getMatchingRecordSet()){ //as the set is a sorted set the iteration happen from group 0 to above
+        paginationMap.put(0, 0); //first page starts from the "0th" record
+        for(MatchingRecord record : report.getMatchingRecordSet()){ //as the set sorted, the iteration happens starting from group 0
             recordCount ++;
             if(record.getGroupId()!=lastGroup){
                 //the record is from a new group
                 groupCount ++;
                 lastGroup = record.getGroupId();
                 if(groupCount % GROUPS_PER_PAGE == 0){
-                    //A new page should display from here
+                    //should start a new pages
                     lastPage++;
                     paginationMap.put(lastPage, recordCount + 1);
                 }
             }
         }
-        if (!paginationMap.containsValue(recordCount +1)){
+        if (!paginationMap.containsValue(recordCount + 1)){
             //adds the index of the last record if not already there
             lastPage++;
             paginationMap.put(lastPage,recordCount);
@@ -107,7 +108,7 @@ public class DataBaseReportReader {
     }
 
     /**
-     * Get the header to display in the report. This contains the field specified in the strategies used, and the
+     * Get the header to display in the report. This contains the field specified, the strategies used, the
      * group and patient ids
      * @return
      */
@@ -122,7 +123,7 @@ public class DataBaseReportReader {
     }
 
     /**
-     * get the fields used bu the configurations specified in the report
+     * get the fields used by the configurations specified in the report
      */
     private void setIncludedFields(){
         includedFields = MatchingReportUtils.getAllFieldsUsed(report);

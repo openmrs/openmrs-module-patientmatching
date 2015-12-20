@@ -17,14 +17,14 @@ import org.openmrs.api.context.Context;
 /**
  * Class to calculate various estimations of an strategy to give a feedback
  * on the goodness of the strategy before it is used in de-duplication
- *  
+ *
  * @author pulasthi
  *
  */
 public class Estimator {
 	private long estimatedComparisons = -1L;
 	private long estimatedTimeToRun = -1L;
-	
+
 	private static final double RECALCULATE_IGNORE_FRACTION = 0.1;
 
     /**
@@ -33,14 +33,14 @@ public class Estimator {
      */
 	public void doEstimationsWithBlockingFields(List<String> entryNames){
 		Date startedAt = new Date();
-		
+
 		String select = "select count(p1) from Patient p1, Patient p2";
 		String where = " where p1 <> p2 ";
-		
+
 		List<String> attributes = new ArrayList<String>();
 		List<String> identifiers = new ArrayList<String>();
 		List<String> attrTypes = new ArrayList<String>();
-		
+
 		for (String entryName : entryNames ) {
 			if(entryName.startsWith("(Identifier) ")){
 				identifiers.add(entryName.substring("(Identifier) ".length()));
@@ -58,19 +58,19 @@ public class Estimator {
 		for (Field f : patient.getDeclaredFields()) {
 			patientFieldNames.add(f.getName());
 		}
-		
+
 		Class<Person> person = Person.class;
 		Set<String> personFieldNames = new HashSet<String>(person.getDeclaredFields().length);
 		for (Field f : person.getDeclaredFields()) {
 			personFieldNames.add(f.getName());
 		}
-		
+
 		Class<PersonName> personName = PersonName.class;
 		Set<String> personNameFieldNames = new HashSet<String>(personName.getDeclaredFields().length);
 		for (Field f : personName.getDeclaredFields()) {
 			personNameFieldNames.add(f.getName());
 		}
-		
+
 		Class<PatientIdentifier> identifier = PatientIdentifier.class;
 		Set<String> identifierFieldNames = new HashSet<String>(identifier.getDeclaredFields().length);
 		for (Field f : identifier.getDeclaredFields()) {
@@ -102,8 +102,8 @@ public class Estimator {
 			}
 		}
 
-        //The identifiers (Patient) and the attributes(Person) are not static fields. They are dynamic.
-        //Therefore there values are checked dynamically
+        //The identifiers (Patient) and the attributes(Person) are dynamic rather than static,
+        //Therefore must be checked dynamically
 		if(!identifiers.isEmpty()){
 			if (!select.contains("PatientIdentifier ")) {
 				select += ", PatientIdentifier pi1, PatientIdentifier pi2";
@@ -159,18 +159,18 @@ public class Estimator {
             }
             where += whereBuffer.toString()+ ")";
         }
-		
+
 		select = select + where;
-		
+
 		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
 		estimatedComparisons = service.getCustomCount(select) / 2;
 		Date finishedAt = new Date();
 		estimatedTimeToRun = finishedAt.getTime() - startedAt.getTime();
 	}
-	
+
 	/**
-	 * Calculates the estimated comparisons that the strategy will run using the configurations user has selected.
-	 *   
+	 * Calculates the estimated comparisons that the strategy will run using the configurations user has specified.
+	 *
 	 * @param configurationEntries The set of configuration entries user has selected
 	 */
 	public void doEstimations(Set<ConfigurationEntry> configurationEntries) {
@@ -181,9 +181,9 @@ public class Estimator {
 		}
 		doEstimationsWithBlockingFields(blockingEntryNames);
 	}
-	
+
 	/**
-	 * Returns the blocking entries of a given set of configuration entries
+	 * Returns the "blocking" entries of a given set of configuration entries
 	 * @param allEntries The set of all configuration entries
 	 * @return The set of blocking entries out of the input entries
 	 */
@@ -198,14 +198,14 @@ public class Estimator {
 	}
 
 	/**
-	 * Get the estimated no of comparisons that the strategy would do. 
-	 * @return the estimated no of comparisons
+	 * Get the estimated number of comparisons that the strategy would do.
+	 * @return the estimated number of comparisons
 	 */
 	public long getEstimatedComparisons() {
-		//TODO check whether the estimations are done before calling this
+		//TODO check whether the estimations have been done before calling this
 		return estimatedComparisons;
 	}
-	
+
 	/**
 	 * Get the time taken to run the comparisons
 	 * @return Time taken to run the comparisons
@@ -214,21 +214,21 @@ public class Estimator {
 		//TODO check whether the estimations are done before calling this
 		return estimatedTimeToRun;
 	}
-	
+
 	/**
-	 * Get the no of patients in the database at the moment
-	 * @return No of patients in the database at the moment
+	 * Get the number of patients in the database at the moment
+	 * @return number of patients in the database at the moment
 	 */
 	public long getTotalRecords() {
 		String query = "select count(p1) from Patient p1";
 		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
 		return service.getCustomCount(query);
 	}
-	
+
 	/**
 	 * Update the estimation information of given list of PatientMatchingConfiguration
 	 * This update is done only if the total patient records is changed by
-	 * RECALCULATE_IGNORE_FRACTION (currently 0.1) of the number of records at the last time 
+	 * RECALCULATE_IGNORE_FRACTION (currently 0.1) of the number of records at the last time
 	 * of the strategy update. Else it is kept unchanged to minimize the calculations.
 	 * @param configList The list of configurations to be updated
 	 */
@@ -245,5 +245,5 @@ public class Estimator {
 				MatchingConfigurationUtils.savePatientMatchingConfig(configuration);
 			}
 		}
-	}	
+	}
 }
