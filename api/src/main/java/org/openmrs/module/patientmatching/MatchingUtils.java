@@ -15,11 +15,11 @@ import org.apache.commons.lang.StringUtils;
 public class MatchingUtils {
 
     /**
-     * Introspect a class and retrieve all readable and writable properties of
-     * that class without including properties defined in the input parameter 
+     * Inspect a class and retrieve all readable and writable properties of
+     * that class excluding properties defined in the input parameter
      * <code>listExcludedProperties</code>. This method call will return only
      * simple properties defined in the {@link MatchingIntrospector MatchingIntrospector} class
-     * 
+     *
      * @param listExcludedProperties list of properties that shouldn't be returned
      * @param clazz class that will be introspected for the properties
      * @return properties list of the class excluding all properties defined in the <code>listExcludedProperties</code>
@@ -28,11 +28,11 @@ public class MatchingUtils {
     @SuppressWarnings("unchecked")
     public static List<String> introspectBean(List<String> listExcludedProperties, Class clazz) {
         PropertyDescriptor[] propertyDescriptors = PropertyUtils.getPropertyDescriptors(clazz);
-    
+
         List<String> propertyList = new ArrayList<String>();
         for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
-			
-            if (propertyDescriptor.getReadMethod() != null && propertyDescriptor.getWriteMethod() != null) {    
+
+            if (propertyDescriptor.getReadMethod() != null && propertyDescriptor.getWriteMethod() != null) {
 				boolean exclude = false;
                 String propertyName = propertyDescriptor.getName();
 				if (propertyName != null) {
@@ -49,7 +49,7 @@ public class MatchingUtils {
                 }
             }
         }
-        
+
         return propertyList;
     }
 
@@ -57,9 +57,9 @@ public class MatchingUtils {
      * Create a list of {@link ConfigurationEntry ConfigurationEntry} for a
      * class simple properties. The list will later be used to create the
      * <code>PatientMatchingConfiguration</code> object.
-     * 
+     *
      * The simple properties are defined in the {@link MatchingIntrospector MatchingIntrospector}
-     * 
+     *
      * @param listExcludedProperties list of properties that needs to be skipped
      * @param clazz class that will be extracted for the properties
      * @return list of <code>ConfigurationEntry</code> for class in the input parameter

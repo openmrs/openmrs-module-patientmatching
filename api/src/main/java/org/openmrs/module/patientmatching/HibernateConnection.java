@@ -14,21 +14,21 @@ import org.hibernate.SessionFactory;
 public class HibernateConnection {
 	private static SessionFactory sessionFactory;
 	protected final Log log = LogFactory.getLog(getClass());
-	
+
 	public HibernateConnection(){};
-	
+
 	public SessionFactory getSessionFactory() {
 		return HibernateConnection.sessionFactory;
 	}
-	
+
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		//log.warn("set session factory called with object : " + sessionFactory);
 		HibernateConnection.sessionFactory = sessionFactory;
 	}
-	
+
 	//public static void setSessionFactory(SessionFactory sessionFactory) {
 	//	HibernateConnection.sessionFactory = sessionFactory;
 	//}
-	
-	
+
+
 }

@@ -10,14 +10,14 @@ import org.springframework.transaction.annotation.Transactional;
 public interface PatientMatchingReportMetadataService {
 
     /**
-     * Persists the given configuration to the database
-     * @param patientMatchingConfiguration The configuration to be persisted
+     * Saves the given configuration to the database
+     * @param patientMatchingConfiguration The configuration to be saved
      */
 	public void savePatientMatchingConfiguration(PatientMatchingConfiguration patientMatchingConfiguration);
 
     /**
-     * Persist a patient mactching report to the database
-     * @param report The report object to be persisted
+     * save a patient matching report to the database
+     * @param report The report object to be saved
      */
     public void savePatientMatchingReport(Report report);
 
