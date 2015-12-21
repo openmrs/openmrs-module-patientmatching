@@ -146,7 +146,7 @@ public class MatchingReportReader{
      * Method to get the cache page offset for the current report file. The
      * cache is used to speed up the report file reading process.
      * 
-     * Element i-th will contains the page offset of the i-th page of the report
+     * Element i will contain the page offset of the i-th page of the report
      * 
      * @return the pagePos
      */
