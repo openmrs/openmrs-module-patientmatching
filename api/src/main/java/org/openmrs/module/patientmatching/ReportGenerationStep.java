@@ -5,7 +5,7 @@ public class ReportGenerationStep implements Comparable<ReportGenerationStep> {
     private Report report;
     private String processName;
     private int sequenceNo;
-    private int timeTaken;  //milliseconds
+    private int timeTaken;  //in milliseconds
 
 
     public int getStepId(){

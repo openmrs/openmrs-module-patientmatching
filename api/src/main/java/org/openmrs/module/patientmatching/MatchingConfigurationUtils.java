@@ -197,7 +197,7 @@ public class MatchingConfigurationUtils {
 	 * 
 	 * @param name blocking run name
 	 * @param matchingConfigs set of blocking run
-	 * @return <code>MatchingConfig</code> represeniting the selected blocking run
+	 * @return <code>MatchingConfig</code> representing the selected blocking run
 	 */
 	private static final MatchingConfig findMatchingConfigByName(String name, List<MatchingConfig> matchingConfigs) {
 		MatchingConfig config = null;

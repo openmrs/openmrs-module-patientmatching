@@ -55,7 +55,7 @@ public class ReportMigrationUtils {
         File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
         for (File file : configFileFolder.listFiles()) {
             /*
-            only the files that has the name stating with dedup are considered
+            only the files that has the name starting with "dedup" are considered
             So the backup files that were already moved and any other files are ignored
             */
             if (file.isFile() && file.getName().startsWith("dedup")) {
