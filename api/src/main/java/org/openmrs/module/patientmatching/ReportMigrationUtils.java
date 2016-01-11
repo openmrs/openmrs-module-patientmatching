@@ -55,7 +55,7 @@ public class ReportMigrationUtils {
         File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
         for (File file : configFileFolder.listFiles()) {
             /*
-            only the files that has the name stating with dedup are considered
+            only the files that has the name starting with "dedup" are considered
             So the backup files that were already moved and any other files are ignored
             */
             if (file.isFile() && file.getName().startsWith("dedup")) {
@@ -185,7 +185,7 @@ public class ReportMigrationUtils {
             String[] processStepTimes = processTimes.split(",");
             Set<ReportGenerationStep> reportGenerationSteps = new TreeSet<ReportGenerationStep>();
             //There are 11 entries in the process_name_time column, first and last are not steps and are always 0,
-            // also one before last is also static at 96 ms, so 3 of those steps are ignored and steps from 1-8
+            //also one before last is also static at 96 ms, so 3 of those steps are ignored and steps from 1-8
             //are converted to db format
             for(int i=1;i<processStepTimes.length-2;i++){
                 ReportGenerationStep reportGenerationStep = new ReportGenerationStep();

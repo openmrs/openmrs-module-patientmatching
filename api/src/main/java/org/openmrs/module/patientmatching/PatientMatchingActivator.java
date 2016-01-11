@@ -28,15 +28,15 @@ import org.springframework.aop.support.StaticMethodMatcherPointcutAdvisor;
  * the OpenMRS patient database with the record linkage table.  To do this,
  * the module needs to check that ever patient's openmrs_id exists in the table
  * and add it if it is not present.  This can take a long time.
- * 
+ *
  * @author jegg
  *
  */
 
 /*
- * 
+ *
  * The demographic information used in the linkage process is the same:
- * 
+ *
  * 	"mrn" - medical record number
  * 	"ln"  - last name
  * 	"lny" - last name NYSIIS
@@ -53,11 +53,11 @@ import org.springframework.aop.support.StaticMethodMatcherPointcutAdvisor;
  * 	"nkfn" - next of kin first name
  * 	"drid" - Dr. ID
  * 	"drfn" - Dr. first name
- * 	"drln" - Dr. last name 
+ * 	"drln" - Dr. last name
  *
  */
 public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor implements ModuleActivator, Advisor{
-	
+
 	/**
 	 * generated serial version uid
 	 */
@@ -72,13 +72,13 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	public final static String CONFIG_FILE = "link_config.xml";
 	public final static String MATCHING_ATTRIBUTE = "Other Matching Information";
 	public final static String LINK_TABLE_KEY_DEMOGRAPHIC = "openmrs_id";
-	
+
 	public static final int DEFAULT_RECORD_MATCHING_ID = 0;
-	
+
 	protected static final Log logger = LogFactory.getLog(PatientMatchingActivator.class);
 	private Log log = LogFactory.getLog(this.getClass());
 	public static final String FILE_LOG = "patient_matching_file_log";
-	
+
 
 	/**
 	 * Method iterates through existing Patient objects and adds them to the linkage
@@ -87,7 +87,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	 *
 	 */
 	private void populateMatchingTable(){
-		
+
 		// get the list of patient objects
 		//link_db.createTable();
 		LinkDBConnections ldb_con = LinkDBConnections.getInstance();
@@ -96,8 +96,8 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 			log.warn("Error connecting to link db when populating database");
 			return;
 		}
-		
-		// iterate through them, and if linkage tables does not contain 
+
+		// iterate through them, and if linkage tables does not contain
 		// a record with openmrs_id equal to patient.getID, then add
 		PatientSetService pss = Context.getPatientSetService();
 		PatientService patientService = Context.getPatientService();
@@ -117,9 +117,9 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 				}
 			}
 		}
-		
+
 	}
-	
+
 	@SuppressWarnings("unchecked")
     public boolean matches(Method method, Class targetClass) {
 		String method_name = method.getName();
@@ -138,7 +138,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		}
 		return false;
 	}
-	
+
 	@Override
 	public Advice getAdvice(){
 		log.debug("Returning new advice object from " + this);

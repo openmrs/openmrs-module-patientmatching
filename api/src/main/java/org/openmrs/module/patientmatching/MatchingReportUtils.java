@@ -71,7 +71,7 @@ public class MatchingReportUtils {
             "Analyze pairs",
             "Score pairs",
     };
-	
+
 	/**
 	 * Fields that need to be checked to see the current status of the creating
 	 * report process
@@ -80,9 +80,9 @@ public class MatchingReportUtils {
 	public static int i;
 
 	/**
-	 * 
+	 *
 	 * Get the list of steps (statuses) that the analysis has to go through
-	 * 
+	 *
 	 * @return list of steps
 	 */
 	public static List<String> listSteps() {
@@ -92,18 +92,18 @@ public class MatchingReportUtils {
         stepList.add(END_PROCESS);
 		return stepList;
 	}
-	
+
 	//New Method1 2
 	public static Map<String, Object> ReadConfigFile(Map<String,Object> objects, String[] selectedStrategies){
 		log.info("Starting generate report process sequence");
-		
+
 		// open the config.xml file
 		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
 		File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
 		File configFile = new File(configFileFolder, MatchingConstants.CONFIG_FILE_NAME);
 
 		log.info("Reading matching config file from " + configFile.getAbsolutePath());
-		
+
 		RecMatchConfig recMatchConfig = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(configFile));
 		List<PatientMatchingConfiguration> configList = Context.getService(PatientMatchingReportMetadataService.class).getMatchingConfigs();
         List<MatchingConfig> matchingConfigLists = new ArrayList<MatchingConfig>();
@@ -115,7 +115,7 @@ public class MatchingReportUtils {
 				}
 			}
 		}
-		
+
 		Set<String> globalIncludeColumns = new TreeSet<String>();
 		DedupMatchResultList handler = new DedupMatchResultList();
 
@@ -140,7 +140,7 @@ public class MatchingReportUtils {
 		} catch (SQLException e) {
 			log.warn("patientmatching: error connectiong to database to do matching - \n" + e.getMessage());
 		}
-		
+
 		objects.put("databaseConnection", databaseConnection);
 		objects.put("recMatchConfig", recMatchConfig);
 		objects.put("driver", driver);
@@ -154,7 +154,7 @@ public class MatchingReportUtils {
 		return objects;
 	}
 	//New Method1 End 2
-	
+
 	//New Method2 3
 	public static Map<String, Object> InitScratchTable(Map<String,Object> objects){
 		Connection databaseConnection=(Connection) objects.get("databaseConnection");
@@ -163,7 +163,7 @@ public class MatchingReportUtils {
 		String url = (String) objects.get("url");
 		String user = (String) objects.get("user");
 		String passwd = (String) objects.get("passwd");
-		
+
 		log.info("Initiating scratch table");
 		DataBaseRecordStore recordStore = new DataBaseRecordStore(
 				databaseConnection, recMatchConfig.getLinkDataSource1(),
@@ -176,7 +176,7 @@ public class MatchingReportUtils {
 		}
 		recordStore.close();
 		reader.close();
-		
+
 		ReaderProvider rp = ReaderProvider.getInstance();
 
 		objects.put("recordStore", recordStore);
@@ -187,13 +187,13 @@ public class MatchingReportUtils {
 		return objects;
 	}
 	//New Method2 End 3
-	
+
 	//New Method3 End 4
 	public static Map<String, Object> CreRanSamAnalyzer(Map<String,Object> objects){
 		RecMatchConfig recMatchConfig=(RecMatchConfig) objects.get("recMatchConfig");
 		log.info("Creating random sample analyzer");
 		OrderedDataSourceReader databaseReaderRandom = ((ReaderProvider) objects.get("rp")).getReader(
-				((DataBaseRecordStore) objects.get("recordStore")).getRecordStoreLinkDataSource(), 
+				((DataBaseRecordStore) objects.get("recordStore")).getRecordStoreLinkDataSource(),
 				(MatchingConfig)objects.get("matchingConfig"));
 		DedupOrderedDataSourceFormPairs formPairsRandom = new DedupOrderedDataSourceFormPairs(
 				databaseReaderRandom, (MatchingConfig)objects.get("matchingConfig"), recMatchConfig
@@ -207,24 +207,24 @@ public class MatchingReportUtils {
 		return objects;
 	}
 	//New Method3 End 4
-	
+
 	//New Method4 5
 	public static Map<String, Object> CreAnalFormPairs(Map<String,Object> objects){
 		RecMatchConfig recMatchConfig=(RecMatchConfig) objects.get("recMatchConfig");
 		log.info("Creating analyzer form pairs");
 		OrderedDataSourceReader databaseReader = ((ReaderProvider) objects.get("rp")).getReader(
-				((DataBaseRecordStore) objects.get("recordStore")).getRecordStoreLinkDataSource(), 
+				((DataBaseRecordStore) objects.get("recordStore")).getRecordStoreLinkDataSource(),
 				(MatchingConfig)objects.get("matchingConfig"));
 		DedupOrderedDataSourceFormPairs formPairs = new DedupOrderedDataSourceFormPairs(
 				databaseReader, (MatchingConfig)objects.get("matchingConfig"), recMatchConfig
 						.getLinkDataSource1().getTypeTable());
-		
+
 		objects.put("databaseReader", databaseReader);
 		objects.put("formPairs", formPairs);
 		return objects;
 	}
 	//New Method4 End 5
-	
+
 	//New Method5 6
 	public static Map<String, Object> CrePairdataSourAnalyzer(Map<String,Object> objects){
 		RandomSampleAnalyzer rsa= (RandomSampleAnalyzer) objects.get("rsa");
@@ -234,12 +234,12 @@ public class MatchingReportUtils {
 
 		log.info("Adding random sample analyzer");
 		pdsa.addAnalyzer(rsa);
-		
+
 		objects.put("pdsa", pdsa);
 		return objects;
 	}
 	//New Method5 End 6
-	
+
 	//New Method6 7
 	public static Map<String, Object> CreEMAnalyzer(Map<String,Object> objects){
 		PairDataSourceAnalysis pdsa=(PairDataSourceAnalysis)objects.get("pdsa");
@@ -264,9 +264,9 @@ public class MatchingReportUtils {
 		objects.put("pdsa", pdsa);
 		databaseReader.close();
 		return objects;
-	}	
+	}
 	//New Method7 End 8
-	
+
 	//New Method8 9
 	public static Map<String, Object> ScoringData(Map<String, Object> objects) throws IOException {
 		DedupMatchResultList handler = (DedupMatchResultList) objects.get("handler");
@@ -275,7 +275,7 @@ public class MatchingReportUtils {
 		MatchingConfig matchingConfig = (MatchingConfig) objects.get("matchingConfig");
 		log.info("Scoring data");
 		OrderedDataSourceReader databaseReaderScore = ((ReaderProvider) objects.get("rp")).getReader(
-				((DataBaseRecordStore) objects.get("recordStore")).getRecordStoreLinkDataSource(), 
+				((DataBaseRecordStore) objects.get("recordStore")).getRecordStoreLinkDataSource(),
 				matchingConfig);
 		DedupOrderedDataSourceFormPairs formPairsScoring = new DedupOrderedDataSourceFormPairs(
 				databaseReaderScore, matchingConfig, recMatchConfig.getLinkDataSource1().getTypeTable());
@@ -311,7 +311,7 @@ public class MatchingReportUtils {
 		SimpleDateFormat format = new SimpleDateFormat("MM-dd-yyyy--HH-mm-ss");
 		String dateString = format.format(new Date());
         Set<String> globalIncludeColumns = (Set<String>)objects.get("globalIncludeColumns");
-		
+
 		String configString = new String();
 		try{
 			List<MatchingConfig> mcs = (List<MatchingConfig>)objects.get("matchingConfigLists");
@@ -330,13 +330,13 @@ public class MatchingReportUtils {
 		List<Set<Long>> matchingPairs = handler.getFlattenedPairIds();
 		persistReportToDB(reportName, matchingPairs, globalIncludeColumns);
 		return objects;
-	}	
+	}
 	//New Method9 End 10
 
 	/**
 	 * Method to get the list of the available report for display. The method
 	 * will return all report found in the designated folder in the server.
-	 * 
+	 *
 	 * @return all available report in the server
 	 */
     @Deprecated
