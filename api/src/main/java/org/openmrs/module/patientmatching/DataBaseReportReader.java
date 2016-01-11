@@ -20,7 +20,7 @@ public class DataBaseReportReader {
      * as page breaks are defined by the groups and not by the pairs.
      * This class build up a map with details such as
      * where the pages should be divided and store it in the session.
-     * That map will be used in the next reads and this avoid recalculating where the pages are "breaked"
+     * That map will be used in the next reads and this avoid recalculating where the pages are separated 
      * and what should be displayed in each given page.
      */
     private static final int GROUPS_PER_PAGE = 20;

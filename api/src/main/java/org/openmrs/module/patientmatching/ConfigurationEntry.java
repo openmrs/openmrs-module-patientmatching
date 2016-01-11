@@ -49,7 +49,7 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
 	private String fieldName;
 
 	/**
-	 * Whether this ConfigurationEntry will be ignored, included, or blocked("blocking")
+	 * Whether this field will be ignored, included, or blocked(written as "Blocking" in the code)
 	 * in the analysis before the matching process
 	 */
 	private String inclusion;
