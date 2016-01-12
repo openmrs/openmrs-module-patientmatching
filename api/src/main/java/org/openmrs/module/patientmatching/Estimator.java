@@ -102,8 +102,8 @@ public class Estimator {
 			}
 		}
 
-        //The identifiers (Patient) and the attributes(Person) are not static fields. They are dynamic.
-        //Therefore there values are checked dynamically
+        //The identifiers (Patient) and the attributes(Person) are dynamic rather than static,
+        //Therefore must be checked dynamically
 		if(!identifiers.isEmpty()){
 			if (!select.contains("PatientIdentifier ")) {
 				select += ", PatientIdentifier pi1, PatientIdentifier pi2";
@@ -169,7 +169,7 @@ public class Estimator {
 	}
 	
 	/**
-	 * Calculates the estimated comparisons that the strategy will run using the configurations user has selected.
+	 * Calculates the estimated comparisons that the strategy will run using the configurations user has specified.
 	 *   
 	 * @param configurationEntries The set of configuration entries user has selected
 	 */
@@ -198,11 +198,11 @@ public class Estimator {
 	}
 
 	/**
-	 * Get the estimated no of comparisons that the strategy would do. 
-	 * @return the estimated no of comparisons
+	 * Get the estimated number of comparisons that the strategy would do. 
+	 * @return the estimated number of comparisons
 	 */
 	public long getEstimatedComparisons() {
-		//TODO check whether the estimations are done before calling this
+		//TODO check whether the estimations have been done before calling this
 		return estimatedComparisons;
 	}
 	
@@ -216,8 +216,8 @@ public class Estimator {
 	}
 	
 	/**
-	 * Get the no of patients in the database at the moment
-	 * @return No of patients in the database at the moment
+	 * Get the number of patients in the database at the moment
+	 * @return number of patients in the database at the moment
 	 */
 	public long getTotalRecords() {
 		String query = "select count(p1) from Patient p1";

@@ -8,12 +8,12 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * A class to represent a single configuration elements in the web page. A
- * single instance of this class represent one "row" tag in the actual
+ * single instance of this class represents one "row" tag in the actual
  * configuration file that is saved in the file system.
  * 
- * This class has two (almost) similar field. The <code>fieldViewName</code>
- * will be used to display the field name. While the <code>fieldName</code> will
- * be used internally to get reference to the Hibernate mapping. The reason for
+ * This class has two slightly similar fields. The <code>fieldViewName</code>
+ * is used to display the field name, while the <code>fieldName</code> is
+ * used internally to get reference to the Hibernate mapping. The reason for
  * this separation is OpenMRS add a prefix "<module-id>." for the Spring message
  * resource properties entry for module.
  * 
@@ -37,8 +37,8 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
 	 */
 	private int entryId;
 	/**
-	 * String that will contains modified version of the field name. This string
-	 * mainly serve as the OpenMRS message properties rule
+	 * String that will contain the modified version of the field name. This string
+	 * mainly serves as the OpenMRS message properties rule.
 	 */
 	private String fieldViewName;
 
@@ -49,8 +49,8 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
 	private String fieldName;
 
 	/**
-	 * Whether this particular field will be ignored, included, or blocking in
-	 * the analysis for matching process
+	 * Whether this particular field will be ignored, included, or blocking(blocked)
+	 * in the analysis for matching process
 	 */
 	private String inclusion;
 	
@@ -60,7 +60,7 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
 	private int blockOrder;
 	
 	/**
-	 * Whether a particular field can be Interchanged or not
+	 * Whether a particular field can be interchanged or not
 	 */
 	private String flag;
 	
@@ -161,17 +161,17 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
 	}
 
 	/**
-	 * Return whether this particular field is to be ignored. Correspond to the
+	 * Return whether this particular field is to be ignored. Corresponds to the
 	 * "BlockOrder" element of the "row" element.
 	 * 
-	 * @return the ignored
+	 * @return boolean stating whether this is to be ignored
 	 */
 	public boolean isIgnored() {
 		return inclusion.compareTo(IGNORED) == 0;
 	}
 
 	/**
-	 * Mark as ignored field. Correspond to the "BlockOrder" element of the
+	 * Mark as ignored field. Corresponds to the "BlockOrder" element of the
 	 * "row" element.
 	 * 
 	 * @see ConfigurationEntry#isIgnored()
@@ -181,7 +181,7 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
 	}
 
 	/**
-	 * Return whether this particular field is a blocking field. Correspond to
+	 * Return whether this particular field is a blocking field. Corresponds to
 	 * the "BlockOrder" element of the "row" element.
 	 * 
 	 * @return the blocking
@@ -191,7 +191,7 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
 	}
 
 	/**
-	 * Mark as blocking field. Correspond to the "BlockOrder" element of the
+	 * Mark as blocking field. Corresponds to the "BlockOrder" element of the
 	 * "row" element.
 	 * 
 	 * @see ConfigurationEntry#isIncluded()
@@ -235,10 +235,9 @@ public class ConfigurationEntry implements Comparable<ConfigurationEntry> {
 	}
 
 	/**
-	 * Whether or not this field will be included in the matching analysis
-	 * process.
+	 * Whether or not this field will be included in the matching analysis.
 	 * 
-	 * @return the selected
+	 * @return true if selected, false if not
 	 */
 	public boolean isIncluded() {
 		return inclusion.compareTo(INCLUDED) == 0;

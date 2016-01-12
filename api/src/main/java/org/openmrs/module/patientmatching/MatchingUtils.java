@@ -15,8 +15,8 @@ import org.apache.commons.lang.StringUtils;
 public class MatchingUtils {
 
     /**
-     * Introspect a class and retrieve all readable and writable properties of
-     * that class without including properties defined in the input parameter 
+     * Inspect a class and retrieve all readable and writable properties of
+     * that class excluding properties defined in the input parameter 
      * <code>listExcludedProperties</code>. This method call will return only
      * simple properties defined in the {@link MatchingIntrospector MatchingIntrospector} class
      * 
