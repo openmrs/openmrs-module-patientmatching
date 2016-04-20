@@ -34,9 +34,9 @@ import org.regenstrief.linkage.util.RecMatchConfig;
 import org.regenstrief.linkage.util.XMLTranslator;
 
 /**
- * Utility class to manage the de-duplication configuration. This utility class contains methods to
+ * Utility class to manage the duplication removal(de-duplication) configuration. This utility class contains methods to
  * read, update and delete a de-duplication configuration from the actual file in the file system.
- * Each de-duplicatizon configuration will be converted to a
+ * Each de-duplication configuration will be converted to a
  * <code>PatientMatchingConfiguration</code> object and the object will be sent to the web page
  * controller. During enhancements to move data stored in a flat file system to a database, we
  * introduced several database related methods to this class. from these, the suffix '_db' was added
@@ -197,7 +197,7 @@ public class MatchingConfigurationUtils {
 	 * 
 	 * @param name blocking run name
 	 * @param matchingConfigs set of blocking run
-	 * @return <code>MatchingConfig</code> represeniting the selected blocking run
+	 * @return <code>MatchingConfig</code> representing the selected blocking run
 	 */
 	private static final MatchingConfig findMatchingConfigByName(String name, List<MatchingConfig> matchingConfigs) {
 		MatchingConfig config = null;

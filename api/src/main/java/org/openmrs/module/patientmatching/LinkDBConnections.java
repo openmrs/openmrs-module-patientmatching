@@ -37,7 +37,7 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
- * Class provides a singleton for database access to where the
+ * Class provides a singleton for database access to the
  * link table.
  * 
  * @author jegg
@@ -209,7 +209,7 @@ public class LinkDBConnections {
 	}
 	
 	/**
-	 * Method sets the flag indication that a deduplication process is running to false
+	 * Method that sets the flag indicating whether a duplicate removal(deduplication) process is running to false
 	 */
 	public synchronized void releaseLock(){
 		running_dedup = false;
@@ -218,7 +218,7 @@ public class LinkDBConnections {
 	/**
 	 * Method tries to set the flag indicating a deduplication process is running
 	 * 
-	 * @return		true if the lock was set, false if a deduplication is already running and lock is unavailable
+	 * @return	rue if the lock was set, false if a deduplication is already running and lock is unavailable
 	 */
 	public synchronized boolean getLock(){
 		if(!running_dedup){
@@ -246,7 +246,7 @@ public class LinkDBConnections {
 	}
 	
 	/**
-	 * Method parses a configuration file.  Program assumes that the information under
+	 * Method parses a configuration file. Method assumes that the information under
 	 * the first datasource tag in the file is the connection information for the 
 	 * record linkage table.  The columns to be used for matching and the string comparators
 	 * are also listed in this file.
@@ -271,7 +271,7 @@ public class LinkDBConnections {
 			RecMatchConfig rmc = XMLTranslator.createRecMatchConfig(doc);
 			rp = ReaderProvider.getInstance();
 			
-			// as of version 1.2.0, removing RecordFieldAnalyzer object from Matchfiner since new Blocking exclusion
+			// as of version 1.2.0, removing RecordFieldAnalyzer object from MatchFinder since new Blocking exclusion
 			// feature is being used
 			//finder = new MatchFinder(rmc.getLinkDataSource1(), rp, rmc.getMatchingConfigs(), new RecordFieldAnalyzer(),MatchFinder.Scoring.BLOCKING_EXCLUSIVE);
 			finder = new MatchFinder(rmc.getLinkDataSource1(), rp, rmc.getMatchingConfigs(), MatchFinder.Scoring.BLOCKING_EXCLUSIVE);
@@ -307,8 +307,8 @@ public class LinkDBConnections {
 	 */
 	public Record patientToRecord(Patient patient){
 		// OpenMRS unique patient ID should be present if the patient is within
-		// the OpenMRS patient store, but if patient is new and being searched on
-		// before inserted, it would be null
+		// the OpenMRS patient store, but if patient is new and is being searched
+		// before inserted, this would return null
 		Integer id = patient.getPatientId();
 		if(id == null){
 			id = new Integer(PatientMatchingActivator.DEFAULT_RECORD_MATCHING_ID);
