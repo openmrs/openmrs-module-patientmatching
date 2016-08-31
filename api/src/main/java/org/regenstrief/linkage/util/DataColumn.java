@@ -61,4 +61,9 @@ public class DataColumn implements Cloneable {
         
         return dataColumn;
 	}
+	
+	@Override
+	public String toString() {
+	    return name;
+	}
 }
