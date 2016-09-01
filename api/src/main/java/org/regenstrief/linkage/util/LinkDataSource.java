@@ -66,6 +66,10 @@ public class LinkDataSource implements Cloneable {
 		return unique_id_field;
 	}
 	
+	public DataColumn getUniqueIDDataColumn() {
+	    return getDataColumnByName(getUniqueID());
+	}
+	
 	public void setUniqueID(String column_name){
 		unique_id_field = column_name;
 	}
@@ -138,6 +142,20 @@ public class LinkDataSource implements Cloneable {
 		}
 		return null;
 	}
+	
+	public DataColumn getDataColumnByName(String name) {
+	    if (name == null) {
+	        return null;
+	    }
+        Iterator<DataColumn> it = column_settings.iterator();
+        while(it.hasNext()){
+            DataColumn dc = it.next();
+            if(name.equals(dc.getName())){
+                return dc;
+            }
+        }
+        return null;
+    }
 	
 	public DataColumn getDataColumn(int data_position){
 		return column_settings.get(data_position);
