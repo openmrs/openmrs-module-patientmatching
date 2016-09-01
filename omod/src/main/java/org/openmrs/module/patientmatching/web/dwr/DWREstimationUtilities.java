@@ -4,8 +4,6 @@ import java.util.List;
 
 import org.openmrs.module.patientmatching.Estimator;
 
-import freemarker.core.ReturnInstruction;
-
 public class DWREstimationUtilities {
 
 	private Estimator estimator;

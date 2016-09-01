@@ -635,7 +635,7 @@ public class RecMatch implements ActionListener, WindowListener, ChangeListener,
                 boolean uniqueIdSet = true;
                 LinkDataSource firstDataSource = rm_conf.getLinkDataSource1();
                 LinkDataSource secondDataSource = rm_conf.getLinkDataSource2();
-                if (firstDataSource.getUniqueID() == null){
+                if (firstDataSource.getUniqueIDDataColumn() == null){
                     uniqueIdSet = false;
                 } else {
                 	secondDataSource.setUniqueID(firstDataSource.getUniqueID());

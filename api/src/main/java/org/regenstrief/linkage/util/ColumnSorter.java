@@ -57,7 +57,11 @@ public class ColumnSorter{
 		// name of OS and use the correct command name
 		
 		if(os_name.indexOf("Windows") != -1){
-			arr_command[0] = "win32\\sort";
+		    if (new File("C:\\cygwin64\\bin\\sort.exe").exists()) {
+		        arr_command[0] = "C:\\cygwin64\\bin\\sort.exe";
+		    } else {
+		        arr_command[0] = "win32\\sort";
+		    }
 		} else {
 			arr_command[0] = "sort";
 		}
