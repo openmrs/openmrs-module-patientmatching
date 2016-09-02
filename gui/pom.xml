@@ -44,13 +44,13 @@
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
-			<scope>compile</scope>
+			<scope>${log4jScope}</scope>
 		</dependency>
 		
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
-			<scope>compile</scope>
+			<scope>${commonsLangScope}</scope>
 		</dependency>
 		
 		<!-- OpenMRS dependencies -->
@@ -67,6 +67,11 @@
 		</dependency>
 	
 	</dependencies>
+	
+	<properties>
+        <log4jScope>compile</log4jScope>
+        <commonsLangScope>compile</commonsLangScope>
+    </properties>
 	
 	<build>
 		<plugins>
