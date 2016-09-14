@@ -4,7 +4,7 @@
 
 	<groupId>org.openmrs.module</groupId>
 	<artifactId>patientmatching</artifactId>
-	<version>1.3</version>
+	<version>1.4-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Patient Matching</name>
 	<description>Parent project for Patient Matching</description>
