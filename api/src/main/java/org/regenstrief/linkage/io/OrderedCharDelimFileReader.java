@@ -178,7 +178,17 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader implements O
 		// using two ColumnSorter objects with the respective seperating characters
 		// method returns true or false depending on success of sorting
 		//int[] column_order = data_source.getIndexesOfColumnNames(mc.getBlockingColumns());
-		
+		//
+		// Cicada Dennis comment - 2016-08-25:
+		// This function writes the sorted data into another File.
+		// That File object is returned by this method.
+		// If there is an error, then null is returned. The above statement that true or false is
+		// is returned is not precisely accurate.
+		// It appears to me that there may be parts of the code that assume
+		// what the name of the sorted file is, rather than depending on the
+		// File object that is returned by this method. The assumption is that
+		// the filename is created based on the values of the sort blocking variables.
+	
 		// column IDs for character delimited file should hold line array index
 		// of column
 		String [] blocking_columns = mc.getBlockingColumns();
@@ -200,26 +210,52 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader implements O
 				// column order is zero based, column options needs to be 1 based
 				options.add(new ColumnSortOption(column_order[i] + 1, ColumnSortOption.ASCENDING, column_types[i]));
 			}
-			// create FileOutputStream for the result of the sort
-
-			try{
-				FileOutputStream data1_fos = new FileOutputStream(sorted);
-				ColumnSorter sort_data1 = new ColumnSorter(data_source.getAccess().charAt(0), options, f, data1_fos);
-				sort_data1.runSort();
-				data1_fos.close();
-			}
-			catch(FileNotFoundException fnfe){
-				// if can't open the output stream at the stage, return signaling failure
-				// as the later steps make no sense without a file from this step
+			// Cicada Dennis comments - 2016-08-23:
+			// The ColumnSorter object was being used like a function. It was created solely for the
+			// purpose of calling runSort on it, then discarded. As far as I can tell, this is the
+			// only place in the code where this object is used. 
+			// It made more sense to me to have a single static method that does the sort
+			// and just send the File object to it. 
+			// Also, the parameter sep is passed in to this method, 
+			// but it is not used and instead data_source.getAccess()charAt() is used.
+			// I didn't change it, but why is it done this way?
+			// 
+			// OLD WAY:
+			// try{
+				// create FileOutputStream for the result of the sort
+				// FileOutputStream data1_fos = new FileOutputStream(sorted);
+				// ColumnSorter sort_data1 = new ColumnSorter(data_source.getAccess().charAt(0), options, f, data1_fos);
+				// sort_data1.runSort();
+				// data1_fos.close();
+			// }
+			// catch(FileNotFoundException fnfe){
+			// 	// if can't open the output stream at this stage, return signaling failure
+			// 	// since the later steps make no sense without a file from this step
+			// 	return null;
+			// } catch (IOException e) {
+			// 	e.printStackTrace();
+			// 	return null;
+			// }
+			// return sorted;
+			//
+			// NEW WAY:
+			boolean success = ColumnSorter.sortColumns(data_source.getAccess().charAt(0), options, f, sorted);
+			if (!success){
 				return null;
-			} catch (IOException e) {
-				e.printStackTrace();
-				return null;
 			}
-			return sorted;
+			else{
+				return sorted;
+			}
 		}
 		// When there are no blocking columns, write the file as it is
 		else {
+			// Cicada Dennis comment - 2016-09-16:
+			// Would a system call to duplicate the file be more efficient here?
+			// And an overall comment, for small files, duplication is not an issue,
+			// but for really large files, duplication is probably not the best
+			// thing for the program to do. For instance, it could create a link
+			// that pointed to the original file. Or the program could be informed
+			// that there was no sorting needed, since there were no blocking variables.
 			try {
 				FileInputStream fis = new FileInputStream(f);
 				FileOutputStream fos = new FileOutputStream(sorted);
