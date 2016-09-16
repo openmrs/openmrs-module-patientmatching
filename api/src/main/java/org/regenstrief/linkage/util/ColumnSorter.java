@@ -3,20 +3,25 @@ package org.regenstrief.linkage.util;
  * Class sorts character delimited text files with functionality
  * similar to that of the unix 'sort' command.
  *
- * Cicada Dennis, Indiana University, August, 2016
- * Modifies to include parallel sorting, when available
- * and to otherwise use an internal parallel sort if  
- * the jvm has enough virtual memory to do it.
- * 
- * 
- * Currently implemented by running the external sort command.
- * On Windows this is done by using cygwin.  The class determines
- * what OS it is running on and calls the sort command appropriately
- * for the platform.
- * Cicada Dennis comment, it does not seem like the cygwin sort is being
- * used anymore, but rather the win32\\sort is being called, but that would
- * only work on machines where it was installed...
+ * Cicada Dennis, Indiana University, August, September, 2016
+ * This is a change as mentioned in JIRA ticket PTM-72.
+ * https://issues.openmrs.org/browse/PTM-72 
  *
+ * Modified to include parallel sorting, when available.
+ *
+ * Future coding is anticipated to include use of an internal parallel sort 
+ * if the jvm has enough virtual memory to do it or the external
+ * sorting program is not available.
+ * 
+ * Currently implemented by running an external sort command.
+ * The sort command must implement a Unix style interface and command options.
+ * On Windows this can be done by using cygwin or similar Unix type sorting program.
+ * The class determines calls the sort command appropriately
+ * for the platform.
+ * On Windows, see the definition of possibleWindowsLocations to see what
+ * locations are currently searched.
+ * On Unix, a sort is assumed to exist in a directory in the search path, and the
+ * first program called "sort" on the PATH is the one that is called.
  * 
  * ColumnSortOption objects are stored in the options Vector and lists
  * the columns that need to be sorted and the parameters for the sort.
