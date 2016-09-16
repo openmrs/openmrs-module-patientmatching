@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -32,12 +33,7 @@ public class Estimator {
      * @param entryNames The list of the names of the blocking fields
      */
 	public void doEstimationsWithBlockingFields(List<String> entryNames){
-		Date startedAt = new Date();
-		
-		String select = "select count(p1) from Patient p1, Patient p2";
-		String where = " where p1 <> p2 ";
-		
-		List<String> attributes = new ArrayList<String>();
+		Set<String> attributes = new LinkedHashSet<String>();
 		List<String> identifiers = new ArrayList<String>();
 		List<String> attrTypes = new ArrayList<String>();
 		
@@ -53,30 +49,37 @@ public class Estimator {
 		}
 
         //Get the attributes from the Patient, Person, PersonName, PatientIdentifier classes
-		Class<Patient> patient = Patient.class;
-		Set<String> patientFieldNames = new HashSet<String>(patient.getDeclaredFields().length);
-		for (Field f : patient.getDeclaredFields()) {
-			patientFieldNames.add(f.getName());
-		}
+		Set<String> patientFieldNames = getFieldNames(Patient.class, attributes);
+		Set<String> personFieldNames = getFieldNames(Person.class, attributes);
+		Set<String> personNameFieldNames = getFieldNames(PersonName.class, attributes);
+		Set<String> identifierFieldNames = getFieldNames(PatientIdentifier.class, attributes);
 		
-		Class<Person> person = Person.class;
-		Set<String> personFieldNames = new HashSet<String>(person.getDeclaredFields().length);
-		for (Field f : person.getDeclaredFields()) {
-			personFieldNames.add(f.getName());
+		String select;
+		if (patientFieldNames.isEmpty() && personFieldNames.isEmpty() && identifierFieldNames.isEmpty() && identifiers.isEmpty() && attrTypes.isEmpty()) {
+		    select = buildNameQuery(personNameFieldNames);
+		} else {
+		    select = buildComplexQuery(attributes, identifiers, attrTypes, patientFieldNames, personFieldNames, personNameFieldNames, identifierFieldNames);
 		}
-		
-		Class<PersonName> personName = PersonName.class;
-		Set<String> personNameFieldNames = new HashSet<String>(personName.getDeclaredFields().length);
-		for (Field f : personName.getDeclaredFields()) {
-			personNameFieldNames.add(f.getName());
-		}
-		
-		Class<PatientIdentifier> identifier = PatientIdentifier.class;
-		Set<String> identifierFieldNames = new HashSet<String>(identifier.getDeclaredFields().length);
-		for (Field f : identifier.getDeclaredFields()) {
-			identifierFieldNames.add(f.getName());
-		}
-
+		runQuery(select);
+	}
+	
+	private Set<String> getFieldNames(Class<?> c, Set<String> attributes) {
+	    Field[] declaredFields = c.getDeclaredFields();
+	    Set<String> fieldNames = new HashSet<String>(declaredFields.length);
+        for (Field f : declaredFields) {
+            String name = f.getName();
+            if (attributes.contains(name)) {
+                fieldNames.add(name);
+            }
+        }
+        return fieldNames;
+	}
+	
+	private String buildComplexQuery(Set<String> attributes, List<String> identifiers, List<String> attrTypes,
+	                                 Set<String> patientFieldNames, Set<String> personFieldNames, Set<String> personNameFieldNames, Set<String> identifierFieldNames) {
+	    String select = "select count(p1) from Patient p1, Patient p2";
+        String where = " where p1 <> p2 ";
+        
         //build the HQL query from the above attributes
 		for (String s : attributes) {
 			if (patientFieldNames.contains(s)) {
@@ -162,6 +165,21 @@ public class Estimator {
 		
 		select = select + where;
 		
+		return select;
+	}
+	
+	private String buildNameQuery(Set<String> attributes) {
+        StringBuilder select = new StringBuilder("select count(pn1) from PersonName pn1, PersonName pn2 where pn1.person <> pn2.person");
+        
+        for (String s : attributes) {
+            select.append(" and pn1.").append(s).append(" = pn2.").append(s);
+        }
+
+        return select.toString();
+    }
+	
+	private void runQuery(String select) {
+	    Date startedAt = new Date();
 		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
 		estimatedComparisons = service.getCustomCount(select) / 2;
 		Date finishedAt = new Date();

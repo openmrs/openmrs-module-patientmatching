@@ -6,29 +6,24 @@ import org.openmrs.module.patientmatching.Estimator;
 
 public class DWREstimationUtilities {
 
-	private Estimator estimator;
-	private boolean estimationRan;
-	private final double MAX_FACTOR = 10.0;
-	private final double MIN_FACTOR = 0.01;
-
-	public DWREstimationUtilities() {
-		estimator = new Estimator();
-		estimationRan = false;
-	}
+	private Estimator estimator = new Estimator();
+	private boolean estimationRan = false;
+	private final static double MAX_FACTOR = 10.0;
+	private final static double MIN_FACTOR = 0.01;
 
 	public String getEstimationInfomation(List<String> blockingFields) {
 		runEstimationProcess(blockingFields);
-		long estimatedComparisions = estimator.getEstimatedComparisons();
-		long totalRecords = estimator.getTotalRecords();
+		long estimatedComparisions = getEstimatedPairs();
+		long totalRecords = getTotalRecords();
 		String information = "";
 		if (estimatedComparisions > MAX_FACTOR * totalRecords) {
 			information = "The Strategy results in more record pairs than acceptable level";
 		} else if(estimatedComparisions < MIN_FACTOR * totalRecords){
 			information = "The Strategy results in less record pairs than acceptable level";
 		} else{
-			information = "The stratergy is at acceptable level";
+			information = "The strategy is at acceptable level";
 		}
-		information += ";"+getEstimatedPairs()+";"+ getEstimatedTimeToRun()+";"+getTotalRecords();
+		information += ";"+estimatedComparisions+";"+ getEstimatedTimeToRun()+";"+totalRecords;
 		return information;
 	}
 
