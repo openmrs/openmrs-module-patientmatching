@@ -54,6 +54,15 @@
 		<defaultValue>http://link.regenstrief.org:8080/openmrs/admin/patients/mergePatients.form</defaultValue>
 		<description>URL pointing to the production server </description>
 	</globalProperty>
+	<globalProperty>
+        <property>patientmatching.scratchPageSize</property>
+        <defaultValue>10000</defaultValue>
+        <description>The number of patients to read per page</description>
+    </globalProperty>
+    <globalProperty>
+        <property>patientmatching.scratchPageLimit</property>
+        <description>The number of pages to read</description>
+    </globalProperty>
 	
 	<dwr>
 		<allow>
