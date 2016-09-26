@@ -25,7 +25,9 @@ import org.regenstrief.linkage.Record;
 
 public class OpenMRSReader implements DataSourceReader {
 
-    private final int PAGING_SIZE = Context.getAdministrationService().getGlobalPropertyValue("patientmatching.scratchPageSize", Integer.valueOf(10000)).intValue();
+    private final int DEFAULT_PAGING_SIZE = 10000; // number of patients read at a time
+    
+    private final int PAGING_SIZE = Context.getAdministrationService().getGlobalPropertyValue("patientmatching.scratchPageSize", Integer.valueOf(DEFAULT_PAGING_SIZE)).intValue();
     
     private final int PAGING_LIMIT = Context.getAdministrationService().getGlobalPropertyValue("patientmatching.scratchPageLimit", Integer.valueOf(-1)).intValue();
 

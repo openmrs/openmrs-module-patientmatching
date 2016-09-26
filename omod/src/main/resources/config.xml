@@ -61,7 +61,7 @@
     </globalProperty>
     <globalProperty>
         <property>patientmatching.scratchPageLimit</property>
-        <description>The number of pages to read</description>
+        <description>Used when testing patient matching to limit number of pages read (leave blank for production use)</description>
     </globalProperty>
 	
 	<dwr>
