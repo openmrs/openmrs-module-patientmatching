@@ -192,12 +192,7 @@ public class RecordLinker extends Linker{
 			// canonical path failed, attempt just using normal getPath
 			data1step1 = new File(output_dir.getPath() + File.separator + mc.getName() + "sort1" + STEP1_EXT);
 		}
-		try{
-			FileOutputStream data1_fos = new FileOutputStream(data1step1);
-			ColumnSorter sort_data1 = new ColumnSorter(lds1.getAccess().charAt(0), options, data1_link, data1_fos);
-			sort_data1.runSort();
-		}
-		catch(FileNotFoundException fnfe){
+		if (!ColumnSorter.sortColumns(lds1.getAccess().charAt(0), options, data1_link, data1step1)) {
 			// if can't open the output stream at the stage, return signaling failure
 			// as the later steps make no sense without a file from this step
 			return false;
@@ -214,14 +209,7 @@ public class RecordLinker extends Linker{
 				// canonical path failed, attempt just using normal getPath
 				data2step1 = new File(output_dir.getPath() + File.separator + mc.getName() + "sort2" + STEP1_EXT);
 			}
-			try{
-				FileOutputStream data2_fos = new FileOutputStream(data2step1);
-				ColumnSorter sort_data2 = new ColumnSorter(lds2.getAccess().charAt(0), options, data2_link, data2_fos);
-				sort_data2.runSort();
-			}
-			catch(FileNotFoundException fnfe){
-				// if can't open the output stream at the stage, return signaling failure
-				// as the later steps make no sense without a file from this step
+			if (!ColumnSorter.sortColumns(lds2.getAccess().charAt(0), options, data2_link, data2step1)) {
 				return false;
 			}
 		}
@@ -274,17 +262,7 @@ public class RecordLinker extends Linker{
 		option.add(new ColumnSortOption(1, ColumnSortOption.DESCENDING, ColumnSortOption.NUMERIC));
 		
 		sorted_score_step5 = new File(output_dir.getPath() + File.separator + mc.getName() + STEP5_EXT);
-		try{
-			FileOutputStream score_fos = new FileOutputStream(sorted_score_step5);
-			ColumnSorter sort_score = new ColumnSorter('|', option, scorestep4, score_fos);
-			sort_score.runSort();
-		}
-		catch(FileNotFoundException fnfe){
-			// if can't open the output stream at the stage, return signaling failure
-			// as the later steps make no sense without a file from this step
-			return false;
-		}
-		return true;
+		return ColumnSorter.sortColumns('|', option, scorestep4, sorted_score_step5);
 	}
 	
 	public static void main(String[] argv){
