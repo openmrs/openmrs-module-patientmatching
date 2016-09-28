@@ -29,12 +29,14 @@ public class DataBaseRecordStore implements RecordStore {
 	List<String> insert_demographics;
 	
 	String quote_string;
-	int insert_count;
+	private int batch_size;
 	
 	public static final String UID_COLUMN = "import_uid";
 	public static final String INVALID_COLUMN_CHARS = "\\W";
 	
 	protected final Log log = LogFactory.getLog(getClass());
+	
+	private static final int MAXIMUM_BATCH_SIZE = 1000;
 
 	/**
 	 * 
@@ -55,7 +57,7 @@ public class DataBaseRecordStore implements RecordStore {
 		this.password = password;
 		
 		insert_demographics = new ArrayList<String>();
-		insert_count = 0;
+		batch_size = 0;
 		try{
 			quote_string = db_connection.getMetaData().getIdentifierQuoteString();
 			log.info("Identifier quote string is " + quote_string);
@@ -208,22 +210,32 @@ public class DataBaseRecordStore implements RecordStore {
 			}
 			
 			insert_stmt.setLong(1, r.getUID());
-			insert_count++;
+			batch_size++;
 			for(int i = 0; i < insert_demographics.size(); i++){
 				String demographic = insert_demographics.get(i);
 				insert_stmt.setString(i + 2, r.getDemographic(demographic));
 			}
-			return insert_stmt.executeUpdate() > 0;
+			insert_stmt.addBatch();
+			executeBatchIfNeeded(MAXIMUM_BATCH_SIZE);
+			return true;
 		}
 		catch(SQLException sqle){
 			sqle.printStackTrace();
 			return false;
 		}
 	}
+	
+	private void executeBatchIfNeeded(final int minimum_batch_size) throws SQLException {
+		if (batch_size >= minimum_batch_size) {
+			insert_stmt.executeBatch();
+			batch_size = 0;
+		}
+	}
 
 	public boolean close() {
         try{
             if(insert_stmt != null){
+            	executeBatchIfNeeded(1);
                 insert_stmt.clearParameters();
                 insert_stmt.close();
             }
