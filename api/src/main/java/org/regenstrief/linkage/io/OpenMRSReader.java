@@ -18,13 +18,18 @@ import org.hibernate.SessionFactory;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifierType;
 import org.openmrs.PersonAttributeType;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.patientmatching.HibernateConnection;
 import org.openmrs.module.patientmatching.LinkDBConnections;
 import org.regenstrief.linkage.Record;
 
 public class OpenMRSReader implements DataSourceReader {
 
-    private final int PAGING_SIZE = 10000;
+    private final int DEFAULT_PAGING_SIZE = 10000; // number of patients read at a time
+    
+    private final int PAGING_SIZE = Context.getAdministrationService().getGlobalPropertyValue("patientmatching.scratchPageSize", Integer.valueOf(DEFAULT_PAGING_SIZE)).intValue();
+    
+    private final int PAGING_LIMIT = Context.getAdministrationService().getGlobalPropertyValue("patientmatching.scratchPageLimit", Integer.valueOf(-1)).intValue();
 
     protected final Log log = LogFactory.getLog(this.getClass());
     
@@ -220,7 +225,7 @@ public class OpenMRSReader implements DataSourceReader {
      * @see org.regenstrief.linkage.io.DataSourceReader#hasNextRecord()
      */
     public boolean hasNextRecord() {
-    	if(patients.size() == 0) {
+    	if((patients.size() == 0) && ((PAGING_LIMIT <= 0) || ((pageNumber + 1) < PAGING_LIMIT))) {
     		pageNumber ++;
     		updatePatientList();
     	}
