@@ -58,8 +58,10 @@ public class DataBaseRecordStore implements RecordStore {
 		insert_count = 0;
 		try{
 			quote_string = db_connection.getMetaData().getIdentifierQuoteString();
+			log.info("Identifier quote string is " + quote_string);
 		}
 		catch(SQLException sqle){
+			log.warn("Unable to get underlying database identifiers' quote character, using none!");
 			quote_string = "";
 		}
 		
@@ -99,7 +101,7 @@ public class DataBaseRecordStore implements RecordStore {
 		// iteratoe over lds to see what fields to expect, and set order in insert_demographics
 		Enumeration<String> e = lds.getIncludedDataColumns().keys();
 		while(e.hasMoreElements()){
-			String column = e.nextElement();
+			String column = e.nextElement().trim();
 			
 			insert_demographics.add(column);
 			buffer.append(", ")
@@ -112,6 +114,7 @@ public class DataBaseRecordStore implements RecordStore {
 		buffer.append(")");
 		
 		try{
+			log.trace("Creating table " + table_name);
 			db_connection.createStatement().execute(buffer.toString());
 		}
 		catch(SQLException sqle){
@@ -123,7 +126,8 @@ public class DataBaseRecordStore implements RecordStore {
 	
 	protected void dropTableIfExists(String table){
 		try{
-			db_connection.createStatement().execute("DROP TABLE " + table);
+			log.trace("Dropping table " + table);
+			db_connection.createStatement().execute("DROP TABLE IF EXISTS " + table);
 		} catch(SQLException e){
 			log.warn("error dropping " + table + " table", e);
 		}
