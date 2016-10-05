@@ -4,13 +4,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -116,7 +114,6 @@ public class MatchingReportUtils {
 			}
 		}
 		
-		Set<String> globalIncludeColumns = new TreeSet<String>();
 		DedupMatchResultList handler = new DedupMatchResultList();
 
 		HibernateSessionFactoryBean bean = new HibernateSessionFactoryBean();
@@ -135,10 +132,8 @@ public class MatchingReportUtils {
 			ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
 					url, user, passwd);
 			databaseConnection = connectionFactory.createConnection();
-		} catch (ClassNotFoundException e) {
-			log.warn("patientmatching: error loading database driver to use when matching");
-		} catch (SQLException e) {
-			log.warn("patientmatching: error connectiong to database to do matching - \n" + e.getMessage());
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 		
 		objects.put("databaseConnection", databaseConnection);
@@ -150,7 +145,6 @@ public class MatchingReportUtils {
 		objects.put("matchingConfigLists", matchingConfigLists);
 		objects.put("configFileFolder", configFileFolder);
 		objects.put("handler", handler);
-		objects.put("globalIncludeColumns", globalIncludeColumns);
 		return objects;
 	}
 	//New Method1 End 2
@@ -159,20 +153,26 @@ public class MatchingReportUtils {
 	public static Map<String, Object> InitScratchTable(Map<String,Object> objects){
 		Connection databaseConnection=(Connection) objects.get("databaseConnection");
 		RecMatchConfig recMatchConfig=(RecMatchConfig) objects.get("recMatchConfig");
+		MatchingConfig matchingConfig = ((List<MatchingConfig>)objects.get("matchingConfigLists")).get(0);
 		String driver=(String) objects.get("driver");
 		String url = (String) objects.get("url");
 		String user = (String) objects.get("user");
 		String passwd = (String) objects.get("passwd");
 		
 		log.info("Initiating scratch table");
+		List<String> blockingColumns = Arrays.asList(matchingConfig.getBlockingColumns());
+		Set<String> globalIncludeColumns = new TreeSet<String>();
+		globalIncludeColumns.addAll(blockingColumns);
+		List<String> includeColumns = Arrays.asList(matchingConfig.getIncludedColumnsNames());
+		globalIncludeColumns.addAll(includeColumns);
+		objects.put("globalIncludeColumns", globalIncludeColumns);
 		DataBaseRecordStore recordStore = new DataBaseRecordStore(
 				databaseConnection, recMatchConfig.getLinkDataSource1(),
 				driver, url, user, passwd);
 		recordStore.clearRecords();
-		OpenMRSReader reader = new OpenMRSReader();
+		OpenMRSReader reader = new OpenMRSReader(globalIncludeColumns);
 		while (reader.hasNextRecord()) {
-			Record patientRecord = reader.nextRecord();
-			recordStore.storeRecord(patientRecord);
+			recordStore.storeRecord(reader.nextRecord());
 		}
 		recordStore.close();
 		reader.close();
@@ -182,7 +182,6 @@ public class MatchingReportUtils {
 		objects.put("recordStore", recordStore);
 		objects.put("rp", rp);
 		objects.put("recMatchConfig", recMatchConfig);
-		MatchingConfig matchingConfig = ((List<MatchingConfig>)objects.get("matchingConfigLists")).get(0);
 		objects.put("matchingConfig", matchingConfig);
 		return objects;
 	}
@@ -270,7 +269,6 @@ public class MatchingReportUtils {
 	//New Method8 9
 	public static Map<String, Object> ScoringData(Map<String, Object> objects) throws IOException {
 		DedupMatchResultList handler = (DedupMatchResultList) objects.get("handler");
-		Set<String> globalIncludeColumns = (Set<String>) objects.get("globalIncludeColumns");
 		RecMatchConfig recMatchConfig = (RecMatchConfig) objects.get("recMatchConfig");
 		MatchingConfig matchingConfig = (MatchingConfig) objects.get("matchingConfig");
 		log.info("Scoring data");
@@ -283,23 +281,15 @@ public class MatchingReportUtils {
 
 		Record[] pair;
 		MatchResult mr;
-		int counter = 0;
 
 		while ((pair = formPairsScoring.getNextRecordPair()) != null) {
 			mr = sp.scorePair(pair[0], pair[1]);
-			counter++;
 			handler.acceptMatchResult(mr);
 		}
 
 		databaseReaderScore.close();
 
-		List<String> blockingColumns = Arrays.asList(matchingConfig.getBlockingColumns());
-		globalIncludeColumns.addAll(blockingColumns);
-		List<String> includeColumns = Arrays.asList(matchingConfig.getIncludedColumnsNames());
-		globalIncludeColumns.addAll(includeColumns);
-
 		objects.put("handler", handler);
-		objects.put("globalIncludeColumns", globalIncludeColumns);
 		return objects;
 	}
 	//New Method8 End 9
@@ -320,7 +310,7 @@ public class MatchingReportUtils {
             }
 		}
 		catch(Exception e){
-			log.warn("error while rendering config string", e);
+			throw new RuntimeException(e);
 		}
 
         String reportName = "dedup-report-"+configString+dateString;

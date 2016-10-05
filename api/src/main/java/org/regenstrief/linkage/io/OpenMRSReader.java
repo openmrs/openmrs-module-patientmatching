@@ -2,10 +2,13 @@ package org.regenstrief.linkage.io;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -15,6 +18,8 @@ import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.ProjectionList;
+import org.hibernate.criterion.Projections;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifierType;
 import org.openmrs.PersonAttributeType;
@@ -30,29 +35,48 @@ public class OpenMRSReader implements DataSourceReader {
     private final int PAGING_SIZE = Context.getAdministrationService().getGlobalPropertyValue("patientmatching.scratchPageSize", Integer.valueOf(DEFAULT_PAGING_SIZE)).intValue();
     
     private final int PAGING_LIMIT = Context.getAdministrationService().getGlobalPropertyValue("patientmatching.scratchPageLimit", Integer.valueOf(-1)).intValue();
+    
+    private final static byte MODE_PATIENT = 0;
+    
+    private final static byte MODE_ARRAY = 1;
+    
+    private final static byte MODE_PROJECTION = 2;
+    
+    private final static String[][] PROJECTION_ALIASES = {
+    		{ "org.openmrs.PersonName", "names" },
+    		{ "org.openmrs.PersonAddress", "addresses" },
+    		{ "org.openmrs.PatientIdentifier", "identifiers" }
+    };
 
     protected final Log log = LogFactory.getLog(this.getClass());
     
-    @SuppressWarnings("unchecked")
-    private List patients;
+    private Iterator<?> patients;
 
     private Criteria criteria;
     
     private int pageNumber;
     
-    private boolean isPatient;
+    private byte resultMode;
     
     private boolean expand_patient;
+    
+    private Collection<String> projections;
 
     /**
      * 
      */
-    @SuppressWarnings("unchecked")
     public OpenMRSReader() {
-        patients = new ArrayList();
+    	this(null);
+    }
+    
+    public OpenMRSReader(Collection<String> projections) {
         pageNumber = 0;
-        isPatient = true;
+        resultMode = MODE_PATIENT;
         expand_patient = true;
+        if (projections != null && !projections.contains("org.openmrs.Patient.patientId")) {
+        	projections.add("org.openmrs.Patient.patientId");
+        }
+        this.projections = projections;
         
     	log.info("Getting all patient records ...");
     	updatePatientList();
@@ -66,10 +90,36 @@ public class OpenMRSReader implements DataSourceReader {
     
     private Criteria createCriteria(){
         createHibernateSession().clear();
-    	criteria = createHibernateSession().createCriteria(Patient.class);
-
-    	criteria.setMaxResults(PAGING_SIZE);
-    	criteria.setFirstResult(pageNumber * PAGING_SIZE);
+    	criteria = createHibernateSession().createCriteria(Patient.class)
+    			.setMaxResults(PAGING_SIZE)
+    			.setFirstResult(pageNumber * PAGING_SIZE);
+    	if (projections != null) {
+    		resultMode = MODE_PROJECTION;
+    		ProjectionList projectionList = Projections.projectionList();
+    		Set<String> aliases = null;
+    		for (String projection : projections) {
+    			if (projection.startsWith("org.openmrs.Patient")) {
+    				projection = projection.substring(20);
+    			} else {
+	    			for (final String[] aliasDefinition : PROJECTION_ALIASES) {
+	    				final String className = aliasDefinition[0];
+		    			if (projection.startsWith(className)) {
+		    				final String alias = aliasDefinition[1];
+		    				projection = alias + projection.substring(className.length());
+		    				if (aliases == null) {
+		    					aliases = new HashSet<String>();
+		    				}
+		    				if (aliases.add(alias)) {
+		    					criteria = criteria.createAlias(alias, alias);
+		    				}
+		    				break;
+		    			}
+	    			}
+    			}
+    			projectionList = projectionList.add(Projections.property(projection));
+    		}
+    		criteria = criteria.setProjection(projectionList);
+    	}
     	return criteria;
     }
     
@@ -79,13 +129,15 @@ public class OpenMRSReader implements DataSourceReader {
         return sessionFactory.getCurrentSession();
     }
     
-    @SuppressWarnings("unchecked")
     private void updatePatientList() {
+    	List<?> list;
         try {
-            isPatient = true;
-            patients = createCriteria().list();
+        	resultMode = MODE_PATIENT;
+            list = createCriteria().list();
         } catch (Exception e) {
             log.info("Iterating one by one on patient records ...");
+            List<Object[]> patients = new ArrayList<Object[]>();
+            list = patients;
             createHibernateSession().clear();
             
             String sql = getPatientQuery();
@@ -96,7 +148,7 @@ public class OpenMRSReader implements DataSourceReader {
             String sqlPatientId = "select patient.patientId from Patient as patient  where patient.voided = false order by patient.patientId asc";
             Query queryPatientId = createHibernateSession().createQuery(sqlPatientId)
                                 .setMaxResults(PAGING_SIZE).setFirstResult(PAGING_SIZE * pageNumber);
-            Iterator patientIds = queryPatientId.iterate();
+            Iterator<?> patientIds = queryPatientId.iterate();
             
             Integer currPatientId = null;
             while (patientIds.hasNext()) {
@@ -104,11 +156,11 @@ public class OpenMRSReader implements DataSourceReader {
                     currPatientId = (Integer) patientIds.next();
                     Query query = createHibernateSession().createQuery(sql)
                                             .setParameter("patientId", currPatientId, Hibernate.INTEGER);
-                    Iterator patientIter = query.iterate();
+                    Iterator<?> patientIter = query.iterate();
                     List<Object> objList = new ArrayList<Object>();
                     
                     int max_rows = 1;
-                    if(expand_patient){
+                    if (expand_patient){
                     	max_rows = Integer.MAX_VALUE;
                     }
                     int patient_rows = 0;
@@ -123,7 +175,7 @@ public class OpenMRSReader implements DataSourceReader {
                     	"join id.identifierType as idType where patient.patientId = :patientId order by patient.patientId asc, idType.name asc";
                     	Query queryIdentifier = createHibernateSession().createQuery(sqlIdentitifier)
                     	.setParameter("patientId", currPatientId, Hibernate.INTEGER);
-                    	Iterator iterIdentifier = queryIdentifier.iterate();
+                    	Iterator<?> iterIdentifier = queryIdentifier.iterate();
 
                     	Map<String, String> mapId = new HashMap<String, String>();
                     	while (iterIdentifier.hasNext()) {
@@ -143,7 +195,7 @@ public class OpenMRSReader implements DataSourceReader {
                     	"join attr.attributeType as attrType where patient.patientId = :patientId order by patient.patientId asc, attrType.name asc";
                     	Query queryAttribute = createHibernateSession().createQuery(sqlAttribute)
                     	.setParameter("patientId", currPatientId, Hibernate.INTEGER);
-                    	Iterator iterAttribute = queryAttribute.iterate();
+                    	Iterator<?> iterAttribute = queryAttribute.iterate();
 
                     	Map<String, String> mapAtt = new HashMap<String, String>();
                     	while (iterAttribute.hasNext()) {
@@ -167,9 +219,11 @@ public class OpenMRSReader implements DataSourceReader {
                 	log.info("Exception caught during iterating patient ... Skipping ...");
                 	log.info("Cause: " + e.getCause());
                 	log.info("Message: " + e.getMessage());
+                	throw new RuntimeException(hex);
                 }
             }
         }
+        patients = list.iterator();
     }
 
     private String getPatientQuery() {
@@ -193,7 +247,7 @@ public class OpenMRSReader implements DataSourceReader {
         
         String select = selectClause.substring(0, selectClause.toString().length() - 1);
         
-        isPatient = false;
+        resultMode = MODE_ARRAY;
         String sql = "select patient.patientId, " + select +
                             " from Patient as patient join patient.names as name join patient.addresses as address " +
                             " where patient.patientId = :patientId and name.voided = false and address.voided = false" +
@@ -205,17 +259,19 @@ public class OpenMRSReader implements DataSourceReader {
      * 
      * @see org.regenstrief.linkage.io.DataSourceReader#close()
      */
+    @Override
     public boolean close() {
         createHibernateSession().clear();
         //createHibernateSession().close();     //Causing a session closed exception in report generation
     	patients = null;
-    	return (patients == null);
+    	return true;
     }
 
     /**
      * 
      * @see org.regenstrief.linkage.io.DataSourceReader#getRecordSize()
      */
+    @Override
     public int getRecordSize() {
         return -999;
     }
@@ -224,29 +280,52 @@ public class OpenMRSReader implements DataSourceReader {
      * 
      * @see org.regenstrief.linkage.io.DataSourceReader#hasNextRecord()
      */
+    @Override
     public boolean hasNextRecord() {
-    	if((patients.size() == 0) && ((PAGING_LIMIT <= 0) || ((pageNumber + 1) < PAGING_LIMIT))) {
-    		pageNumber ++;
+    	if (patients == null) {
+    		return false;
+    	} else if (!patients.hasNext() && ((PAGING_LIMIT <= 0) || ((pageNumber + 1) < PAGING_LIMIT))) {
+    		pageNumber++;
     		updatePatientList();
     	}
 
-    	return (patients.size() > 0);
+    	return patients.hasNext();
     }
 
     /**
      * 
      * @see org.regenstrief.linkage.io.DataSourceReader#nextRecord()
      */
+    @Override
     public Record nextRecord() {
-        Record r = null;
-        if(patients != null && hasNextRecord()) {
-            if (isPatient) {
-                Patient p = (Patient) patients.remove(0);
+        Record r;
+        if (hasNextRecord()) {
+        	Object o = patients.next();
+            if (resultMode == MODE_PATIENT) {
+                Patient p = (Patient) o;
                 r = LinkDBConnections.getInstance().patientToRecord(p);
-            } else {
-                Object[] objs = (Object[]) patients.remove(0);
+            } else if (resultMode == MODE_ARRAY) {
+                Object[] objs = (Object[]) o;
                 r = LinkDBConnections.getInstance().patientToRecord(objs);
+            } else {
+            	Object[] objs = (Object[]) o;
+            	int patientIdIndex = 0;
+            	for (final String projection : projections) {
+            		if (projection.endsWith("patientId")) {
+            			break;
+            		}
+            		patientIdIndex++;
+            	}
+            	final long uid = ((Number) objs[patientIdIndex]).longValue();
+            	r = new Record(uid, LinkDBConnections.UID_CONTEXT);
+            	int i = 0;
+            	for (final String projection : projections) {
+            		r.addDemographic(projection, String.valueOf(objs[i]));
+            		i++;
+            	}
             }
+        } else {
+        	r = null;
         }
         return r;
     }
@@ -255,7 +334,7 @@ public class OpenMRSReader implements DataSourceReader {
      * 
      * @see org.regenstrief.linkage.io.DataSourceReader#reset()
      */
-    @SuppressWarnings("unchecked")
+    @Override
     public boolean reset() {
     	pageNumber = 0;
     	
@@ -263,5 +342,4 @@ public class OpenMRSReader implements DataSourceReader {
         
         return (patients != null);
     }
-
 }
