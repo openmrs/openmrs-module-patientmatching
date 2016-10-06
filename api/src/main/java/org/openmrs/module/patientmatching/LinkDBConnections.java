@@ -1,7 +1,6 @@
 package org.openmrs.module.patientmatching;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,7 +8,6 @@ import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.logging.Log;
@@ -34,7 +32,6 @@ import org.regenstrief.linkage.util.RecMatchConfig;
 import org.regenstrief.linkage.util.XMLTranslator;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
 /**
  * Class provides a singleton for database access to the
@@ -52,6 +49,8 @@ public class LinkDBConnections {
 	// caches patientToRecord return objects
 	//private Map<Integer,Record> cache;
 	//public final static int RECORD_CACHE_SIZE = 1000;
+	
+	public final static String UID_CONTEXT = "OpenMRS";
 	
 	protected static Log log = LogFactory.getLog(LinkDBConnections.class);
 	
@@ -277,20 +276,8 @@ public class LinkDBConnections {
 			finder = new MatchFinder(rmc.getLinkDataSource1(), rp, rmc.getMatchingConfigs(), MatchFinder.Scoring.BLOCKING_EXCLUSIVE);
 			link_db = new RecordDBManager(rmc.getLinkDataSource1());
 		}
-		catch(ParserConfigurationException pce){
-			log.warn("XML parser error with config file: " + pce.getMessage());
-			//file_log.warn("XML parser error with config file: " + pce.getMessage());
-			return false;
-		}
-		catch(SAXException spe){
-			log.warn("XML parser error with config file: " + spe.getMessage());
-			//file_log.warn("XML parser error with config file: " + spe.getMessage());
-			return false;
-		}
-		catch(IOException ioe){
-			log.warn("IOException with config file: " + ioe.getMessage());
-			//file_log.warn("IOException with config file: " + ioe.getMessage());
-			return false;
+		catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 		//log.debug("file parsed");
 		
@@ -318,7 +305,7 @@ public class LinkDBConnections {
 			return cache_record;
 		}*/
 		
-		Record ret = new Record(id,"OpenMRS");
+		Record ret = new Record(id, UID_CONTEXT);
 		
 		ret.addDemographic(PatientMatchingActivator.LINK_TABLE_KEY_DEMOGRAPHIC, Integer.toString(id));
 		
@@ -350,6 +337,7 @@ public class LinkDBConnections {
                     value = BeanUtils.getProperty(patient, classProperty);
                 } catch (Exception e) {
                     log.debug("Error getting the value for property: " + property + " for patient " + id);
+                    throw new RuntimeException(e);
                 } finally {
                     ret.addDemographic(property, value);
                 }
@@ -381,6 +369,7 @@ public class LinkDBConnections {
                     }
                 } catch (Exception e) {
                     log.debug("Error getting the value for property: " + property + " for patient " + id);
+                    throw new RuntimeException(e);
                 } finally {
                     ret.addDemographic(property, value);
                 }
@@ -395,6 +384,7 @@ public class LinkDBConnections {
                     value = BeanUtils.getProperty(personAddress, classProperty);
                 } catch (Exception e) {
                     log.debug("Error getting the value for property: " + property + " for patient " + id);
+                    throw new RuntimeException(e);
                 } finally {
                     ret.addDemographic(property, value);
                 }
@@ -422,7 +412,7 @@ public class LinkDBConnections {
 	public Record patientToRecord(Object[] objs) {
         
         Integer patientId = (Integer) objs[0];
-        Record record = new Record(patientId, "OpenMRS");
+        Record record = new Record(patientId, UID_CONTEXT);
         
         int fieldCounter = 1;
 
