@@ -337,7 +337,6 @@ public class LinkDBConnections {
                     value = BeanUtils.getProperty(patient, classProperty);
                 } catch (Exception e) {
                     log.debug("Error getting the value for property: " + property + " for patient " + id);
-                    throw new RuntimeException(e);
                 } finally {
                     ret.addDemographic(property, value);
                 }
@@ -369,7 +368,6 @@ public class LinkDBConnections {
                     }
                 } catch (Exception e) {
                     log.debug("Error getting the value for property: " + property + " for patient " + id);
-                    throw new RuntimeException(e);
                 } finally {
                     ret.addDemographic(property, value);
                 }
@@ -384,7 +382,6 @@ public class LinkDBConnections {
                     value = BeanUtils.getProperty(personAddress, classProperty);
                 } catch (Exception e) {
                     log.debug("Error getting the value for property: " + property + " for patient " + id);
-                    throw new RuntimeException(e);
                 } finally {
                     ret.addDemographic(property, value);
                 }

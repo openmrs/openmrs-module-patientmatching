@@ -135,6 +135,11 @@ public class OpenMRSReader implements DataSourceReader {
         	resultMode = MODE_PATIENT;
             list = createCriteria().list();
         } catch (Exception e) {
+        	if (projections != null) {
+        		projections = null;
+        		updatePatientList();
+        		return;
+        	}
             log.info("Iterating one by one on patient records ...");
             List<Object[]> patients = new ArrayList<Object[]>();
             list = patients;
