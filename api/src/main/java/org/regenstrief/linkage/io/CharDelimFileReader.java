@@ -196,7 +196,7 @@ public class CharDelimFileReader implements DataSourceReader{
 		String[] split_line = line.split(getHexString(raw_file_sep), -1);
 		
 		DataColumn id_column = data_source.getUniqueIDDataColumn();
-		int id = Integer.parseInt(split_line[id_column.getIncludePosition()]);
+		long id = Long.parseLong(split_line[id_column.getIncludePosition()]);
 		
 		Record ret = new Record(id, data_source.getName());
 		List<DataColumn> cols = data_source.getDataColumns();
