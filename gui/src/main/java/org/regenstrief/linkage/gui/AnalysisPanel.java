@@ -61,6 +61,8 @@ import org.regenstrief.linkage.util.SyntheticRecordGenerator;
  * 
  * @author jegg
  *
+ *I have been to this code to show my first day experience in handling tickets. 
+ *Mehari Kassahun
  */
 
 public class AnalysisPanel extends JPanel implements ActionListener{
@@ -624,3 +626,4 @@ public class AnalysisPanel extends JPanel implements ActionListener{
         }
     }
 }
+
