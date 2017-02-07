@@ -14,7 +14,10 @@
 	<dependencies>
 
 		<!-- custom dependencies -->
-		
+		<dependency>
+			<groupId>commons-pool</groupId>
+			<artifactId>commons-pool</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>uk.ac.shef.wit</groupId>
 			<artifactId>simmetrics</artifactId>
