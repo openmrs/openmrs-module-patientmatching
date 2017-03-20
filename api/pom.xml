@@ -45,9 +45,15 @@
 			<type>jar</type>
 		</dependency>
 		<dependency>
+			<groupId>org.openmrs.api</groupId>
+			<artifactId>openmrs-api</artifactId>
+			<type>test-jar</type>
+		</dependency>
+		<dependency>
 			<groupId>org.openmrs.test</groupId>
 			<artifactId>openmrs-test</artifactId>
-			<type>jar</type>
+			<type>pom</type>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

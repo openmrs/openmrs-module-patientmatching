@@ -30,6 +30,10 @@
 
 	<require_version>1.7</require_version>
 	
+	<aware_of_modules>
+	    <aware_of_module>org.openmrs.module.legacyui</aware_of_module>
+	</aware_of_modules>
+	
 	<!-- AOP -->
 	<advice>
 		<point>org.openmrs.api.PatientService</point>

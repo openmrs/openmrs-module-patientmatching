@@ -71,7 +71,7 @@ public class CreateScheduleFormController extends SimpleFormController {
 		task.setDescription(request.getParameter("description").trim()+"");
 		task.setTaskClass("org.openmrs.module.patientmatching.ScheduledReportGeneration");
 		
-		ss.saveTask(task);
+		//ss.saveTask(task);
 		
 		if(scheduleRunning)
 			ss.scheduleTask(task);

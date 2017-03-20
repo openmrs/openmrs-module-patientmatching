@@ -13,13 +13,13 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
-import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
+import org.hibernate.type.StandardBasicTypes;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifierType;
 import org.openmrs.PersonAttributeType;
@@ -160,7 +160,7 @@ public class OpenMRSReader implements DataSourceReader {
                 try {
                     currPatientId = (Integer) patientIds.next();
                     Query query = createHibernateSession().createQuery(sql)
-                                            .setParameter("patientId", currPatientId, Hibernate.INTEGER);
+					        .setParameter("patientId", currPatientId, StandardBasicTypes.INTEGER);
                     Iterator<?> patientIter = query.iterate();
                     List<Object> objList = new ArrayList<Object>();
                     
@@ -179,7 +179,7 @@ public class OpenMRSReader implements DataSourceReader {
                     	String sqlIdentitifier = "select patient.patientId, id.identifier, idType.name from Patient as patient join patient.identifiers as id " +
                     	"join id.identifierType as idType where patient.patientId = :patientId order by patient.patientId asc, idType.name asc";
                     	Query queryIdentifier = createHibernateSession().createQuery(sqlIdentitifier)
-                    	.setParameter("patientId", currPatientId, Hibernate.INTEGER);
+						        .setParameter("patientId", currPatientId, StandardBasicTypes.INTEGER);
                     	Iterator<?> iterIdentifier = queryIdentifier.iterate();
 
                     	Map<String, String> mapId = new HashMap<String, String>();
@@ -199,7 +199,7 @@ public class OpenMRSReader implements DataSourceReader {
                     	String sqlAttribute = "select patient.patientId, attr.value, attrType.name from Patient as patient join patient.attributes as attr " +
                     	"join attr.attributeType as attrType where patient.patientId = :patientId order by patient.patientId asc, attrType.name asc";
                     	Query queryAttribute = createHibernateSession().createQuery(sqlAttribute)
-                    	.setParameter("patientId", currPatientId, Hibernate.INTEGER);
+						        .setParameter("patientId", currPatientId, StandardBasicTypes.INTEGER);
                     	Iterator<?> iterAttribute = queryAttribute.iterate();
 
                     	Map<String, String> mapAtt = new HashMap<String, String>();

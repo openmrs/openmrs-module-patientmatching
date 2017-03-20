@@ -19,10 +19,8 @@ import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.cfg.Configuration;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
-import org.openmrs.api.db.hibernate.HibernateSessionFactoryBean;
 import org.openmrs.util.OpenmrsUtil;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;
@@ -116,14 +114,12 @@ public class MatchingReportUtils {
 		
 		DedupMatchResultList handler = new DedupMatchResultList();
 
-		HibernateSessionFactoryBean bean = new HibernateSessionFactoryBean();
-		Configuration cfg = bean.newConfiguration();
-		Properties c = cfg.getProperties();
+		Properties c = Context.getRuntimeProperties();
 
-		String url = c.getProperty("hibernate.connection.url");
-		String user = c.getProperty("hibernate.connection.username");
-		String passwd = c.getProperty("hibernate.connection.password");
-		String driver = c.getProperty("hibernate.connection.driver_class");
+		String url = c.getProperty("connection.url");
+		String user = c.getProperty("connection.username");
+		String passwd = c.getProperty("connection.password");
+		String driver = c.getProperty("connection.driver_class");
 		log.info("URL: " + url);
 
 		Connection databaseConnection = null;

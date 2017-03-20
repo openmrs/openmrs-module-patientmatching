@@ -1,8 +1,10 @@
 package org.openmrs.module.patientmatching.impl;
 
 import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.Cohort;
 import org.openmrs.module.patientmatching.PatientMatchingConfiguration;
 import org.openmrs.module.patientmatching.PatientMatchingReportMetadataService;
 import org.openmrs.module.patientmatching.Report;
@@ -34,48 +36,64 @@ public class PatientMatchingReportMetadataServiceImpl implements PatientMatching
 		return dao;
 	}
 
+	@Override
 	public void savePatientMatchingConfiguration(PatientMatchingConfiguration patientMatchingConfiguration) {
 		dao.savePatientMatchingConfiguration(patientMatchingConfiguration);
 	}
 
+	@Override
 	public void deletePatientMatchingConfigurationByName(String name) {
 		dao.deletePatientMatchingConfigurationByName(name);
 	}
 
+	@Override
 	public PatientMatchingConfiguration findPatientMatchingConfigurationByName(
 			String name) {
 		return dao.findPatientMatchingConfigurationByName(name);
 	}
 
+	@Override
 	public List<PatientMatchingConfiguration> getMatchingConfigs() {
 		return dao.getMatchingConfigs();
 	}
 
+	@Override
 	public PatientMatchingConfiguration getPatientMatchingConfiguration(int configurationId) {
 		return dao.getPatientMatchingConfiguration(configurationId);
 	}
 
+	@Override
 	public void deletePatientMatchingConfiguration(PatientMatchingConfiguration configuration) {
 		dao.deletePatientMatchingConfiguration(configuration);
 	}
 
+	@Override
 	public long getCustomCount(String query) {
 		return dao.getCustomCount(query);
 	}
 
-    public java.util.List<String> getReportNames() {
+    @Override
+	public java.util.List<String> getReportNames() {
         return dao.getReportNames();
     }
 
-    public Report getReportByName(String reportName) {
+    @Override
+	public Report getReportByName(String reportName) {
         return dao.getReportByName(reportName);
     }
 
-    public void deleteReport(Report report) {
+    @Override
+	public void deleteReport(Report report) {
         dao.deleteReport(report);
     }
 
-    public void savePatientMatchingReport(Report report) {
+    @Override
+	public void savePatientMatchingReport(Report report) {
         dao.savePatientMatchingReport(report);
     }
+	
+	@Override
+	public Cohort getAllPatients() {
+		return dao.getAllPatients();
+	}
 }

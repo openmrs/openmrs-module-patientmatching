@@ -1,6 +1,8 @@
 package org.openmrs.module.patientmatching;
 
 import java.util.List;
+
+import org.openmrs.Cohort;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -81,4 +83,7 @@ public interface PatientMatchingReportMetadataService {
      * @param report the report file to be deleted
      */
     public void deleteReport(Report report);
+	
+	@Transactional(readOnly = true)
+	public Cohort getAllPatients();
 }
