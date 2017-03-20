@@ -1,5 +1,6 @@
 package org.openmrs.module.patientmatching.web;
 
+import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -71,7 +72,15 @@ public class CreateScheduleFormController extends SimpleFormController {
 		task.setDescription(request.getParameter("description").trim()+"");
 		task.setTaskClass("org.openmrs.module.patientmatching.ScheduledReportGeneration");
 		
-		//ss.saveTask(task);
+		try {
+			ss.saveTask(task);
+		}
+		catch (NoSuchMethodError ex) {
+			//platform 2.0 renamed saveTask to saveTaskDefinition
+			Method method = Context.getSchedulerService().getClass().getMethod("saveTaskDefinition",
+			    new Class[] { TaskDefinition.class });
+			method.invoke(Context.getSchedulerService(), task);
+		}
 		
 		if(scheduleRunning)
 			ss.scheduleTask(task);
