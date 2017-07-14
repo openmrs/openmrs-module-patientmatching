@@ -75,6 +75,11 @@ public class MatchingReportUtils {
 	public static String status = NO_PROCESS;
 	public static int i;
 
+    /**
+     * Constant name is given for a report in the incremental patient matching process
+     */
+	private static final String REPORT_NAME_PREFIX = "incremental-report-";
+
 	/**
 	 * 
 	 * Get the list of steps (statuses) that the analysis has to go through
@@ -149,7 +154,8 @@ public class MatchingReportUtils {
 	public static Map<String, Object> InitScratchTable(Map<String,Object> objects){
 		Connection databaseConnection=(Connection) objects.get("databaseConnection");
 		RecMatchConfig recMatchConfig=(RecMatchConfig) objects.get("recMatchConfig");
-		MatchingConfig matchingConfig = ((List<MatchingConfig>)objects.get("matchingConfigLists")).get(0);
+		List<MatchingConfig> matchingConfigList = (List<MatchingConfig>)objects.get("matchingConfigLists");
+		MatchingConfig matchingConfig = matchingConfigList.get(0);
 		String driver=(String) objects.get("driver");
 		String url = (String) objects.get("url");
 		String user = (String) objects.get("user");
@@ -166,7 +172,15 @@ public class MatchingReportUtils {
 				databaseConnection, recMatchConfig.getLinkDataSource1(),
 				driver, url, user, passwd);
 		recordStore.clearRecords();
-		OpenMRSReader reader = new OpenMRSReader(globalIncludeColumns);
+
+		// If only a single strategy has been selected
+		Report report = null;
+		if(matchingConfigList.size() == 1){
+			String reportName = REPORT_NAME_PREFIX + matchingConfig.getName();
+			report = Context.getService(PatientMatchingReportMetadataService.class).getReportByName(reportName);
+		}
+		OpenMRSReader reader = new OpenMRSReader(globalIncludeColumns, report != null ? report.getCreatedOn() : null);
+		reader.init();
 		while (reader.hasNextRecord()) {
 			recordStore.storeRecord(reader.nextRecord());
 		}
@@ -309,7 +323,7 @@ public class MatchingReportUtils {
 			throw new RuntimeException(e);
 		}
 
-        String reportName = "dedup-report-"+configString+dateString;
+        String reportName = REPORT_NAME_PREFIX + configString+dateString;
 		DedupMatchResultList handler = (DedupMatchResultList)objects.get("handler");
 
 		handler.flattenPairIdList();

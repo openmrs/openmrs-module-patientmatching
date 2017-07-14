@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Date;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -19,6 +20,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.ProjectionList;
 import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
 import org.hibernate.type.StandardBasicTypes;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifierType;
@@ -62,26 +64,29 @@ public class OpenMRSReader implements DataSourceReader {
     
     private Collection<String> projections;
 
-    /**
-     * 
-     */
+    private Date reportCreatedOn;
+
     public OpenMRSReader() {
-    	this(null);
+    	this(null,null);
     }
     
-    public OpenMRSReader(Collection<String> projections) {
+    public OpenMRSReader(Collection<String> projections, Date reportCreatedOn) {
         pageNumber = 0;
         resultMode = MODE_PATIENT;
         expand_patient = true;
         if (projections != null && !projections.contains("org.openmrs.Patient.patientId")) {
         	projections.add("org.openmrs.Patient.patientId");
         }
-        this.projections = projections;
-        
-    	log.info("Getting all patient records ...");
-    	updatePatientList();
-    	
-    	log.info("Finish intialization ...");
+        this.projections = null;
+        this.reportCreatedOn = reportCreatedOn;
+    }
+
+    public void init(){
+        log.info("Getting all patient records ...");
+
+        updatePatientList();
+
+        log.info("Finished initialization ...");
     }
     
     public void setExpandPatient(boolean expand){
@@ -93,6 +98,12 @@ public class OpenMRSReader implements DataSourceReader {
     	criteria = createHibernateSession().createCriteria(Patient.class)
     			.setMaxResults(PAGING_SIZE)
     			.setFirstResult(pageNumber * PAGING_SIZE);
+
+    	// Add restriction to fetch the patients based on the date report created on
+        if(reportCreatedOn != null)
+            criteria.add(Restrictions.or(Restrictions.gt("dateCreated",reportCreatedOn),
+                    Restrictions.gt("dateChanged",reportCreatedOn)));
+
     	if (projections != null) {
     		resultMode = MODE_PROJECTION;
     		ProjectionList projectionList = Projections.projectionList();
@@ -122,7 +133,7 @@ public class OpenMRSReader implements DataSourceReader {
     	}
     	return criteria;
     }
-    
+
     private Session createHibernateSession() {
         HibernateConnection connection = new HibernateConnection();
         SessionFactory sessionFactory = connection.getSessionFactory();
