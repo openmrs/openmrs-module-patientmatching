@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+	<bean id="sessionFactory" class="org.openmrs.api.db.hibernate.HibernateSessionFactoryBean">
+		<property name="configLocations">
+			<list>
+				<value>classpath:hibernate.cfg.xml</value>
+				<value>classpath:patient-matching-hibernate.cfg.xml</value>
+			</list>
+		</property>
+		<property name="mappingJarLocations">
+			<ref bean="mappingJarResources" />
+		</property>
+		<!--  default properties must be set in the hibernate.default.properties -->
+	</bean>
+
+	<bean class="org.openmrs.module.patientmatching.HibernateConnection">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory" />
+		</property>
+	</bean>
+
+	<bean parent="serviceContext">
+		<property name="moduleService">
+			<list>
+				<value>org.openmrs.module.patientmatching.PatientMatchingReportMetadataService</value>
+				<bean
+						class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+					<property name="transactionManager">
+						<ref bean="transactionManager" />
+					</property>
+					<property name="target">
+						<bean
+								class="org.openmrs.module.patientmatching.impl.PatientMatchingReportMetadataServiceImpl">
+							<property name="PatientMatchingReportMetadataDao">
+								<bean
+										class="org.openmrs.module.patientmatching.db.hibernate.HibernatePatientMatchingReportMetadataDAO">
+									<property name="sessionFactory">
+										<ref bean="sessionFactory" />
+									</property>
+								</bean>
+							</property>
+						</bean>
+					</property>
+					<property name="preInterceptors">
+						<ref bean="serviceInterceptors" />
+					</property>
+					<property name="transactionAttributeSource">
+						<bean
+								class="org.springframework.transaction.annotation.AnnotationTransactionAttributeSource" />
+					</property>
+				</bean>
+			</list>
+		</property>
+	</bean>
+</beans>

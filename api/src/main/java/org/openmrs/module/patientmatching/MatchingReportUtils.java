@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.HashMap;
 
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
@@ -75,6 +76,12 @@ public class MatchingReportUtils {
 	public static String status = NO_PROCESS;
 	public static int i;
 
+    /**
+     * Constant name is given for a report in the incremental patient matching process
+     */
+	private static final String REPORT_NAME_PREFIX = "incremental-report-";
+	private static final String PENDING = "PENDING";
+
 	/**
 	 * 
 	 * Get the list of steps (statuses) that the analysis has to go through
@@ -122,7 +129,7 @@ public class MatchingReportUtils {
 		String driver = c.getProperty("connection.driver_class");
 		log.info("URL: " + url);
 
-		Connection databaseConnection = null;
+		Connection databaseConnection;
 		try {
 			Class.forName(driver);
 			ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
@@ -149,7 +156,8 @@ public class MatchingReportUtils {
 	public static Map<String, Object> InitScratchTable(Map<String,Object> objects){
 		Connection databaseConnection=(Connection) objects.get("databaseConnection");
 		RecMatchConfig recMatchConfig=(RecMatchConfig) objects.get("recMatchConfig");
-		MatchingConfig matchingConfig = ((List<MatchingConfig>)objects.get("matchingConfigLists")).get(0);
+		List<MatchingConfig> matchingConfigList = (List<MatchingConfig>)objects.get("matchingConfigLists");
+		MatchingConfig matchingConfig = matchingConfigList.get(0);
 		String driver=(String) objects.get("driver");
 		String url = (String) objects.get("url");
 		String user = (String) objects.get("user");
@@ -166,7 +174,15 @@ public class MatchingReportUtils {
 				databaseConnection, recMatchConfig.getLinkDataSource1(),
 				driver, url, user, passwd);
 		recordStore.clearRecords();
-		OpenMRSReader reader = new OpenMRSReader(globalIncludeColumns);
+
+		// If only a single strategy has been selected
+		Report report = null;
+		if(matchingConfigList.size() == 1){
+			String reportName = REPORT_NAME_PREFIX + matchingConfig.getName();
+			report = Context.getService(PatientMatchingReportMetadataService.class).getReportByName(reportName);
+		}
+		OpenMRSReader reader = new OpenMRSReader(globalIncludeColumns, report != null ? report.getCreatedOn() : null);
+		reader.init();
 		while (reader.hasNextRecord()) {
 			recordStore.storeRecord(reader.nextRecord());
 		}
@@ -309,12 +325,14 @@ public class MatchingReportUtils {
 			throw new RuntimeException(e);
 		}
 
-        String reportName = "dedup-report-"+configString+dateString;
+		configString = configString.substring(0, configString.length() - 1);
+		String reportName = REPORT_NAME_PREFIX + configString;
 		DedupMatchResultList handler = (DedupMatchResultList)objects.get("handler");
 
 		handler.flattenPairIdList();
 		List<Set<Long>> matchingPairs = handler.getFlattenedPairIds();
-		persistReportToDB(reportName, matchingPairs, globalIncludeColumns);
+		persistIncrementalReportToDB(reportName, matchingPairs, globalIncludeColumns,
+				(List<MatchingConfig>)objects.get("matchingConfigLists"));
 		return objects;
 	}	
 	//New Method9 End 10
@@ -355,20 +373,20 @@ public class MatchingReportUtils {
      * @param rptName The report name of the new report
      * @param matchingPairs A list of the matching pair sets
      */
-	public static void persistReportToDB(String rptName, List<Set<Long>> matchingPairs, Set<String> includeColumns) throws FileNotFoundException {
+	public static void persistReportToDB(String rptName, List<Set<Long>> matchingPairs, Set<String> includeColumns,
+										 List<MatchingConfig> matchingConfigList) throws FileNotFoundException {
         Report report = new Report();
         report.setCreatedBy(Context.getAuthenticatedUser());
         report.setReportName(rptName);
         report.setCreatedOn(new Date());
-        String selectedStrategies = MatchingRunData.getInstance().getFileStrat();
-        String[] selectedStrategyNamesArray = selectedStrategies.split(",");
         Set<PatientMatchingConfiguration> usedConfigurations = new TreeSet<PatientMatchingConfiguration>();
         PatientMatchingReportMetadataService reportMetadataService = Context.getService(PatientMatchingReportMetadataService.class);
 
-        for(String strategyName : selectedStrategyNamesArray){
-            PatientMatchingConfiguration configuration = reportMetadataService.findPatientMatchingConfigurationByName(strategyName);
-            usedConfigurations.add(configuration);
-        }
+		for(MatchingConfig matchingConfig : matchingConfigList){
+			PatientMatchingConfiguration configuration =
+					reportMetadataService.findPatientMatchingConfigurationByName(matchingConfig.getName());
+			usedConfigurations.add(configuration);
+		}
 
         report.setUsedConfigurationList(usedConfigurations);
         PatientService patientService = Context.getPatientService();
@@ -378,7 +396,7 @@ public class MatchingReportUtils {
             for(Long patientId: matchSet){
                 MatchingRecord matchingRecord = new MatchingRecord();
                 matchingRecord.setGroupId(j);
-                matchingRecord.setState("PENDING");   //TODO move to a constant
+                matchingRecord.setState(PENDING);
                 matchingRecord.setPatient(patientService.getPatient(patientId.intValue()));
                 matchingRecord.setReport(report);
 
@@ -399,18 +417,100 @@ public class MatchingReportUtils {
 
         Set<ReportGenerationStep> reportGenerationSteps = new TreeSet<ReportGenerationStep>();
         List<Long> proTimeList = MatchingRunData.getInstance().getProTimeList();
-        int noOfSteps = Math.min(proTimeList.size(),REPORT_GEN_STAGES.length);
-        for (int j = 0; j < noOfSteps; j++) {
-            ReportGenerationStep step = new ReportGenerationStep();
-            step.setProcessName(REPORT_GEN_STAGES[j]);
-            step.setTimeTaken(proTimeList.get(j).intValue());
-            step.setReport(report);
-            step.setSequenceNo(j);
-            reportGenerationSteps.add(step);
-        }
-        report.setReportGenerationSteps(reportGenerationSteps);
+		if(proTimeList != null){
+			int noOfSteps = Math.min(proTimeList.size(),REPORT_GEN_STAGES.length);
+			for (int j = 0; j < noOfSteps; j++) {
+				ReportGenerationStep step = new ReportGenerationStep();
+				step.setProcessName(REPORT_GEN_STAGES[j]);
+				step.setTimeTaken(proTimeList.get(j).intValue());
+				step.setReport(report);
+				step.setSequenceNo(j);
+				reportGenerationSteps.add(step);
+			}
+			report.setReportGenerationSteps(reportGenerationSteps);
+		}
         reportMetadataService.savePatientMatchingReport(report);
 	 }
+
+	/**
+	 * Method to persist the report to the database in the incremental patient matching process
+	 * @param rptName The report name of the new report
+	 * @param matchingPairs A list of the matching pair sets
+	 */
+	public static void persistIncrementalReportToDB(
+			String rptName, List<Set<Long>> matchingPairs, Set<String> includeColumns,
+			List<MatchingConfig> matchingConfigList) throws FileNotFoundException {
+		PatientMatchingReportMetadataService reportMetadataService = Context.getService(PatientMatchingReportMetadataService.class);
+		Report report = reportMetadataService.getReportByName(rptName);
+		// Incremental process will be carried out considering the existing report
+		if(report != null){
+			report.setCreatedBy(Context.getAuthenticatedUser());
+			report.setCreatedOn(new Date());
+			PatientService patientService = Context.getPatientService();
+			Set<MatchingRecord> matchingRecordSet = report.getMatchingRecordSet();
+			HashMap<Integer,Integer> patientIdGroupIdMap = new HashMap<Integer, Integer>();
+
+			// Get the group ids and patient ids to a Hash Map
+			if(!matchingRecordSet.isEmpty()){
+				for (MatchingRecord record: matchingRecordSet){
+					patientIdGroupIdMap.put(record.getPatient().getPatientId(),record.getGroupId());
+				}
+			}
+			// Available maximum group id for the next placement
+			int availableGroupId = Collections.max(patientIdGroupIdMap.values()) + 1;
+			for (int j = 0; j < matchingPairs.size(); j++) {
+				Set<Long> matchSet = matchingPairs.get(j);
+				int groupId = -1;
+
+				// Finding the group id
+				for (Long patientId: matchSet){
+					if(patientIdGroupIdMap.containsKey(patientId.intValue())){
+						groupId = patientIdGroupIdMap.get(patientId.intValue());
+						break;
+					}
+				}
+				for(Long patientId: matchSet){
+					MatchingRecord matchingRecord = new MatchingRecord();
+
+					matchingRecord.setGroupId(groupId == -1 ? availableGroupId : groupId);
+					matchingRecord.setState(PENDING);
+					matchingRecord.setPatient(patientService.getPatient(patientId.intValue()));
+					matchingRecord.setReport(report);
+
+					Set<MatchingRecordAttribute> matchingRecordAttributeSet = new TreeSet<MatchingRecordAttribute>();
+					Record record = RecordSerializer.deserialize(String.valueOf(patientId));
+					for(String includedColumn:includeColumns){
+						MatchingRecordAttribute matchingRecordAttribute = new MatchingRecordAttribute();
+						matchingRecordAttribute.setFieldName(includedColumn);
+						matchingRecordAttribute.setFieldValue(record.getDemographic(includedColumn));
+						matchingRecordAttribute.setMatchingRecord(matchingRecord);
+						matchingRecordAttributeSet.add(matchingRecordAttribute);
+					}
+					matchingRecord.setMatchingRecordAttributeSet(matchingRecordAttributeSet);
+					report.addMatchingRecord(matchingRecord);
+				}
+				if(groupId == -1) availableGroupId++;
+			}
+
+			report.setMatchingRecordSet(matchingRecordSet);
+			List<Long> proTimeList = MatchingRunData.getInstance().getProTimeList();
+			if(proTimeList != null){
+				int noOfSteps = Math.min(proTimeList.size(),REPORT_GEN_STAGES.length);
+				for (int j = 0; j < noOfSteps; j++) {
+					ReportGenerationStep step = new ReportGenerationStep();
+					step.setProcessName(REPORT_GEN_STAGES[j]);
+					step.setTimeTaken(proTimeList.get(j).intValue());
+					step.setReport(report);
+					step.setSequenceNo(j);
+					report.addReportGenerationStep(step);
+				}
+			}
+			reportMetadataService.savePatientMatchingReport(report);
+
+		}else{
+			persistReportToDB(rptName,matchingPairs,includeColumns,matchingConfigList);
+		}
+	}
 
     public static Set<String> getAllFieldsUsed(Report report){
         Set<String> fieldsUsed = new TreeSet<String>();
