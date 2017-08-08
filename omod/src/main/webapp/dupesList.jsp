@@ -27,8 +27,10 @@ function runReport() {
 				blListStr = blListStr+blockList[i].value+",";
 		}
 		if(blListStr != ""){
-			if(actRightAway=="true")
-				DWRMatchingConfigUtilities.doAnalysis(blListStr);
+			if(actRightAway=="true"){
+			    var checkBoxIncremental = document.getElementById("cbIncrementalMatch");
+                DWRMatchingConfigUtilities.doAnalysis(blListStr, checkBoxIncremental.checked);
+            }
 			else
 				s = setTimeout("updateStatus()", 100);
 		} else alert("Select atleast one Strategy");
@@ -356,6 +358,7 @@ window.onbeforeunload = storeSelStrategy;
 </script>
 
 <h2><spring:message code="patientmatching.report.title" /></h2>
+<input type="checkbox" id="cbIncrementalMatch" name="incrementalMatch" checked="true"/>&nbsp;<c:out value="Incremental Match" />
 
 <br />
 

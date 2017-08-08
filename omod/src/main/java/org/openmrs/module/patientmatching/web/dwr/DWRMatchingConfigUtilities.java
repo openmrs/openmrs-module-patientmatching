@@ -58,6 +58,7 @@ public class DWRMatchingConfigUtilities {
 	private static int currentStep;
 	private static int size = 0;
 	private static String[] selectedStrat;
+	private static boolean isIncrementalMatch;
 
 	/**
 	 * Constructor
@@ -169,6 +170,7 @@ public class DWRMatchingConfigUtilities {
 			switch (nextStep) {
 				case 2:
 					objects = new HashMap<String, Object>();
+					objects.put("isIncremental",isIncrementalMatch);
 					objects = MatchingReportUtils.ReadConfigFile(objects, selectedStrat);
 					break;
 
@@ -219,8 +221,9 @@ public class DWRMatchingConfigUtilities {
 		time = Calendar.getInstance().getTimeInMillis() - time;
 	}
 
-	public void doAnalysis(String selectedStrategies) {
+	public void doAnalysis(String selectedStrategies, boolean isIncremental) {
 		MatchingRunData.getInstance().setFileStrat(selectedStrategies);
+		isIncrementalMatch = isIncremental;
 		if (!MatchingRunData.getInstance().isTimerTaskStarted()) {
 			selectedStrat = selectedStrategies.split(",");
 			MatchingRunData.getInstance().setProTimeList(new ArrayList<Long>());
