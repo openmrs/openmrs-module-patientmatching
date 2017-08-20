@@ -206,12 +206,13 @@ function mergePatients(obj){
 		var patients = document.getElementById(obj.id+"hidden").value.split(',');
 		var querParams = "";
 		for(var i=0;i<patients.length-1;i++){
-			querParams = querParams+"patientId="+patients[i];
+			querParams = querParams+patients[i];
 			if((i+1)<patients.length-1){
 				querParams = querParams+"&";
 			}
 		}
-		window.location="${productionServerUrl}"+"?"+querParams;
+		<%--window.location="${productionServerUrl}"+"?"+querParams;--%>
+        DWRMatchingConfigUtilities.mergePatients(querParams);
 		return true;
 	}else{
 		return false;

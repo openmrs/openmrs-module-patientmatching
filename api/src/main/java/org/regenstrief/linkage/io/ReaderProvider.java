@@ -112,7 +112,7 @@ public class ReaderProvider {
 	private DataSource getDataSource(LinkDataSource lds){
 		try{
 			String driver, url, user, passwd;
-			String[] access = lds.getAccess().split(",");
+			String[] access = lds.getAccess().split(",",-1);
 			driver = access[0];
 			url = access[1];
 			user = access[2];

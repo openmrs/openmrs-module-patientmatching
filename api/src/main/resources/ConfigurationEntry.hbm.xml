@@ -1,0 +1,21 @@
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+	<class name="org.openmrs.module.patientmatching.ConfigurationEntry" table="patientmatching_configurationEntries">
+
+		<id name="entryId" column="entry_id"
+		unsaved-value="0">
+			<generator class="identity" />
+		</id>
+		<discriminator column="entry_id" insert="false" />
+		
+		<many-to-one name="patientMatchingConfiguration" class="org.openmrs.module.patientmatching.PatientMatchingConfiguration" not-null="true">
+			<column name="configuration_id" />
+		</many-to-one>
+		
+		<property name="fieldViewName" column="field_view_name" length="255" unique="true" />
+		<property name="fieldName" column="field_name" not-null="true" />
+		<property name="inclusion" column="inclusion" not-null="false" />
+		<property name="blockOrder" column="block_order" not-null="false" />
+		<property name="flag" column="flag" not-null="false" />
+	</class>
+</hibernate-mapping>
