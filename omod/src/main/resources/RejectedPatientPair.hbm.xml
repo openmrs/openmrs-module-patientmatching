@@ -1,0 +1,11 @@
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="org.openmrs.module.patientmatching.RejectedPatientPair" table="patientmatching_rejected_patient_pair">
+
+        <composite-id>
+            <key-many-to-one name="patient1" column="patient1" class="org.openmrs.Patient"/>
+            <key-many-to-one name="patient2" column="patient2" class="org.openmrs.Patient"/>
+        </composite-id>
+
+    </class>
+</hibernate-mapping>

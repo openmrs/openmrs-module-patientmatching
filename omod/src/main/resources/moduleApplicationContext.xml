@@ -127,4 +127,10 @@
 			</list>
 		</property>
 	</bean>
+
+	<bean class="org.openmrs.module.patientmatching.db.hibernate.HibernateRejectedPatientPairDAO">
+		<property name="sessionFactory">
+			<ref bean="sessionFactory" />
+		</property>
+	</bean>
 </beans>

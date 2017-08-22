@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashSet;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -33,7 +34,10 @@ import org.openmrs.module.patientmatching.MatchingReportUtils;
 import org.openmrs.module.patientmatching.MatchingRunData;
 import org.openmrs.module.patientmatching.PatientMatchingConfiguration;
 import org.openmrs.module.patientmatching.PatientMatchingReportMetadataService;
+import org.openmrs.module.patientmatching.RejectedPatientPair;
 import org.openmrs.module.patientmatching.Report;
+import org.openmrs.module.patientmatching.db.hibernate.HibernateRejectedPatientPairDAO;
+import org.openmrs.serialization.SerializationException;
 import org.regenstrief.linkage.util.MatchingConfig;
 
 import uk.ltd.getahead.dwr.WebContext;
@@ -58,6 +62,7 @@ public class DWRMatchingConfigUtilities {
 	private static int currentStep;
 	private static int size = 0;
 	private static String[] selectedStrat;
+	private static boolean isIncrementalMatch;
 
 	/**
 	 * Constructor
@@ -169,6 +174,7 @@ public class DWRMatchingConfigUtilities {
 			switch (nextStep) {
 				case 2:
 					objects = new HashMap<String, Object>();
+					objects.put("isIncremental",isIncrementalMatch);
 					objects = MatchingReportUtils.ReadConfigFile(objects, selectedStrat);
 					break;
 
@@ -219,8 +225,9 @@ public class DWRMatchingConfigUtilities {
 		time = Calendar.getInstance().getTimeInMillis() - time;
 	}
 
-	public void doAnalysis(String selectedStrategies) {
+	public void doAnalysis(String selectedStrategies, boolean isIncremental) {
 		MatchingRunData.getInstance().setFileStrat(selectedStrategies);
+		isIncrementalMatch = isIncremental;
 		if (!MatchingRunData.getInstance().isTimerTaskStarted()) {
 			selectedStrat = selectedStrategies.split(",");
 			MatchingRunData.getInstance().setProTimeList(new ArrayList<Long>());
@@ -422,5 +429,60 @@ public class DWRMatchingConfigUtilities {
 
         currentContent = reader.fetchContent(currentPage);
         return currentContent;
+	}
+
+	/**
+	 *  Merge patients
+	 *
+	 * @param listPatientIDs list of patient ids separated by & character
+	 * @return true if merge successful or false otherwise
+	 */
+	public static boolean mergePatients(String listPatientIDs) {
+		String [] strPatientIDs = listPatientIDs.split("&");
+		// There should be at least two patients
+		if (strPatientIDs.length <= 1) {
+			return false;
+		}
+
+		try {
+			List<Patient> patients = new ArrayList<Patient>();
+			for (String id : strPatientIDs) {
+				Patient p = Context.getPatientService().getPatient(Integer.valueOf(id));
+			    patients.add(p);
+			}
+		    // merge patients
+			Context.getPatientService().mergePatients(patients.remove(0), patients);
+			return true;
+
+		} catch (SerializationException e) {
+			return false;
+		}
+	}
+
+	/**
+	 * Mark the patient records as non matching records
+	 *
+	 * @param listPatientIDs non-matching patient records
+	 */
+	public void excludePatients(String listPatientIDs) {
+		String [] strPatientIDs = listPatientIDs.split("&");
+		Set<RejectedPatientPair> setPairs = new HashSet<RejectedPatientPair>();
+		for (String id1 : strPatientIDs) {
+			Patient p1 = Context.getPatientService().getPatient(Integer.valueOf(id1));
+
+			for (String id2 : strPatientIDs) {
+
+				// Skip creating pair with the same patient
+				if (id1.equals(id2)) {
+					continue;
+				}
+
+				Patient p2 = Context.getPatientService().getPatient(Integer.valueOf(id2));
+				setPairs.add(new RejectedPatientPair(p1, p2));
+			}
+		}
+
+		new HibernateRejectedPatientPairDAO().saveRejectedPatientPairList(new ArrayList<RejectedPatientPair>(setPairs));
+
 	}
 }

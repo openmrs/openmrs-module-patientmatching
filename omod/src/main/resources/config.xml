@@ -174,7 +174,10 @@
 				<include method="getStartPage" />
 				<include method="getEndPage" />
 				<include method="selStrategy" />
-				<include method="getPatient" />				
+				<include method="getPatient" />
+				<include method="mergePatients" />
+				<include method="excludePatients" />
+
 			</create>
 			<create creator="new" javascript="DWREstimationUtilities">
 				<param name="class" value="@MODULE_PACKAGE@.web.dwr.DWREstimationUtilities"></param>
@@ -207,6 +210,8 @@
                 DWRMatchingConfigUtilities.getEndPage()
                 DWRMatchingConfigUtilities.selStrategy(String)
                 DWRMatchingConfigUtilities.getPatient(String)
+                DWRMatchingConfigUtilities.mergePatients(String)
+                DWRMatchingConfigUtilities.excludePatients(String)
                 DWREstimationUtilities.getEstimationInfomation(array)
                 DWREstimationUtilities.getEstimatedPairs()
                 DWREstimationUtilities.getEstimatedTimeToRun()

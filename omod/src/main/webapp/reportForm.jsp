@@ -106,6 +106,10 @@
     				td.innerHTML = "<input type=\"button\" id=\""+row[2]+"\" value=\"Merge GroupId "+row[2]+"\" id=\""+row[2]+"Group\" onclick=\"return mergePatients(this)\" name=\"sub\" disabled/>";
     				tr.appendChild(td);
     				mergeButton = false;
+
+                var tdExclude = document.createElement("tdExclude");
+                tdExclude.innerHTML = "<input type=\"button\" id=\""+row[2]+"exm\" value=\"Exclude Match\" onclick=\"return excludePatients(this)\" name=\"match\" disabled/>";
+				tr.appendChild(tdExclude);
     		}
 			main.appendChild(tr);
         }
@@ -148,6 +152,8 @@ function val(obj){
 	var index = obj.id.indexOf('#');
 	var groupId = obj.id.substring(0,index);
 	var hidField = document.getElementById(groupId+"hidden");
+	var groupIdExcludeMatch = groupId+"exm";
+
 	if(obj.checked){
 		if(hidField==null){
 			var element1 = document.createElement("input");
@@ -170,7 +176,8 @@ function val(obj){
 			var size = hidField.value.split(",");
 			if(size.length >2){
 				document.getElementById(groupId).disabled = false;
-			}
+                document.getElementById(groupIdExcludeMatch).disabled = false;
+            }
 		}
 
 	}else{
@@ -186,7 +193,9 @@ function val(obj){
 		hidField.value = value;
 		if(value.indexOf(',')==-1){
 			document.getElementById(groupId).disabled = true;
-			block.removeChild(hidField);
+            document.getElementById(groupIdExcludeMatch).disabled = true;
+
+            block.removeChild(hidField);
 			var patientId = document.getElementsByName("patientId");
 			for(var i=0;i<patientId.length;i++){
 					patientId[i].disabled = false;
@@ -194,8 +203,8 @@ function val(obj){
 		}
 		if(count==1){
 			document.getElementById(groupId).disabled = true;
-		}
-		
+            document.getElementById(groupIdExcludeMatch).disabled = true;
+        }
 	}
 }
 
@@ -206,12 +215,13 @@ function mergePatients(obj){
 		var patients = document.getElementById(obj.id+"hidden").value.split(',');
 		var querParams = "";
 		for(var i=0;i<patients.length-1;i++){
-			querParams = querParams+"patientId="+patients[i];
+			querParams = querParams+patients[i];
 			if((i+1)<patients.length-1){
 				querParams = querParams+"&";
 			}
 		}
-		window.location="${productionServerUrl}"+"?"+querParams;
+		<%--window.location="${productionServerUrl}"+"?"+querParams;--%>
+        DWRMatchingConfigUtilities.mergePatients(querParams);
 		return true;
 	}else{
 		return false;
@@ -275,6 +285,25 @@ function patientInfo(obj){
 		patientId = obj.id;
 	}
 	DWRMatchingConfigUtilities.getPatient(patientId,displayPatient);
+}
+
+function excludePatients(obj) {
+    var check = confirm("Warning! This cannot be undone. Are you sure you want to exclude these patients?");
+
+    if(check){
+	    var patients = document.getElementById(obj.id.substring(0, obj.id.length - 3)+"hidden").value.split(',');
+		var params = "";
+		for(var i=0;i<patients.length-1;i++){
+            params = params+patients[i];
+			if((i+1)<patients.length-1){
+                params = params+"&";
+			}
+		}
+		DWRMatchingConfigUtilities.excludePatients(params);
+		return true;
+	}else{
+		return false;
+	}
 }
 
 $(document).ready(function() {
@@ -434,7 +463,8 @@ $(document).ready(function() {
                         <td>
                             <input type="hidden" value="${productionServerUrl}" id="hidden"/>
                  			<input type="button" id="${reportResult[2]}" value="Merge GroupId ${reportResult[2]}" id="${reportResult[2]}Group" onclick="return mergePatients(this)" name="sub" disabled/>
-                 		</td>
+							<input type="button" id="${reportResult[2]}exm" value="Exclude Match" onclick="return excludePatients(this)" name="match" disabled/>
+						</td>
                         <c:set var="mergeButton" value="false" scope="page" />
                     </c:if>
                   </tr>
