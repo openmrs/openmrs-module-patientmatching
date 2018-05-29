@@ -1,5 +1,7 @@
 package org.openmrs.module.patientmatching.db;
 import java.util.List;
+
+import org.openmrs.Cohort;
 import org.openmrs.module.patientmatching.PatientMatchingConfiguration;
 import org.openmrs.module.patientmatching.Report;
 
@@ -77,5 +79,7 @@ public interface PatientMatchingReportMetadataDao {
      * @param report the report file to be deleted
      */
     public void deleteReport(Report report);
+	
+	public Cohort getAllPatients();
 }
 

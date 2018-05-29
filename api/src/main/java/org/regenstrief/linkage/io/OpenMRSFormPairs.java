@@ -64,18 +64,18 @@ public class OpenMRSFormPairs extends FormPairs{
 			String[] table_field = demographic.split("\\.");
 			if(table_field != null && table_field.length == 2){
 				Query q = sessionFactory.getCurrentSession().createQuery("select distinct t." + table_field[1] + " from " + table_field[0] + " t");
-				ret = (List<String>)q.list();
+				ret = q.list();
 			}
 		} else {
 			// get the various attribute values from the person attribute table
-			PersonAttributeType pat = Context.getPersonService().getPersonAttributeType(demographic);
+			PersonAttributeType pat = Context.getPersonService().getPersonAttributeTypeByName(demographic);
 			if(pat != null){
 				// HQL query to get all values
 				// something like 
 				// select distinct value from person_attribute where person_attribute_type_id = <id>
 				Query q = sessionFactory.getCurrentSession().createQuery("select distinct p.value from person_attribute p where p.person_attribute_type_id = :attr_id ");
 				q.setInteger("attr_id", pat.getPersonAttributeTypeId());
-				ret = (List<String>)q.list();
+				ret = q.list();
 			}
 		}
 		return ret;
@@ -98,15 +98,15 @@ public class OpenMRSFormPairs extends FormPairs{
 			if(table_field != null && table_field.length == 2){
 				Query q = sessionFactory.getCurrentSession().createQuery("select distinct person_id from " + table_field[0] + " where " + table_field[1] + " = :value");
 				q.setString("value", value);
-				ret = (List<Integer>)q.list();
+				ret = q.list();
 			}
 		} else {
 			// get the various attribute values from the person attribute table
-			PersonAttributeType pat = Context.getPersonService().getPersonAttributeType(demographic);
+			PersonAttributeType pat = Context.getPersonService().getPersonAttributeTypeByName(demographic);
 			Query q = sessionFactory.getCurrentSession().createQuery("select distinct p.person_id from person_attribute p where p.person_attribute_type_id = :attr_id and p.attribute = :value");
 			q.setString("value", value);
 			q.setInteger("attr_id", pat.getPersonAttributeTypeId());
-			ret = (List<Integer>)q.list();
+			ret = q.list();
 		}
 		return ret;
 	}
@@ -145,6 +145,7 @@ public class OpenMRSFormPairs extends FormPairs{
 		
 	}
 	
+	@Override
 	public Record[] getNextRecordPair(){
 		if(pair_iterator.hasNext()){
 			Integer[] to_return = pair_iterator.next();

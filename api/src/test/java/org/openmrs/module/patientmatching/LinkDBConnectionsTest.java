@@ -3,6 +3,7 @@ package org.openmrs.module.patientmatching;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openmrs.Location;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.api.context.Context;
@@ -26,6 +27,7 @@ public class LinkDBConnectionsTest extends BaseModuleContextSensitiveTest {
 		PatientIdentifier pi = new PatientIdentifier();
 		pi.setIdentifierType(Context.getPatientService().getPatientIdentifierType(2));
 		pi.setIdentifier("555");
+		pi.setLocation(new Location(1));
 		p.addIdentifier(pi);
 		Context.getPatientService().savePatient(p);
 		

@@ -30,9 +30,6 @@ public class ScheduledReportGeneration extends AbstractTask {
 	public void execute() {
 
 		Context.openSession();
-		if (!Context.isAuthenticated()) {
-			authenticate();
-		}
 
 		MatchingRunData.getInstance().setTimerTaskStarted(true);
 		doAnalysis(taskDefinition.getProperty("blockList"));

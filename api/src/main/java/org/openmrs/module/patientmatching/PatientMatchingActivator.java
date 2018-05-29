@@ -10,14 +10,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Patient;
 import org.openmrs.api.PatientService;
-import org.openmrs.api.PatientSetService;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.Activator;
 import org.openmrs.module.ModuleActivator;
 import org.openmrs.module.patientmatching.advice.PatientMatchingAdvice;
 import org.openmrs.scheduler.SchedulerException;
 import org.openmrs.scheduler.TaskDefinition;
-import org.openmrs.util.OpenmrsConstants;
 import org.regenstrief.linkage.db.RecordDBManager;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.support.StaticMethodMatcherPointcutAdvisor;
@@ -75,6 +72,22 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	
 	public static final int DEFAULT_RECORD_MATCHING_ID = 0;
 	
+	private static final String PRIV_VIEW_PATIENTS = "View Patients";
+	
+	private static final String PRIV_GET_PATIENTS = "Get Patients";
+	
+	private static final String PRIV_VIEW_PATIENT_COHORTS = "View Patient Cohorts";
+	
+	private static final String PRIV_GET_PATIENT_COHORTS = "Get Patient Cohorts";
+	
+	private static final String PRIV_VIEW_IDENTIFIER_TYPES = "View Identifier Types";
+	
+	private static final String PRIV_GET_IDENTIFIER_TYPES = "Get Identifier Types";
+	
+	private static final String PRIV_VIEW_PERSON_ATTRIBUTE_TYPES = "View Person Attribute Types";
+	
+	private static final String PRIV_GET_PERSON_ATTRIBUTE_TYPES = "Get Person Attribute Types";
+	
 	protected static final Log logger = LogFactory.getLog(PatientMatchingActivator.class);
 	private Log log = LogFactory.getLog(this.getClass());
 	public static final String FILE_LOG = "patient_matching_file_log";
@@ -99,9 +112,9 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		
 		// iterate through them, and if linkage tables does not contain 
 		// a record with openmrs_id equal to patient.getID, then add
-		PatientSetService pss = Context.getPatientSetService();
+		PatientMatchingReportMetadataService pms = Context.getService(PatientMatchingReportMetadataService.class);
 		PatientService patientService = Context.getPatientService();
-		Set<Integer> patient_list = pss.getAllPatients().getMemberIds();
+		Set<Integer> patient_list = pms.getAllPatients().getMemberIds();
 		Iterator<Integer> it = patient_list.iterator();
 		while(it.hasNext()){
 			Patient p = patientService.getPatient(it.next());
@@ -120,6 +133,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		
 	}
 	
+	@Override
 	@SuppressWarnings("unchecked")
     public boolean matches(Method method, Class targetClass) {
 		String method_name = method.getName();
@@ -145,25 +159,33 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 		return new PatientMatchingAdvice();
 	}
 
-    public void willRefreshContext() {
+    @Override
+	public void willRefreshContext() {
     }
 
-    public void contextRefreshed() {
+    @Override
+	public void contextRefreshed() {
     }
 
     /**
      * At startup, module parses the configuration file and makes sure the
      * record linkage table is populated with the existing patients in OpenMRS.
      */
-    public void willStart() {
+    @Override
+	public void willStart() {
         log.info("Starting Patient Matching Module");
 
         try{
             // get privileges
-            Context.addProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PATIENTS);
-            Context.addProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PATIENT_COHORTS);
-            Context.addProxyPrivilege(OpenmrsConstants.PRIV_VIEW_IDENTIFIER_TYPES);
-            Context.addProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PERSON_ATTRIBUTE_TYPES);
+			Context.addProxyPrivilege(PRIV_VIEW_PATIENTS);
+			Context.addProxyPrivilege(PRIV_VIEW_PATIENT_COHORTS);
+			Context.addProxyPrivilege(PRIV_VIEW_IDENTIFIER_TYPES);
+			Context.addProxyPrivilege(PRIV_VIEW_PERSON_ATTRIBUTE_TYPES);
+			
+			Context.addProxyPrivilege(PRIV_GET_PATIENTS);
+			Context.addProxyPrivilege(PRIV_GET_PATIENT_COHORTS);
+			Context.addProxyPrivilege(PRIV_GET_IDENTIFIER_TYPES);
+			Context.addProxyPrivilege(PRIV_GET_PERSON_ATTRIBUTE_TYPES);
 
             log.info("Starting to populate matching table");
             if(LinkDBConnections.getInstance().getRecDBManager() != null){
@@ -174,21 +196,28 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
             }
         }
         finally{
-            Context.removeProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PATIENTS);
-            Context.removeProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PATIENT_COHORTS);
-            Context.removeProxyPrivilege(OpenmrsConstants.PRIV_VIEW_IDENTIFIER_TYPES);
-            Context.removeProxyPrivilege(OpenmrsConstants.PRIV_VIEW_PERSON_ATTRIBUTE_TYPES);
+			Context.removeProxyPrivilege(PRIV_VIEW_PATIENTS);
+			Context.removeProxyPrivilege(PRIV_VIEW_PATIENT_COHORTS);
+			Context.removeProxyPrivilege(PRIV_VIEW_IDENTIFIER_TYPES);
+			Context.removeProxyPrivilege(PRIV_VIEW_PERSON_ATTRIBUTE_TYPES);
+			
+			Context.removeProxyPrivilege(PRIV_GET_PATIENTS);
+			Context.removeProxyPrivilege(PRIV_GET_PATIENT_COHORTS);
+			Context.removeProxyPrivilege(PRIV_GET_IDENTIFIER_TYPES);
+			Context.removeProxyPrivilege(PRIV_GET_PERSON_ATTRIBUTE_TYPES);
         }
     }
 
-    public void started() {
+    @Override
+	public void started() {
         ReportMigrationUtils.migrateFlatFilesToDB();
     }
 
     /**
      * Method calls the disconnect method in the LinkDBManager object.
      */
-    public void willStop() {
+    @Override
+	public void willStop() {
         log.info("Shutting down Patient Matching Module");
 
         Collection<TaskDefinition> rTasks = Context.getSchedulerService().getRegisteredTasks();
@@ -208,6 +237,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
         link_db.disconnect();
     }
 
-    public void stopped() {
+    @Override
+	public void stopped() {
     }
 }

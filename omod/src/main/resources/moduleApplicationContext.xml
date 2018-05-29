@@ -124,24 +124,6 @@
 							class="org.springframework.transaction.annotation.AnnotationTransactionAttributeSource" />
 					</property>
 				</bean>
-				<bean id="transactionManager"
-					class="org.springframework.orm.hibernate3.HibernateTransactionManager">
-					<property name="sessionFactory">
-						<ref local="sessionFactory" />
-					</property>
-				</bean>
-				<bean id="sessionFactory"
-					class="org.openmrs.api.db.hibernate.HibernateSessionFactoryBean">
-					<property name="configLocations">
-						<list>
-							<value>classpath:hibernate.cfg.xml</value>
-						</list>
-					</property>
-					<property name="mappingJarLocations">
-						<ref bean="mappingJarResources" />
-					</property>
-					<!-- default properties must be set in the hibernate.default.properties -->
-				</bean>
 			</list>
 		</property>
 	</bean>

@@ -827,42 +827,84 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		}
 		
 	}
-	
+		
 	public void actionPerformed(ActionEvent ae){
 		if(ae.getSource() instanceof JRadioButton){
 			JRadioButton source = (JRadioButton)ae.getSource();
 			if(source.getText().equals("Closed form")){
 				randomSampleTextField.setEnabled(false);
 				randomSampleSizeLabel.setEnabled(false);
-				if(current_working_config != null) {
-                    current_working_config.setUsingRandomSampling(false);
-                }
+				
+				//
+				List<MatchingConfig> matchingConfigs = rm_conf.getMatchingConfigs();
+				
+				for (MatchingConfig matchingConfig : matchingConfigs) {
+					if(matchingConfig != null){
+						matchingConfig.setUsingRandomSampling(false);
+					}
+				}
+				//
+				
+				
 			} else if(source.getText().equals("EM")){
 				randomSampleTextField.setEnabled(false);
 				randomSampleSizeLabel.setEnabled(false);
-				if(current_working_config != null) {
-                    current_working_config.setUsingRandomSampling(false);
-                }
+				
+				//
+				List<MatchingConfig> matchingConfigs = rm_conf.getMatchingConfigs();
+				
+				for (MatchingConfig matchingConfig : matchingConfigs) {
+					if(matchingConfig != null){
+						matchingConfig.setUsingRandomSampling(false);
+					}
+				}
+				//
+				
+				
 			} else if(source.getText().equals("Random Sample")){
 				randomSampleTextField.setEnabled(true);
 				randomSampleSizeLabel.setEnabled(true);
                 randomSampleTextField.setEnabled(true);
                 randomSampleTextField.requestFocus();
-                if(current_working_config != null) {
-                    current_working_config.setUsingRandomSampling(true);
-                    int sampleSize = Integer.parseInt(randomSampleTextField.getText());
-                    current_working_config.setRandomSampleSize(sampleSize);
-                }
-			} else if(source.getText().equals("Calculate u-values along with m-values in EM")){
-				if(current_working_config != null){
-					current_working_config.setLockedUValues(false);
+                
+                
+				//
+				List<MatchingConfig> matchingConfigs = rm_conf.getMatchingConfigs();
+				
+				for (MatchingConfig matchingConfig : matchingConfigs) {
+					if(matchingConfig != null){
+						
+						matchingConfig.setUsingRandomSampling(true);
+	                    int sampleSize = Integer.parseInt(randomSampleTextField.getText());
+	                    matchingConfig.setRandomSampleSize(sampleSize);
+					}
 				}
+				//
+				
+
+			} else if(source.getText().equals("Calculate u-values along with m-values in EM")){
+				List<MatchingConfig> matchingConfigs = rm_conf.getMatchingConfigs();
+				System.out.println(matchingConfigs.size());
+				for (MatchingConfig matchingConfig : matchingConfigs) {
+					if(matchingConfig != null){
+						matchingConfig.setLockedUValues(false);
+						System.out.println("name iss " + matchingConfig.getName());
+						session_options.repaint();
+					}
+				}
+				
 			} else if(source.getText().equals("Lock existing u-values in EM calculation")){
-				if(current_working_config != null){
-					current_working_config.setLockedUValues(true);
+				List<MatchingConfig> matchingConfigs = rm_conf.getMatchingConfigs();
+				
+				for (MatchingConfig matchingConfig : matchingConfigs) {
+					if(matchingConfig != null){
+						matchingConfig.setLockedUValues(true);
+						session_options.repaint();
+					}
 				}
 			}
 		}
+		
 		if(ae.getSource() instanceof JButton){
 			JButton source = (JButton)ae.getSource();
 			System.out.println("Source: " + source.getText());
@@ -925,10 +967,15 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	}
 	
 	private void runLinkageProcess(){
-		if(!MatchingConfigValidator.validMatchingConfig(current_working_config)){
-			invalidBlockingSchemeNotification();
-			return;
+		List<MatchingConfig> matchingConfigs = rm_conf.getMatchingConfigs();
+		
+		for (MatchingConfig matchingConfig : matchingConfigs) {
+			if(!MatchingConfigValidator.validMatchingConfig(matchingConfig)){
+				invalidBlockingSchemeNotification();
+				return;
+			}
 		}
+		
 		JFileChooser out_chooser = new JFileChooser();
 		int ret = out_chooser.showDialog(this, "Choose output file");
 		File out = null;
@@ -977,8 +1024,14 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			return;
 		}
 		
-        MatchingConfig mc = current_working_config;
-        // if the user not choose to use random sampling, then do nothing
+		List<MatchingConfig> matchingConfigs = rm_conf.getMatchingConfigs();
+		for (MatchingConfig mc : matchingConfigs) {
+			
+			if(!MatchingConfigValidator.validMatchingConfig(mc)){
+				invalidBlockingSchemeNotification();
+				return;
+			}	
+		// if the user not choose to use random sampling, then do nothing
         // if the u-values is already locked then do nothing as well
         if(mc.isUsingRandomSampling()) {
         	
@@ -1013,23 +1066,21 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
             
         }
         session_options.repaint();
+		}
     }
 	
 	private void calculateClosedUValues(){
-		if(!MatchingConfigValidator.validMatchingConfig(current_working_config)){
-			invalidBlockingSchemeNotification();
-			return;
-		}
 		
-		if(!MatchingConfigValidator.validMatchingConfig(current_working_config)){
+		List<MatchingConfig> matchingConfigs = rm_conf.getMatchingConfigs();
+		for (MatchingConfig mc : matchingConfigs) {
+			
+		if(!MatchingConfigValidator.validMatchingConfig(mc)){
 			invalidBlockingSchemeNotification();
 			return;
 		}
 		
 		ReaderProvider rp = ReaderProvider.getInstance();
 		
-		
-		MatchingConfig mc = current_working_config;
 		if(rm_conf.isDeduplication()){
 			DataSourceReader dsr = rp.getReader(rm_conf.getLinkDataSource1());
 			DataSourceAnalysis dsa = new DataSourceAnalysis(dsr);
@@ -1058,6 +1109,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 				pdsa.addAnalyzer(cfa);
 				pdsa.analyzeData();
 			}
+		}
 		}
 		
 	}
@@ -1104,11 +1156,14 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	}
 	
 	private void runEMAnalysis(){
-		if(!MatchingConfigValidator.validMatchingConfig(current_working_config)){
+		
+		List<MatchingConfig> matchingConfigs = rm_conf.getMatchingConfigs();
+		for (MatchingConfig mc : matchingConfigs) {
+			
+		if(!MatchingConfigValidator.validMatchingConfig(mc)){
 			invalidBlockingSchemeNotification();
 			return;
 		}
-		MatchingConfig mc = current_working_config;
 		
 		FormPairs fp2 = getFormPairs();
 		//BlockSizeFormPairs bsfp = new BlockSizeFormPairs(mc, fp2);
@@ -1128,6 +1183,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		
 		session_options.repaint();
 		thresholdTextField.setText(Double.toString(mc.getScoreThreshold()));
+		}
 		
 	}
 	

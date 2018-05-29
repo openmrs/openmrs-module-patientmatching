@@ -1,19 +1,5 @@
 package org.openmrs.module.patientmatching;
 
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.hibernate.cfg.Configuration;
-import org.openmrs.Patient;
-import org.openmrs.api.context.Context;
-import org.openmrs.api.db.hibernate.HibernateSessionFactoryBean;
-import org.openmrs.util.OpenmrsUtil;
-import org.regenstrief.linkage.util.MatchingConfig;
-import org.regenstrief.linkage.util.MatchingConfigRow;
-import org.regenstrief.linkage.util.RecMatchConfig;
-import org.regenstrief.linkage.util.XMLTranslator;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -30,6 +16,18 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+
+import org.apache.commons.dbcp.ConnectionFactory;
+import org.apache.commons.dbcp.DriverManagerConnectionFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openmrs.Patient;
+import org.openmrs.api.context.Context;
+import org.openmrs.util.OpenmrsUtil;
+import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.MatchingConfigRow;
+import org.regenstrief.linkage.util.RecMatchConfig;
+import org.regenstrief.linkage.util.XMLTranslator;
 
 /**
  * Utility class that contains methods to migrate the old report files and configurations to the database
@@ -141,14 +139,12 @@ public class ReportMigrationUtils {
     private static void assignOldReportMetadata(Report report){
         String reportName = report.getReportName();
 
-        HibernateSessionFactoryBean bean = new HibernateSessionFactoryBean();
-        Configuration cfg = bean.newConfiguration();
-        Properties c = cfg.getProperties();
+		Properties c = Context.getRuntimeProperties();
 
-        String url = c.getProperty("hibernate.connection.url");
-        String user = c.getProperty("hibernate.connection.username");
-        String passwd = c.getProperty("hibernate.connection.password");
-        String driver = c.getProperty("hibernate.connection.driver_class");
+		String url = c.getProperty("connection.url");
+		String user = c.getProperty("connection.username");
+		String passwd = c.getProperty("connection.password");
+		String driver = c.getProperty("connection.driver_class");
         Connection databaseConnection;
         try {
             Class.forName(driver);
@@ -272,7 +268,7 @@ public class ReportMigrationUtils {
      */
     public static PatientMatchingConfiguration matchingConfToPMConfiguration(MatchingConfig conf){
         PatientMatchingConfiguration configuration = new PatientMatchingConfiguration();
-        List<MatchingConfig> matchingConfigLists = new ArrayList<MatchingConfig>();
+        new ArrayList<MatchingConfig>();
         configuration.setConfigurationName(conf.getName());
         Set<ConfigurationEntry> configurationEntries = new TreeSet<ConfigurationEntry>();
         for (MatchingConfigRow row : conf.getMatchingConfigRows()) {
