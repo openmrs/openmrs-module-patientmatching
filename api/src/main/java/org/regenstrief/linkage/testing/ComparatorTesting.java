@@ -242,14 +242,12 @@ public class ComparatorTesting {
 	}
 	
 	public static float LCSMatch(String str1, String str2){
-		LongestCommonSubString lcss = new LongestCommonSubString();
-		float thresh = lcss.getSimilarity(str1, str2);
+		float thresh = LongestCommonSubString.getSimilarity(str1, str2);
 		return thresh;
 	}
 	
 	public static float LCS2Match(String str1, String str2){
-		LongestCommonSubString lcss = new LongestCommonSubString();
-		float thresh = lcss.getSimilarity2(str1, str2);
+		float thresh = LongestCommonSubString.getSimilarity2(str1, str2);
 		return thresh;
 	}
 	

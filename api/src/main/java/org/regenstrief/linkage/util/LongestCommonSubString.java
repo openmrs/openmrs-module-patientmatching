@@ -18,13 +18,12 @@ public class LongestCommonSubString {
 		String str2 = args[0];
 		String str1 = args[1];
 		
-		LongestCommonSubString lcss = new LongestCommonSubString();
 		float s = 0;
 		
 		//int iterations = 1000000;
 		//System.out.println("starting " + iterations + " iterations at " + new java.util.Date());
 		//for(int i = 0; i < iterations; i++){
-			s = lcss.getSimilarity(str1, str2);
+			s = getSimilarity(str1, str2);
 		//}
 		//System.out.println("finished at " + new java.util.Date());
 		
@@ -32,7 +31,7 @@ public class LongestCommonSubString {
 		
 	}
 	
-	public LongestCommonSubString(){
+	private LongestCommonSubString(){
 		// instantiate nothing
 	}
 	
@@ -44,7 +43,7 @@ public class LongestCommonSubString {
 	 * Algorithm from:
 	 * http://www.ics.uci.edu/~eppstein/161/960229.html
 	 */
-	float getLongestCommonSubSequence(String str1, String str2){
+	static float getLongestCommonSubSequence(String str1, String str2){
 		char[] ch1 = str1.toCharArray();
 		char[] ch2 = str2.toCharArray();
 		int m = str1.length();
@@ -83,7 +82,7 @@ public class LongestCommonSubString {
 	 * Implements algorithm by Lonnie Blevins.
 	 * 
 	 */
-	public float getSimilarity(String str1, String str2){
+	public static float getSimilarity(String str1, String str2){
 		String min, max;
 		
 		// set strings to lowercase for comparison purposes
@@ -111,7 +110,7 @@ public class LongestCommonSubString {
 		}
 	}
 	
-	public float getSimilarity2(String str1, String str2){
+	public static float getSimilarity2(String str1, String str2){
 		String min, max;
 		
 		// set strings to lowercase for comparison purposes
@@ -143,7 +142,7 @@ public class LongestCommonSubString {
 	 * An iterative version of the below method, written in an attempt to make
 	 * it run faster.  It did not seem to improve when tested.
 	 */
-	private int getLCS2(String pattern, String str, int limit){
+	private static int getLCS2(String pattern, String str, int limit){
 		boolean finished = true;
 		int total = 0;
 		int loops = 0;
@@ -181,7 +180,7 @@ public class LongestCommonSubString {
 	 * Recursive algorithm to find and remove the earliest, longest matching
 	 * substring.
 	 */
-	private int getLCS(String pattern, String str, int limit){
+	private static int getLCS(String pattern, String str, int limit){
 		for(int start = 0; start < pattern.length(); start++){
 			for(int end = pattern.length(); end > start; end--){
 				String s = pattern.substring(start, end);

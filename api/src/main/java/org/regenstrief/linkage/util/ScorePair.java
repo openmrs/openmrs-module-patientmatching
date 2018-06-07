@@ -10,9 +10,11 @@ package org.regenstrief.linkage.util;
  * - A flag indicating how to establish agreement among fields when one or both fields are null (eg, apply disagreement weight, apply agreement weight, or apply ze
  */
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 
@@ -83,13 +85,11 @@ public class ScorePair {
 				while (!match && iter.hasNext()) {
 					// TODO use something other than String[] or guarantee size == 2
 					String[] candidate = iter.next();
-					match = match(mcr.getAlgorithm(), candidate[0], candidate[1]);
+					match = match(mv, comparison_demographic, mcr.getAlgorithm(), candidate[0], candidate[1]);
 				}
 			} else {
-				match = match(mcr.getAlgorithm(), data1, data2);
+				match(mv, comparison_demographic, mcr.getAlgorithm(), data1, data2);
 			}
-
-			mv.setMatch(comparison_demographic, match);
 		}
 
 		mv = enableInterchageableFieldComparsion(rec1, rec2, mv);
@@ -135,27 +135,42 @@ public class ScorePair {
 		return res;
 	}
 
-	private boolean match(int algorithm, String data1, String data2) {
+	private boolean match(MatchVector mv, String comparison_demographic, int algorithm, String data1, String data2) {
 		if (data1 == null || data2 == null) {
+			mv.setMatch(comparison_demographic, 0, false);
 			return false;
 		}
 
+		final float similarity;
+		final boolean match;
 		switch (algorithm) {
 
 			case (MatchingConfig.EXACT_MATCH):
-				return StringMatch.exactMatch(data1, data2);
+				match = StringMatch.exactMatch(data1, data2);
+				similarity = match ? 1 : 0;
+				break;
 
 			case (MatchingConfig.JWC):
-				return StringMatch.JWCMatch(data1, data2);
+				similarity = StringMatch.getJWCMatchSimilarity(data1, data2);
+				match = similarity > StringMatch.JWC_THRESH;
+				break;
 
 			case (MatchingConfig.LCS):
-				return StringMatch.LCSMatch(data1, data2);
+				similarity = StringMatch.getLCSMatchSimilarity(data1, data2);
+				match = similarity > StringMatch.LCS_THRESH;
+				break;
 
 			case (MatchingConfig.LEV):
-				return StringMatch.LEVMatch(data1, data2);
-		}
+				similarity = StringMatch.getLEVMatchSimilarity(data1, data2);
+				match = similarity > StringMatch.LEV_THRESH;
+				break;
 
-		return false;
+			default:
+				throw new IllegalArgumentException("Unexpected algorithm: " + algorithm);
+		}
+		
+		mv.setMatch(comparison_demographic, similarity, match);
+		return match;
 	}
 
 	/**
@@ -172,11 +187,11 @@ public class ScorePair {
 			String rec1ConcatValue = rec1.getDemographic(comparision_demographic);
 			String rec2ConcatValue = rec2.getDemographic(comparision_demographic);
 			if (StringUtils.isNotEmpty(rec1ConcatValue) || StringUtils.isNotEmpty(rec2ConcatValue)) {
-
-				if (StringMatch.LCSMatch(rec1ConcatValue, rec2ConcatValue, 0.85)) {
+				float similarity = StringMatch.getLCSMatchSimilarity(rec1ConcatValue, rec2ConcatValue);
+				if (similarity > StringMatch.LCS_THRESH) {
 					List<String> interchangeableColumns = mc.getConcatenatedDemographics(comparision_demographic);
 					for (String mcr: interchangeableColumns) {
-						mv.setMatch(mcr, true);
+						mv.setMatch(mcr, similarity, true);
 					}
 				}
 				return mv;

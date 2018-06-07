@@ -31,8 +31,7 @@ public class StringMatch {
 	}
 	
 	public static boolean LCSMatch(String str1, String str2, double threshold){
-		LongestCommonSubString lcss = new LongestCommonSubString();
-		float thresh = lcss.getSimilarity(str1, str2);
+		float thresh = LongestCommonSubString.getSimilarity(str1, str2);
 		return thresh > threshold;
 	}
 	
@@ -72,8 +71,7 @@ public class StringMatch {
 	}
 	
 	public static float getLCSMatchSimilarity(String str1, String str2){
-		LongestCommonSubString lcss = new LongestCommonSubString();
-		float thresh = lcss.getSimilarity(str1, str2);
+		float thresh = LongestCommonSubString.getSimilarity(str1, str2);
 		return thresh;
 	}
 	
