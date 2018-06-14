@@ -45,7 +45,7 @@ public class FileWritingMatcher {
 	
 	public static final String OUT_FILE = "linkage.out";
 	
-	private static final boolean scoreNeededInOutput = Boolean.getBoolean("org.regenstrief.linkage.util.FileWritingMatcher.scoreNeededInOutput");
+	private static boolean scoreNeededInOutput = Boolean.getBoolean("org.regenstrief.linkage.util.FileWritingMatcher.scoreNeededInOutput");
 	
 	public static File writeMatchResults(RecMatchConfig rmc){
 		return writeMatchResults(rmc, new File(OUT_FILE), true, false, false, false, false);
@@ -326,7 +326,11 @@ public class FileWritingMatcher {
 		return s.toString();
 	}
 	
-	private static boolean isScoreNeededInOutput() {
+	public static boolean isScoreNeededInOutput() {
 		return scoreNeededInOutput;
+	}
+	
+	public static void setScoreNeededInOutput(boolean scoreNeededInOutput) {
+		FileWritingMatcher.scoreNeededInOutput = scoreNeededInOutput;
 	}
 }

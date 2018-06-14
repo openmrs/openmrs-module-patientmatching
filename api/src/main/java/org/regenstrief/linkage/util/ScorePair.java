@@ -10,11 +10,9 @@ package org.regenstrief.linkage.util;
  * - A flag indicating how to establish agreement among fields when one or both fields are null (eg, apply disagreement weight, apply agreement weight, or apply ze
  */
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 
@@ -76,16 +74,17 @@ public class ScorePair {
 				nsmv.hadNullValue(comparison_demographic);
 			}
 
-			boolean match = false;
 			// multi-field demographics need to be analyzed on each combination of values
 			// TODO base this on a flag on MatchingConfigRow vs the beginning of the name
 			if (comparison_demographic.startsWith("(Identifier)")) {
 				List<String[]> candidates = getCandidatesFromMultiFieldDemographics(data1, data2);
 				Iterator<String[]> iter = candidates.iterator();
-				while (!match && iter.hasNext()) {
+				while (iter.hasNext()) {
 					// TODO use something other than String[] or guarantee size == 2
 					String[] candidate = iter.next();
-					match = match(mv, comparison_demographic, mcr.getAlgorithm(), candidate[0], candidate[1]);
+					if (match(mv, comparison_demographic, mcr.getAlgorithm(), candidate[0], candidate[1])) {
+						break;
+					}
 				}
 			} else {
 				match(mv, comparison_demographic, mcr.getAlgorithm(), data1, data2);
