@@ -13,6 +13,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 
+import org.regenstrief.linkage.MatchItem;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.MatchVector;
 import org.regenstrief.linkage.Record;
@@ -43,6 +44,8 @@ import org.regenstrief.linkage.matchresult.MatchResultStore;
 public class FileWritingMatcher {
 	
 	public static final String OUT_FILE = "linkage.out";
+	
+	private static final boolean scoreNeededInOutput = Boolean.getBoolean("org.regenstrief.linkage.util.FileWritingMatcher.scoreNeededInOutput");
 	
 	public static File writeMatchResults(RecMatchConfig rmc){
 		return writeMatchResults(rmc, new File(OUT_FILE), true, false, false, false, false);
@@ -82,6 +85,7 @@ public class FileWritingMatcher {
 			// iterate over each MatchingConfig
 			List<MatchingConfig> mcs = rmc.getMatchingConfigs();
 			Iterator<MatchingConfig> it = mcs.iterator();
+			final StringBuilder buf = new StringBuilder();
 			while(it.hasNext()){
 				MatchingConfig mc = it.next();
 				List<MatchResult> results = new ArrayList<MatchResult>();
@@ -147,7 +151,7 @@ public class FileWritingMatcher {
 						//results.add(mr);
 						
 						// changed to write output line without sorting results first
-						fout.write(getOutputLine(mr, order) + "\n");
+						fout.write(getOutputLine(buf, mr, order, true));
 						
 						// add match result to db, if needed
 						if(write_db && mrs != null){
@@ -190,7 +194,7 @@ public class FileWritingMatcher {
 					Iterator<MatchResult> it2 = results.iterator();
 					while(it2.hasNext()){
 						MatchResult mr = it2.next();
-						fout.write(getOutputLine(mr, order) + "\n");
+						fout.write(getOutputLine(buf, mr, order, true));
 					}
 					
 					// write to an xml file also, to test this new format
@@ -269,8 +273,8 @@ public class FileWritingMatcher {
 						RecordLink link = group_links_it.next();
 						if(link instanceof MatchResult){
 							MatchResult mr = (MatchResult)link;
-							String link_output_line = Integer.toString(group_id) + "|" + getOutputLine(mr, order);
-							fout.write(link_output_line + "\n");
+							String link_output_line = Integer.toString(group_id) + "|" + getOutputLine(buf, mr, order, true);
+							fout.write(link_output_line);
 						}
 					}
 				}
@@ -294,18 +298,35 @@ public class FileWritingMatcher {
 	}
 	
 	public static String getOutputLine(MatchResult mr, String[] order){
-		String s = new String();
-		s += mr.getScore();
-		//Enumeration<String> demographics = mr.getRecord1().getDemographics().keys();
+		final StringBuilder s = new StringBuilder();
+		return getOutputLine(s, mr, order, false);
+	}
+	
+	public static String getOutputLine(final StringBuilder s, MatchResult mr, String[] order, boolean lineBreak){
+		s.setLength(0);
+		s.append(mr.getScore());
 		Record r1 = mr.getRecord1();
 		Record r2 = mr.getRecord2();
-		s += "|" + r1.getUID() + "|" + r2.getUID();
-		//while(demographics.hasMoreElements()){
+		s.append('|').append(r1.getUID()).append('|').append(r2.getUID());
+		final MatchVector matchVector = mr.getMatchVector();
 		for(int i = 0; i < order.length; i++){
 			String demographic = order[i];
-			s += "|" + r1.getDemographic(demographic) + "|" + r2.getDemographic(demographic);
-			
+			s.append('|').append(r1.getDemographic(demographic)).append('|').append(r2.getDemographic(demographic));
+			if (isScoreNeededInOutput()) {
+				s.append('|');
+				MatchItem matchItem = matchVector.getMatchItem(demographic);
+				if (matchItem != null) {
+					s.append(matchItem.getSimilarity());
+				}
+			}
 		}
-		return s;
+		if (lineBreak) {
+			s.append('\n');
+		}
+		return s.toString();
+	}
+	
+	private static boolean isScoreNeededInOutput() {
+		return scoreNeededInOutput;
 	}
 }

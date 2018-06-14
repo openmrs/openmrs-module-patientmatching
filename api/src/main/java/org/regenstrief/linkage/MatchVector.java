@@ -3,10 +3,10 @@ package org.regenstrief.linkage;
 import java.util.*;
 
 public class MatchVector implements Comparable{
-	private Hashtable<String,Boolean> match_table;
+	private Hashtable<String,MatchItem> match_table;
 	
 	public MatchVector(){
-		match_table = new Hashtable<String,Boolean>();
+		match_table = new Hashtable<String,MatchItem>();
 	}
 	
 	public int getSize() {
@@ -21,7 +21,19 @@ public class MatchVector implements Comparable{
 	 * @param matched	whether this demographic was a match
 	 */
 	public void setMatch(String demographic, boolean matched){
-		match_table.put(demographic, Boolean.valueOf(matched));
+		setMatch(demographic, matched ? 1 : 0, matched);
+	}
+	
+	/**
+	 * Method sets an entry to store whether the two records matched
+	 * on the given demographic.
+	 * 
+	 * @param demographic	the demographic used in the comparison
+	 * @param similarity	the similarity score
+	 * @param matched	whether this demographic was a match
+	 */
+	public void setMatch(String demographic, float similarity, boolean matched){
+		match_table.put(demographic, new MatchItem(similarity, matched));
 	}
 	
 	/**
@@ -46,12 +58,16 @@ public class MatchVector implements Comparable{
 	 * @return	whether the demographic matched for the two Records
 	 */
 	public boolean matchedOn(String demographic){
-		Boolean matched = match_table.get(demographic);
-		if(matched == null || !matched.booleanValue()){
+		MatchItem matched = match_table.get(demographic);
+		if(matched == null || !matched.isMatch()){
 			return false;
 		} else {
 			return true;
 		}
+	}
+	
+	public MatchItem getMatchItem(String demographic) {
+		return match_table.get(demographic);
 	}
 	
 	/**
@@ -87,7 +103,7 @@ public class MatchVector implements Comparable{
 		String ret = new String();
 		while(it.hasNext()){
 			String s = it.next();
-			if(match_table.get(s)){
+			if(matchedOn(s)){
 				ret += "1";
 			} else {
 				ret += "0";
