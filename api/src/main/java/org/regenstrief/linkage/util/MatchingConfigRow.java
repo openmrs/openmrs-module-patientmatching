@@ -1,7 +1,5 @@
 package org.regenstrief.linkage.util;
 
-import org.openmrs.module.patientmatching.ConfigurationEntry;
-
 /*
  * Class represents the matching options for one column of the data file.
  * The options are presented in one row in the GUI, where the class gets
@@ -26,6 +24,7 @@ public class MatchingConfigRow implements Cloneable {
 	private int buffer_size;
 	private float sw_number;
 	private int algorithm;
+	private double threshold;
 	private String setID;
 
 	public static final int DEFAULT_BLOCK_ORDER = 0;
@@ -113,6 +112,21 @@ public class MatchingConfigRow implements Cloneable {
 
 	public void setAlgorithm(int algorithm) {
 		this.algorithm = algorithm;
+		if (algorithm == MatchingConfig.JWC) {
+			threshold = StringMatch.JWC_THRESH;
+		} else if (algorithm == MatchingConfig.LCS) {
+			threshold = StringMatch.LCS_THRESH;
+		} else if (algorithm == MatchingConfig.LEV) {
+			threshold = StringMatch.LEV_THRESH;
+		}
+	}
+	
+	public double getThreshold() {
+		return threshold;
+	}
+	
+	public void setThreshold(double threshold) {
+		this.threshold = threshold;
 	}
 
 	public int getBlockChars() {

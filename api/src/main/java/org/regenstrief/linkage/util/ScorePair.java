@@ -58,13 +58,10 @@ public class ScorePair {
 			mv = new MatchVector();
 		}
 
-		List<MatchingConfigRow> config_rows = mc.getIncludedColumns();
-		Iterator<MatchingConfigRow> it = config_rows.iterator();
-		while (it.hasNext()) {
-			MatchingConfigRow mcr = it.next();
-			String comparison_demographic;
-
-			comparison_demographic = mcr.getName();
+		for (final MatchingConfigRow mcr : mc.getIncludedColumns()) {
+			final String comparison_demographic = mcr.getName();
+			final int algorithm = mcr.getAlgorithm();
+			final double threshold = mcr.getThreshold();
 
 			String data1 = rec1.getDemographic(comparison_demographic);
 			String data2 = rec2.getDemographic(comparison_demographic);
@@ -82,12 +79,12 @@ public class ScorePair {
 				while (iter.hasNext()) {
 					// TODO use something other than String[] or guarantee size == 2
 					String[] candidate = iter.next();
-					if (match(mv, comparison_demographic, mcr.getAlgorithm(), candidate[0], candidate[1])) {
+					if (match(mv, comparison_demographic, algorithm, threshold, candidate[0], candidate[1])) {
 						break;
 					}
 				}
 			} else {
-				match(mv, comparison_demographic, mcr.getAlgorithm(), data1, data2);
+				match(mv, comparison_demographic, algorithm, threshold, data1, data2);
 			}
 		}
 
@@ -134,7 +131,7 @@ public class ScorePair {
 		return res;
 	}
 
-	private boolean match(MatchVector mv, String comparison_demographic, int algorithm, String data1, String data2) {
+	private boolean match(MatchVector mv, String comparison_demographic, int algorithm, double threshold, String data1, String data2) {
 		if (data1 == null || data2 == null) {
 			mv.setMatch(comparison_demographic, 0, false);
 			return false;
@@ -151,17 +148,17 @@ public class ScorePair {
 
 			case (MatchingConfig.JWC):
 				similarity = StringMatch.getJWCMatchSimilarity(data1, data2);
-				match = similarity > StringMatch.JWC_THRESH;
+				match = similarity > threshold;
 				break;
 
 			case (MatchingConfig.LCS):
 				similarity = StringMatch.getLCSMatchSimilarity(data1, data2);
-				match = similarity > StringMatch.LCS_THRESH;
+				match = similarity > threshold;
 				break;
 
 			case (MatchingConfig.LEV):
 				similarity = StringMatch.getLEVMatchSimilarity(data1, data2);
-				match = similarity > StringMatch.LEV_THRESH;
+				match = similarity > threshold;
 				break;
 
 			default:

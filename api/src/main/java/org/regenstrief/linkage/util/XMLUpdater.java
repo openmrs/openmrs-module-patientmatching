@@ -450,8 +450,9 @@ public class XMLUpdater {
 				} else if(alg.equals(MatchingConfig.ALGORITHMS[MatchingConfig.LCS])){
 					ret.setAlgorithm(MatchingConfig.LCS);
 				}
-			}
-			else if (child_name.equals("SetID")) {	
+			} else if (child_name.equals("Threshold")) {
+				ret.setThreshold(Double.parseDouble(child.getTextContent()));
+			} else if (child_name.equals("SetID")) {	
 				String set_id=child.getTextContent();
 				if(set_id.equals("1"))
 					ret.setSetID("1");

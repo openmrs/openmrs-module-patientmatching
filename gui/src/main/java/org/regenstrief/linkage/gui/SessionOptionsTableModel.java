@@ -14,8 +14,8 @@ public class SessionOptionsTableModel extends AbstractTableModel{
 	String row_names[];
 	String id_name;
 	
-	public static final Class[] column_classes = {String.class, Integer.class, Integer.class, Boolean.class, Double.class, Double.class, Object.class};
-	public static final String[] column_names = {"Name", "Block Order", "Block Chars", "Include", "m-value", "u-value", "Algorithm"};
+	public static final Class<?>[] column_classes = {String.class, Integer.class, Integer.class, Boolean.class, Double.class, Double.class, Object.class, Double.class};
+	public static final String[] column_names = {"Name", "Block Order", "Block Chars", "Include", "m-value", "u-value", "Algorithm", "Threshold"};
 	
 	
 	public SessionOptionsTableModel(MatchingConfig m){
@@ -50,6 +50,7 @@ public class SessionOptionsTableModel extends AbstractTableModel{
 		return mc;
 	}
 	
+	@Override
 	public void setValueAt(Object value, int row, int col) {
 		MatchingConfigRow mcr = mc.getMatchingConfigRows().get(row);
 		if(col == 1 && value instanceof Integer){
@@ -92,17 +93,22 @@ public class SessionOptionsTableModel extends AbstractTableModel{
 			} else {
 				mcr.setAlgorithm(0);
 			}
-			
+			// Each algorithm has a different default threshold; show the new threshold in the GUI whenever the algorithm changes
+			setValueAt(getValueAt(row, 7), row, 7);
+		} else if (col == 7) {
+			mcr.setThreshold(((Double) value).doubleValue());
 		}
 		fireTableCellUpdated(row, col);
 		
     }
 	
+	@Override
 	public String getColumnName(int c){
 		return column_names[c];
 	}
 	
-	 public boolean isCellEditable(int row, int col){
+	@Override
+	public boolean isCellEditable(int row, int col){
 		int id_row = -1;
 		if(mc != null){
 			id_row = mc.getRowIndexforName(id_name);
@@ -114,16 +120,19 @@ public class SessionOptionsTableModel extends AbstractTableModel{
 	 	} else {
 	 		return true;
 	 	}
-	 }
+	}
 	
-	public Class getColumnClass(int c) {
+	 @Override
+	public Class<?> getColumnClass(int c) {
         return column_classes[c];
     }
 	
+	@Override
 	public int getColumnCount(){
 		return column_classes.length;
 	}
 	
+	@Override
 	public Object getValueAt(int row, int c){
 		MatchingConfigRow mcr = mc.getMatchingConfigRows().get(row);
 		// dependong on column, will need to call different methods
@@ -150,11 +159,14 @@ public class SessionOptionsTableModel extends AbstractTableModel{
 			return new Double(mcr.getNonAgreement());
 		case 6:
 			return MatchingConfig.ALGORITHMS[mcr.getAlgorithm()];
+		case 7:
+			return new Double(mcr.getThreshold());
 		}
 		return null;
 		
 	}
 	
+	@Override
 	public int getRowCount(){
 		if(mc == null){
 			return 0;
