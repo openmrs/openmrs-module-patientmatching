@@ -314,6 +314,9 @@ public class XMLTranslator {
 		Element algorithm = doc.createElement("Algorithm");
 		algorithm.setTextContent(MatchingConfig.ALGORITHMS[mcr.getAlgorithm()]);
 		ret.appendChild(algorithm);
+		Element threshold = doc.createElement("Threshold");
+		threshold.setTextContent(Double.toString(mcr.getThreshold()));
+		ret.appendChild(threshold);
 		
 	Element Interchangable_ID = doc.createElement("SetID");
 	    if(!(mcr.getSetID()).equals("0")){
@@ -661,8 +664,9 @@ public class XMLTranslator {
 				} else if(alg.equals(MatchingConfig.ALGORITHMS[MatchingConfig.LCS])){
 					ret.setAlgorithm(MatchingConfig.LCS);
 				}
-			}
-			else if (child_name.equals("SetID")) {	
+			} else if (child_name.equals("Threshold")) {
+				ret.setThreshold(Double.parseDouble(child.getTextContent()));
+			} else if (child_name.equals("SetID")) {	
 				String set_id=child.getTextContent();
 				ret.setSetID(set_id);	
 				}
