@@ -1,0 +1,14 @@
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping auto-import="false">
+    <class name="org.openmrs.module.patientmatching.MatchingRecordAttribute" table="patientmatching_matching_attribute">
+        <id name="recordAttributeId" column="record_attribute_id"
+            unsaved-value="0">
+            <generator class="identity" />
+        </id>
+        <many-to-one name="matchingRecord" class="org.openmrs.module.patientmatching.MatchingRecord" not-null="true">
+            <column name="matching_record_id" />
+        </many-to-one>
+        <property name="fieldName" column="field_name" length="128" />
+        <property name="fieldValue" column="field_value" not-null="true" length="128"/>
+    </class>
+</hibernate-mapping>
