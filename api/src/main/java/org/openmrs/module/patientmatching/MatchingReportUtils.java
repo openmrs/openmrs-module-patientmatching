@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,11 +13,13 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.HashMap;
 
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openmrs.Patient;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
 import org.openmrs.util.OpenmrsUtil;
@@ -32,11 +33,15 @@ import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.OpenMRSReader;
 import org.regenstrief.linkage.io.OrderedDataSourceReader;
 import org.regenstrief.linkage.io.ReaderProvider;
+import org.regenstrief.linkage.io.FormPairs;
+import org.regenstrief.linkage.io.OrderedDataSourceFormPairs;
 import org.regenstrief.linkage.matchresult.DedupMatchResultList;
+import org.regenstrief.linkage.matchresult.MatchResultList;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.RecMatchConfig;
 import org.regenstrief.linkage.util.ScorePair;
 import org.regenstrief.linkage.util.XMLTranslator;
+import org.w3c.dom.Document;
 
 /**
  * Utility class to perform various task related to the creating report for all
@@ -67,7 +72,7 @@ public class MatchingReportUtils {
             "Analyze pairs",
             "Score pairs",
     };
-	
+
 	/**
 	 * Fields that need to be checked to see the current status of the creating
 	 * report process
@@ -75,10 +80,18 @@ public class MatchingReportUtils {
 	public static String status = NO_PROCESS;
 	public static int i;
 
+    /**
+     * Constant name is given for a report in the incremental patient matching process
+     */
+	private static final String REPORT_NAME_PREFIX = "incremental-report-";
+	private static final String PENDING = "PENDING";
+	private static RecMatchConfig recMatchConfig;
+	private static List<Patient> listAddedUpdatedPatients;
+
 	/**
-	 * 
+	 *
 	 * Get the list of steps (statuses) that the analysis has to go through
-	 * 
+	 *
 	 * @return list of steps
 	 */
 	public static List<String> listSteps() {
@@ -88,19 +101,21 @@ public class MatchingReportUtils {
         stepList.add(END_PROCESS);
 		return stepList;
 	}
-	
+
 	//New Method1 2
 	public static Map<String, Object> ReadConfigFile(Map<String,Object> objects, String[] selectedStrategies){
 		log.info("Starting generate report process sequence");
-		
+
 		// open the config.xml file
 		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
 		File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
 		File configFile = new File(configFileFolder, MatchingConstants.CONFIG_FILE_NAME);
 
 		log.info("Reading matching config file from " + configFile.getAbsolutePath());
-		
-		RecMatchConfig recMatchConfig = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(configFile));
+
+		Document document = XMLTranslator.getXMLDocFromFile(configFile);
+		if(document != null)
+			recMatchConfig = XMLTranslator.createRecMatchConfig(document);
 		List<PatientMatchingConfiguration> configList = Context.getService(PatientMatchingReportMetadataService.class).getMatchingConfigs();
         List<MatchingConfig> matchingConfigLists = new ArrayList<MatchingConfig>();
 
@@ -111,7 +126,7 @@ public class MatchingReportUtils {
 				}
 			}
 		}
-		
+
 		DedupMatchResultList handler = new DedupMatchResultList();
 
 		Properties c = Context.getRuntimeProperties();
@@ -122,16 +137,18 @@ public class MatchingReportUtils {
 		String driver = c.getProperty("connection.driver_class");
 		log.info("URL: " + url);
 
-		Connection databaseConnection = null;
-		try {
-			Class.forName(driver);
-			ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
-					url, user, passwd);
-			databaseConnection = connectionFactory.createConnection();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
+		Connection databaseConnection = (Connection) objects.get("databaseConnection");
+		if(databaseConnection == null){
+			try {
+				Class.forName(driver);
+				ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
+						url, user, passwd);
+				databaseConnection = connectionFactory.createConnection();
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
 		}
-		
+
 		objects.put("databaseConnection", databaseConnection);
 		objects.put("recMatchConfig", recMatchConfig);
 		objects.put("driver", driver);
@@ -144,17 +161,18 @@ public class MatchingReportUtils {
 		return objects;
 	}
 	//New Method1 End 2
-	
+
 	//New Method2 3
 	public static Map<String, Object> InitScratchTable(Map<String,Object> objects){
 		Connection databaseConnection=(Connection) objects.get("databaseConnection");
-		RecMatchConfig recMatchConfig=(RecMatchConfig) objects.get("recMatchConfig");
-		MatchingConfig matchingConfig = ((List<MatchingConfig>)objects.get("matchingConfigLists")).get(0);
+		recMatchConfig.setDeduplication(true);
+		List<MatchingConfig> matchingConfigList = (List<MatchingConfig>)objects.get("matchingConfigLists");
+		MatchingConfig matchingConfig = matchingConfigList.get(0);
 		String driver=(String) objects.get("driver");
 		String url = (String) objects.get("url");
 		String user = (String) objects.get("user");
 		String passwd = (String) objects.get("passwd");
-		
+
 		log.info("Initiating scratch table");
 		List<String> blockingColumns = Arrays.asList(matchingConfig.getBlockingColumns());
 		Set<String> globalIncludeColumns = new TreeSet<String>();
@@ -166,13 +184,46 @@ public class MatchingReportUtils {
 				databaseConnection, recMatchConfig.getLinkDataSource1(),
 				driver, url, user, passwd);
 		recordStore.clearRecords();
-		OpenMRSReader reader = new OpenMRSReader(globalIncludeColumns);
+
+		// If only a single strategy has been selected
+		Report report = null;
+		if(matchingConfigList.size() == 1){
+			String reportName = REPORT_NAME_PREFIX + matchingConfig.getName();
+			report = Context.getService(PatientMatchingReportMetadataService.class).getReportByName(reportName);
+
+			if(report != null){
+				// Incremental matching should occur if there is a previous report
+				recMatchConfig.setDeduplication(!(Boolean) objects.get("isIncremental"));
+			}
+		}
+
+		OpenMRSReader reader = new OpenMRSReader(globalIncludeColumns, report != null ? report.getCreatedOn() : null);
+		reader.init();
 		while (reader.hasNextRecord()) {
 			recordStore.storeRecord(reader.nextRecord());
 		}
 		recordStore.close();
 		reader.close();
-		
+
+		if(!recMatchConfig.isDeduplication()){
+			// Get all patient records as another record store
+			DataBaseRecordStore recordStoreAllPatients = new DataBaseRecordStore(
+					databaseConnection, recMatchConfig.getLinkDataSource1(),
+					driver, url, user, passwd);
+			recordStoreAllPatients.clearRecords();
+			OpenMRSReader readerAllPatients = new OpenMRSReader(globalIncludeColumns,null);
+			readerAllPatients.init();
+			while (readerAllPatients.hasNextRecord()) {
+				recordStoreAllPatients.storeRecord(readerAllPatients.nextRecord());
+			}
+			recordStoreAllPatients.close();
+			readerAllPatients.close();
+			// Add the record store
+			objects.put("recordStoreAllPatients", recordStoreAllPatients);
+
+			listAddedUpdatedPatients = new ArrayList<Patient>(reader.getAddedUpdatedPatients());
+		}
+
 		ReaderProvider rp = ReaderProvider.getInstance();
 
 		objects.put("recordStore", recordStore);
@@ -182,19 +233,30 @@ public class MatchingReportUtils {
 		return objects;
 	}
 	//New Method2 End 3
-	
+
 	//New Method3 End 4
 	public static Map<String, Object> CreRanSamAnalyzer(Map<String,Object> objects){
-		RecMatchConfig recMatchConfig=(RecMatchConfig) objects.get("recMatchConfig");
 		log.info("Creating random sample analyzer");
 		OrderedDataSourceReader databaseReaderRandom = ((ReaderProvider) objects.get("rp")).getReader(
-				((DataBaseRecordStore) objects.get("recordStore")).getRecordStoreLinkDataSource(), 
+				((DataBaseRecordStore) objects.get("recordStore")).getRecordStoreLinkDataSource(),
 				(MatchingConfig)objects.get("matchingConfig"));
-		DedupOrderedDataSourceFormPairs formPairsRandom = new DedupOrderedDataSourceFormPairs(
-				databaseReaderRandom, (MatchingConfig)objects.get("matchingConfig"), recMatchConfig
-						.getLinkDataSource1().getTypeTable());
+
+		FormPairs formPairs;
+		if(recMatchConfig.isDeduplication()){
+			formPairs = new DedupOrderedDataSourceFormPairs(
+					databaseReaderRandom, (MatchingConfig)objects.get("matchingConfig"), recMatchConfig
+					.getLinkDataSource1().getTypeTable());
+		}else{
+			OrderedDataSourceReader databaseReaderAllPatients = ((ReaderProvider) objects.get("rp")).getReader(
+					((DataBaseRecordStore) objects.get("recordStoreAllPatients")).getRecordStoreLinkDataSource(),
+					(MatchingConfig)objects.get("matchingConfig"));
+			formPairs = new OrderedDataSourceFormPairs(databaseReaderRandom,databaseReaderAllPatients,
+					(MatchingConfig)objects.get("matchingConfig"), recMatchConfig.getLinkDataSource1().getTypeTable());
+			databaseReaderAllPatients.close();
+		}
+
 		RandomSampleAnalyzer rsa = new RandomSampleAnalyzer((MatchingConfig)objects.get("matchingConfig"),
-				formPairsRandom);
+				formPairs);
 		databaseReaderRandom.close();
 		objects.put("recMatchConfig", recMatchConfig);
 
@@ -202,39 +264,53 @@ public class MatchingReportUtils {
 		return objects;
 	}
 	//New Method3 End 4
-	
+
 	//New Method4 5
 	public static Map<String, Object> CreAnalFormPairs(Map<String,Object> objects){
-		RecMatchConfig recMatchConfig=(RecMatchConfig) objects.get("recMatchConfig");
 		log.info("Creating analyzer form pairs");
 		OrderedDataSourceReader databaseReader = ((ReaderProvider) objects.get("rp")).getReader(
-				((DataBaseRecordStore) objects.get("recordStore")).getRecordStoreLinkDataSource(), 
+				((DataBaseRecordStore) objects.get("recordStore")).getRecordStoreLinkDataSource(),
 				(MatchingConfig)objects.get("matchingConfig"));
-		DedupOrderedDataSourceFormPairs formPairs = new DedupOrderedDataSourceFormPairs(
-				databaseReader, (MatchingConfig)objects.get("matchingConfig"), recMatchConfig
-						.getLinkDataSource1().getTypeTable());
-		
+
+		FormPairs formPairs;
+		if(recMatchConfig.isDeduplication()){
+			formPairs = new DedupOrderedDataSourceFormPairs(
+					databaseReader, (MatchingConfig)objects.get("matchingConfig"), recMatchConfig
+					.getLinkDataSource1().getTypeTable());
+		}else{
+			OrderedDataSourceReader databaseReaderAllPatients = ((ReaderProvider) objects.get("rp")).getReader(
+					((DataBaseRecordStore) objects.get("recordStoreAllPatients")).getRecordStoreLinkDataSource(),
+					(MatchingConfig)objects.get("matchingConfig"));
+			formPairs = new OrderedDataSourceFormPairs(databaseReader,databaseReaderAllPatients,
+					(MatchingConfig)objects.get("matchingConfig"), recMatchConfig.getLinkDataSource1().getTypeTable());
+			databaseReaderAllPatients.close();
+		}
 		objects.put("databaseReader", databaseReader);
 		objects.put("formPairs", formPairs);
 		return objects;
 	}
 	//New Method4 End 5
-	
+
 	//New Method5 6
 	public static Map<String, Object> CrePairdataSourAnalyzer(Map<String,Object> objects){
 		RandomSampleAnalyzer rsa= (RandomSampleAnalyzer) objects.get("rsa");
-		DedupOrderedDataSourceFormPairs formPairs= (DedupOrderedDataSourceFormPairs) objects.get("formPairs");
+		FormPairs formPairs;
+		if(recMatchConfig.isDeduplication()){
+			formPairs= (DedupOrderedDataSourceFormPairs) objects.get("formPairs");
+		}else{
+			formPairs= (OrderedDataSourceFormPairs) objects.get("formPairs");
+		}
 		log.info("Creating pair data source analyzer");
 		PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(formPairs);
 
 		log.info("Adding random sample analyzer");
 		pdsa.addAnalyzer(rsa);
-		
+
 		objects.put("pdsa", pdsa);
 		return objects;
 	}
 	//New Method5 End 6
-	
+
 	//New Method6 7
 	public static Map<String, Object> CreEMAnalyzer(Map<String,Object> objects){
 		PairDataSourceAnalysis pdsa=(PairDataSourceAnalysis)objects.get("pdsa");
@@ -259,20 +335,31 @@ public class MatchingReportUtils {
 		objects.put("pdsa", pdsa);
 		databaseReader.close();
 		return objects;
-	}	
+	}
 	//New Method7 End 8
-	
+
 	//New Method8 9
 	public static Map<String, Object> ScoringData(Map<String, Object> objects) throws IOException {
-		DedupMatchResultList handler = (DedupMatchResultList) objects.get("handler");
-		RecMatchConfig recMatchConfig = (RecMatchConfig) objects.get("recMatchConfig");
 		MatchingConfig matchingConfig = (MatchingConfig) objects.get("matchingConfig");
 		log.info("Scoring data");
 		OrderedDataSourceReader databaseReaderScore = ((ReaderProvider) objects.get("rp")).getReader(
-				((DataBaseRecordStore) objects.get("recordStore")).getRecordStoreLinkDataSource(), 
+				((DataBaseRecordStore) objects.get("recordStore")).getRecordStoreLinkDataSource(),
 				matchingConfig);
-		DedupOrderedDataSourceFormPairs formPairsScoring = new DedupOrderedDataSourceFormPairs(
-				databaseReaderScore, matchingConfig, recMatchConfig.getLinkDataSource1().getTypeTable());
+		MatchResultList handler;
+		FormPairs formPairsScoring;
+		if(recMatchConfig.isDeduplication()){
+			handler = (DedupMatchResultList) objects.get("handler");
+			formPairsScoring = new DedupOrderedDataSourceFormPairs(
+					databaseReaderScore, matchingConfig, recMatchConfig.getLinkDataSource1().getTypeTable());
+		}else{
+			handler = (DedupMatchResultList) objects.get("handler");
+			OrderedDataSourceReader databaseReaderAllPatients = ((ReaderProvider) objects.get("rp")).getReader(
+					((DataBaseRecordStore) objects.get("recordStoreAllPatients")).getRecordStoreLinkDataSource(),
+					(MatchingConfig)objects.get("matchingConfig"));
+			formPairsScoring = new OrderedDataSourceFormPairs(databaseReaderScore,databaseReaderAllPatients,
+					(MatchingConfig)objects.get("matchingConfig"), recMatchConfig.getLinkDataSource1().getTypeTable());
+		}
+
 		ScorePair sp = new ScorePair(matchingConfig);
 
 		Record[] pair;
@@ -294,11 +381,9 @@ public class MatchingReportUtils {
 	public static Map<String, Object> CreatingReport(Map<String,Object> objects) throws IOException{
 		log.info("Creating report");
 
-		SimpleDateFormat format = new SimpleDateFormat("MM-dd-yyyy--HH-mm-ss");
-		String dateString = format.format(new Date());
         Set<String> globalIncludeColumns = (Set<String>)objects.get("globalIncludeColumns");
-		
-		String configString = new String();
+
+		String configString = "";
 		try{
 			List<MatchingConfig> mcs = (List<MatchingConfig>)objects.get("matchingConfigLists");
             for(MatchingConfig mc : mcs){
@@ -309,20 +394,22 @@ public class MatchingReportUtils {
 			throw new RuntimeException(e);
 		}
 
-        String reportName = "dedup-report-"+configString+dateString;
+		configString = configString.substring(0, configString.length() - 1);
+		String reportName = REPORT_NAME_PREFIX + configString;
 		DedupMatchResultList handler = (DedupMatchResultList)objects.get("handler");
 
 		handler.flattenPairIdList();
 		List<Set<Long>> matchingPairs = handler.getFlattenedPairIds();
-		persistReportToDB(reportName, matchingPairs, globalIncludeColumns);
+		persistIncrementalReportToDB(reportName, matchingPairs, globalIncludeColumns,
+				(List<MatchingConfig>)objects.get("matchingConfigLists"));
 		return objects;
-	}	
+	}
 	//New Method9 End 10
 
 	/**
 	 * Method to get the list of the available report for display. The method
 	 * will return all report found in the designated folder in the server.
-	 * 
+	 *
 	 * @return all available report in the server
 	 */
     @Deprecated
@@ -335,10 +422,12 @@ public class MatchingReportUtils {
 				.getDirectoryInApplicationDataDirectory(configLocation);
 
 		File[] files = configFileFolder.listFiles();
-		for (File file : files) {
-			if (file.getName().startsWith("dedup")) {
-				reports.add(file.getName());
-			}
+		if (files != null) {
+			for (File file : files) {
+                if (file.getName().startsWith("dedup")) {
+                    reports.add(file.getName());
+                }
+            }
 		}
 
 		Collections.sort(reports);
@@ -355,20 +444,21 @@ public class MatchingReportUtils {
      * @param rptName The report name of the new report
      * @param matchingPairs A list of the matching pair sets
      */
-	public static void persistReportToDB(String rptName, List<Set<Long>> matchingPairs, Set<String> includeColumns) throws FileNotFoundException {
+	public static void persistReportToDB(String rptName, List<Set<Long>> matchingPairs, Set<String> includeColumns,
+										 List<MatchingConfig> matchingConfigList) throws FileNotFoundException {
         Report report = new Report();
         report.setCreatedBy(Context.getAuthenticatedUser());
         report.setReportName(rptName);
         report.setCreatedOn(new Date());
-        String selectedStrategies = MatchingRunData.getInstance().getFileStrat();
-        String[] selectedStrategyNamesArray = selectedStrategies.split(",");
         Set<PatientMatchingConfiguration> usedConfigurations = new TreeSet<PatientMatchingConfiguration>();
-        PatientMatchingReportMetadataService reportMetadataService = Context.getService(PatientMatchingReportMetadataService.class);
+        PatientMatchingReportMetadataService reportMetadataService =
+				Context.getService(PatientMatchingReportMetadataService.class);
 
-        for(String strategyName : selectedStrategyNamesArray){
-            PatientMatchingConfiguration configuration = reportMetadataService.findPatientMatchingConfigurationByName(strategyName);
-            usedConfigurations.add(configuration);
-        }
+		for(MatchingConfig matchingConfig : matchingConfigList){
+			PatientMatchingConfiguration configuration =
+					reportMetadataService.findPatientMatchingConfigurationByName(matchingConfig.getName());
+			usedConfigurations.add(configuration);
+		}
 
         report.setUsedConfigurationList(usedConfigurations);
         PatientService patientService = Context.getPatientService();
@@ -378,7 +468,7 @@ public class MatchingReportUtils {
             for(Long patientId: matchSet){
                 MatchingRecord matchingRecord = new MatchingRecord();
                 matchingRecord.setGroupId(j);
-                matchingRecord.setState("PENDING");   //TODO move to a constant
+                matchingRecord.setState(PENDING);
                 matchingRecord.setPatient(patientService.getPatient(patientId.intValue()));
                 matchingRecord.setReport(report);
 
@@ -399,18 +489,172 @@ public class MatchingReportUtils {
 
         Set<ReportGenerationStep> reportGenerationSteps = new TreeSet<ReportGenerationStep>();
         List<Long> proTimeList = MatchingRunData.getInstance().getProTimeList();
-        int noOfSteps = Math.min(proTimeList.size(),REPORT_GEN_STAGES.length);
-        for (int j = 0; j < noOfSteps; j++) {
-            ReportGenerationStep step = new ReportGenerationStep();
-            step.setProcessName(REPORT_GEN_STAGES[j]);
-            step.setTimeTaken(proTimeList.get(j).intValue());
-            step.setReport(report);
-            step.setSequenceNo(j);
-            reportGenerationSteps.add(step);
-        }
-        report.setReportGenerationSteps(reportGenerationSteps);
+		if(proTimeList != null){
+			int noOfSteps = Math.min(proTimeList.size(),REPORT_GEN_STAGES.length);
+			for (int j = 0; j < noOfSteps; j++) {
+				ReportGenerationStep step = new ReportGenerationStep();
+				step.setProcessName(REPORT_GEN_STAGES[j]);
+				step.setTimeTaken(proTimeList.get(j).intValue());
+				step.setReport(report);
+				step.setSequenceNo(j);
+				reportGenerationSteps.add(step);
+			}
+			report.setReportGenerationSteps(reportGenerationSteps);
+		}
         reportMetadataService.savePatientMatchingReport(report);
 	 }
+
+	/**
+	 * Method to persist the report to the database in the incremental patient matching process
+	 * @param rptName The report name of the new report
+	 * @param matchingPairs A list of the matching pair sets
+	 */
+	public static void persistIncrementalReportToDB(
+	        String rptName, List<Set<Long>> matchingPairs, Set<String> includeColumns,
+            List<MatchingConfig> matchingConfigList) throws FileNotFoundException {
+
+		PatientMatchingReportMetadataService reportMetadataService =
+				Context.getService(PatientMatchingReportMetadataService.class);
+		Report report = reportMetadataService.getReportByName(rptName);
+		// Incremental process will be carried out considering the existing report
+		if(report != null){
+			report.setCreatedBy(Context.getAuthenticatedUser());
+			report.setCreatedOn(new Date());
+			PatientService patientService = Context.getPatientService();
+			Set<MatchingRecord> matchingRecordSet = report.getMatchingRecordSet();
+			HashMap<Integer,Integer> patientIdGroupIdMap = new HashMap<Integer, Integer>();
+
+			if(matchingRecordSet.size() > 0 && listAddedUpdatedPatients != null
+					&& !listAddedUpdatedPatients.isEmpty()) {
+				removeUpdatedPatientRecords(matchingRecordSet);
+			}
+
+			// Get the group ids and patient ids to a Hash Map
+			if(!matchingRecordSet.isEmpty()){
+				for (MatchingRecord record: matchingRecordSet){
+					patientIdGroupIdMap.put(record.getPatient().getPatientId(),record.getGroupId());
+				}
+			}
+			// Available maximum group id for the next placement
+			int availableGroupId = !patientIdGroupIdMap.isEmpty()
+					? Collections.max(patientIdGroupIdMap.values()) + 1
+					: 0;
+
+			for (Set<Long> matchSet : matchingPairs) {
+				int groupId = -1;
+
+				// Finding the group id
+				for (Long patientId : matchSet) {
+					if (patientIdGroupIdMap.containsKey(patientId.intValue())) {
+						groupId = patientIdGroupIdMap.get(patientId.intValue());
+						break;
+					}
+				}
+				for (Long patientId : matchSet) {
+					MatchingRecord matchingRecord = new MatchingRecord();
+
+					matchingRecord.setGroupId(groupId == -1 ? availableGroupId : groupId);
+					matchingRecord.setState(PENDING);
+					matchingRecord.setPatient(patientService.getPatient(patientId.intValue()));
+					matchingRecord.setReport(report);
+
+					Set<MatchingRecordAttribute> matchingRecordAttributeSet = new TreeSet<MatchingRecordAttribute>();
+					Record record = RecordSerializer.deserialize(String.valueOf(patientId));
+					for (String includedColumn : includeColumns) {
+						MatchingRecordAttribute matchingRecordAttribute = new MatchingRecordAttribute();
+						matchingRecordAttribute.setFieldName(includedColumn);
+						matchingRecordAttribute.setFieldValue(record.getDemographic(includedColumn));
+						matchingRecordAttribute.setMatchingRecord(matchingRecord);
+						matchingRecordAttributeSet.add(matchingRecordAttribute);
+					}
+					matchingRecord.setMatchingRecordAttributeSet(matchingRecordAttributeSet);
+					report.addMatchingRecord(matchingRecord);
+				}
+				if (groupId == -1) availableGroupId++;
+			}
+
+			report.setMatchingRecordSet(matchingRecordSet);
+			List<Long> proTimeList = MatchingRunData.getInstance().getProTimeList();
+			if(proTimeList != null){
+				int noOfSteps = Math.min(proTimeList.size(),REPORT_GEN_STAGES.length);
+				for (int j = 0; j < noOfSteps; j++) {
+					ReportGenerationStep step = new ReportGenerationStep();
+					step.setProcessName(REPORT_GEN_STAGES[j]);
+					step.setTimeTaken(proTimeList.get(j).intValue());
+					step.setReport(report);
+					step.setSequenceNo(j);
+					report.addReportGenerationStep(step);
+				}
+			}
+			reportMetadataService.savePatientMatchingReport(report);
+
+		}else{
+			persistReportToDB(rptName,matchingPairs,includeColumns,matchingConfigList);
+		}
+	}
+
+	/**
+	 * This method will remove the updated patients in the already existing report
+	 *
+	 * @param reportMatchingRecords matching record set
+	 */
+	private static void removeUpdatedPatientRecords(Set<MatchingRecord> reportMatchingRecords) {
+
+		// This map will contains the rest of the matching records after removing the updated records
+		HashMap<Integer, List<MatchingRecord>> map = new HashMap<Integer, List<MatchingRecord>>();
+		// This list holds the matching records that should be removed from the report
+		List<MatchingRecord> listRemovingRecords = new ArrayList<MatchingRecord>();
+
+		// Generate the map
+		for (MatchingRecord record : reportMatchingRecords) {
+
+			if (listAddedUpdatedPatients.contains(record.getPatient())) {
+				// If available remove the matching record
+				listRemovingRecords.add(record);
+
+			}else {
+
+				if (map.containsKey(record.getGroupId())) {
+					// Add the record to the group
+					map.get(record.getGroupId()).add(record);
+
+				} else {
+					// First time
+					List<MatchingRecord> list = new ArrayList<MatchingRecord>();
+					list.add(record);
+					map.put(record.getGroupId(), list);
+				}
+			}
+		}
+		reportMatchingRecords.removeAll(listRemovingRecords);
+		// Remove Matching record from the report if there is only one in the group and redefine the group IDs
+		int newGroupId = 0;
+		for (int groupId : map.keySet()) {
+
+			// If the particular group ID contains only a single matching record, remove that also because it is useless
+			if(map.get(groupId).size() == 1) {
+
+				// Remove the matching record from the report
+				reportMatchingRecords.remove(map.get(groupId).get(0));
+
+			}else {
+
+				// Start to put a new group ID
+				for (MatchingRecord matchingRec : map.get(groupId)) {
+
+					// Remove the matching record
+					reportMatchingRecords.remove(matchingRec);
+					// Insert the new group id and increment it
+					matchingRec.setGroupId(newGroupId);
+					// Add the matching record
+					reportMatchingRecords.add(matchingRec);
+
+				}
+				// Increment the group ID
+				newGroupId++;
+			}
+		}
+	}
 
     public static Set<String> getAllFieldsUsed(Report report){
         Set<String> fieldsUsed = new TreeSet<String>();

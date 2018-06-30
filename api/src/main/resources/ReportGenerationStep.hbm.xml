@@ -1,0 +1,18 @@
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+    <class name="org.openmrs.module.patientmatching.ReportGenerationStep" table=" patientmatching_report_generation_step">
+
+        <id name="stepId" type="int" column="step_id"
+            unsaved-value="0">
+            <generator class="identity" />
+        </id>
+
+        <many-to-one name="report" class="org.openmrs.module.patientmatching.Report" not-null="true">
+            <column name="report_id" />
+        </many-to-one>
+
+        <property name="processName" type="java.lang.String" column="process_name" length="50" />
+        <property name="sequenceNo" type="java.lang.Integer" column="sequence_number" not-null="true" />
+        <property name="timeTaken" type="java.lang.Integer" column="time_taken" not-null="false" />
+    </class>
+</hibernate-mapping>
