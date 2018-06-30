@@ -73,4 +73,12 @@ public class Report {
     public void setReportGenerationSteps(Set<ReportGenerationStep> reportGenerationSteps){
         this.reportGenerationSteps = reportGenerationSteps;
     }
+
+    public void addMatchingRecord(MatchingRecord matchingRecord){this.matchingRecordSet.add(matchingRecord);}
+
+    public void clearReportGenerationSteps(){this.reportGenerationSteps.clear();}
+
+    public void addReportGenerationStep(ReportGenerationStep reportGenerationStep){
+        this.reportGenerationSteps.add(reportGenerationStep);
+    }
 }
