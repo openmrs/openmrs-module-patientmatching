@@ -1,0 +1,33 @@
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping auto-import="false">
+  <class name="org.openmrs.module.patientmatching.Report" table="patientmatching_report">
+      <id name="reportId" column="report_id"
+			unsaved-value="0">
+			<generator class="identity" />
+      </id>
+
+      <property name="reportName" column="report_name" length="255" />
+      <property name="createdOn" type="java.util.Date" column="created_on" not-null="true" length="19"/>
+
+      <many-to-one name="createdBy" class="org.openmrs.User">
+          <column name="created_by" />
+      </many-to-one>
+
+      <set name="matchingRecordSet" lazy="true" inverse="true" cascade="all-delete-orphan" sort="natural">
+          <key column="report_id" not-null="true"/>
+          <one-to-many class="org.openmrs.module.patientmatching.MatchingRecord"/>
+      </set>
+
+      <set name="reportGenerationSteps" lazy="true" inverse="true" cascade="all-delete-orphan" sort="natural">
+          <key column="report_id" not-null="true"/>
+          <one-to-many class="org.openmrs.module.patientmatching.ReportGenerationStep"/>
+      </set>
+
+      <set name="usedConfigurationList" table="patientmatching_report_configuration" cascade="none">
+          <key column="report_id"/>
+          <many-to-many column="configuration_id"
+                        class="org.openmrs.module.patientmatching.PatientMatchingConfiguration"/>
+      </set>
+
+    </class>
+</hibernate-mapping>
