@@ -1,0 +1,23 @@
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="org.openmrs.module.patientmatching">
+	<class name="PatientMatchingConfiguration" table="patientmatching_configuration">
+
+		<id name="configurationId" column="configuration_id" unsaved-value="0">
+			<generator class="identity" />
+		</id>
+		
+		<property name="configurationName" column="configuration_name" length="255" unique="true" />
+		<property name="randomSampleSize" column="random_sample_size" not-null="true" />
+		<property name="usingRandomSample" column="using_random_sample" not-null="true"/>
+		<property name="estimatedPairs" column="estimated_pairs" not-null="true"/>
+		<property name="estimatedTime" column="estimated_time" not-null="true"/>
+		<property name="totalRecords" column="total_records" not-null="true"/>
+		
+		<!-- bi-directional one-to-many association -->
+		<set name="configurationEntries" lazy="true" inverse="true" cascade="all-delete-orphan" sort="natural">
+			<key column="configuration_id" not-null="true" />
+			<one-to-many class="org.openmrs.module.patientmatching.ConfigurationEntry" />
+		</set>
+		
+	</class>
+</hibernate-mapping>
