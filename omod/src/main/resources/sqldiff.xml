@@ -247,4 +247,35 @@ CREATE TABLE `patientmatching_configurationEntries` (
             ADD CONSTRAINT `patientmatching_report_generation_step_ibfk_1` FOREIGN KEY (`report_id`) REFERENCES `patientmatching_report` (`report_id`) ON DELETE CASCADE ON UPDATE CASCADE;
         </sql>
     </diff>
+	<diff>
+		<version>1.7.7</version>
+		<author>lahiruj</author>
+		<date>August 23, 2017</date>
+		<description>
+			Adding a table to persist non-matching patient records in the report generation process.
+			Using this table, patient pairs which have been persisted will not be considered as a match in a report
+			generation process.
+		</description>
+		<sql>
+			DROP TABLE IF EXISTS `patientmatching_rejected_patient_pair`;
+
+			CREATE TABLE IF NOT EXISTS `patientmatching_rejected_patient_pair` (
+			`patient1` INT(11) NOT NULL,
+			`patient2` INT(11) NOT NULL,
+			INDEX `fk_patientmatching_rejected_patient_pair_patient_idx` (`patient1` ASC),
+			INDEX `fk_patientmatching_rejected_patient_pair_patient1_idx` (`patient2` ASC),
+			PRIMARY KEY (`patient1`, `patient2`),
+			CONSTRAINT `fk_patientmatching_rejected_patient_pair_patient`
+			FOREIGN KEY (`patient1`)
+			REFERENCES `patient` (`patient_id`)
+			ON DELETE NO ACTION
+			ON UPDATE NO ACTION,
+			CONSTRAINT `fk_patientmatching_rejected_patient_pair_patient1`
+			FOREIGN KEY (`patient2`)
+			REFERENCES `patient` (`patient_id`)
+			ON DELETE NO ACTION
+			ON UPDATE NO ACTION)
+			ENGINE = InnoDB DEFAULT CHARSET=utf8;
+		</sql>
+	</diff>
 </sqldiff>

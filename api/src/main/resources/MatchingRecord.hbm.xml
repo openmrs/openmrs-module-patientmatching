@@ -1,0 +1,18 @@
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+  <class name="org.openmrs.module.patientmatching.MatchingRecord" table="patientmatching_matchingset">
+  	<id name="setId" column="set_id" unsaved-value="0">
+			<generator class="identity" />
+		</id>
+  <property name="groupId" type="java.lang.Integer"  column="group_id" not-null="true" />
+      <many-to-one name="report" class="org.openmrs.module.patientmatching.Report" not-null="true">
+          <column name="report_id" />
+      </many-to-one>
+      <many-to-one name="patient" column="patient_id"	class="org.openmrs.Patient"/>
+      <property name="state" type="java.lang.String" column="state" not-null="true"/>
+      <set name="matchingRecordAttributeSet" lazy="true" inverse="true" cascade="all-delete-orphan" sort="natural">
+          <key column="matching_record_id" not-null="true"/>
+          <one-to-many class="org.openmrs.module.patientmatching.MatchingRecordAttribute"/>
+      </set>
+  </class>
+  </hibernate-mapping>
