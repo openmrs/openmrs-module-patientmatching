@@ -33,7 +33,7 @@ public class ArrayDataSourceReader implements DataSourceReader {
 	private final static ArrayDataSourceReader SAMPLE_DOE2 = new ArrayDataSourceReader(new String[][] {
 		{ "ID", "LAST", "FIRST" },
 		{ "4", "DOE", "JANET" },
-		{ "5", "DOE", "JOHN" },
+		{ "5", "DOE", "JOHN" }
 	});
 	
 	private final static ArrayDataSourceReader SAMPLE_MIX = new ArrayDataSourceReader(new String[][] {
@@ -42,7 +42,23 @@ public class ArrayDataSourceReader implements DataSourceReader {
 		{ "7", "DOE", "JOHN" },
 		{ "8", "SMITH", "JANET" },
 		{ "9", "SMITH", "JOHN" },
-		{ "10", "SMITH", "MARY" },
+		{ "10", "SMITH", "MARY" }
+	});
+	
+	private final static ArrayDataSourceReader SAMPLE_NULL = new ArrayDataSourceReader(new String[][] {
+		{ "ID", "LAST", "FIRST" },
+		{ "11", "DOE", "JANE" },
+		{ "12", "DOE", "" },
+		{ "13", "DOE", null },
+		{ "14", "", "" },
+		{ "15", null, null }
+	});
+	
+	private final static ArrayDataSourceReader SAMPLE_NULL2 = new ArrayDataSourceReader(new String[][] {
+		{ "ID", "LAST", "FIRST" },
+		{ "11", "DOE", "JANE" },
+		{ "12", "DOE", "" },
+		{ "13", "DOE", null }
 	});
 	
 	private final Record[] records;
@@ -117,5 +133,13 @@ public class ArrayDataSourceReader implements DataSourceReader {
 	
 	public final static ArrayDataSourceReader getSampleMix() {
 		return SAMPLE_MIX.init();
+	}
+	
+	public final static ArrayDataSourceReader getSampleNull() {
+		return SAMPLE_NULL.init();
+	}
+	
+	public final static ArrayDataSourceReader getSampleNull2() {
+		return SAMPLE_NULL2.init();
 	}
 }
