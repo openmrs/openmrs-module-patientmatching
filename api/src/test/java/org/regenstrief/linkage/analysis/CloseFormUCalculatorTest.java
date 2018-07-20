@@ -28,6 +28,7 @@ public class CloseFormUCalculatorTest {
 		runDedupAnalysis(1, (1.0 / 3.0), ArrayDataSourceReader.getSampleDoe());
 		runDedupAnalysis(1, 0, ArrayDataSourceReader.getSampleDoe2());
 		runDedupAnalysis((4.0 / 10.0), (2.0 / 10.0), ArrayDataSourceReader.getSampleMix());
+		runDedupAnalysis((3.0 / 10.0), 0, ArrayDataSourceReader.getSampleNull());
 	}
 	
 	private void runDedupAnalysis(final double exLast, final double exFirst, final DataSourceReader r) {
@@ -41,6 +42,7 @@ public class CloseFormUCalculatorTest {
 	public void analysisIsCorrect() {
 		runAnalysis(1, (1.0 / 6.0), ArrayDataSourceReader.getSampleDoe(), ArrayDataSourceReader.getSampleDoe2());
 		runAnalysis((4.0 / 10.0), (4.0 / 10.0), ArrayDataSourceReader.getSampleMix(), ArrayDataSourceReader.getSampleDoe2());
+		runAnalysis((9.0 / 15.0), (1.0 / 15.0), ArrayDataSourceReader.getSampleNull(), ArrayDataSourceReader.getSampleNull2());
 	}
 	
 	private void runAnalysis(final double exLast, final double exFirst, final DataSourceReader r1, final DataSourceReader r2) {
