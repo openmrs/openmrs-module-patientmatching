@@ -22,13 +22,13 @@ import javax.swing.JPanel;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.MatchVector;
 import org.regenstrief.linkage.analysis.AverageFrequencyAnalyzer;
-import org.regenstrief.linkage.analysis.ClosedFormAnalyzer;
-import org.regenstrief.linkage.analysis.ClosedFormDedupAnalyzer;
+import org.regenstrief.linkage.analysis.CloseFormUCalculator;
 import org.regenstrief.linkage.analysis.DataSourceAnalysis;
 import org.regenstrief.linkage.analysis.DataSourceFrequency;
 import org.regenstrief.linkage.analysis.EMAnalyzer;
 import org.regenstrief.linkage.analysis.EntropyAnalyzer;
 import org.regenstrief.linkage.analysis.FrequencyAnalyzer;
+import org.regenstrief.linkage.analysis.FrequencyContext;
 import org.regenstrief.linkage.analysis.MaximumEntropyAnalyzer;
 import org.regenstrief.linkage.analysis.MemoryBackedDataSourceFrequency;
 import org.regenstrief.linkage.analysis.MutualInformationAnalyzer;
@@ -42,7 +42,6 @@ import org.regenstrief.linkage.analysis.UniqueAnalyzer;
 import org.regenstrief.linkage.analysis.ValueFrequencyAnalyzer;
 import org.regenstrief.linkage.analysis.VectorTable;
 import org.regenstrief.linkage.analysis.VectorValuesFrequencyAnalyzer;
-import org.regenstrief.linkage.io.DataSourceReader;
 import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.FormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceFormPairs;
@@ -441,40 +440,14 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 				cfuc.calculateUValues();
 			}*/
 		
-		ReaderProvider rp = ReaderProvider.getInstance();
-		List<MatchingConfig> mcs = rm_conf.getMatchingConfigs();
-		Iterator<MatchingConfig> it = mcs.iterator();
-		while(it.hasNext()){
-			MatchingConfig mc = it.next();
-			if(rm_conf.isDeduplication()){
-				DataSourceReader dsr = rp.getReader(rm_conf.getLinkDataSource1());
-				if(dsr != null){
-					DataSourceAnalysis pdsa = new DataSourceAnalysis(dsr);
-					// create u value analyzer, add to pdsa, and run analysis
-					ClosedFormDedupAnalyzer cfda = new ClosedFormDedupAnalyzer(rm_conf.getLinkDataSource1(), mc);
-					pdsa.addAnalyzer(cfda);
-					pdsa.analyzeData();
-				}
-				
+		for (final MatchingConfig mc : rm_conf.getMatchingConfigs()) {
+			final FrequencyContext fc1 = new FrequencyContext(mc, rm_conf.getLinkDataSource1());
+			if (rm_conf.isDeduplication()) {
+				CloseFormUCalculator.getInstance().calculateUValuesDedup(mc, fc1);
 			} else {
-				OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
-				OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
-				if(odsr1 != null && odsr2 != null){
-					// analyze with EM
-					FormPairs fp2 = null;
-					fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
-					
-					PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
-
-					// create u value analyzer, add to pdsa, and run analysis
-					ClosedFormAnalyzer cfa = new ClosedFormAnalyzer(mc);
-					pdsa.addAnalyzer(cfa);
-					pdsa.analyzeData();
-
-				}
+				final FrequencyContext fc2 = new FrequencyContext(mc, rm_conf.getLinkDataSource2());
+				CloseFormUCalculator.getInstance().calculateUValues(mc, fc1, fc2);
 			}
-
-			
 		}
 	}
 	
