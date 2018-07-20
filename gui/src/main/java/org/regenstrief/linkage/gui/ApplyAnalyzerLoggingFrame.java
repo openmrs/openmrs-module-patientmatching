@@ -21,7 +21,7 @@ public class ApplyAnalyzerLoggingFrame extends LoggingFrame {
     
     private MatchingConfig config;
     private SessionsPanel options;
-    
+    private MatchingConfig newConfig;
     
     /**
      * JTable gets refreshed when values are applied
@@ -62,13 +62,11 @@ public class ApplyAnalyzerLoggingFrame extends LoggingFrame {
      * of the current matching configuration parameters
      */
     private void applyValue() {
-        // there will only be one analyzer
-        MatchingConfigAnalyzer analyzer = (MatchingConfigAnalyzer) logSources.get(0);
         /*
          * replace currently processed matching config with the one that contains
          * random sampling result.
          */
-        MatchingConfig analyzerConfig = analyzer.getAnalyzerMatchingConfig();
+        MatchingConfig analyzerConfig = (newConfig == null) ? ((MatchingConfigAnalyzer) logSources.get(0)).getAnalyzerMatchingConfig() : newConfig;
         for(MatchingConfigRow row: analyzerConfig.getMatchingConfigRows()) {
             String name = row.getName();
             MatchingConfigRow guiRow = config.getMatchingConfigRowByName(name);
@@ -88,5 +86,9 @@ public class ApplyAnalyzerLoggingFrame extends LoggingFrame {
                 this, "Values copied to current session parameter.",
                 "Info", JOptionPane.INFORMATION_MESSAGE);
         dispose();
+    }
+    
+    public void setNewConfig(final MatchingConfig newConfig) {
+    	this.newConfig = newConfig;
     }
 }

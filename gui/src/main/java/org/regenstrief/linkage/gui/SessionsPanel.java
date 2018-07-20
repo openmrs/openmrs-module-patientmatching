@@ -1085,7 +1085,9 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			return;
 		}
 		
+		final MatchingConfig mcCopy = (MatchingConfig) mc.clone();
 		final ApplyAnalyzerLoggingFrame frame = new ApplyAnalyzerLoggingFrame(mc, this);
+		frame.setNewConfig(mcCopy);
 		final CloseFormUCalculator calc = CloseFormUCalculator.getInstance();
 		frame.addLoggingObject(calc);
 		final FrequencyContext fc1 = new FrequencyContext(mc, rm_conf.getLinkDataSource1());
@@ -1093,7 +1095,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		if (rm_conf.isDeduplication()) {
 			frame.addLoggingObject(fc1.getFrequencyAnalyzer());
 			frame.configureLoggingFrame();
-			calc.calculateUValuesDedup((MatchingConfig) mc.clone(), fc1);
+			calc.calculateUValuesDedup(mcCopy, fc1);
 		} else {
 			final FrequencyContext fc2 = new FrequencyContext(mc, rm_conf.getLinkDataSource2());
 			final FrequencyContext[] fcs = { fc1, fc2 };
@@ -1101,7 +1103,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 				frame.addLoggingObject(fc.getFrequencyAnalyzer());
 			}
             frame.configureLoggingFrame();
-            calc.calculateUValues((MatchingConfig) mc.clone(), fc1, fc2);
+            calc.calculateUValues(mcCopy, fc1, fc2);
 		}
 		}
 	}
