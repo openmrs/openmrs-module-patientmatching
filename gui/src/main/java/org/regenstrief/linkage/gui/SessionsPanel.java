@@ -54,15 +54,13 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
-import org.regenstrief.linkage.analysis.ClosedFormAnalyzer;
-import org.regenstrief.linkage.analysis.ClosedFormDedupAnalyzer;
-import org.regenstrief.linkage.analysis.DataSourceAnalysis;
+import org.regenstrief.linkage.analysis.CloseFormUCalculator;
 import org.regenstrief.linkage.analysis.DedupRandomSampleAnalyzer;
 import org.regenstrief.linkage.analysis.EMAnalyzer;
+import org.regenstrief.linkage.analysis.FrequencyContext;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
 import org.regenstrief.linkage.analysis.RandomSampleAnalyzer;
 import org.regenstrief.linkage.io.CommonPairFormPairs;
-import org.regenstrief.linkage.io.DataSourceReader;
 import org.regenstrief.linkage.io.DedupOrderedDataSourceFormPairs;
 import org.regenstrief.linkage.io.FormPairs;
 import org.regenstrief.linkage.io.OrderedDataSourceFormPairs;
@@ -1087,39 +1085,25 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			return;
 		}
 		
-		ReaderProvider rp = ReaderProvider.getInstance();
+		final ApplyAnalyzerLoggingFrame frame = new ApplyAnalyzerLoggingFrame(mc, this);
+		final CloseFormUCalculator calc = CloseFormUCalculator.getInstance();
+		frame.addLoggingObject(calc);
+		final FrequencyContext fc1 = new FrequencyContext(mc, rm_conf.getLinkDataSource1());
 		
-		if(rm_conf.isDeduplication()){
-			DataSourceReader dsr = rp.getReader(rm_conf.getLinkDataSource1());
-			DataSourceAnalysis dsa = new DataSourceAnalysis(dsr);
-			MatchingConfig mcCopy = (MatchingConfig)mc.clone();
-			ClosedFormDedupAnalyzer cfda = new ClosedFormDedupAnalyzer(rm_conf.getLinkDataSource1(), mcCopy);
-			ApplyAnalyzerLoggingFrame frame = new ApplyAnalyzerLoggingFrame(mc, this);
-			frame.addLoggingObject(cfda);
+		if (rm_conf.isDeduplication()) {
+			frame.addLoggingObject(fc1.getFrequencyAnalyzer());
 			frame.configureLoggingFrame();
-			dsa.addAnalyzer(cfda);
-			dsa.analyzeData();
-			
+			calc.calculateUValuesDedup((MatchingConfig) mc.clone(), fc1);
 		} else {
-			OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
-			OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
-			if(odsr1 != null && odsr2 != null){
-				FormPairs fp2 = null;
-				fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
-				ApplyAnalyzerLoggingFrame frame = new ApplyAnalyzerLoggingFrame(mc, this);
-				
-				PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
-				// create u value analyzer, add to pdsa, and run analysis
-				MatchingConfig mcCopy = (MatchingConfig) mc.clone();
-				ClosedFormAnalyzer cfa = new ClosedFormAnalyzer(mcCopy);
-				frame.addLoggingObject(cfa);
-                frame.configureLoggingFrame();
-				pdsa.addAnalyzer(cfa);
-				pdsa.analyzeData();
+			final FrequencyContext fc2 = new FrequencyContext(mc, rm_conf.getLinkDataSource2());
+			final FrequencyContext[] fcs = { fc1, fc2 };
+			for (final FrequencyContext fc : fcs) {
+				frame.addLoggingObject(fc.getFrequencyAnalyzer());
 			}
+            frame.configureLoggingFrame();
+            calc.calculateUValues((MatchingConfig) mc.clone(), fc1, fc2);
 		}
 		}
-		
 	}
 	
 	private FormPairs getFormPairs(){

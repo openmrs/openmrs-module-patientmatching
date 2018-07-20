@@ -1,85 +1,104 @@
 package org.regenstrief.linkage.analysis;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+import org.regenstrief.linkage.util.LoggingObject;
 import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.MatchingConfigRow;
 
 /**
- *To calculate U values, For linkage of two files (A -> B), first some preliminaries: 
- * Assume 'm' is the set of unique values for a given field in data set A, and 
- * 'n' is the set of unique values for a given field in data set B. 'Q' is the set of unique 
- * values found in both data sets -- the intersection ( Q = m /\ n ). 
- * The total number of unique values in Q is 'j'. Form a 2-d matrix with dimensions ( j x j ). 
- * The cells represent the product of the frequencies of each unique value in data set A and data set B. 
- * The numerator for the u-value estimator will be the sum of the diagonal cells. 
- * The denominator for the u-value estimator will be the sum of all cells.
+ * To calculate U values for linkage of two files: 
+ * sum ( [ n * m ] )  /  [ N * M ]
+ * where n is the frequency of the given token in file 1, m is the frequency of the given token in file 2,
+ * N is the total number of records in file 1, and M is the total number of records in file 2
+ * 
+ * To calcule U values for each field when de-duplicating one file:
+ * sum ( [ (n^2 - n) / 2 ] )  /  [ (N^2 - N) / 2]
+ * where n is the frequency of the given token and N is the total number of records in the file
  * 
  * @author jegg
  *
  */
-
-public class CloseFormUCalculator {
+public class CloseFormUCalculator implements LoggingObject {
+	private static final Logger log = Logger.getLogger(CloseFormUCalculator.class);
+	private static final CloseFormUCalculator instance = new CloseFormUCalculator();
 	
-	private MatchingConfig mc;
-	private DataSourceFrequency freq1, freq2;
-	
-	public CloseFormUCalculator(MatchingConfig mc, DataSourceFrequency freq1, DataSourceFrequency freq2){
-		this.mc = mc;
-		this.freq1 = freq1;
-		this.freq2 = freq2;
+	private CloseFormUCalculator() {
 	}
 	
-	public void calculateUValues(){
-		HashMap<String,Double> u_values = new HashMap<String,Double>();
-		
-		// find fields that are common between the two data sources
-		Set<String> fields_a = freq1.getFields();
-		Set<String> fields_b = freq2.getFields();
-		
-		Set<String> intersection = new HashSet<String>(fields_a);
-		intersection.retainAll(fields_b);
-		
-		// iterate over common fields, calculating u-values
-		Iterator<String> it = intersection.iterator();
-		while(it.hasNext()){
-			String field = it.next();
-			// initialize zero values for each field
-			u_values.put(field, new Double(0));
-			
-			Set<String> m = freq1.getTokens(field);
-			Set<String> n = freq2.getTokens(field);
-			
-			Set<String> Q = new HashSet<String>(m);
-			Q.retainAll(n);
-			
-			Iterator<String> q_it1 = Q.iterator();
-			double field_total = 0;
-			double diagonal_total = 0;
-			
-			while(q_it1.hasNext()){
-				String s1 = q_it1.next();
-				int f1 = freq1.getFrequency(field, s1);
-				
-				Iterator<String> q_it2 = Q.iterator();
-				while(q_it2.hasNext()){
-					String s2 = q_it2.next();
-					
-					int f2 = freq2.getFrequency(field, s2);
-					double increment = (double)f1 * (double)f2;
-					field_total += increment;
-					if(s1.equals(s2) && !s1.equals("")){
-						diagonal_total += increment;
-					}
+	public static final CloseFormUCalculator getInstance() {
+		return instance;
+	}
+	
+	public final void calculateUValuesDedup(final MatchingConfig mc, final FrequencyContext fc) {
+		fc.analyzeData();
+		calculateUValuesDedup(mc, fc.getFrequency());
+	}
+	
+	public final void calculateUValuesDedup(final MatchingConfig mc, final DataSourceFrequency freq) {
+		final double denominator = countPairs(freq.getTotal());
+		for (final String field : freq.getFields()) {
+			int sum = 0;
+			// for every frequency, calculate u rate based on frequencies in freq2
+			for (final String token : freq.getTokens(field)) {
+				// add if statement to ignore empty string tokens
+				if (isValidToken(token)) {
+					sum += countPairs(freq.getFrequency(field, token));
 				}
 			}
-			u_values.put(field, (diagonal_total/field_total));
-			
-			//System.out.println("total for field " + field + ":\t" + u_values.get(field));
-			mc.setNonAgreementValue(mc.getRowIndexforName(field), u_values.get(field));
+			setU(mc, field, sum, denominator);
 		}
+		logNonAgreement(mc);
 	}
 	
+	private static final int countPairs(final int numRecords) {
+		return (numRecords * (numRecords - 1)) / 2;
+	}
+	
+	public final void calculateUValues(final MatchingConfig mc, final FrequencyContext fc1, final FrequencyContext fc2) {
+    	fc1.analyzeData();
+    	fc2.analyzeData();
+		calculateUValues(mc, fc1.getFrequency(), fc2.getFrequency());
+	}
+	
+	public final void calculateUValues(final MatchingConfig mc, final DataSourceFrequency freq1, final DataSourceFrequency freq2) {
+		final Set<String> fields2 = freq2.getFields();
+		final double denominator = freq1.getTotal() * freq2.getTotal();
+		// iterate over common fields, calculating u-values
+		for (final String field : freq1.getFields()) {
+			if (!fields2.contains(field)) {
+				continue;
+			}
+			int sum = 0;
+			for (final String token : freq1.getTokens(field)) {
+				if (isValidToken(token)) {
+					sum += (freq1.getFrequency(field, token) * freq2.getFrequency(field, token));
+				}
+			}
+			setU(mc, field, sum, denominator);
+		}
+		logNonAgreement(mc);
+	}
+	
+	private final static boolean isValidToken(final String token) {
+		return (token != null) && !token.equals("");
+	}
+	
+	private final static void setU(final MatchingConfig mc, final String field, final int sum, final double denominator) {
+		final double numerator = sum;
+		mc.setNonAgreementValue(mc.getRowIndexforName(field), numerator / denominator);
+	}
+	
+	protected final static void logNonAgreement(final MatchingConfig mc) {
+		log.info("calcluted values:");
+		for (final MatchingConfigRow mcr : mc.getMatchingConfigRows()) {
+			log.info(mcr.getName() + ":\t" + mcr.getNonAgreement());
+		}
+	}
+
+	@Override
+	public Logger getLogger() {
+		return log;
+	}
 }
