@@ -449,6 +449,8 @@ public class XMLUpdater {
 					ret.setAlgorithm(MatchingConfig.JWC);
 				} else if(alg.equals(MatchingConfig.ALGORITHMS[MatchingConfig.LCS])){
 					ret.setAlgorithm(MatchingConfig.LCS);
+				} else if(alg.equals(MatchingConfig.ALGORITHMS[MatchingConfig.DICE])){
+					ret.setAlgorithm(MatchingConfig.DICE);
 				}
 			} else if (child_name.equals("Threshold")) {
 				ret.setThreshold(Double.parseDouble(child.getTextContent()));

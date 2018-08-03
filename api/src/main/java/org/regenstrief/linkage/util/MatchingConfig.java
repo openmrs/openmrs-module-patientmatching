@@ -11,12 +11,10 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.codec.binary.Base64;
@@ -25,11 +23,12 @@ import org.apache.commons.codec.binary.Base64;
 public class MatchingConfig implements Cloneable {
 
 	// options for the algorithms
-	public static final String[] ALGORITHMS = {"Exact Match", "JWC", "LCS", "LEV"};
+	public static final String[] ALGORITHMS = {"Exact Match", "JWC", "LCS", "LEV", "Dice Coefficient"};
 	public static final int EXACT_MATCH = 0;
 	public static final int JWC = 1;
 	public static final int LCS = 2;
 	public static final int LEV = 3;
+	public static final int DICE = 4;
 	
 	// threshold that a pair of records, compared using this schema,
 	// have to be considered a true positive

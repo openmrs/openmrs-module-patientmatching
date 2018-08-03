@@ -227,6 +227,9 @@ public class RandomSampleAnalyzer extends RecordPairAnalyzer{
 			case(MatchingConfig.LEV):
 				match = StringMatch.LEVMatch(val1, val2);
 			break;
+			case(MatchingConfig.DICE):
+				match = StringMatch.DiceMatch(val1, val2);
+			break;
 			}
 		}
 		
