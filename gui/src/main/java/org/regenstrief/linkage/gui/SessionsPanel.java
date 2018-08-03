@@ -85,7 +85,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	JList runs;
 	JTextField run_name;
 	JTable session_options;
-	JComboBox jcb;
+	JComboBox<String> jcb;
 	
 	RecMatchConfig rm_conf;
 	 
@@ -649,11 +649,10 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	    model.addTableModelListener(this);
 		session_options = new JTable(model);
 		
-		jcb = new JComboBox();
-		jcb.addItem(MatchingConfig.ALGORITHMS[0]);
-		jcb.addItem(MatchingConfig.ALGORITHMS[1]);
-		jcb.addItem(MatchingConfig.ALGORITHMS[2]);
-		jcb.addItem(MatchingConfig.ALGORITHMS[3]);
+		jcb = new JComboBox<String>();
+		for (final String algorithm : MatchingConfig.ALGORITHMS) {
+			jcb.addItem(algorithm);
+		}
 		TableColumn tc = session_options.getColumnModel().getColumn(6);
 		tc.setCellEditor(new DefaultCellEditor(jcb));
 		

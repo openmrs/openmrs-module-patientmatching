@@ -118,6 +118,8 @@ public class MatchingConfigRow implements Cloneable {
 			threshold = StringMatch.LCS_THRESH;
 		} else if (algorithm == MatchingConfig.LEV) {
 			threshold = StringMatch.LEV_THRESH;
+		} else if (algorithm == MatchingConfig.DICE) {
+			threshold = StringMatch.DICE_THRESH;
 		}
 	}
 	

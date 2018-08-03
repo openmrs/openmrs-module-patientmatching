@@ -160,6 +160,11 @@ public class ScorePair {
 				similarity = StringMatch.getLEVMatchSimilarity(data1, data2);
 				match = similarity > threshold;
 				break;
+				
+			case (MatchingConfig.DICE):
+				similarity = StringMatch.getDiceMatchSimilarity(data1, data2);
+				match = similarity > threshold;
+				break;
 
 			default:
 				throw new IllegalArgumentException("Unexpected algorithm: " + algorithm);

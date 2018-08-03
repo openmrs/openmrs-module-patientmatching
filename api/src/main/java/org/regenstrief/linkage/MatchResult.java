@@ -17,7 +17,7 @@ import org.regenstrief.linkage.util.StringMatch;
  * TODO: Implement hashCode()
  */
 
-public class MatchResult extends RecordLink implements Comparable{
+public class MatchResult extends RecordLink implements Comparable<MatchResult> {
 	protected double score, incl_score, true_prob, false_prob, sensitivity, specificity;
 	protected MatchVector match_vct;
 	protected ScoreVector score_vct;
@@ -187,6 +187,9 @@ public class MatchResult extends RecordLink implements Comparable{
 		case MatchingConfig.JWC:
 			ret = StringMatch.getJWCMatchSimilarity(val1, val2);
 			break;
+		case MatchingConfig.DICE:
+			ret = StringMatch.getDiceMatchSimilarity(val1, val2);
+			break;
 		default:
 			return 0;
 				
@@ -194,6 +197,7 @@ public class MatchResult extends RecordLink implements Comparable{
 		return ret;
 	}
 	
+	@Override
 	public boolean equals(Object o) throws ClassCastException {
 		if(o == null) {
 			return false;
@@ -203,16 +207,18 @@ public class MatchResult extends RecordLink implements Comparable{
 		return mr.getScore() == score;
 	}
 	
-	public int compareTo(Object o) throws ClassCastException{
-		MatchResult mr = (MatchResult) o;
+	@Override
+	public int compareTo(MatchResult mr) throws ClassCastException{
 		return new Double(score).compareTo(new Double(mr.getScore()));
 	}
 	
+	@Override
 	public int hashCode() {
 		  assert false : "hashCode not designed";
 		  return 42; // any arbitrary constant will do 
 	}
 
+	@Override
 	public String toString(){
 		return Double.toString(score);
 	}

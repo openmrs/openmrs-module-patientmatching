@@ -82,16 +82,13 @@ public class SessionOptionsTableModel extends AbstractTableModel{
 			}
 			mcr.setNonAgreement(d.doubleValue());
 		} else if(col == 6){
-			if(value.equals(MatchingConfig.ALGORITHMS[0])){
-				mcr.setAlgorithm(0);
-			} else if(value.equals(MatchingConfig.ALGORITHMS[1])){
-				mcr.setAlgorithm(1);
-			} else if(value.equals(MatchingConfig.ALGORITHMS[2])){
-				mcr.setAlgorithm(2);
-			} else if(value.equals(MatchingConfig.ALGORITHMS[3])){
-				mcr.setAlgorithm(3);
-			} else {
-				mcr.setAlgorithm(0);
+			mcr.setAlgorithm(0);
+			final int numAlgorithms = MatchingConfig.ALGORITHMS.length;
+			for (int i = 0; i < numAlgorithms; i++) {
+				if (value.equals(MatchingConfig.ALGORITHMS[i])) {
+					mcr.setAlgorithm(i);
+					break;
+				}
 			}
 			// Each algorithm has a different default threshold; show the new threshold in the GUI whenever the algorithm changes
 			setValueAt(getValueAt(row, 7), row, 7);
