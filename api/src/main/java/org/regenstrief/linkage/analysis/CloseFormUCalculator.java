@@ -2,8 +2,6 @@ package org.regenstrief.linkage.analysis;
 
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-import org.regenstrief.linkage.util.LoggingObject;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
 
@@ -20,8 +18,7 @@ import org.regenstrief.linkage.util.MatchingConfigRow;
  * @author jegg
  *
  */
-public class CloseFormUCalculator implements LoggingObject {
-	private static final Logger log = Logger.getLogger(CloseFormUCalculator.class);
+public final class CloseFormUCalculator extends FrequencyBasedCalculator {
 	private static final CloseFormUCalculator instance = new CloseFormUCalculator();
 	
 	private CloseFormUCalculator() {
@@ -31,12 +28,8 @@ public class CloseFormUCalculator implements LoggingObject {
 		return instance;
 	}
 	
-	public final void calculateUValuesDedup(final MatchingConfig mc, final FrequencyContext fc) {
-		fc.analyzeData();
-		calculateUValuesDedup(mc, fc.getFrequency());
-	}
-	
-	public final void calculateUValuesDedup(final MatchingConfig mc, final DataSourceFrequency freq) {
+	@Override
+	public final void calculateDedup(final MatchingConfig mc, final DataSourceFrequency freq) {
 		final double denominator = countPairs(freq.getTotal());
 		for (final String field : freq.getFields()) {
 			int sum = 0;
@@ -52,17 +45,8 @@ public class CloseFormUCalculator implements LoggingObject {
 		logNonAgreement(mc);
 	}
 	
-	private static final int countPairs(final int numRecords) {
-		return (numRecords * (numRecords - 1)) / 2;
-	}
-	
-	public final void calculateUValues(final MatchingConfig mc, final FrequencyContext fc1, final FrequencyContext fc2) {
-    	fc1.analyzeData();
-    	fc2.analyzeData();
-		calculateUValues(mc, fc1.getFrequency(), fc2.getFrequency());
-	}
-	
-	public final void calculateUValues(final MatchingConfig mc, final DataSourceFrequency freq1, final DataSourceFrequency freq2) {
+	@Override
+	public final void calculate(final MatchingConfig mc, final DataSourceFrequency freq1, final DataSourceFrequency freq2) {
 		final Set<String> fields2 = freq2.getFields();
 		final double denominator = freq1.getTotal() * freq2.getTotal();
 		// iterate over common fields, calculating u-values
@@ -81,10 +65,6 @@ public class CloseFormUCalculator implements LoggingObject {
 		logNonAgreement(mc);
 	}
 	
-	private final static boolean isValidToken(final String token) {
-		return (token != null) && !token.equals("");
-	}
-	
 	private final static void setU(final MatchingConfig mc, final String field, final int sum, final double denominator) {
 		final double numerator = sum;
 		mc.setNonAgreementValue(mc.getRowIndexforName(field), numerator / denominator);
@@ -95,10 +75,5 @@ public class CloseFormUCalculator implements LoggingObject {
 		for (final MatchingConfigRow mcr : mc.getMatchingConfigRows()) {
 			log.info(mcr.getName() + ":\t" + mcr.getNonAgreement());
 		}
-	}
-
-	@Override
-	public Logger getLogger() {
-		return log;
 	}
 }

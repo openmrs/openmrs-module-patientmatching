@@ -34,8 +34,16 @@ public class FrequencyContext {
 			throw new NullPointerException("Could not obtain Reader");
 		}
 		this.dsa = new DataSourceAnalysis(dsr);
-		this.dsf = new MemoryBackedDataSourceFrequency();
-		this.fa = new FrequencyAnalyzer(lds, mc, dsf);
+		this.dsf = newDataSourceFrequency();
+		this.fa = newFrequencyAnalyzer(mc, lds);
+	}
+	
+	protected DataSourceFrequency newDataSourceFrequency() {
+		return new MemoryBackedDataSourceFrequency();
+	}
+	
+	protected FrequencyAnalyzer newFrequencyAnalyzer(final MatchingConfig mc, final LinkDataSource lds) {
+		return new FrequencyAnalyzer(lds, mc, dsf);
 	}
 	
 	public final void analyzeData() {

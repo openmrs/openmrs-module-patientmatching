@@ -22,6 +22,8 @@ import javax.swing.JPanel;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.MatchVector;
 import org.regenstrief.linkage.analysis.AverageFrequencyAnalyzer;
+import org.regenstrief.linkage.analysis.BlockingFrequencyContext;
+import org.regenstrief.linkage.analysis.BlockingHeuristicCalculator;
 import org.regenstrief.linkage.analysis.CloseFormUCalculator;
 import org.regenstrief.linkage.analysis.DataSourceAnalysis;
 import org.regenstrief.linkage.analysis.DataSourceFrequency;
@@ -69,7 +71,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 	
 	private JButton random_button;
 	
-	private JButton em_button, vector_button, summary_button, freq_button, closed_form_button, vector_obs_button, synthetic_button, mi_score_button;
+	private JButton em_button, vector_button, summary_button, freq_button, closed_form_button, vector_obs_button, synthetic_button, mi_score_button, blocking_heuristics;
 	
 	public AnalysisPanel(RecMatchConfig rmc){
 		super();
@@ -129,6 +131,10 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		mi_score_button = new JButton("Calculate Mutual Information Score");
 		row3.add(mi_score_button);
 		mi_score_button.addActionListener(this);
+		
+		blocking_heuristics = new JButton("Blocking Scheme Heuristics");
+		row3.add(blocking_heuristics);
+		blocking_heuristics.addActionListener(this);
 		
 		this.add(Box.createVerticalGlue());
 	}
@@ -346,7 +352,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		dsa.addAnalyzer(fa);
 		dsa.analyzeData();
 		
-		if(!rm_conf.isDeduplication()){
+		if(!rm_conf.isDeduplication()) {
 			DataSourceFrequency dsf2 = new MemoryBackedDataSourceFrequency();
 			rm_conf.setDataSourceFrequency2(dsf2);
 			MutualInformationAnalyzer fa2 = new MutualInformationAnalyzer(rm_conf, rm_conf.getLinkDataSource2(), rm_conf.getDataSourceFrequencyf2());
@@ -360,36 +366,67 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		}
 	}
 	
+	private void runBlockingHeuristics() {
+		final boolean dedup = rm_conf.isDeduplication();
+		boolean first = true;
+		for (final MatchingConfig mc : rm_conf.getMatchingConfigs()) {
+			final BlockingFrequencyContext fc1 = new BlockingFrequencyContext(mc, rm_conf.getLinkDataSource1());
+			final BlockingHeuristicCalculator calculator = new BlockingHeuristicCalculator();
+			final LoggingFrame frame;
+			if (first) {
+				frame = new LoggingFrame("Blocking Heuristics");
+				frame.addLoggingObject(fc1.getFrequencyAnalyzer());
+				frame.addLoggingObject(calculator);
+			} else {
+				frame = null;
+			}
+			if (dedup) {
+				if (first) {
+					frame.configureLoggingFrame();
+				}
+				calculator.calculateDedup(mc, fc1);
+			} else {
+				final BlockingFrequencyContext fc2 = new BlockingFrequencyContext(mc, rm_conf.getLinkDataSource2());
+				if (first) {
+					frame.addLoggingObject(fc2.getFrequencyAnalyzer());
+					frame.configureLoggingFrame();
+				}
+				calculator.calculate(mc, fc1, fc2);
+			}
+			first = false;
+		}
+	}
 
-
-	private void displayVectorTables(){
-		Iterator<MatchingConfig> it = rm_conf.getMatchingConfigs().iterator();
-		while(it.hasNext()){
-			MatchingConfig mc = it.next();
+	private void displayVectorTables() {
+		for (final MatchingConfig mc : rm_conf.getMatchingConfigs()) {
 			VectorTable vt = new VectorTable(mc);
 			TextDisplayFrame tdf = new SaveTextDisplayFrame(mc.getName(), vt.toString());
 		}
 	}
 	
-	public void actionPerformed(ActionEvent ae){
-		if(ae.getSource() == em_button){
+	@Override
+	public void actionPerformed(ActionEvent ae) {
+		final Object source = ae.getSource();
+		if (source == em_button) {
 			runEMAnalysis();
-		} else if(ae.getSource() == vector_button){
+		} else if (source == vector_button) {
 			displayVectorTables();
-		} else if(ae.getSource() == random_button) {
+		} else if (source == random_button) {
 		    performRandomSampling();
-		} else if(ae.getSource() == summary_button) {
+		} else if (source == summary_button) {
 			performSummaryStatistics();
-		} else if(ae.getSource() == freq_button) {
+		} else if (source == freq_button) {
 			performFrequencyAnalysis();
-		} else if(ae.getSource() == closed_form_button){
+		} else if (source == closed_form_button) {
 			calculateClosedUValues();
-		} else if(ae.getSource() == vector_obs_button){
+		} else if (source == vector_obs_button) {
 			performVectorObsAnalysis();
-		} else if(ae.getSource() == synthetic_button){
+		} else if (source == synthetic_button) {
 			createSyntheticData();
-		}else if (ae.getSource() == mi_score_button) {
+		} else if (source == mi_score_button) {
 			calculateMIScores();
+		} else if (source == blocking_heuristics) {
+			runBlockingHeuristics();
 		}
 	}
 	
@@ -428,30 +465,19 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		}
 	}
 	
-	private void calculateClosedUValues(){
-		
-		/*if(rm_conf.isDeduplication()){
-				// run dedpulication u value calculator
-				CloseFormUCalculatorDedup cfucd = new CloseFormUCalculatorDedup(rm_conf.getMatchingConfigs().get(0), dsf1);
-				cfucd.calculateUValues();
-			} else {
-				// run normal u value calculator
-				CloseFormUCalculator cfuc = new CloseFormUCalculator(rm_conf.getMatchingConfigs().get(0), dsf1, dsf2);
-				cfuc.calculateUValues();
-			}*/
-		
+	private void calculateClosedUValues() {
 		for (final MatchingConfig mc : rm_conf.getMatchingConfigs()) {
 			final FrequencyContext fc1 = new FrequencyContext(mc, rm_conf.getLinkDataSource1());
 			if (rm_conf.isDeduplication()) {
-				CloseFormUCalculator.getInstance().calculateUValuesDedup(mc, fc1);
+				CloseFormUCalculator.getInstance().calculateDedup(mc, fc1);
 			} else {
 				final FrequencyContext fc2 = new FrequencyContext(mc, rm_conf.getLinkDataSource2());
-				CloseFormUCalculator.getInstance().calculateUValues(mc, fc1, fc2);
+				CloseFormUCalculator.getInstance().calculate(mc, fc1, fc2);
 			}
 		}
 	}
 	
-	private void performFrequencyAnalysis(){
+	private void performFrequencyAnalysis() {
 		DataSourceFrequency dsf1 = new MemoryBackedDataSourceFrequency();
 		FrequencyAnalyzer fa1 = new FrequencyAnalyzer(rm_conf.getLinkDataSource1(), null, dsf1);
 		DataSourceFrequency dsf2 = new MemoryBackedDataSourceFrequency();
@@ -465,7 +491,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 		dsa.analyzeData();
 		rm_conf.setDataSourceFrequency1(dsf1);
 		
-		if(!rm_conf.isDeduplication()){
+		if (!rm_conf.isDeduplication()) {
 			System.out.println("analyzed source 1, getting ready to read source 2");
 			dsa = new DataSourceAnalysis(rp.getReader(rm_conf.getLinkDataSource1()));
 			dsa.addAnalyzer(fa2);

@@ -1094,7 +1094,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		if (rm_conf.isDeduplication()) {
 			frame.addLoggingObject(fc1.getFrequencyAnalyzer());
 			frame.configureLoggingFrame();
-			calc.calculateUValuesDedup(mcCopy, fc1);
+			calc.calculateDedup(mcCopy, fc1);
 		} else {
 			final FrequencyContext fc2 = new FrequencyContext(mc, rm_conf.getLinkDataSource2());
 			final FrequencyContext[] fcs = { fc1, fc2 };
@@ -1102,7 +1102,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 				frame.addLoggingObject(fc.getFrequencyAnalyzer());
 			}
             frame.configureLoggingFrame();
-            calc.calculateUValues(mcCopy, fc1, fc2);
+            calc.calculate(mcCopy, fc1, fc2);
 		}
 		}
 	}

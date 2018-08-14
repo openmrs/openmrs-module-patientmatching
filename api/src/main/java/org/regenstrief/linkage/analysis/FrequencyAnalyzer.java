@@ -9,23 +9,27 @@ import org.regenstrief.linkage.util.MatchingConfigRow;
 
 public class FrequencyAnalyzer extends DataSourceAnalyzer {
 	
-	DataSourceFrequency counter;
+	final DataSourceFrequency counter;
 	
-	public FrequencyAnalyzer(LinkDataSource lds, MatchingConfig mc, DataSourceFrequency dsf){
+	public FrequencyAnalyzer(final LinkDataSource lds, final MatchingConfig mc, final DataSourceFrequency dsf) {
 		super(lds, mc);
 		counter = dsf;
 	}
 	
 	@Override
-	public void analyzeRecord(Record rec) {
+	public final void analyzeRecord(final Record rec) {
+		incrementCount(rec);
+		counter.incrementTotal();
+	}
+	
+	protected void incrementCount(final Record rec) {
 		for (final Map.Entry<String, String> entry : rec.getDemographics().entrySet()) {
 			counter.incrementCount(entry.getKey(), entry.getValue());
 		}
-		counter.incrementTotal();
 	}
 
 	@Override
-	public boolean isAnalyzedDemographic(MatchingConfigRow mcr) {
+	public boolean isAnalyzedDemographic(final MatchingConfigRow mcr) {
 		return true;
 	}
 
