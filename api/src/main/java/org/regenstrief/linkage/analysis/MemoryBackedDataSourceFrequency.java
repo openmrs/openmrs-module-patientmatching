@@ -68,13 +68,4 @@ public class MemoryBackedDataSourceFrequency extends DataSourceFrequency {
 	public Set<String> getTokens(String field) {
 		return frequencies.get(field).keySet();
 	}
-	
-	private final static class Count {
-		
-		private int i; // java.lang.Integer is immutable; use our own mutable wrapper so we don't need to create a new instance each time we increment
-		
-		private Count(final int i) {
-			this.i = i;
-		}
-	}
 }

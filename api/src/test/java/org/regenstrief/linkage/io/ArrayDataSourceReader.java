@@ -56,9 +56,9 @@ public class ArrayDataSourceReader implements DataSourceReader {
 	
 	private final static ArrayDataSourceReader SAMPLE_NULL2 = new ArrayDataSourceReader(new String[][] {
 		{ "ID", "LAST", "FIRST" },
-		{ "11", "DOE", "JANE" },
-		{ "12", "DOE", "" },
-		{ "13", "DOE", null }
+		{ "16", "DOE", "JANE" },
+		{ "17", "DOE", "" },
+		{ "18", "DOE", null }
 	});
 	
 	private final Record[] records;
@@ -115,6 +115,13 @@ public class ArrayDataSourceReader implements DataSourceReader {
 		final MatchingConfig mc = new MatchingConfig("Sample", new String[] { "ID", "LAST", "FIRST" });
 		mc.getMatchingConfigRowByName("LAST").setBlockOrder(1);
 		mc.getMatchingConfigRowByName("FIRST").setInclude(true);
+		return mc;
+	}
+	
+	public final static MatchingConfig newFullNameBlockingMatchingConfig() {
+		final MatchingConfig mc = new MatchingConfig("Sample", new String[] { "ID", "LAST", "FIRST" });
+		mc.getMatchingConfigRowByName("LAST").setBlockOrder(1);
+		mc.getMatchingConfigRowByName("FIRST").setBlockOrder(2);
 		return mc;
 	}
 	

@@ -2,13 +2,11 @@ package org.regenstrief.linkage.analysis;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.gui.SaveTextDisplayFrame;
@@ -227,8 +225,8 @@ public class MutualInformationAnalyzer extends FrequencyAnalyzer {
 	}
 
 	@Override
-	public void analyzeRecord(Record rec) {
-		super.analyzeRecord(rec);
+	public void incrementCount(Record rec) {
+		super.incrementCount(rec);
 		System.out.println("Entering analyzeRecord method...");
 		for (ColumnPair cp : mi_calculator.getColumn_pair_list()) {
 			boolean flag = false;

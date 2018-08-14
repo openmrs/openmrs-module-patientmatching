@@ -31,4 +31,13 @@ public abstract class DataSourceFrequency {
 	public abstract Set<String> getTokens(String field);
 	
 	public abstract Set<String> getFields();
+	
+	protected final static class Count {
+		
+		protected int i; // java.lang.Integer is immutable; use our own mutable wrapper so we don't need to create a new instance each time we increment
+		
+		protected Count(final int i) {
+			this.i = i;
+		}
+	}
 }
