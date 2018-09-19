@@ -3,7 +3,6 @@ package org.regenstrief.linkage.io;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -52,6 +51,9 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader implements O
 			if(expected.lastModified() > modified_date){
 				try{
 					file_reader = new BufferedReader(new FileReader(expected));
+					if (lds.getFileHeaderLine() || lds.getSkipFirstRow()) {
+						file_reader.readLine();
+					}
 					final String line = file_reader.readLine();
 					if (line != null) {
 					    next_record = line2Record(line);
