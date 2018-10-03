@@ -22,7 +22,7 @@ public abstract class FrequencyBasedCalculator implements LoggingObject {
 	
 	public abstract void calculate(final MatchingConfig mc, final DataSourceFrequency freq1, final DataSourceFrequency freq2);
 	
-	protected static final int countPairs(final int numRecords) {
+	protected static final long countPairs(final long numRecords) {
 		return (numRecords * (numRecords - 1)) / 2;
 	}
 	

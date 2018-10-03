@@ -32,7 +32,7 @@ public class CloseFormUCalculator extends FrequencyBasedCalculator {
 	public final void calculateDedup(final MatchingConfig mc, final DataSourceFrequency freq) {
 		final double denominator = countPairs(freq.getTotal());
 		for (final String field : freq.getFields()) {
-			int sum = 0;
+			long sum = 0;
 			// for every frequency, calculate u rate based on frequencies in freq2
 			for (final String token : freq.getTokens(field)) {
 				// add if statement to ignore empty string tokens
@@ -54,10 +54,11 @@ public class CloseFormUCalculator extends FrequencyBasedCalculator {
 			if (!fields2.contains(field)) {
 				continue;
 			}
-			int sum = 0;
+			long sum = 0;
 			for (final String token : freq1.getTokens(field)) {
 				if (isValidToken(token)) {
-					sum += (freq1.getFrequency(field, token) * freq2.getFrequency(field, token));
+					final long count1 = freq1.getFrequency(field, token), count2 = freq2.getFrequency(field, token);
+					sum += (count1 * count2);
 				}
 			}
 			setU(mc, field, sum, denominator);
@@ -65,7 +66,7 @@ public class CloseFormUCalculator extends FrequencyBasedCalculator {
 		logNonAgreement(mc);
 	}
 	
-	protected void setU(final MatchingConfig mc, final String field, final int sum, final double denominator) {
+	protected void setU(final MatchingConfig mc, final String field, final long sum, final double denominator) {
 		final double numerator = sum;
 		mc.setNonAgreementValue(mc.getRowIndexforName(field), numerator / denominator);
 	}

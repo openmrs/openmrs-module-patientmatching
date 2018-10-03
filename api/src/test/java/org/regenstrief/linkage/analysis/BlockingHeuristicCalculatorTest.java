@@ -15,10 +15,10 @@ public class BlockingHeuristicCalculatorTest {
 		runDedupAnalysis(0, log2(1.0 / 5.0) / -5.0, 2, 4, ArrayDataSourceReader.getSampleNull());
 	}
 	
-	private void runDedupAnalysis(final int exPairs, final double exEntropy, final int exUnique, final int exNull,
+	private void runDedupAnalysis(final long exPairs, final double exEntropy, final long exUnique, final long exNull,
 	                              final DataSourceReader r) {
 		final MatchingConfig mc = ArrayDataSourceReader.newFullNameBlockingMatchingConfig();
-		final BlockingHeuristicCalculator calculator = new BlockingHeuristicCalculator();
+		final BlockingHeuristicCalculator calculator = newBlockingHeuristicCalculator();
 		calculator.calculateDedup(mc, new BlockingFrequencyContext(mc, ArrayDataSourceReader.SAMPLE_LINK_DATA_SOURCE, r));
 		assertResults(exPairs, exEntropy, exUnique, exNull, calculator);
 	}
@@ -30,17 +30,23 @@ public class BlockingHeuristicCalculatorTest {
 		runAnalysis(1, 2.0 * log2(2.0 / 8.0) / -8.0, 2, 6, ArrayDataSourceReader.getSampleNull(), ArrayDataSourceReader.getSampleNull2());
 	}
 	
-	private void runAnalysis(final int exPairs, final double exEntropy, final int exUnique, final int exNull,
+	private void runAnalysis(final long exPairs, final double exEntropy, final long exUnique, final long exNull,
 	                         final DataSourceReader r1, final DataSourceReader r2) {
 		final MatchingConfig mc = ArrayDataSourceReader.newFullNameBlockingMatchingConfig();
-		final BlockingHeuristicCalculator calculator = new BlockingHeuristicCalculator();
+		final BlockingHeuristicCalculator calculator = newBlockingHeuristicCalculator();
 		calculator.calculate(mc,
 			new BlockingFrequencyContext(mc, ArrayDataSourceReader.SAMPLE_LINK_DATA_SOURCE, r1),
 			new BlockingFrequencyContext(mc, ArrayDataSourceReader.SAMPLE_LINK_DATA_SOURCE, r2));
 		assertResults(exPairs, exEntropy, exUnique, exNull, calculator);
 	}
 	
-	private void assertResults(final int exPairs, final double exEntropy, final int exUnique, final int exNull,
+	private BlockingHeuristicCalculator newBlockingHeuristicCalculator() {
+		final BlockingHeuristicCalculator calculator = new BlockingHeuristicCalculator();
+		calculator.setFileEnabled(false);
+		return calculator;
+	}
+	
+	private void assertResults(final long exPairs, final double exEntropy, final long exUnique, final long exNull,
 	                           final BlockingHeuristicCalculator calculator) {
 		Assert.assertEquals(exPairs, calculator.getTotalPairs());
 		Assert.assertEquals(exEntropy, calculator.getEntropy(), 0.001);
