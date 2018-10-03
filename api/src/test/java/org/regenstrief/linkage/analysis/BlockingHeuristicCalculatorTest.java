@@ -18,7 +18,7 @@ public class BlockingHeuristicCalculatorTest {
 	private void runDedupAnalysis(final long exPairs, final double exEntropy, final long exUnique, final long exNull,
 	                              final DataSourceReader r) {
 		final MatchingConfig mc = ArrayDataSourceReader.newFullNameBlockingMatchingConfig();
-		final BlockingHeuristicCalculator calculator = new BlockingHeuristicCalculator();
+		final BlockingHeuristicCalculator calculator = newBlockingHeuristicCalculator();
 		calculator.calculateDedup(mc, new BlockingFrequencyContext(mc, ArrayDataSourceReader.SAMPLE_LINK_DATA_SOURCE, r));
 		assertResults(exPairs, exEntropy, exUnique, exNull, calculator);
 	}
@@ -33,12 +33,17 @@ public class BlockingHeuristicCalculatorTest {
 	private void runAnalysis(final long exPairs, final double exEntropy, final long exUnique, final long exNull,
 	                         final DataSourceReader r1, final DataSourceReader r2) {
 		final MatchingConfig mc = ArrayDataSourceReader.newFullNameBlockingMatchingConfig();
-		final BlockingHeuristicCalculator calculator = new BlockingHeuristicCalculator();
-		calculator.setFileEnabled(false);
+		final BlockingHeuristicCalculator calculator = newBlockingHeuristicCalculator();
 		calculator.calculate(mc,
 			new BlockingFrequencyContext(mc, ArrayDataSourceReader.SAMPLE_LINK_DATA_SOURCE, r1),
 			new BlockingFrequencyContext(mc, ArrayDataSourceReader.SAMPLE_LINK_DATA_SOURCE, r2));
 		assertResults(exPairs, exEntropy, exUnique, exNull, calculator);
+	}
+	
+	private BlockingHeuristicCalculator newBlockingHeuristicCalculator() {
+		final BlockingHeuristicCalculator calculator = new BlockingHeuristicCalculator();
+		calculator.setFileEnabled(false);
+		return calculator;
 	}
 	
 	private void assertResults(final long exPairs, final double exEntropy, final long exUnique, final long exNull,
