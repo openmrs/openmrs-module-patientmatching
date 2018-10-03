@@ -5,6 +5,7 @@ import java.util.Set;
 public abstract class DataSourceFrequency {
 	protected boolean finished = false;
 	protected int total = 0;
+	protected String dataSourceName = null;
 	
 	public boolean isFinished() {
 		return finished;
@@ -20,6 +21,14 @@ public abstract class DataSourceFrequency {
 	
 	public void incrementTotal() {
 		total++;
+	}
+	
+	public String getDataSourceName() {
+		return dataSourceName;
+	}
+	
+	public void setDataSourceName(final String dataSourceName) {
+		this.dataSourceName = dataSourceName;
 	}
 	
 	public abstract int getFrequency(String field, String token);

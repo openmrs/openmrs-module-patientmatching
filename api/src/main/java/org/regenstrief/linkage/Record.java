@@ -103,7 +103,7 @@ public class Record {
 	 * @return the value of the given demographic for this object
 	 */
 	public String getDemographic(String demographic) {
-		if(demographic == null || !demographics.keySet().contains(demographic)){
+		if (demographic == null || !demographics.containsKey(demographic)){
 			return null;
 		}
 		return demographics.get(demographic);
@@ -122,19 +122,15 @@ public class Record {
 		return getDemographic(demographic).length() == 0;
 	}
 	
-	
-	
 	/**
 	 * Returns a string with each demographic name and its value
 	 */
+	@Override
 	public String toString() {
-		String ret = new String("Record:\n");
-		Iterator<String> it = demographics.keySet().iterator();
-		while (it.hasNext()) {
-			String k = it.next();
-			ret += "\t" + k + ": " + demographics.get(k) + "\n";
+		final StringBuilder ret = new StringBuilder("Record:\n");
+		for (final String k : demographics.keySet()) {
+			ret.append('\t').append(k).append(": ").append(demographics.get(k)).append('\n');
 		}
-		return ret;
+		return ret.toString();
 	}
-
 }

@@ -18,10 +18,10 @@ import org.regenstrief.linkage.util.MatchingConfigRow;
  * @author jegg
  *
  */
-public final class CloseFormUCalculator extends FrequencyBasedCalculator {
+public class CloseFormUCalculator extends FrequencyBasedCalculator {
 	private static final CloseFormUCalculator instance = new CloseFormUCalculator();
 	
-	private CloseFormUCalculator() {
+	protected CloseFormUCalculator() {
 	}
 	
 	public static final CloseFormUCalculator getInstance() {
@@ -65,12 +65,12 @@ public final class CloseFormUCalculator extends FrequencyBasedCalculator {
 		logNonAgreement(mc);
 	}
 	
-	private final static void setU(final MatchingConfig mc, final String field, final int sum, final double denominator) {
+	protected void setU(final MatchingConfig mc, final String field, final int sum, final double denominator) {
 		final double numerator = sum;
 		mc.setNonAgreementValue(mc.getRowIndexforName(field), numerator / denominator);
 	}
 	
-	protected final static void logNonAgreement(final MatchingConfig mc) {
+	protected void logNonAgreement(final MatchingConfig mc) {
 		log.info("calcluted values:");
 		for (final MatchingConfigRow mcr : mc.getMatchingConfigRows()) {
 			log.info(mcr.getName() + ":\t" + mcr.getNonAgreement());

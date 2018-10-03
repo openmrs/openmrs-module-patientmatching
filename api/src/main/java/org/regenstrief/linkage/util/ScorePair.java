@@ -11,9 +11,7 @@ package org.regenstrief.linkage.util;
  */
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 
 import org.openmrs.module.patientmatching.MatchingConstants;
@@ -51,7 +49,7 @@ public class ScorePair {
 	 * @should indicate a match on patients with multiple identifiers for an identifier type
 	 */
 	public MatchResult scorePair(Record rec1, Record rec2) {
-		MatchVector mv;
+		final MatchVector mv;
 		if (rec1.hasNullValues() || rec2.hasNullValues()) {
 			mv = new NullDemographicsMatchVector();
 		} else {
@@ -74,11 +72,8 @@ public class ScorePair {
 			// multi-field demographics need to be analyzed on each combination of values
 			// TODO base this on a flag on MatchingConfigRow vs the beginning of the name
 			if (comparison_demographic.startsWith("(Identifier)")) {
-				List<String[]> candidates = getCandidatesFromMultiFieldDemographics(data1, data2);
-				Iterator<String[]> iter = candidates.iterator();
-				while (iter.hasNext()) {
+				for (final String[] candidate : getCandidatesFromMultiFieldDemographics(data1, data2)) {
 					// TODO use something other than String[] or guarantee size == 2
-					String[] candidate = iter.next();
 					if (match(mv, comparison_demographic, algorithm, threshold, candidate[0], candidate[1])) {
 						break;
 					}
@@ -88,7 +83,7 @@ public class ScorePair {
 			}
 		}
 
-		mv = enableInterchageableFieldComparsion(rec1, rec2, mv);
+		enableInterchageableFieldComparsion(rec1, rec2, mv);
 		MatchResult mr = new MatchResult(vt.getScore(mv), vt.getInclusiveScore(mv), vt.getMatchVectorTrueProbability(mv), vt.getMatchVectorFalseProbability(mv), vt.getSensitivity(mv), vt.getSpecificity(mv), mv, vt.getScoreVector(mv), rec1, rec2, mc);
 		for (Modifier m : modifiers) {
 			mr = m.getModifiedMatchResult(mr, mc);
@@ -99,9 +94,9 @@ public class ScorePair {
 
 		Long l = observed_vectors.get(mr.getMatchVector());
 		if (l == null) {
-			l = new Long(1);
+			l = Long.valueOf(1);
 		} else {
-			l = l + 1;
+			l = Long.valueOf(l.longValue() + 1);
 		}
 		observed_vectors.put(mr.getMatchVector(), l);
 
@@ -179,12 +174,8 @@ public class ScorePair {
 	 * if the columns match with each other then the individual columns which
 	 * make the concat1 column would be set as true
 	 **/
-	private MatchVector enableInterchageableFieldComparsion(Record rec1, Record rec2, MatchVector mv) {
-		Set<String> s = mc.getInterchangeableColumns();
-		Iterator<String> i = s.iterator();
-		while (i.hasNext()) {
-			String comparision_demographic = i.next();
-
+	private void enableInterchageableFieldComparsion(Record rec1, Record rec2, final MatchVector mv) {
+		for (final String comparision_demographic : mc.getInterchangeableColumns()) {
 			String rec1ConcatValue = rec1.getDemographic(comparision_demographic);
 			String rec2ConcatValue = rec2.getDemographic(comparision_demographic);
 			if (StringUtils.isNotEmpty(rec1ConcatValue) || StringUtils.isNotEmpty(rec2ConcatValue)) {
@@ -195,11 +186,11 @@ public class ScorePair {
 						mv.setMatch(mcr, similarity, true);
 					}
 				}
-				return mv;
+				return;
 			}
 		}
 
-		return mv;
+		return;
 	}
 
 	public Hashtable<MatchVector, Long> getObservedVectors() {

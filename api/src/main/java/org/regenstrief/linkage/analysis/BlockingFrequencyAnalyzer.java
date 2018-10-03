@@ -27,6 +27,7 @@ public class BlockingFrequencyAnalyzer extends FrequencyAnalyzer {
 			}
 			final String token = rec.getDemographic(bc);
 			if (!BlockingHeuristicCalculator.isValidToken(token)) {
+				counter.incrementCount(FIELD, "");
 				return;
 			}
 			stringBuilder.append(token);
