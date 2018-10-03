@@ -19,6 +19,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import org.apache.log4j.Logger;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.MatchVector;
 import org.regenstrief.linkage.analysis.AverageFrequencyAnalyzer;
@@ -52,6 +53,7 @@ import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.util.FSSyntheticRecordGenerator;
 import org.regenstrief.linkage.util.FileWritingMatcher;
 import org.regenstrief.linkage.util.LinkDataSource;
+import org.regenstrief.linkage.util.LoggingObject;
 import org.regenstrief.linkage.util.MUSyntheticRecordGenerator;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.RecMatchConfig;
@@ -64,8 +66,10 @@ import org.regenstrief.linkage.util.SyntheticRecordGenerator;
  *
  */
 
-public class AnalysisPanel extends JPanel implements ActionListener{
+public class AnalysisPanel extends JPanel implements ActionListener, LoggingObject {
 	private static final long serialVersionUID = -6402375274052004924L;
+	
+	private static final Logger log = Logger.getLogger(AnalysisPanel.class);
 
 	RecMatchConfig rm_conf;
 	
@@ -369,7 +373,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 	private void runBlockingHeuristics() {
 		final boolean dedup = rm_conf.isDeduplication();
 		boolean first = true;
-		for (final MatchingConfig mc : rm_conf.getMatchingConfigs()) {
+		for (final MatchingConfig mc : BlockingHeuristicCalculator.getBlockingSchemesToAnalyze(rm_conf)) {
 			final BlockingFrequencyContext fc1 = new BlockingFrequencyContext(mc, rm_conf.getLinkDataSource1());
 			final BlockingHeuristicCalculator calculator = new BlockingHeuristicCalculator();
 			final LoggingFrame frame;
@@ -377,6 +381,8 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 				frame = new LoggingFrame("Blocking Heuristics");
 				frame.addLoggingObject(fc1.getFrequencyAnalyzer());
 				frame.addLoggingObject(calculator);
+				frame.add(this);
+				log.info("Starting");
 			} else {
 				frame = null;
 			}
@@ -395,6 +401,7 @@ public class AnalysisPanel extends JPanel implements ActionListener{
 			}
 			first = false;
 		}
+		log.info("Finished");
 	}
 
 	private void displayVectorTables() {
@@ -622,4 +629,9 @@ public class AnalysisPanel extends JPanel implements ActionListener{
             }
         }
     }
+
+	@Override
+	public Logger getLogger() {
+		return log;
+	}
 }

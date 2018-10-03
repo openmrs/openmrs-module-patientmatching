@@ -99,49 +99,48 @@ public class CharDelimFileReader implements DataSourceReader{
 	 * @param f	the file to modify
 	 * @return	the resulting file
 	 */
-	protected File switchColumns(File f, boolean add_id, boolean header_line){
+	protected File switchColumns(File f, boolean add_id, boolean header_line) {
 		List<DataColumn> dcs1 = data_source.getDataColumns();
 		int[] order1 = new int[data_source.getIncludeCount()];
 		
 		// iterate over the  DataColumn list and store the data position value
 		// in order arrays at the index given by display_position, as long as
 		// display position is not NA
-		Iterator<DataColumn> it1 = dcs1.iterator();
-		boolean same = true;
+		boolean same = dcs1.size() == order1.length;
 		int expected = 0;
-		while(it1.hasNext()){
-			DataColumn dc = it1.next();
-			if(dc.getIncludePosition() != DataColumn.INCLUDE_NA){
-				order1[dc.getIncludePosition()] = Integer.parseInt(dc.getColumnID());
+		for (final DataColumn dc : dcs1) {
+			final int includePosition = dc.getIncludePosition();
+			if (includePosition != DataColumn.INCLUDE_NA) {
+				order1[includePosition] = Integer.parseInt(dc.getColumnID());
 			}
-			if(dc.getIncludePosition() == expected){
+			if (includePosition != expected) {
 				same = false;
-				expected ++;
 			}
+			expected++;
 		}
 		
-		if(same){
+		if (same) {
 			// save first header line to skip it later
-			try{
-				BufferedReader br = new BufferedReader(new FileReader(f));
-				header = br.readLine();
-				br.close();
-			}
-			catch(IOException ioe){
-				
+			if (header_line) {
+				try {
+					BufferedReader br = new BufferedReader(new FileReader(f));
+					header = br.readLine();
+					br.close();
+				} catch (final IOException e) {
+					throw new IllegalStateException(e);
+				}
 			}
 			return f;
 		}
 		
 		File switched = new File(data_source.getName() + ".switched");
-		try{
+		try {
 			ColumnSwitcher cs = new ColumnSwitcher(f, switched, order1, data_source.getAccess().charAt(0));
 			cs.setAddIDColumn(add_id);
 			cs.setReadHeaderLine(header_line);
 			cs.switchColumns();
-		}
-		catch(IOException ioe){
-			return null;
+		} catch (final IOException e) {
+			throw new IllegalStateException(e);
 		}
 		
 		return switched;

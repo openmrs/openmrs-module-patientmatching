@@ -36,6 +36,7 @@ public class FrequencyContext {
 		this.dsa = new DataSourceAnalysis(dsr);
 		this.dsf = newDataSourceFrequency();
 		this.fa = newFrequencyAnalyzer(mc, lds);
+		this.dsf.setDataSourceName(getDataSourceName());
 	}
 	
 	protected DataSourceFrequency newDataSourceFrequency() {
@@ -57,5 +58,9 @@ public class FrequencyContext {
 	
 	public final FrequencyAnalyzer getFrequencyAnalyzer() {
 		return this.fa;
+	}
+	
+	public final String getDataSourceName() {
+		return fa.lds.getName();
 	}
 }
