@@ -48,6 +48,7 @@ public class FrequencyContext {
 	}
 	
 	public final void analyzeData() {
+		System.out.println("Analyzing " + getDataSourceName());
 		this.dsa.addAnalyzer(this.fa);
 		this.dsa.analyzeData();
 	}
@@ -62,5 +63,8 @@ public class FrequencyContext {
 	
 	public final String getDataSourceName() {
 		return fa.lds.getName();
+	}
+	
+	public void close() {
 	}
 }

@@ -1,23 +1,26 @@
 package org.regenstrief.linkage.analysis;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public final class SingleFieldDataSourceFrequency extends DataSourceFrequency {
+public final class SingleFieldDataSourceFrequency extends SingleFieldBaseDataSourceFrequency {
 	
 	private final Map<String, Count> frequencies = new HashMap<String, Count>();
 	
-	private final Set<String> fields;
-	
 	public SingleFieldDataSourceFrequency(final String field) {
-		fields = Collections.singleton(field);
+		super(field);
 	}
 	
 	@Override
 	public final int getFrequency(final String field, final String token) {
 		final Count count = frequencies.get(token);
+		return (count == null) ? 0 : count.i;
+	}
+	
+	@Override
+	public final int removeFrequency(final String field, final String token) {
+		final Count count = frequencies.remove(token);
 		return (count == null) ? 0 : count.i;
 	}
 	
@@ -44,10 +47,5 @@ public final class SingleFieldDataSourceFrequency extends DataSourceFrequency {
 	@Override
 	public final Set<String> getTokens(final String field) {
 		return frequencies.keySet();
-	}
-	
-	@Override
-	public final Set<String> getFields() {
-		return fields;
 	}
 }

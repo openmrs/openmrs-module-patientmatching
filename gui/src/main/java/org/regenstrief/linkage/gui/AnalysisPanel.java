@@ -374,6 +374,7 @@ public class AnalysisPanel extends JPanel implements ActionListener, LoggingObje
 		final boolean dedup = rm_conf.isDeduplication();
 		boolean first = true;
 		for (final MatchingConfig mc : BlockingHeuristicCalculator.getBlockingSchemesToAnalyze(rm_conf)) {
+			System.out.println("Starting " + mc.getName());
 			final BlockingFrequencyContext fc1 = new BlockingFrequencyContext(mc, rm_conf.getLinkDataSource1());
 			final BlockingHeuristicCalculator calculator = new BlockingHeuristicCalculator();
 			final LoggingFrame frame;
