@@ -28,9 +28,13 @@ public class CloseFormUCalculator extends FrequencyBasedCalculator {
 		return instance;
 	}
 	
+	public final static double getDenominatorDedup(final DataSourceFrequency freq) {
+		return countPairs(freq.getTotal());
+	}
+	
 	@Override
 	public final void calculateDedup(final MatchingConfig mc, final DataSourceFrequency freq) {
-		final double denominator = countPairs(freq.getTotal());
+		final double denominator = getDenominatorDedup(freq);
 		for (final String field : freq.getFields()) {
 			long sum = 0;
 			// for every frequency, calculate u rate based on frequencies in freq2
@@ -45,10 +49,19 @@ public class CloseFormUCalculator extends FrequencyBasedCalculator {
 		logNonAgreement(mc);
 	}
 	
+	public final static double getDenominator(final DataSourceFrequency freq1, final DataSourceFrequency freq2) {
+		return getDenominator(freq1.getTotal(), freq2.getTotal());
+	}
+	
+	public final static double getDenominator(final int total1, final int total2) {
+		final double t1 = total1, t2 = total2;
+		return t1 * t2;
+	}
+	
 	@Override
 	public final void calculate(final MatchingConfig mc, final DataSourceFrequency freq1, final DataSourceFrequency freq2) {
 		final Set<String> fields2 = freq2.getFields();
-		final double denominator = freq1.getTotal() * freq2.getTotal();
+		final double denominator = getDenominator(freq1, freq2);
 		// iterate over common fields, calculating u-values
 		for (final String field : freq1.getFields()) {
 			if (!fields2.contains(field)) {

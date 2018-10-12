@@ -7,6 +7,11 @@ import org.regenstrief.linkage.io.DataSourceReader;
 import org.regenstrief.linkage.util.MatchingConfig;
 
 public class BlockingHeuristicCalculatorTest {
+	
+	static {
+		System.setProperty("org.regenstrief.linkage.analysis.BlockingFrequencyContext.memoryBacked", Boolean.toString(true));
+	}
+	
 	@Test
 	public void dedupAnalysisIsCorrect() {
 		runDedupAnalysis(1, (log2(1.0 / 3.0) + (2.0 * log2(2.0 / 3.0))) / -3.0, 2, 0, ArrayDataSourceReader.getSampleDoe());

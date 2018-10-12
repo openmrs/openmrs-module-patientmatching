@@ -1,5 +1,6 @@
 package org.regenstrief.linkage.analysis;
 
+import java.util.Iterator;
 import java.util.Set;
 
 public abstract class DataSourceFrequency {
@@ -31,13 +32,19 @@ public abstract class DataSourceFrequency {
 		this.dataSourceName = dataSourceName;
 	}
 	
-	public abstract int getFrequency(String field, String token);
+	public abstract int getFrequency(final String field, final String token);
 	
-	public abstract void setFrequency(String field, String token, int freq);
+	public abstract int removeFrequency(final String field, final String token);
 	
-	public abstract void incrementCount(String field, String token);
+	public abstract void setFrequency(final String field, final String token, final int freq);
 	
-	public abstract Set<String> getTokens(String field);
+	public abstract void incrementCount(final String field, final String token);
+	
+	public abstract Set<String> getTokens(final String field);
+	
+	public Iterator<String> getTokenIterator(final String field) {
+		return getTokens(field).iterator();
+	}
 	
 	public abstract Set<String> getFields();
 	

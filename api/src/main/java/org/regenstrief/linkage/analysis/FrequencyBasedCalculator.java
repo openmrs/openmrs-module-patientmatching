@@ -8,16 +8,25 @@ public abstract class FrequencyBasedCalculator implements LoggingObject {
 	protected static final Logger log = Logger.getLogger(FrequencyBasedCalculator.class);
 	
 	public final void calculateDedup(final MatchingConfig mc, final FrequencyContext fc) {
-		fc.analyzeData();
-		calculateDedup(mc, fc.getFrequency());
+		try {
+			fc.analyzeData();
+			calculateDedup(mc, fc.getFrequency());
+		} finally {
+			fc.close();
+		}
 	}
 	
 	public abstract void calculateDedup(final MatchingConfig mc, final DataSourceFrequency freq);
 	
 	public final void calculate(final MatchingConfig mc, final FrequencyContext fc1, final FrequencyContext fc2) {
-    	fc1.analyzeData();
-    	fc2.analyzeData();
-		calculate(mc, fc1.getFrequency(), fc2.getFrequency());
+		try {
+	    	fc1.analyzeData();
+	    	fc2.analyzeData();
+			calculate(mc, fc1.getFrequency(), fc2.getFrequency());
+		} finally {
+			fc1.close();
+			fc2.close();
+		}
 	}
 	
 	public abstract void calculate(final MatchingConfig mc, final DataSourceFrequency freq1, final DataSourceFrequency freq2);

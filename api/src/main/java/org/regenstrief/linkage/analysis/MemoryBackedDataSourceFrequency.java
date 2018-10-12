@@ -26,6 +26,20 @@ public class MemoryBackedDataSourceFrequency extends DataSourceFrequency {
 		return 0;
 	}
 	
+	@Override
+	public final int removeFrequency(final String field, final String token) {
+		if (token != null) {
+			final Map<String, Count> fieldFrequencies = frequencies.get(field);
+			if (fieldFrequencies != null) {
+				final Count freq = fieldFrequencies.remove(token);
+				if (freq != null) {
+					return freq.i;
+				}
+			}
+		}
+		return 0;
+	}
+	
 	private final Map<String, Count> getOrCreateFieldFrequencies(final String field) {
 		Map<String, Count> fieldFrequencies = frequencies.get(field);
 		if (fieldFrequencies == null) {

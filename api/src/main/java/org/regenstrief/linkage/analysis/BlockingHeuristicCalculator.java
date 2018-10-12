@@ -5,8 +5,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
@@ -22,6 +22,7 @@ public final class BlockingHeuristicCalculator extends FrequencyBasedCalculator 
 	private double maxEntropy;
 	private long uniqueValues = 0;
 	private long nullValues = 0;
+	private double u;
 	private long totalPairs = 0;
 	
 	public final static List<MatchingConfig> getBlockingSchemesToAnalyze(final RecMatchConfig rmConf) {
@@ -57,7 +58,7 @@ public final class BlockingHeuristicCalculator extends FrequencyBasedCalculator 
 		}
 	}
 	
-	private final static MatchingConfig newMatchingConfig(final String[] fields) {
+	public final static MatchingConfig newMatchingConfig(final String... fields) {
 		final StringBuilder b = new StringBuilder();
 		for (final String field : fields) {
 			if (b.length() > 0) {
@@ -77,48 +78,48 @@ public final class BlockingHeuristicCalculator extends FrequencyBasedCalculator 
 	@Override
 	public final void calculateDedup(final MatchingConfig mc, final DataSourceFrequency freq) {
 		final double totalRecords = freq.getTotal();
+		final double uDenominator = CloseFormUCalculator.getDenominatorDedup(freq);
 		long totalPairs = 0, nullValues = 0;
 		double entropyNumerator = 0;
-		final Set<String> tokens = freq.getTokens(FIELD);
-		for (final String token : tokens) {
+		long uniqueValues = 0;
+		final Iterator<String> tokens = freq.getTokenIterator(FIELD);
+		while (tokens.hasNext()) {
+			final String token = tokens.next();
+			uniqueValues++;
 			final long numRecords = freq.getFrequency(FIELD, token);
 			if (!isValidToken(token)) {
 				nullValues += numRecords;
 				continue;
 			}
-			
 			totalPairs += countPairs(numRecords);
-			
 			entropyNumerator += getFieldEntropyNumerator(numRecords, totalRecords);
 		}
-		final long uniqueValues = tokens.size();
-		final BlockingUCalculator uCalc = new BlockingUCalculator();
-		uCalc.calculateDedup(mc, freq);
-		finishCalculation(mc, totalRecords, totalPairs, entropyNumerator, uniqueValues, nullValues, uCalc, freq.getDataSourceName());
+		final double uNumerator = totalPairs, u = uNumerator / uDenominator;
+		finishCalculation(mc, totalRecords, totalPairs, entropyNumerator, uniqueValues, nullValues, u, getOutName(freq.getDataSourceName()));
 	}
 	
 	@Override
 	public final void calculate(final MatchingConfig mc, final DataSourceFrequency freq1, final DataSourceFrequency freq2) {
 		final double totalRecords = freq1.getTotal() + freq2.getTotal();
+		final double uDenominator = CloseFormUCalculator.getDenominator(freq1, freq2);
 		long totalPairs = 0, nullValues = 0;
 		double entropyNumerator = 0;
-		final Set<String> tokens1 = freq1.getTokens(FIELD);
-		for (final String token : tokens1) {
-			final long numRecords1 = freq1.getFrequency(FIELD, token), numRecords2 = freq2.getFrequency(FIELD, token);
+		long uniqueValues = 0;
+		final Iterator<String> tokens1 = freq1.getTokenIterator(FIELD);
+		while (tokens1.hasNext()) {
+			final String token = tokens1.next();
+			uniqueValues++;
+			final long numRecords1 = freq1.getFrequency(FIELD, token), numRecords2 = freq2.removeFrequency(FIELD, token);
 			if (!isValidToken(token)) {
 				nullValues += (numRecords1 + numRecords2);
 				continue;
 			}
-			
 			totalPairs += (numRecords1 * numRecords2);
-			
 			entropyNumerator += getFieldEntropyNumerator(numRecords1 + numRecords2, totalRecords);
 		}
-		long uniqueValues = tokens1.size();
-		for (final String token : freq2.getTokens(FIELD)) { // Unpaired values needed for entropy
-			if (tokens1.contains(token)) {
-				continue;
-			}
+		final Iterator<String> tokens2 = freq2.getTokenIterator(FIELD);
+		while (tokens2.hasNext()) { // Unpaired values needed for entropy
+			final String token = tokens2.next();
 			uniqueValues++;
 			final long numRecords2 = freq2.getFrequency(FIELD, token);
 			if (!isValidToken(token)) {
@@ -127,9 +128,27 @@ public final class BlockingHeuristicCalculator extends FrequencyBasedCalculator 
 			}
 			entropyNumerator += getFieldEntropyNumerator(numRecords2, totalRecords);
 		}
-		final BlockingUCalculator uCalc = new BlockingUCalculator();
-		uCalc.calculate(mc, freq1, freq2);
-		finishCalculation(mc, totalRecords, totalPairs, entropyNumerator, uniqueValues, nullValues, uCalc, freq1.getDataSourceName() + "_" + freq2.getDataSourceName());
+		final double uNumerator = totalPairs, u = uNumerator / uDenominator;
+		finishCalculation(mc, totalRecords, totalPairs, entropyNumerator, uniqueValues, nullValues, u, getOutName(freq1.getDataSourceName(), freq2.getDataSourceName()));
+	}
+	
+	private final static String getOutName(final String loc1, final String loc2) {
+		return getOutName(loc1) + "_" + getBaseName(loc2);
+	}
+	
+	private final static String getOutName(final String loc) {
+		final File f = new File(loc), p = f.getParentFile();
+		return (p == null) ? loc : (p.getAbsolutePath() + System.getProperty("file.separator") + getBaseName(f));
+	}
+	
+	private final static String getBaseName(final String loc) {
+		return getBaseName(new File(loc));
+	}
+	
+	private final static String getBaseName(final File f) {
+		final String name = f.getName();
+		final int dot = name.lastIndexOf('.');
+		return (dot > 0) ? name.substring(0, dot) : null;
 	}
 	
 	private final static double getFieldEntropyNumerator(final double num, final double totalRecords) {
@@ -146,7 +165,7 @@ public final class BlockingHeuristicCalculator extends FrequencyBasedCalculator 
 	}
 	
 	private final void finishCalculation(final MatchingConfig mc, final double totalRecords, final long totalPairs, final double entropyNumerator,
-	                                     final long uniqueValues, final long nullValues, final BlockingUCalculator uCalc, final String dataSourceName) {
+	                                     final long uniqueValues, final long nullValues, final double u, final String dataSourceName) {
 		entropy = divide(entropyNumerator, (totalRecords * entropyDenominator));
 		maxEntropy = -Math.log(uniqueValues) / entropyDenominator;
 		final double entropyPercentage = divide(entropy, maxEntropy);
@@ -154,7 +173,7 @@ public final class BlockingHeuristicCalculator extends FrequencyBasedCalculator 
 		final double ratio = divide(totalRecords, uniqueValues);
 		this.nullValues = nullValues;
 		final double nullPercentage = divide(nullValues, totalRecords);
-		final double u = uCalc.u;
+		this.u = u;
 		this.totalPairs = totalPairs;
 		final double logTotalPairs = (totalPairs == 0) ? 0 : (Math.log(totalPairs) / log10);
 		final double dispEntropy = round(entropy), dispMaxEntropy = round(maxEntropy), dispEntropyPercentage = round(entropyPercentage);
@@ -174,6 +193,7 @@ public final class BlockingHeuristicCalculator extends FrequencyBasedCalculator 
 			return;
 		}
 		final String outName = dataSourceName + ".blocking.stats.txt";
+		System.out.println("Appending to " + outName);
 		final File outFile = new File(outName);
 		final boolean headerNeeded = !outFile.exists();
 		PrintStream out = null;
@@ -231,25 +251,15 @@ public final class BlockingHeuristicCalculator extends FrequencyBasedCalculator 
 		return nullValues;
 	}
 	
+	public final double getU() {
+		return u;
+	}
+	
 	public final long getTotalPairs() {
 		return totalPairs;
 	}
 	
 	protected final void setFileEnabled(final boolean fileEnabled) {
 		this.fileEnabled = fileEnabled;
-	}
-	
-	private final static class BlockingUCalculator extends CloseFormUCalculator {
-		
-		private double u = 0;
-		
-		@Override
-		protected final void setU(final MatchingConfig mc, final String field, final long sum, final double denominator) {
-			u = sum / denominator;
-		}
-		
-		@Override
-		protected final void logNonAgreement(final MatchingConfig mc) {
-		}
 	}
 }
