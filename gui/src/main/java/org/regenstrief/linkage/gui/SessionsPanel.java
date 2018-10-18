@@ -1,6 +1,7 @@
 package org.regenstrief.linkage.gui;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -19,10 +20,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -76,13 +76,12 @@ import org.regenstrief.linkage.util.RecMatchConfig;
 /**
  * @author james-egg
  *
- *
  */
 public class SessionsPanel extends JPanel implements ActionListener, KeyListener,
         ListSelectionListener, ItemListener, FocusListener, TableModelListener, MouseListener{
 	public final String DEFAULT_NAME = "New match";
 	
-	JList runs;
+	JList<MatchingConfig> runs;
 	JTextField run_name;
 	JTable session_options;
 	JComboBox<String> jcb;
@@ -98,7 +97,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
     private JTextField thresholdTextField;
     private JCheckBox cbMutualInfoScore;
     private JCheckBox cbWriteXML;
-    private JCheckBox write_db;
+    private JComboBox<String> reviewers;
     private JCheckBox cbGrouping;
     private JCheckBox filter_pairs;
     private JCheckBox scoreIncluded;
@@ -108,24 +107,23 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
     private JPopupMenu resetm, resetu;
     private JCheckBox common_pairs;
     
-	public SessionsPanel(RecMatchConfig rmc){
+	public SessionsPanel(RecMatchConfig rmc) {
 		//super();
 		rm_conf = rmc;
 		createSessionPanel();
 	}
 	
-	public void setRecMatchConfig(RecMatchConfig rmc){
+	public void setRecMatchConfig(RecMatchConfig rmc) {
 		rm_conf = rmc;
 		updateBlockingRunsList();
 	}
 	
 	private void updateBlockingRunsList() {
-        DefaultListModel dlm = new DefaultListModel();
-        if(rm_conf != null){
-            if(rm_conf.getMatchingConfigs().size() > 0){
-                Iterator<MatchingConfig> it = rm_conf.getMatchingConfigs().iterator();
-                while(it.hasNext()){
-                    dlm.addElement(it.next());
+        DefaultListModel<MatchingConfig> dlm = new DefaultListModel<MatchingConfig>();
+        if (rm_conf != null) {
+            if (rm_conf.getMatchingConfigs().size() > 0) {
+                for (final MatchingConfig mc : rm_conf.getMatchingConfigs()) {
+                    dlm.addElement(mc);
                 }
                 runs.setSelectedIndex(0);
                 current_working_config = rm_conf.getMatchingConfigs().get(0);
@@ -137,7 +135,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         runs.setModel(dlm);
 	}
 	
-	private void createSessionPanel(){
+	private void createSessionPanel() {
 		// split the panel into two parts, top for table, bottom for other user interaction
 		//JPanel session_panel = new JPanel(new GridLayout(2, 1));
 		this.setLayout(new GridLayout(2,1));
@@ -174,7 +172,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         common_pairs = new JCheckBox("Combine pairs in blocks");
         common_pairs.addActionListener(this);
         
-        runs = new JList();
+        runs = new JList<MatchingConfig>();
         runs.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         runs.addListSelectionListener(this);
         runs.setCellRenderer(new MatchingConfigCellRenderer());
@@ -274,8 +272,11 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
         cbWriteXML.addActionListener(this);
         cbGrouping = new JCheckBox("Perform Grouping When Writing Output");
         cbGrouping.addActionListener(this);
-        write_db = new JCheckBox("Write Results To DB File");
-        write_db.addActionListener(this);
+        reviewers = new JComboBox<String>();
+        reviewers.addItem("Write Results DB Files?");
+        for (int i = 0; i <= 20; i++) {
+        	reviewers.addItem(String.valueOf(i));
+        }
         filter_pairs = new JCheckBox("Filter Pairs When Writing Output");
         filter_pairs.addActionListener(this);
         scoreIncluded = new JCheckBox("Comparator Scores Included in Output");
@@ -533,51 +534,17 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
          */
         linkagePanel.setLayout(new GridBagLayout());
         
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 5, 0, 5);
-        linkagePanel.add(cbMutualInfoScore, gridBagConstraints);
-        
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 5, 0, 5);
-        linkagePanel.add(cbWriteXML, gridBagConstraints);
+        int gridy = 0;
+        addComponent(linkagePanel, cbMutualInfoScore, gridy++);
+        addComponent(linkagePanel, cbWriteXML, gridy++);
+        addComponent(linkagePanel, cbGrouping, gridy++);
+        addComponent(linkagePanel, reviewers, gridy++);
+        addComponent(linkagePanel, filter_pairs, gridy++);
+        addComponent(linkagePanel, scoreIncluded, gridy++);
 
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 5, 0, 5);
-        linkagePanel.add(cbGrouping, gridBagConstraints);
-        
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 5, 0, 5);
-        linkagePanel.add(write_db, gridBagConstraints);
-        
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 5, 0, 5);
-        linkagePanel.add(filter_pairs, gridBagConstraints);
-        
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 5, 0, 5);
-        linkagePanel.add(scoreIncluded, gridBagConstraints);
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = gridy++;
         gridBagConstraints.insets = new Insets(0, 5, 5, 5);
         linkagePanel.add(run_link, gridBagConstraints);
 
@@ -637,14 +604,23 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		this.add(list_panel);
 	}
 	
-	private void invalidBlockingSchemeNotification(){
+	private static void addComponent(final Container container, final Component component, final int gridy) {
+		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = gridy;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.insets = new Insets(0, 5, 0, 5);
+        container.add(component, gridBagConstraints);
+	}
+	
+	private void invalidBlockingSchemeNotification() {
 		JOptionPane.showMessageDialog(this,
 			    "Invalid blocking scheme; cannot run process",
 			    "Invalid Configuration",
 			    JOptionPane.ERROR_MESSAGE);
 	}
 	
-	private Component getSessionTable(){
+	private Component getSessionTable() {
 	    SessionOptionsTableModel model = new SessionOptionsTableModel();
 	    model.addTableModelListener(this);
 		session_options = new JTable(model);
@@ -659,7 +635,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		MUValueCellRenderer muvcr = new MUValueCellRenderer();
 		session_options.setDefaultRenderer(Double.class, muvcr);
 		
-		if(rm_conf != null && rm_conf.getLinkDataSource1() != null){
+		if (rm_conf != null && rm_conf.getLinkDataSource1() != null) {
 			String id_demographic = rm_conf.getLinkDataSource1().getUniqueID();
 			model.setIDName(id_demographic);
 		}
@@ -669,31 +645,30 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		session_options.getTableHeader().addMouseListener(this);
 		
 		return table_pane;
-		
 	}
 	
-	public void displayThisMatchingConfig(MatchingConfig mc){
+	public void displayThisMatchingConfig(MatchingConfig mc) {
 		//session_options.setModel(new SessionOptionsTableModel(mc));
 		
 		// only display runs data if there's actually mc in the list model
-		if(runs.getModel().getSize() > 0) {
+		if (runs.getModel().getSize() > 0) {
 			int selectedIndex = runs.getSelectedIndex();
 			// this special case when a user already load they're config file
 			// no item in the blocking runs is selected. pick the first blocking
 			// runs
-			if(selectedIndex == -1) {
+			if (selectedIndex == -1) {
 				selectedIndex = 0;
 			}
 			// select the first element in the list or current selected index
 			// (redundant selection process)
 			runs.setSelectedIndex(selectedIndex);
-			MatchingConfig m = (MatchingConfig) runs.getModel().getElementAt(selectedIndex);
+			MatchingConfig m = runs.getModel().getElementAt(selectedIndex);
 			// update the text field to reflect currently selected element in the list
 			run_name.setText(m.getName());
 			
 			// update the random sample size and check box based on the matching
 			// config data
-            if(m.isUsingRandomSampling()) {
+            if (m.isUsingRandomSampling()) {
                 randomSampleTextField.setText(String.valueOf(m.getRandomSampleSize()));
                 ucalc_rand.setSelected(true);
                 randomSampleSizeLabel.setEnabled(true);
@@ -701,7 +676,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
             } else {
             	ucalc_closed.setSelected(true);
             }
-            if(m.isLockedUValues()){
+            if (m.isLockedUValues()) {
             	this.mcalc_lock.setSelected(true);
             } else {
             	this.mcalc_uinclude.setSelected(true);
@@ -715,28 +690,28 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		session_options.setModel(model);
 		TableColumn tc = session_options.getColumnModel().getColumn(6);
 		tc.setCellEditor(new DefaultCellEditor(jcb));
-		if(rm_conf != null && rm_conf.getLinkDataSource1() != null){
+		if (rm_conf != null && rm_conf.getLinkDataSource1() != null) {
 			String id_demographic = rm_conf.getLinkDataSource1().getUniqueID();
 			model.setIDName(id_demographic);
 		}
 	}
 	
-	private void removeSessionConfig(MatchingConfig mc){
+	private void removeSessionConfig(MatchingConfig mc) {
 		// removes mc from the DefaultListModel for the runs JList
-		if(runs.getModel().getSize() > 0){
+		if (runs.getModel().getSize() > 0) {
 			int old_index = runs.getSelectedIndex();
-			DefaultListModel dlm = (DefaultListModel)runs.getModel();
+			DefaultListModel dlm = (DefaultListModel) runs.getModel();
 			boolean removed = dlm.removeElement(mc);
-			if(!removed){
+			if (!removed) {
 				System.out.println("error removing matching config from JList");
 				return;
 			}
 			rm_conf.getMatchingConfigs().remove(mc);
 			
 			// set another item to be selected
-			if(runs.getModel().getSize() <= old_index){
+			if (runs.getModel().getSize() <= old_index) {
 				// set the new selected object as the last item
-				if(runs.getModel().getSize() == 0){
+				if (runs.getModel().getSize() == 0) {
 					// removed last one, clear table to clear everything and crate a blank config
 					setGuiElements();
 				}
@@ -749,12 +724,12 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		
 	}
 	
-	private void moveUpSessionConfig(int index){
+	private void moveUpSessionConfig(int index) {
 		// move the session config in runs at index up
-		DefaultListModel dlm = (DefaultListModel)runs.getModel();
+		DefaultListModel dlm = (DefaultListModel) runs.getModel();
 		
 		// if item is at beginning of list, makes no sense to move up in order
-		if(index > 0){
+		if (index > 0) {
 			Object to_move = dlm.remove(index);
 			dlm.add(index - 1, to_move);
 			runs.setSelectedIndex(index - 1);
@@ -766,12 +741,12 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		}
 	}
 	
-	private void moveDownSessionConfig(int index){
+	private void moveDownSessionConfig(int index) {
 		// move the session config in runs at index down
-		DefaultListModel dlm = (DefaultListModel)runs.getModel();
+		DefaultListModel dlm = (DefaultListModel) runs.getModel();
 		
 		// if item is at the end of the list, then it can't move down further
-		if(index < (dlm.getSize() - 1)){
+		if (index < (dlm.getSize() - 1)) {
 			Object to_move = dlm.remove(index);
 			dlm.add(index + 1, to_move);
 			runs.setSelectedIndex(index + 1);
@@ -783,10 +758,10 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		}
 	}
 	
-	private void renameSessionConfig(){
+	private void renameSessionConfig() {
 		// the current working session config needs to be renamed, and have it's new name displayed
 		// in the JList runs component
-		if(current_working_config != null && runs.getModel().getSize() > 0){
+		if (current_working_config != null && runs.getModel().getSize() > 0) {
 			String new_name = run_name.getText();
 			current_working_config.setName(new_name);
 			
@@ -796,185 +771,151 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			//int current_list_index = dlm.indexOf(current_working_config);
 			//dlm.setElementAt(current_working_config, current_list_index);
 		}
-		
 	}
 	
-	public void keyTyped(KeyEvent ke){
+	@Override
+	public void keyTyped(KeyEvent ke) {
 		// used for the rename text field on the session panel
 		// if key is enter, rename the MatchingConfig
-		if(ke.getSource() == run_name && ke.getKeyChar() == '\n'){
+		if (ke.getSource() == run_name && ke.getKeyChar() == '\n') {
 			renameSessionConfig();
 		}
 	}
 	
-	public void keyReleased(KeyEvent ke){
+	@Override
+	public void keyReleased(KeyEvent ke) {
 		// not currently used
 	}
 	
-	public void keyPressed(KeyEvent ke){
+	@Override
+	public void keyPressed(KeyEvent ke) {
 		// not currently used
 	}
 	
-	public void valueChanged(ListSelectionEvent lse){
+	@Override
+	public void valueChanged(ListSelectionEvent lse) {
 		// part of ListSelectionListener used with the JList runs object
-		if(!lse.getValueIsAdjusting()){
-			if(current_working_config != null){
+		if (!lse.getValueIsAdjusting()) {
+			if (current_working_config != null) {
 				// check to see if the current working config is the same as what is
 				// selected in the JList runs
-				MatchingConfig mc = (MatchingConfig)runs.getSelectedValue();
-				if(mc != null && mc != current_working_config){
+				MatchingConfig mc = runs.getSelectedValue();
+				if (mc != null && mc != current_working_config) {
 					// clicked on a new item
 					current_working_config = mc;
 					displayThisMatchingConfig(current_working_config);
 				}
 			}
 		}
-		
 	}
 		
-	public void actionPerformed(ActionEvent ae){
-		if(ae.getSource() instanceof JRadioButton){
-			JRadioButton source = (JRadioButton)ae.getSource();
-			if(source.getText().equals("Closed form")){
+	@Override
+	public void actionPerformed(ActionEvent ae) {
+		final Object source = ae.getSource();
+		if (source instanceof JRadioButton) {
+			final String text = ((JRadioButton) source).getText();
+			if (text.equals("Closed form")) {
 				randomSampleTextField.setEnabled(false);
 				randomSampleSizeLabel.setEnabled(false);
-				
-				//
-				List<MatchingConfig> matchingConfigs = rm_conf.getMatchingConfigs();
-				
-				for (MatchingConfig matchingConfig : matchingConfigs) {
-					if(matchingConfig != null){
+				for (MatchingConfig matchingConfig : rm_conf.getMatchingConfigs()) {
+					if (matchingConfig != null) {
 						matchingConfig.setUsingRandomSampling(false);
 					}
 				}
-				//
-				
-				
-			} else if(source.getText().equals("EM")){
+			} else if (text.equals("EM")) {
 				randomSampleTextField.setEnabled(false);
 				randomSampleSizeLabel.setEnabled(false);
-				
-				//
-				List<MatchingConfig> matchingConfigs = rm_conf.getMatchingConfigs();
-				
-				for (MatchingConfig matchingConfig : matchingConfigs) {
-					if(matchingConfig != null){
+				for (MatchingConfig matchingConfig : rm_conf.getMatchingConfigs()) {
+					if (matchingConfig != null) {
 						matchingConfig.setUsingRandomSampling(false);
 					}
 				}
-				//
-				
-				
-			} else if(source.getText().equals("Random Sample")){
+			} else if (text.equals("Random Sample")) {
 				randomSampleTextField.setEnabled(true);
 				randomSampleSizeLabel.setEnabled(true);
                 randomSampleTextField.setEnabled(true);
                 randomSampleTextField.requestFocus();
-                
-                
-				//
-				List<MatchingConfig> matchingConfigs = rm_conf.getMatchingConfigs();
-				
-				for (MatchingConfig matchingConfig : matchingConfigs) {
-					if(matchingConfig != null){
-						
+				for (MatchingConfig matchingConfig : rm_conf.getMatchingConfigs()) {
+					if (matchingConfig != null) {
 						matchingConfig.setUsingRandomSampling(true);
-	                    int sampleSize = Integer.parseInt(randomSampleTextField.getText());
-	                    matchingConfig.setRandomSampleSize(sampleSize);
+	                    matchingConfig.setRandomSampleSize(Integer.parseInt(randomSampleTextField.getText()));
 					}
 				}
-				//
-				
-
-			} else if(source.getText().equals("Calculate u-values along with m-values in EM")){
-				List<MatchingConfig> matchingConfigs = rm_conf.getMatchingConfigs();
-				System.out.println(matchingConfigs.size());
-				for (MatchingConfig matchingConfig : matchingConfigs) {
-					if(matchingConfig != null){
+			} else if (text.equals("Calculate u-values along with m-values in EM")) {
+				for (MatchingConfig matchingConfig : rm_conf.getMatchingConfigs()) {
+					if (matchingConfig != null) {
 						matchingConfig.setLockedUValues(false);
-						System.out.println("name iss " + matchingConfig.getName());
 						session_options.repaint();
 					}
 				}
-				
-			} else if(source.getText().equals("Lock existing u-values in EM calculation")){
-				List<MatchingConfig> matchingConfigs = rm_conf.getMatchingConfigs();
-				
-				for (MatchingConfig matchingConfig : matchingConfigs) {
-					if(matchingConfig != null){
+			} else if (text.equals("Lock existing u-values in EM calculation")) {
+				for (MatchingConfig matchingConfig : rm_conf.getMatchingConfigs()) {
+					if (matchingConfig != null) {
 						matchingConfig.setLockedUValues(true);
 						session_options.repaint();
 					}
 				}
 			}
-		}
-		
-		if(ae.getSource() instanceof JButton){
-			JButton source = (JButton)ae.getSource();
-			System.out.println("Source: " + source.getText());
-			if(source.getText().equals("Move Up")){
+		} else if (source instanceof JButton) {
+			final String text = ((JButton) source).getText();
+			System.out.println("Source: " + text);
+			if (text.equals("Move Up")) {
 				int index = runs.getSelectedIndex();
 				moveUpSessionConfig(index);
-			} else if(source.getText().equals("Move Down")){
+			} else if (text.equals("Move Down")) {
 				int index = runs.getSelectedIndex();
 				moveDownSessionConfig(index);
-			} else if(source.getText().equals("Rename")){
+			} else if (text.equals("Rename")) {
 				renameSessionConfig();
-			} else if(source.getText().equals("New")){
+			} else if (text.equals("New")) {
 				MatchingConfig mc = makeNewMatchingConfig();
 				rm_conf.getMatchingConfigs().add(mc);
 				DefaultListModel dlm = (DefaultListModel)runs.getModel();
 				dlm.addElement(mc);
 				runs.setSelectedIndex(dlm.getSize() - 1);
 				displayThisMatchingConfig(mc);
-			} else if(source.getText().equals("Run Linkage Process")){
+			} else if (text.equals("Run Linkage Process")) {
 				runLinkageProcess();
-			} else if(source.getText().equals("Remove")){
-				Object o = runs.getSelectedValue();
-				if(o instanceof MatchingConfig){
-					MatchingConfig mc = (MatchingConfig)o;
-					removeSessionConfig(mc);
-				}
-			} else if(source.getText().equals("Calculate u-values")){
+			} else if (text.equals("Remove")) {
+				removeSessionConfig(runs.getSelectedValue());
+			} else if (text.equals("Calculate u-values")) {
 				// run either closed form, random sampling, or EM
-				if(ucalc_closed.isSelected()){
+				if (ucalc_closed.isSelected()) {
 					calculateClosedUValues();
-				} else if(ucalc_rand.isSelected()){
+				} else if (ucalc_rand.isSelected()) {
 					performRandomSampling();
 				}
-			} else if(source.getText().equals("Calculate values")){
-				if(current_working_config != null){
+			} else if (text.equals("Calculate values")) {
+				if (current_working_config != null) {
 					runEMAnalysis();
 				}
 			}
-		} else if(ae.getSource() instanceof JCheckBox){
-			JCheckBox source = (JCheckBox)ae.getSource();
-			if(source.getText().equals("Calculate and use MI scores")){
+		} else if (source instanceof JCheckBox) {
+			final String text = ((JCheckBox) source).getText();
+			if (text.equals("Calculate and use MI scores")) {
 				mutualInfoScore = cbMutualInfoScore.isSelected();
-			} else if(source.getText().equals("Include XML When Writing Output")){
+			} else if (text.equals("Include XML When Writing Output")) {
 				write_xml = cbWriteXML.isSelected();
-			} else if(source.getText().equals("Perform Grouping When Writing Output")){
+			} else if (text.equals("Perform Grouping When Writing Output")) {
 				groupAnalysis = cbGrouping.isSelected();
-			} else if(source.equals(common_pairs)){
+			} else if (source.equals(common_pairs)) {
 				common_pairs_fp = common_pairs.isSelected();
 			}
-			
-		} else if(ae.getSource() instanceof JMenuItem){
-			JMenuItem jmi = (JMenuItem)ae.getSource();
-			if(jmi.getText().equals("Reset u values to default")){
+		} else if (source instanceof JMenuItem) {
+			JMenuItem jmi = (JMenuItem) source;
+			if (jmi.getText().equals("Reset u values to default")) {
 				resetUValues();
-			} else if(jmi.getText().equals("Reset m values to default")){
+			} else if (jmi.getText().equals("Reset m values to default")) {
 				resetMValues();
 			}
 		}
-		
 	}
 	
-	private void runLinkageProcess(){
+	private void runLinkageProcess() {
 		List<MatchingConfig> matchingConfigs = rm_conf.getMatchingConfigs();
 		
 		for (MatchingConfig matchingConfig : matchingConfigs) {
-			if(!MatchingConfigValidator.validMatchingConfig(matchingConfig)){
+			if (!MatchingConfigValidator.validMatchingConfig(matchingConfig)) {
 				invalidBlockingSchemeNotification();
 				return;
 			}
@@ -984,14 +925,21 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		int ret = out_chooser.showDialog(this, "Choose output file");
 		File out = null;
 		File match_file = null;
-		if(ret == JFileChooser.APPROVE_OPTION){
+		if (ret == JFileChooser.APPROVE_OPTION) {
 			out = out_chooser.getSelectedFile();
-			boolean db = write_db.isSelected();
-			boolean filter = filter_pairs.isSelected();
+			final String revVal = reviewers.getItemAt(reviewers.getSelectedIndex());
+			int rev;
+			try {
+				rev = Integer.parseInt(revVal);
+			} catch (final Exception e) {
+				// Default option/label is non-numeric; user didn't request any manual reviewer databases
+				rev = 0;
+			}
+			final boolean filter = filter_pairs.isSelected();
 			FileWritingMatcher.setScoreNeededInOutput(scoreIncluded.isSelected());
-			match_file = FileWritingMatcher.writeMatchResults(rm_conf, out, write_xml, db, groupAnalysis, true, filter);
+			match_file = FileWritingMatcher.writeMatchResults(rm_conf, out, write_xml, rev, groupAnalysis, true, filter);
             
-            if(match_file == null){
+            if (match_file == null) {
                 JOptionPane.showMessageDialog(this,
                         "Error writing match result file",
                         "Error", JOptionPane.ERROR_MESSAGE);
@@ -1003,28 +951,22 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		}
 	}
 	
-	private void resetUValues(){
-		List<MatchingConfigRow> rows = current_working_config.getMatchingConfigRows();
-		Iterator<MatchingConfigRow> it = rows.iterator();
-		while(it.hasNext()){
-			MatchingConfigRow mcr = it.next();
+	private void resetUValues() {
+		for (final MatchingConfigRow mcr : current_working_config.getMatchingConfigRows()) {
 			mcr.setNonAgreement(MatchingConfigRow.DEFAULT_NON_AGREEMENT);
 		}
 		session_options.repaint();
 	}
 	
-	private void resetMValues(){
-		List<MatchingConfigRow> rows = current_working_config.getMatchingConfigRows();
-		Iterator<MatchingConfigRow> it = rows.iterator();
-		while(it.hasNext()){
-			MatchingConfigRow mcr = it.next();
+	private void resetMValues() {
+		for (final MatchingConfigRow mcr : current_working_config.getMatchingConfigRows()) {
 			mcr.setAgreement(MatchingConfigRow.DEFAULT_AGREEMENT);
 		}
 		session_options.repaint();
 	}
 	
 	private void performRandomSampling() {
-		if(!MatchingConfigValidator.validMatchingConfig(current_working_config)){
+		if (!MatchingConfigValidator.validMatchingConfig(current_working_config)) {
 			invalidBlockingSchemeNotification();
 			return;
 		}
@@ -1032,18 +974,18 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		List<MatchingConfig> matchingConfigs = rm_conf.getMatchingConfigs();
 		for (MatchingConfig mc : matchingConfigs) {
 			
-			if(!MatchingConfigValidator.validMatchingConfig(mc)){
+			if (!MatchingConfigValidator.validMatchingConfig(mc)) {
 				invalidBlockingSchemeNotification();
 				return;
 			}	
 		// if the user not choose to use random sampling, then do nothing
         // if the u-values is already locked then do nothing as well
-        if(mc.isUsingRandomSampling()) {
+        if (mc.isUsingRandomSampling()) {
         	
         	FormPairs fp2 = getFormPairs();
         	
             
-            if(fp2 != null){
+            if (fp2 != null) {
                 
                 PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
                 
@@ -1074,12 +1016,12 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		}
     }
 	
-	private void calculateClosedUValues(){
+	private void calculateClosedUValues() {
 		
 		List<MatchingConfig> matchingConfigs = rm_conf.getMatchingConfigs();
 		for (MatchingConfig mc : matchingConfigs) {
 			
-		if(!MatchingConfigValidator.validMatchingConfig(mc)){
+		if (!MatchingConfigValidator.validMatchingConfig(mc)) {
 			invalidBlockingSchemeNotification();
 			return;
 		}
@@ -1107,7 +1049,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		}
 	}
 	
-	private FormPairs getFormPairs(){
+	private FormPairs getFormPairs() {
 		FormPairs ret = null;
 		
 		ReaderProvider rp = ReaderProvider.getInstance();
@@ -1122,15 +1064,14 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	        ret = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
 	    }
 		
-		if(common_pairs_fp){
+		if (common_pairs_fp) {
 			List<FormPairs> fps = new ArrayList<FormPairs>();
 			fps.add(ret);
-			Iterator<MatchingConfig> it = rm_conf.getMatchingConfigs().iterator();
 			
-			while(it.hasNext()){
-				mc = it.next();
+			for (final MatchingConfig mc2 : rm_conf.getMatchingConfigs()) {
+				mc = mc2;
 				
-				if(mc != current_working_config){
+				if (mc != current_working_config) {
 					odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
 					odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
 					if (rm_conf.isDeduplication()) {
@@ -1148,12 +1089,12 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		return ret;
 	}
 	
-	private void runEMAnalysis(){
+	private void runEMAnalysis() {
 		
 		List<MatchingConfig> matchingConfigs = rm_conf.getMatchingConfigs();
 		for (MatchingConfig mc : matchingConfigs) {
 			
-		if(!MatchingConfigValidator.validMatchingConfig(mc)){
+		if (!MatchingConfigValidator.validMatchingConfig(mc)) {
 			invalidBlockingSchemeNotification();
 			return;
 		}
@@ -1187,12 +1128,11 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	 * requested is to have the order of the rows in the table reflect the include ordering
 	 * of the included data columns from the Data tab
 	 */
-	private MatchingConfig makeNewMatchingConfig(){
+	private MatchingConfig makeNewMatchingConfig() {
 		Hashtable<String, DataColumn> col_names = rm_conf.getLinkDataSource1().getIncludedDataColumns();
-		String[] names = new String[col_names.keySet().size()];
-		Enumeration<String> e = col_names.keys();
-		while(e.hasMoreElements()){
-			String name = e.nextElement();
+		final Set<String> keys = col_names.keySet();
+		String[] names = new String[keys.size()];
+		for (final String name : keys) {
 			DataColumn dc = col_names.get(name);
 			names[dc.getIncludePosition()] = name;
 		}
@@ -1204,13 +1144,13 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	 * Method first adds a check to see what MatchingConfig to set as active
 	 * for the SessionOptionsTable to display
 	 */
-	public void setGuiElements(){
-		if(rm_conf.getMatchingConfigs().size() == 0){
-			DefaultListModel dlm = (DefaultListModel)runs.getModel();
+	public void setGuiElements() {
+		if (rm_conf.getMatchingConfigs().size() == 0) {
+			DefaultListModel dlm = (DefaultListModel) runs.getModel();
 			dlm.clear();
 			// need to create an empty one to display in session options table, and add to rm_conf
 			// but only if the two link data sources are both defined
-			if(rm_conf.getLinkDataSource1() != null){
+			if (rm_conf.getLinkDataSource1() != null) {
 				MatchingConfig mc = makeNewMatchingConfig();
 				rm_conf.getMatchingConfigs().add(mc);
 				
@@ -1219,13 +1159,12 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 				current_working_config = mc;
 			}
 			
-		} else if(runs.getModel().getSize() == 0){
+		} else if (runs.getModel().getSize() == 0) {
 			// rm_conf object has MatchingConfig objects, but they have not 
 			// been inserted into the JList yet
-			Iterator<MatchingConfig> it = rm_conf.iterator();
-			DefaultListModel dlm = (DefaultListModel)runs.getModel();
-			while(it.hasNext()){
-				dlm.addElement(it.next());
+			DefaultListModel dlm = (DefaultListModel) runs.getModel();
+			for (final MatchingConfig mc : rm_conf) {
+				dlm.addElement(mc);
 			}
 			current_working_config = (MatchingConfig)dlm.get(0);
 		}
@@ -1234,48 +1173,51 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		
 	}
 
+	@Override
     public void itemStateChanged(ItemEvent e) {
     	// update the ui based on whether the use random sample is checked or not
-        if(e.getSource() == ucalc_rand) {
-            if(e.getStateChange() == ItemEvent.SELECTED) {
+        if (e.getSource() == ucalc_rand) {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
                 randomSampleSizeLabel.setEnabled(true);
                 randomSampleTextField.setEnabled(true);
                 //lock_uvalue.setEnabled(true);
                 randomSampleTextField.requestFocus();
-                if(current_working_config != null) {
+                if (current_working_config != null) {
                     current_working_config.setUsingRandomSampling(true);
                     int sampleSize = Integer.parseInt(randomSampleTextField.getText());
                     current_working_config.setRandomSampleSize(sampleSize);
                 }
-            } else if(e.getStateChange() == ItemEvent.DESELECTED){
+            } else if (e.getStateChange() == ItemEvent.DESELECTED) {
                 randomSampleSizeLabel.setEnabled(false);
                 randomSampleTextField.setEnabled(false);
                 //lock_uvalue.setEnabled(false);
                 randomSampleTextField.select(0, 0);
-                if(current_working_config != null) {
+                if (current_working_config != null) {
                     current_working_config.setUsingRandomSampling(false);
                 }
             }
         }
     }
 
+    @Override
 	public void focusGained(FocusEvent e) {
-		if(randomSampleTextField == e.getSource()) {
+		if (randomSampleTextField == e.getSource()) {
 			randomSampleTextField.selectAll();
-		} else if(thresholdTextField == e.getSource()) {
+		} else if (thresholdTextField == e.getSource()) {
 		    thresholdTextField.selectAll();
 		}
 	}
 
+	@Override
 	public void focusLost(FocusEvent e) {
-		if(randomSampleTextField == e.getSource()) {
+		if (randomSampleTextField == e.getSource()) {
 			// only allows positive digit in the text field
 			String digit = "\\d+";
 			String textValue = randomSampleTextField.getText();
 			Pattern pattern = Pattern.compile(digit);
 			Matcher matcher = pattern.matcher(textValue);
 			if (matcher.matches()) {
-				if(current_working_config != null) {
+				if (current_working_config != null) {
 					int sampleSize = Integer.parseInt(textValue);
 					current_working_config.setRandomSampleSize(sampleSize);
 				}
@@ -1284,12 +1226,12 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 				randomSampleTextField.setText("100000");
 			}
 		} else if (thresholdTextField == e.getSource()) {
-		    String thresholdPattern = "(\\d+)(.\\d*){0,1}";
+		    String thresholdPattern = "(\\d+)(.\\d*) {0,1}";
 		    String textValue = thresholdTextField.getText();
 		    Pattern pattern = Pattern.compile(thresholdPattern);
 		    Matcher matcher = pattern.matcher(textValue);
 		    if (matcher.matches()) {
-                if(current_working_config != null) {
+                if (current_working_config != null) {
                     double threshold = Double.parseDouble(textValue);
                     current_working_config.setScoreThreshold(threshold);
                 }
@@ -1299,43 +1241,44 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		}
 	}
 
+	@Override
     public void tableChanged(TableModelEvent e) {
         /*--NOTES--*/
         // changes to the SessionOptionsTableModel must be propagated to this method
         // changes that need to be propagated are:
         // - adding new columns
         // - deleting columns
-        int rowIndex = e.getFirstRow();
-        int columnIndex = e.getColumn();
+        final int rowIndex = e.getFirstRow(), columnIndex = e.getColumn();
         TableModel model = (TableModel) e.getSource();
-        if(columnIndex == 3) {
+        if (columnIndex == 3) {
             Boolean included = (Boolean) model.getValueAt(rowIndex, columnIndex);
-            if(included){
+            if (included) {
                 model.setValueAt(0, rowIndex, 1);
             }
         } else if (columnIndex == 1) {
             Integer blockOrder = (Integer) model.getValueAt(rowIndex, columnIndex);
-            if(blockOrder > 0) {
+            if (blockOrder > 0) {
                 model.setValueAt(new Boolean(false), rowIndex, 3);
             }
         }
     }
     
-    public void mouseClicked(MouseEvent me){
+    @Override
+    public void mouseClicked(MouseEvent me) {
 		// important to notice that 'int column' is set to table model's column index, NOT
 		// column model's index
 		
 		// determine what collumn user clicked on
-		if(me.getSource() instanceof JTableHeader){
+		if (me.getSource() instanceof JTableHeader) {
 			JTableHeader jth = (JTableHeader)me.getSource();
 			TableColumnModel columnModel = jth.getColumnModel();
             int viewColumn = columnModel.getColumnIndexAtX(me.getX());
             
-            if(me.getButton() == MouseEvent.BUTTON3){
+            if (me.getButton() == MouseEvent.BUTTON3) {
             	// show popup menu for resetting values
-            	if(viewColumn == 4){
+            	if (viewColumn == 4) {
             		resetm.show(this, me.getX(), me.getY());
-            	} else if(viewColumn == 5){
+            	} else if (viewColumn == 5) {
             		resetu.show(this, me.getX(), me.getY());
             	}
             }
@@ -1343,19 +1286,23 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		
     }
     
-    public void mousePressed(MouseEvent me){
+    @Override
+    public void mousePressed(MouseEvent me) {
     	
     }
     
-    public void mouseReleased(MouseEvent me){
+    @Override
+    public void mouseReleased(MouseEvent me) {
     	
     }
     
-    public void mouseExited(MouseEvent me){
+    @Override
+    public void mouseExited(MouseEvent me) {
     	
     }
     
-    public void mouseEntered(MouseEvent me){
+    @Override
+    public void mouseEntered(MouseEvent me) {
     	
     }
 }

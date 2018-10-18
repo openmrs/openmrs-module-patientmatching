@@ -196,11 +196,12 @@ public final class SingleFieldSqliteDataSourceFrequency extends SingleFieldBaseD
 		}
 	}
 	
+	@Override
 	public final Iterator<String> getTokenIterator(final String field) {
 		return new TokenIterator();
 	}
 	
-	private final class TokenIterator implements Iterator<String> {
+	public final class TokenIterator implements Iterator<String> {
 		
 		private final ResultSet rs;
 		
@@ -215,9 +216,13 @@ public final class SingleFieldSqliteDataSourceFrequency extends SingleFieldBaseD
 		@Override
 		public boolean hasNext() {
 			try {
-				return rs.next();
+				final boolean next = rs.next();
+				if (!next) {
+					close();
+				}
+				return next;
 			} catch (final Exception e) {
-				close(rs);
+				close();
 				throw new IllegalStateException(e);
 			}
 		}
@@ -227,9 +232,18 @@ public final class SingleFieldSqliteDataSourceFrequency extends SingleFieldBaseD
 			try {
 				return rs.getString(1);
 			} catch (final Exception e) {
-				close(rs);
+				close();
 				throw new IllegalStateException(e);
 			}
+		}
+		
+		@Override
+		protected void finalize() {
+			close();
+		}
+		
+		public void close() {
+			SingleFieldSqliteDataSourceFrequency.close(rs);
 		}
 	}
 }
