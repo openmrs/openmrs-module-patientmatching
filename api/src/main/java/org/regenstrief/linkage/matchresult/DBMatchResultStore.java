@@ -1,28 +1,24 @@
 package org.regenstrief.linkage.matchresult;
 
+import java.sql.Date;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.List;
 
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.MatchVector;
 import org.regenstrief.linkage.Record;
-import org.regenstrief.linkage.ScoreVector;
 import org.regenstrief.linkage.util.MatchingConfig;
 
 /**
  * Class implements a MatchResultStore that has the MatchResult information stored within a database
- * 
  *
  */
-
 public class DBMatchResultStore implements MatchResultStore {
 	
 	public static final int LEFT_UID = 1;
@@ -43,13 +39,18 @@ public class DBMatchResultStore implements MatchResultStore {
 	public static final String DEMOGRAPHIC_COUNT_QUERY = "select count(*) from demographic where uid = ?";
 	public static final String FIELD_AGREEMENT_QUERY = "select * from field_agreement where ID = ?";
 	public static final String DELETE_MATCH_RESULT_QUERY = "delete from matchresult where ID = ? and report_date = ?";
+	public static final String DELETE_DEMOGRAPHIC_QUERY =
+			"delete from demographic\n" +
+			"where uid=?\n" +
+			"and not exists(select 1 from matchresult where uid1=uid)\n" +
+			"and not exists(select 1 from matchresult where uid2=uid)";
 	public static final String DELETE_FIELD_AGREEMENT_QUERY = "delete from field_agreement where ID = ?";
 	public static final String UPDATE_MATCH_RESULT_QUERY = "update matchresult set status = ?, certainty = ?, note = ? where ID = ? and report_date = ?";
 	public static final String MIN_UNKNOWN_QUERY = "select min(ID) from matchresult where status = " + MatchResult.UNKNOWN + " and report_date = ?";
 	public static final String DATES_QUERY = "select distinct report_date from report_dates";
 	public static final String DATES_INSERT = "insert into report_dates(report_date) values (?)";
 	
-	private Hashtable<Long,Boolean> imported_uids;
+	private final HashSet<Long> imported_uids = new HashSet<Long>();
 	
 	protected Connection db;
 	protected PreparedStatement mr_insert;
@@ -65,10 +66,11 @@ public class DBMatchResultStore implements MatchResultStore {
 	
 	protected Date set_date;
 	
-	public DBMatchResultStore(Connection db){
+	private int addCount = 0;
+	
+	public DBMatchResultStore(final Connection db) {
 		this.db = db;
-		imported_uids = new Hashtable<Long,Boolean>();
-		try{
+		try {
 			mr_insert = db.prepareStatement(MATCH_RESULT_INSERT);
 			dem_insert = db.prepareStatement(DEMOGRAPHIC_INSERT);
 			fa_insert = db.prepareStatement(FIELD_AGREEMENT_INSERT);
@@ -83,310 +85,272 @@ public class DBMatchResultStore implements MatchResultStore {
 			min_query = db.prepareStatement(MIN_UNKNOWN_QUERY);
 			date_query = db.prepareStatement(DATES_QUERY);
 			date_insert = db.prepareStatement(DATES_INSERT);
+		} catch (final SQLException e) {
+			throw new RuntimeException(e);
 		}
-		catch(SQLException sqle){
-			System.err.println(sqle.getMessage());
-		}
-		
 	}
 	
-	public void setDate(Date d){
-		List<Date> dates = getDates();
-		if(!dates.contains(d)){
-			try{
-				date_insert.setDate(1, new java.sql.Date(d.getTime()));
-				date_insert.execute();
-			}
-			catch(SQLException sqle){
-				System.err.println(sqle.getMessage());
-			}
-		}
-		set_date = d;
+	public Connection getDb() {
+		return db;
 	}
 	
-	public Date getDate(){
+	public void setDate(final java.util.Date d) {
+		set_date = new Date(d.getTime());
+		if (!getDates().contains(set_date)) {
+			try {
+				date_insert.setDate(1, set_date);
+				date_insert.executeUpdate();
+			} catch (final SQLException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
+	
+	public Date getDate() {
 		return set_date;
 	}
 	
-	public MatchResult getMatchResult(int index) {
-		MatchResult ret = null;
-		ResultSet rs;
-		try{
+	public int getAddCount() {
+		return addCount;
+	}
+	
+	@Override
+	public MatchResult getMatchResult(final int index) {
+		ResultSet rs = null;
+		try {
 			mr_query.setInt(1, index);
-			mr_query.setDate(2, new java.sql.Date(set_date.getTime()));
+			mr_query.setDate(2, set_date);
 			rs = mr_query.executeQuery();
 			rs.next();
-			String mc_name = rs.getString("mc");
-			double score = rs.getDouble("score");
-			double incl_score = 0;
-			double true_prob = rs.getDouble("true_prob");
-			double false_prob = rs.getDouble("false_prob");
-			double sens = rs.getDouble("sens");
-			double spec = rs.getDouble("spec");
-			int status = rs.getInt("status");
-			double certainty = rs.getDouble("certainty");
-			long uid1 = rs.getLong("uid1");
-			long uid2 = rs.getLong("uid2");
-			String note = rs.getString("note");
+			final String mc_name = rs.getString("mc");
+			final double score = rs.getDouble("score");
+			final double true_prob = rs.getDouble("true_prob"), false_prob = rs.getDouble("false_prob");
+			final double sens = rs.getDouble("sens"), spec = rs.getDouble("spec");
+			final int status = rs.getInt("status");
+			final double certainty = rs.getDouble("certainty");
+			final long uid1 = rs.getLong("uid1"), uid2 = rs.getLong("uid2");
+			final String note = rs.getString("note");
 			rs.close();
 			
 			// get demographics for uid1 and uid2 and make Record objects
-			dem_query.setLong(1, uid1);
-			dem_query.setInt(2, LEFT_UID);
-			rs = dem_query.executeQuery();
-			Record r1 = new Record(uid1, "resultdb");
-			while(rs.next()){
-				String field = rs.getString("field");
-				String value = rs.getString("value");
-				r1.addDemographic(field, value);
-			}
-			rs.close();
-			
-			dem_query.setLong(1, uid2);
-			dem_query.setInt(2, RIGHT_UID);
-			rs = dem_query.executeQuery();
-			Record r2 = new Record(uid2, "resultdb");
-			while(rs.next()){
-				String field = rs.getString("field");
-				String value = rs.getString("value");
-				r2.addDemographic(field, value);
-			}
-			rs.close();
+			final Record r1 = readRecord(uid1, LEFT_UID), r2 = readRecord(uid2, RIGHT_UID);
 			
 			// get agreement information and make MatchVector
 			fa_query.setInt(1, index);
 			rs = fa_query.executeQuery();
-			MatchVector mv = new MatchVector();
-			while(rs.next()){
-				String field = rs.getString("field");
-				int agree = rs.getInt("agreement");
-				if(agree == 1){
-					mv.setMatch(field, true);
-				} else {
-					mv.setMatch(field, false);
-				}
+			final MatchVector mv = new MatchVector();
+			while (rs.next()) {
+				mv.setMatch(rs.getString("field"), rs.getInt("agreement") == 1);
 			}
 			rs.close();
-			
-			ScoreVector sv = null;
-			MatchingConfig mc = null;
-			String[] mcrs = new String[0];
-			mc = new MatchingConfig(mc_name, mcrs);
+			final MatchingConfig mc = new MatchingConfig(mc_name, new String[0]);
 			
 			// make MatchResult object to return
-			ret = new MatchResult(score, incl_score, true_prob, false_prob, sens, spec, mv, sv, r1, r2, mc);
+			final MatchResult ret = new MatchResult(score, 0, true_prob, false_prob, sens, spec, mv, null, r1, r2, mc);
 			ret.setNote(note);
 			ret.setCertainty(certainty);
 			ret.setMatch_status(status);
+			return ret;
+		} catch (final SQLException e) {
+			throw new RuntimeException(e);
+		} finally {
+			close(rs);
 		}
-		catch(SQLException sqle){
-			System.err.println(sqle.getMessage());
+	}
+	
+	private final Record readRecord(final long uid, final int side) throws SQLException {
+		dem_query.setLong(1, uid);
+		dem_query.setInt(2, side);
+		final Record r = new Record(uid, "resultdb");
+		final ResultSet rs = dem_query.executeQuery();
+		try {
+			while (rs.next()) {
+				r.addDemographic(rs.getString("field"), rs.getString("value"));
+			}
+		} finally {
+			rs.close();
 		}
-		
-		return ret;
+		return r;
 	}
 
-	public void addMatchResult(MatchResult mr, int id) {
-		long uid1 = mr.getRecord1().getUID();
-		long uid2 = mr.getRecord2().getUID();
-		String mc = mr.getMatchingConfig().getName();
-		double score = mr.getScore();
-		double true_prob = mr.getTrueProbability();
-		double false_prob = mr.getFalseProbability();
-		double spec = mr.getSpecificity();
-		double sens = mr.getSensitivity();
-		int status = mr.getMatch_status();
-		double certainty = mr.getCertainty();
-		String note = mr.getNote();
+	@Override
+	public void addMatchResult(final MatchResult mr, final int id) {
+		final MatchingConfig mc = mr.getMatchingConfig();
+		final Record record1 = mr.getRecord1(), record2 = mr.getRecord2();
+		final long uid1 = record1.getUID(), uid2 = record2.getUID();
+		boolean add_r1 = !imported_uids.contains(Long.valueOf(uid1)), add_r2 = !imported_uids.contains(Long.valueOf(uid2));
 		
-		boolean add_r1 = true;
-		boolean add_r2 = true;
-		
-		if(imported_uids.get(uid1) != null){
-			add_r1 = false;
-		}
-		if(imported_uids.get(uid2) != null){
-			add_r2 = false;
-		}
-		
-		try{
+		try {
 			mr_insert.setInt(1, id);
-			mr_insert.setString(2, mc);
-			mr_insert.setDouble(3, score);
-			mr_insert.setDouble(4, true_prob);
-			mr_insert.setDouble(5, false_prob);
-			mr_insert.setDouble(6, spec);
-			mr_insert.setDouble(7, sens);
-			mr_insert.setInt(8, status);
-			mr_insert.setDouble(9, certainty);
+			mr_insert.setString(2, mc.getName());
+			mr_insert.setDouble(3, mr.getScore());
+			mr_insert.setDouble(4, mr.getTrueProbability());
+			mr_insert.setDouble(5, mr.getFalseProbability());
+			mr_insert.setDouble(6, mr.getSpecificity());
+			mr_insert.setDouble(7, mr.getSensitivity());
+			mr_insert.setInt(8, mr.getMatch_status());
+			mr_insert.setDouble(9, mr.getCertainty());
 			mr_insert.setLong(10, uid1);
 			mr_insert.setLong(11, uid2);
-			mr_insert.setString(12, note);
-			mr_insert.setDate(13, new java.sql.Date(set_date.getTime()));
-			mr_insert.execute();
+			mr_insert.setString(12, mr.getNote());
+			mr_insert.setDate(13, set_date);
+			executeAtLeastOneUpdate(mr_insert);
 			
-			if(add_r1){
-				dem_count_query.setLong(1, uid1);
-				ResultSet rs = dem_count_query.executeQuery();
-				rs.next();
-				int n = rs.getInt(1);
-				if(n > 0){
-					add_r1 = false;
-				}
-				rs.close();
-			}
-			
-			if(add_r2){
-				dem_count_query.setLong(1, uid2);
-				ResultSet rs = dem_count_query.executeQuery();
-				rs.next();
-				int n = rs.getInt(1);
-				if(n > 0){
-					add_r2 = false;
-				}
-				rs.close();
-			}
-			
-		}
-		catch(SQLException sqle){
-			System.err.println(sqle.getMessage());
-		}
+			add_r1 = isAddNeeded(add_r1, uid1);
+			add_r2 = isAddNeeded(add_r2, uid2);
 		
-		Iterator<String> it = mr.getDemographics().iterator();
-		while(it.hasNext()){
-			String dem = it.next();
-			String val1 = mr.getRecord1().getDemographic(dem);
-			String val2 = mr.getRecord2().getDemographic(dem);
-			
-			int agree = 0;
-			if(mr.matchedOn(dem)){
-				agree = 1;
-			}
-			String alg = MatchingConfig.ALGORITHMS[mr.getMatchingConfig().getAlgorithm(mr.getMatchingConfig().getRowIndexforName(dem))];
-			
-			// set demographic and agreement table values
-			try{
+			for (final String dem : mr.getDemographics()) {
+				final String val1 = record1.getDemographic(dem), val2 = record2.getDemographic(dem);
+				final int agree = mr.matchedOn(dem) ? 1 : 0;
+				final String alg = MatchingConfig.ALGORITHMS[mc.getAlgorithm(mc.getRowIndexforName(dem))];
 				
-				if(add_r1){
-					dem_insert.setLong(1, uid1);
-					dem_insert.setInt(2, LEFT_UID);
-					dem_insert.setString(3, dem);
-					dem_insert.setString(4, val1);
-					dem_insert.execute();
-					imported_uids.put(uid1, Boolean.TRUE);
-				}
-				
-				if(add_r2){
-					dem_insert.setLong(1, uid2);
-					dem_insert.setInt(2, RIGHT_UID);
-					dem_insert.setString(3, dem);
-					dem_insert.setString(4, val2);
-					dem_insert.execute();
-					imported_uids.put(uid2, Boolean.TRUE);
-				}
+				// set demographic and agreement table values
+				add(add_r1, uid1, LEFT_UID, dem, val1);
+				add(add_r2, uid2, RIGHT_UID, dem, val2);
 				
 				fa_insert.setInt(1, id);
 				fa_insert.setString(2, dem);
 				fa_insert.setString(3, alg);
 				fa_insert.setInt(4, agree);
-				fa_insert.execute();
+				executeAtLeastOneUpdate(fa_insert);
 			}
-			catch(SQLException sqle){
-				System.err.println(sqle.getMessage());
-			}
-			
+			addCount++;
+		} catch (final SQLException e) {
+			throw new RuntimeException(e);
 		}
 	}
 	
-	public List<Date> getDates(){
-		List<Date> ret = new ArrayList<Date>();
-		try{
-			ResultSet rs = date_query.executeQuery();
-			while(rs.next()){
-				ret.add(rs.getDate(1));
-			}
+	public void addMatchResultToEachStore(final DBMatchResultStore other, final MatchResult mr, final int id) {
+		addMatchResult(mr, id);
+		other.addMatchResult(mr, id);
+	}
+	
+	private boolean isAddNeeded(final boolean add, final long uid) throws SQLException {
+		if (!add) {
+			return false;
+		}
+		dem_count_query.setLong(1, uid);
+		final ResultSet rs = dem_count_query.executeQuery();
+		try {
+			return !(rs.next() && (rs.getInt(1) > 0));
+		} finally {
 			rs.close();
 		}
-		catch(SQLException sqle){
-			System.err.println(sqle.getMessage());
+	}
+	
+	private void add(final boolean add, final long uid, final int side, final String dem, final String val) throws SQLException {
+		if (add) {
+			dem_insert.setLong(1, uid);
+			dem_insert.setInt(2, side);
+			dem_insert.setString(3, dem);
+			dem_insert.setString(4, val);
+			executeAtLeastOneUpdate(dem_insert);
+			imported_uids.add(Long.valueOf(uid));
+		}
+	}
+	
+	public List<java.util.Date> getDates() {
+		List<java.util.Date> ret = new ArrayList<java.util.Date>();
+		ResultSet rs = null;
+		try {
+			rs = date_query.executeQuery();
+			while (rs.next()) {
+				ret.add(rs.getDate(1));
+			}
+		} catch (final SQLException e) {
+			throw new RuntimeException(e);
+		} finally {
+			close(rs);
 		}
 		
 		return ret;
 	}
 	
-	public int getMinUnknownID(){
-		int id = 0;
-		try{
-			min_query.setDate(1, new java.sql.Date(set_date.getTime()));
-			ResultSet rs = min_query.executeQuery();
-			rs.next();
-			id = rs.getInt(1);
-			rs.close();
+	public int getMinUnknownID() {
+		ResultSet rs = null;
+		try {
+			min_query.setDate(1, set_date);
+			rs = min_query.executeQuery();
+			return rs.next() ? rs.getInt(1) : 0;
+		} catch (final SQLException e) {
+			throw new RuntimeException(e);
+		} finally {
+			close(rs);
 		}
-		catch(SQLException sqle){
-			System.err.println(sqle.getMessage());
-		}
-		return id;
 	}
 	
-	public void addIndexes(){
-		try{
-			Statement st = db.createStatement();
+	public void addIndexes() {
+		try {
+			final Statement st = db.createStatement();
 			st.execute("create index mr_idx on matchresult(ID, report_date)");
 			st.execute("create index dem_idx on demographic(uid,side)");
 			st.execute("create index fa_idx on field_agreement(ID)");
+			st.close();
+		} catch (final SQLException e) {
+			throw new RuntimeException(e);
 		}
-		catch(SQLException sqle){
-			System.err.println(sqle.getMessage());
-		}
-		
 	}
 
+	@Override
 	public int getSize() {
-		int size = 0;
-		try{
-			mr_count.setDate(1, new java.sql.Date(set_date.getTime()));
-			ResultSet rs = mr_count.executeQuery();
-			rs.next();
-			size = rs.getInt(1);
-			rs.close();
+		ResultSet rs = null;
+		try {
+			mr_count.setDate(1, set_date);
+			rs = mr_count.executeQuery();
+			return rs.next() ? rs.getInt(1) : 0;
+		} catch (final SQLException e) {
+			throw new RuntimeException(e);
+		} finally {
+			close(rs);
 		}
-		catch(SQLException sqle){
-			System.err.println(sqle.getMessage());
-		}
-		return size;
 	}
 
-	public void removeMatchResult(int id) {
-		// need to remove row in matchresult and field_agreement tables
-		try{
-			fa_delete.setInt(1, id);
-			fa_delete.execute();
-			mr_delete.setInt(1, id);
-			mr_delete.setDate(2, new java.sql.Date(set_date.getTime()));
-			mr_delete.execute();
-		}
-		catch(SQLException sqle){
-			System.err.println(sqle.getMessage());
+	@Override
+	public void removeMatchResult(final int id) {
+		if (!removeMatchResultIfPresent(id)) {
+			throw new IllegalStateException("Attempted to remove match result " + id + ", but it was not found");
 		}
 	}
 	
-	public void updateMatchResult(int id, String note, int status, double certainty){
-		try{
+	private boolean removeMatchResultIfPresent(final int id) {
+		// need to remove row in matchresult and field_agreement tables
+		try {
+			fa_delete.setInt(1, id);
+			if (fa_delete.executeUpdate() <= 0) {
+				return false;
+			}
+			mr_delete.setInt(1, id);
+			mr_delete.setDate(2, set_date);
+			executeAtLeastOneUpdate(mr_delete);
+			return true;
+		} catch (final SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	private final static void executeAtLeastOneUpdate(final PreparedStatement stmt) throws SQLException {
+		final int count = stmt.executeUpdate();
+		if (count > 0) {
+			return;
+		}
+		throw new IllegalStateException("Expected SQL to impact at least one row, but none were impacted");
+	}
+	
+	public void updateMatchResult(final int id, final String note, final int status, final double certainty) {
+		try {
 			mr_update.setInt(1, status);
 			mr_update.setDouble(2, certainty);
 			mr_update.setString(3, note);
 			mr_update.setInt(4, id);
-			mr_update.setDate(5, new java.sql.Date(set_date.getTime()));
+			mr_update.setDate(5, set_date);
 			mr_update.executeUpdate();
-		}
-		catch(SQLException sqle){
-			System.err.println(sqle.getMessage());
+		} catch (final SQLException e) {
+			throw new RuntimeException(e);
 		}
 	}
 	
-	public void close(){
-		try{
+	public void close() {
+		try {
 			mr_insert.close();
 			dem_insert.close();
 			fa_insert.close();
@@ -401,10 +365,18 @@ public class DBMatchResultStore implements MatchResultStore {
 			min_query.close();
 			date_query.close();
 			date_insert.close();
-		}
-		catch(SQLException sqle){
-			System.err.println(sqle.getMessage());
+		} catch (final SQLException e) {
+			System.err.println(e.getMessage());
 		}
 	}
-
+	
+	private final static void close(final ResultSet rs) {
+		if (rs != null) {
+			try {
+				rs.close();
+			} catch (final SQLException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
 }

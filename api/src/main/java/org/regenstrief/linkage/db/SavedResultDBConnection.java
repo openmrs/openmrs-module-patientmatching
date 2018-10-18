@@ -10,9 +10,7 @@ import java.sql.Statement;
  * Class either creates a JavaDB database from a given file name and returns a connection to
  * the new database or opens the existing database in the given file and returns the connection
  * 
- * 
  */
-
 public class SavedResultDBConnection {
 	
 	public static final String CREATE_MATCH_RESULT_TABLE = "create table matchresult(" +
@@ -42,48 +40,29 @@ public class SavedResultDBConnection {
 			"algorithm varchar(40)," +
 			"agreement integer" +
 			")";
-	
 	public static final String CREATE_DATE_TABLE = "create table report_dates(" +
 			"report_date timestamp" +
 			")";
 	
-	public static Connection openDBResults(File f){
-		Connection ret = null;
-		String url = null;
-		try{
-			Class.forName("org.sqlite.JDBC");
-			//Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
-		}
-		catch(ClassNotFoundException cnfe){
-			return null;
-		}
-		
-		url = "jdbc:sqlite:" + f.getPath();
-		//url = "jdbc:derby:" + f.getPath();
-		//if(!f.exists()){
-		//	url += ";create=true";
-		//}
-		
+	public static Connection openDBResults(final File f) {
 		try {
-			ret = DriverManager.getConnection(url);
-		} catch (SQLException sqle) {
-			System.err.println(sqle.getMessage());
-			return null;
+			Class.forName("org.sqlite.JDBC");
+			return DriverManager.getConnection("jdbc:sqlite:" + f.getPath());
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
-		
-		return ret;
 	}
 	
-	public static void createMatchResultTables(Connection db){
-		try{
-			Statement st = db.createStatement();
+	public static void createMatchResultTables(final Connection db) {
+		try {
+			final Statement st = db.createStatement();
 			st.execute(CREATE_MATCH_RESULT_TABLE);
 			st.execute(CREATE_DEMOGRAPHIC_TABLE);
 			st.execute(CREATE_FIELD_AGREEMENT_TABLE);
 			st.execute(CREATE_DATE_TABLE);
-		}
-		catch(SQLException sqle){
-			System.err.println(sqle.getMessage());
+			st.close();
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
 		}
 	}
 }
