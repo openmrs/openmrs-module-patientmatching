@@ -226,8 +226,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
                 try {
                     Context.getSchedulerService().shutdownTask(td);
                 } catch (SchedulerException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    log.error("Exception caught while shutting down Patient Matching Module ...", e);
                 }
             }
         }
