@@ -2,7 +2,6 @@ package org.regenstrief.linkage;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Iterator;
 
 /**
  * Record stores demographics associated with one entity. The values are stored
