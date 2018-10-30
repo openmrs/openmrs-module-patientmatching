@@ -359,6 +359,7 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 				if(retval == JFileChooser.APPROVE_OPTION){
 					File db_file = jfc.getSelectedFile();
 					db = SavedResultDBConnection.openDBResults(db_file);
+					SavedResultDBConnection.validateMatchResultTables(db);
 					if(db != null){
 						mrs = new DBMatchResultStore(db);
 						List<Date> dates = ((DBMatchResultStore)mrs).getDates();

@@ -24,26 +24,24 @@ public class DBMatchResultStore implements MatchResultStore {
 	public static final int LEFT_UID = 1;
 	public static final int RIGHT_UID = 2;
 	
+	public static final String RECORD_INSERT = "insert into record" +
+			"(uid)" +
+			" values (?)";
 	public static final String MATCH_RESULT_INSERT = "insert into matchresult" +
 			"(ID,mc,score,true_prob,false_prob,spec,sens,status,certainty,uid1,uid2,note,report_date)" +
 			" values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
 	public static final String DEMOGRAPHIC_INSERT = "insert into demographic" +
-			"(uid,side,field,value)" +
-			" values (?,?,?,?)";
+			"(uid,field,value)" +
+			" values (?,?,?)";
 	public static final String FIELD_AGREEMENT_INSERT = "insert into field_agreement" +
 			"(ID,field,algorithm,agreement)" +
 			" values (?,?,?,?)";
 	public static final String COUNT_QUERY = "select count(*) from matchresult where report_date = ?";
 	public static final String MATCH_RESULT_QUERY = "select * from matchresult where ID = ? and report_date = ?";
-	public static final String DEMOGRAPHIC_QUERY = "select * from demographic where uid = ? and side = ?";
-	public static final String DEMOGRAPHIC_COUNT_QUERY = "select count(*) from demographic where uid = ?";
+	public static final String DEMOGRAPHIC_QUERY = "select * from demographic where uid = ?";
+	public static final String RECORD_COUNT_QUERY = "select count(*) from record where uid = ?";
 	public static final String FIELD_AGREEMENT_QUERY = "select * from field_agreement where ID = ?";
 	public static final String DELETE_MATCH_RESULT_QUERY = "delete from matchresult where ID = ? and report_date = ?";
-	public static final String DELETE_DEMOGRAPHIC_QUERY =
-			"delete from demographic\n" +
-			"where uid=?\n" +
-			"and not exists(select 1 from matchresult where uid1=uid)\n" +
-			"and not exists(select 1 from matchresult where uid2=uid)";
 	public static final String DELETE_FIELD_AGREEMENT_QUERY = "delete from field_agreement where ID = ?";
 	public static final String UPDATE_MATCH_RESULT_QUERY = "update matchresult set status = ?, certainty = ?, note = ? where ID = ? and report_date = ?";
 	public static final String MIN_UNKNOWN_QUERY = "select min(ID) from matchresult where status = " + MatchResult.UNKNOWN + " and report_date = ?";
@@ -53,11 +51,12 @@ public class DBMatchResultStore implements MatchResultStore {
 	private final HashSet<Long> imported_uids = new HashSet<Long>();
 	
 	protected Connection db;
+	protected PreparedStatement rec_insert;
 	protected PreparedStatement mr_insert;
 	protected PreparedStatement dem_insert;
 	protected PreparedStatement fa_insert;
 	protected PreparedStatement mr_count;
-	protected PreparedStatement mr_query, dem_query, dem_count_query, fa_query;
+	protected PreparedStatement mr_query, dem_query, rec_count_query, fa_query;
 	protected PreparedStatement mr_delete, fa_delete;
 	protected PreparedStatement mr_update;
 	protected PreparedStatement min_query;
@@ -71,13 +70,14 @@ public class DBMatchResultStore implements MatchResultStore {
 	public DBMatchResultStore(final Connection db) {
 		this.db = db;
 		try {
+			rec_insert = db.prepareStatement(RECORD_INSERT);
 			mr_insert = db.prepareStatement(MATCH_RESULT_INSERT);
 			dem_insert = db.prepareStatement(DEMOGRAPHIC_INSERT);
 			fa_insert = db.prepareStatement(FIELD_AGREEMENT_INSERT);
 			mr_count = db.prepareStatement(COUNT_QUERY);
 			mr_query = db.prepareStatement(MATCH_RESULT_QUERY);
 			dem_query = db.prepareStatement(DEMOGRAPHIC_QUERY);
-			dem_count_query = db.prepareStatement(DEMOGRAPHIC_COUNT_QUERY);
+			rec_count_query = db.prepareStatement(RECORD_COUNT_QUERY);
 			fa_query = db.prepareStatement(FIELD_AGREEMENT_QUERY);
 			mr_delete = db.prepareStatement(DELETE_MATCH_RESULT_QUERY);
 			fa_delete = db.prepareStatement(DELETE_FIELD_AGREEMENT_QUERY);
@@ -133,7 +133,7 @@ public class DBMatchResultStore implements MatchResultStore {
 			rs.close();
 			
 			// get demographics for uid1 and uid2 and make Record objects
-			final Record r1 = readRecord(uid1, LEFT_UID), r2 = readRecord(uid2, RIGHT_UID);
+			final Record r1 = readRecord(uid1), r2 = readRecord(uid2);
 			
 			// get agreement information and make MatchVector
 			fa_query.setInt(1, index);
@@ -158,9 +158,8 @@ public class DBMatchResultStore implements MatchResultStore {
 		}
 	}
 	
-	private final Record readRecord(final long uid, final int side) throws SQLException {
+	private final Record readRecord(final long uid) throws SQLException {
 		dem_query.setLong(1, uid);
-		dem_query.setInt(2, side);
 		final Record r = new Record(uid, "resultdb");
 		final ResultSet rs = dem_query.executeQuery();
 		try {
@@ -196,8 +195,8 @@ public class DBMatchResultStore implements MatchResultStore {
 			mr_insert.setDate(13, set_date);
 			executeAtLeastOneUpdate(mr_insert);
 			
-			add_r1 = isAddNeeded(add_r1, uid1);
-			add_r2 = isAddNeeded(add_r2, uid2);
+			add_r1 = addRecordIfNeeded(add_r1, uid1);
+			add_r2 = addRecordIfNeeded(add_r2, uid2);
 		
 			for (final String dem : mr.getDemographics()) {
 				final String val1 = record1.getDemographic(dem), val2 = record2.getDemographic(dem);
@@ -205,8 +204,8 @@ public class DBMatchResultStore implements MatchResultStore {
 				final String alg = MatchingConfig.ALGORITHMS[mc.getAlgorithm(mc.getRowIndexforName(dem))];
 				
 				// set demographic and agreement table values
-				add(add_r1, uid1, LEFT_UID, dem, val1);
-				add(add_r2, uid2, RIGHT_UID, dem, val2);
+				add(add_r1, uid1, dem, val1);
+				add(add_r2, uid2, dem, val2);
 				
 				fa_insert.setInt(1, id);
 				fa_insert.setString(2, dem);
@@ -225,27 +224,31 @@ public class DBMatchResultStore implements MatchResultStore {
 		other.addMatchResult(mr, id);
 	}
 	
-	private boolean isAddNeeded(final boolean add, final long uid) throws SQLException {
+	private boolean addRecordIfNeeded(final boolean add, final long uid) throws SQLException {
 		if (!add) {
 			return false;
 		}
-		dem_count_query.setLong(1, uid);
-		final ResultSet rs = dem_count_query.executeQuery();
+		rec_count_query.setLong(1, uid);
+		final ResultSet rs = rec_count_query.executeQuery();
 		try {
-			return !(rs.next() && (rs.getInt(1) > 0));
+			if (rs.next() && (rs.getInt(1) > 0)) {
+				return false;
+			}
 		} finally {
 			rs.close();
 		}
+		rec_insert.setLong(1, uid);
+		executeAtLeastOneUpdate(rec_insert);
+		imported_uids.add(Long.valueOf(uid));
+		return true;
 	}
 	
-	private void add(final boolean add, final long uid, final int side, final String dem, final String val) throws SQLException {
+	private void add(final boolean add, final long uid, final String dem, final String val) throws SQLException {
 		if (add) {
 			dem_insert.setLong(1, uid);
-			dem_insert.setInt(2, side);
-			dem_insert.setString(3, dem);
-			dem_insert.setString(4, val);
+			dem_insert.setString(2, dem);
+			dem_insert.setString(3, val);
 			executeAtLeastOneUpdate(dem_insert);
-			imported_uids.add(Long.valueOf(uid));
 		}
 	}
 	
@@ -283,7 +286,7 @@ public class DBMatchResultStore implements MatchResultStore {
 		try {
 			final Statement st = db.createStatement();
 			st.execute("create index mr_idx on matchresult(ID, report_date)");
-			st.execute("create index dem_idx on demographic(uid,side)");
+			st.execute("create index dem_idx on demographic(uid)");
 			st.execute("create index fa_idx on field_agreement(ID)");
 			st.close();
 		} catch (final SQLException e) {
@@ -351,13 +354,14 @@ public class DBMatchResultStore implements MatchResultStore {
 	
 	public void close() {
 		try {
+			rec_insert.close();
 			mr_insert.close();
 			dem_insert.close();
 			fa_insert.close();
 			mr_count.close();
 			mr_query.close();
 			dem_query.close();
-			dem_count_query.close();
+			rec_count_query.close();
 			fa_query.close();
 			mr_delete.close();
 			fa_delete.close();
