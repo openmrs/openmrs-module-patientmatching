@@ -51,10 +51,10 @@ public class OrderedCharDelimFileReader extends CharDelimFileReader implements O
 			if(expected.lastModified() > modified_date){
 				try{
 					file_reader = new BufferedReader(new FileReader(expected));
-					if (lds.getFileHeaderLine() || lds.getSkipFirstRow()) {
-						file_reader.readLine();
+					String line = file_reader.readLine();
+					if ((line != null) && line.equals(header) && (lds.getFileHeaderLine() || lds.getSkipFirstRow())) {
+						line = file_reader.readLine();
 					}
-					final String line = file_reader.readLine();
 					if (line != null) {
 					    next_record = line2Record(line);
 					} else {
