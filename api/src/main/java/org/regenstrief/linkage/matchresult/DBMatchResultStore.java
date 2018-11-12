@@ -49,6 +49,7 @@ public class DBMatchResultStore implements MatchResultStore {
 	public static final String DATES_INSERT = "insert into report_dates(report_date) values (?)";
 	
 	private final HashSet<Long> imported_uids = new HashSet<Long>();
+	private int importedPairCount = 0;
 	
 	protected Connection db;
 	protected PreparedStatement rec_insert;
@@ -121,7 +122,9 @@ public class DBMatchResultStore implements MatchResultStore {
 			mr_query.setInt(1, index);
 			mr_query.setDate(2, set_date);
 			rs = mr_query.executeQuery();
-			rs.next();
+			if (!rs.next()) {
+				return null; // Pager panel tries to fill first page even if there aren't enough rows; it expects and handles null if there aren't enough rows
+			}
 			final String mc_name = rs.getString("mc");
 			final double score = rs.getDouble("score");
 			final double true_prob = rs.getDouble("true_prob"), false_prob = rs.getDouble("false_prob");
@@ -172,6 +175,11 @@ public class DBMatchResultStore implements MatchResultStore {
 		return r;
 	}
 
+	private void addMatchResult(final MatchResult mr) {
+		addMatchResult(mr, importedPairCount);
+		importedPairCount++;
+	}
+	
 	@Override
 	public void addMatchResult(final MatchResult mr, final int id) {
 		final MatchingConfig mc = mr.getMatchingConfig();
@@ -219,9 +227,9 @@ public class DBMatchResultStore implements MatchResultStore {
 		}
 	}
 	
-	public void addMatchResultToEachStore(final DBMatchResultStore other, final MatchResult mr, final int id) {
-		addMatchResult(mr, id);
-		other.addMatchResult(mr, id);
+	public void addMatchResultToEachStore(final DBMatchResultStore other, final MatchResult mr) {
+		addMatchResult(mr);
+		other.addMatchResult(mr);
 	}
 	
 	private boolean addRecordIfNeeded(final boolean add, final long uid) throws SQLException {
