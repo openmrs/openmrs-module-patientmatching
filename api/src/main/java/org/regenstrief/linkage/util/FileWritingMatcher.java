@@ -54,6 +54,7 @@ public class FileWritingMatcher {
 			throw new UnsupportedOperationException("writeXml not supported; depended on a result list that is no longer maintained");
 		}
 		final int numDbs = (reviewers == 2) ? 1 : reviewers;
+		final List<int[]> reviewerPairs = (numDbs > 1) ? generateReviewerPairs(reviewers) : null;
 		// set output order based on include position in lds
 		final LinkDataSource lds = rmc.getLinkDataSource1();
 		final List<String> names = new ArrayList<String>();
@@ -140,10 +141,10 @@ public class FileWritingMatcher {
 						if (numDbs == 1) {
 							mrss[0].addMatchResult(mr, count);
 						} else if (numDbs > 1) {
-							final int index1 = count % numDbs;
-							final int index2 = (index1 == (numDbs - 1)) ? 0 : (index1 + 1);
-							final DBMatchResultStore mrs1 = mrss[index1], mrs2 = mrss[index2];
-							mrs1.addMatchResultToEachStore(mrs2, mr, count);
+							final int reviewerPairIndex = count % reviewerPairs.size();
+							final int[] reviewerPair = reviewerPairs.get(reviewerPairIndex);
+							final DBMatchResultStore mrs1 = mrss[reviewerPair[0]], mrs2 = mrss[reviewerPair[1]];
+							mrs1.addMatchResultToEachStore(mrs2, mr);
 						}
 						
 						// add to grouping list, if needed
@@ -248,6 +249,17 @@ public class FileWritingMatcher {
 		}
 		
 		return f;
+	}
+	
+	private final static List<int[]> generateReviewerPairs(final int reviewers) {
+	    final List<int[]> reviewerPairs = new ArrayList<int[]>();
+	    final int reviewers1 = reviewers - 1;
+	    for (int i = 0; i < reviewers1; i++) {
+	        for (int j = i + 1; j < reviewers; j++) {
+	            reviewerPairs.add(new int[] { i, j });
+	        }
+	    }
+	    return reviewerPairs;
 	}
 	
 	private final static void close(final Closeable c) {
