@@ -5,8 +5,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
@@ -26,6 +31,14 @@ public final class BlockingHeuristicCalculator extends FrequencyBasedCalculator 
 	private long totalPairs = 0;
 	
 	public final static List<MatchingConfig> getBlockingSchemesToAnalyze(final RecMatchConfig rmConf) {
+		final String specificSchemeString = System.getProperty("org.regenstrief.linkage.analysis.BlockingHeuristicCalculator.specificSchemes");
+		if (specificSchemeString != null) {
+			return getSpecificBlockingSchemes(specificSchemeString);
+		}
+		final String possibleSchemeString = System.getProperty("org.regenstrief.linkage.analysis.BlockingHeuristicCalculator.possibleSchemes");
+		if (possibleSchemeString != null) {
+			return getPossibleBlockingSchemeIntersections(possibleSchemeString);
+		}
 		final String possibleFieldString = System.getProperty("org.regenstrief.linkage.analysis.BlockingHeuristicCalculator.possibleFields");
 		if (possibleFieldString == null) {
 			return rmConf.getMatchingConfigs();
@@ -34,6 +47,63 @@ public final class BlockingHeuristicCalculator extends FrequencyBasedCalculator 
 		final int maxFields = Integer.parseInt(System.getProperty("org.regenstrief.linkage.analysis.BlockingHeuristicCalculator.maxFields"));
 		final String[] possibleFields = possibleFieldString.split(";");
 		return getPossibleBlockingSchemes(minFields, maxFields, possibleFields);
+	}
+	
+	public final static List<MatchingConfig> getSpecificBlockingSchemes(final String specificSchemeString) {
+		final String[][] specificCombinations = parseBlockingSchemes(specificSchemeString);
+		final List<MatchingConfig> list = new ArrayList<MatchingConfig>(specificCombinations.length);
+		for (final String[] specificCombination : specificCombinations) {
+			list.add(newMatchingConfig(specificCombination));
+		}
+		return list;
+	}
+	
+	private final static String[][] parseBlockingSchemes(final String possibleSchemeString) {
+		final String[] possibleSchemes = possibleSchemeString.split(";");
+		final int size = possibleSchemes.length;
+		final String[][] possibleCombinations = new String[size][];
+		for (int i = 0; i < size; i++) {
+			possibleCombinations[i] = possibleSchemes[i].split("\\+");
+		}
+		return possibleCombinations;
+	}
+	
+	public final static List<MatchingConfig> getPossibleBlockingSchemeIntersections(final String possibleSchemeString) {
+		final String[][] possibleCombinations = parseBlockingSchemes(possibleSchemeString);
+		final Set<Set<String>> intersections = new LinkedHashSet<Set<String>>();
+		for (final String[] combination : possibleCombinations) {
+			addIntersections(intersections, possibleCombinations, new TreeSet<String>(Arrays.asList(combination)));
+		}
+		final String minFieldsValue = System.getProperty("org.regenstrief.linkage.analysis.BlockingHeuristicCalculator.minFields");
+		if (minFieldsValue != null) {
+			final int minFields = Integer.parseInt(minFieldsValue);
+			final Iterator<Set<String>> iter = intersections.iterator();
+			while (iter.hasNext()) {
+				if (iter.next().size() < minFields) {
+					iter.remove();
+				}
+			}
+		}
+		System.out.println("Calculating heuristics for:\n" + intersections);
+		final List<MatchingConfig> list = new ArrayList<MatchingConfig>(intersections.size());
+		for (final Set<String> intersection : intersections) {
+			list.add(newMatchingConfig(intersection));
+		}
+		return list;
+	}
+	
+	private final static void addIntersections(final Set<Set<String>> intersections, final String[][] possibleCombinations, final Set<String> base) {
+		final int baseSize = base.size();
+		for (final String[] combination : possibleCombinations) {
+			final Set<String> intersection = new TreeSet<String>(Arrays.asList(combination));
+			intersection.addAll(base);
+			if (intersection.size() == baseSize) {
+				continue;
+			} else if (!intersections.add(intersection)) {
+				continue;
+			}
+			addIntersections(intersections, possibleCombinations, intersection);
+		}
 	}
 	
 	public final static List<MatchingConfig> getPossibleBlockingSchemes(final int minFields, final int maxFields, final String[] possibleFields) {
@@ -56,6 +126,10 @@ public final class BlockingHeuristicCalculator extends FrequencyBasedCalculator 
 				mcs.add(newMatchingConfig(currentFields));
 			}
 		}
+	}
+	
+	public final static MatchingConfig newMatchingConfig(final Collection<String> fields) {
+		return newMatchingConfig(fields.toArray(new String[fields.size()]));
 	}
 	
 	public final static MatchingConfig newMatchingConfig(final String... fields) {
