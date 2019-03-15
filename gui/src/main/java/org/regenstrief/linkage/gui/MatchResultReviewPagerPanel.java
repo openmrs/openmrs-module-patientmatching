@@ -363,6 +363,9 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 	}
 	
 	private static void closeReviewLog() {
+		if (review_log == null) {
+			return;
+		}
 		review_log.flush();
 		review_log.close();
 		review_log = null;
