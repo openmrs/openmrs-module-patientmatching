@@ -7,6 +7,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -39,6 +42,7 @@ import org.regenstrief.linkage.matchresult.MatchResultStore;
 
 public class MatchResultReviewPagerPanel extends JPanel implements ActionListener, WindowListener{
 
+	private static final long serialVersionUID = 1L;
 	public static int VIEWS_PER_PAGE = 5;
 	public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
 	private int view_index;
@@ -46,8 +50,8 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 	private MatchResultStore mrs;
 	private DateFormat ui_datefmt;
 	
-	private JButton next_page, prev_page, goto_mr, open, save, exit;
-	private JTextField row, first_unreviewed, total;;
+	private JButton next_page, prev_page, goto_mr, goto_first_unreviewed, open, save;
+	private JTextField row, first_unreviewed, total;
 	
 	private Hashtable<Integer,MatchResult> reviewed_match_results;
 	
@@ -55,6 +59,9 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 	private Set<String> no_display;
 	
 	private Connection db;
+	
+	private static String db_file_path;
+	private static PrintStream review_log;
 	
 	public MatchResultReviewPagerPanel(){
 		super();
@@ -180,6 +187,8 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		goto_mr = new JButton("Goto Row");
 		goto_mr.addActionListener(this);
 		row = new JTextField(4);
+		goto_first_unreviewed = new JButton("Goto Unreviewed");
+		goto_first_unreviewed.addActionListener(this);
 		bottom.add(prev_page);
 		bottom.add(Box.createRigidArea(new Dimension(5,0)));
 		bottom.add(next_page);
@@ -187,6 +196,8 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		bottom.add(goto_mr);
 		bottom.add(Box.createRigidArea(new Dimension(5,0)));
 		bottom.add(row);
+		bottom.add(Box.createRigidArea(new Dimension(5,0)));
+		bottom.add(goto_first_unreviewed);
 		
 		this.add(bottom, BorderLayout.PAGE_END);
 		MatchResultReviewKeyboardAccelerator.INSTANCE.setPagerPanel(this);
@@ -244,6 +255,9 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 	}
 	
 	public void updateView(int index){
+		for (MatchResultReviewPanel rpanel : rpanels) {
+			rpanel.clearFocus();
+		}
 		// get VIEWS_PER_PAGE MatchResults out of MatchResult store beginning at given index
 		// set GUI elements to show new MatchResults
 		view_index = index;
@@ -260,7 +274,8 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		for(int i = 0; i < rpanels.size(); i++){
 			MatchResultReviewPanel mrrp = rpanels.get(i);
 			MatchResult mr;
-			mr = reviewed_match_results.get(new Integer(view_index + i));
+			Integer key = Integer.valueOf(view_index + i);
+			mr = reviewed_match_results.get(key);
 			if(mr == null){
 				mr = mrs.getMatchResult(view_index + i);
 			}
@@ -268,10 +283,10 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 				mrrp.setMatchResult(mr);
 				mrrp.setRow(view_index + i);
 				
-				reviewed_match_results.put(new Integer(view_index + i), mr);
+				reviewed_match_results.put(key, mr);
 			}
 		}
-		
+		MatchResultReviewKeyboardAccelerator.INSTANCE.setFocusIndex(0);
 	}
 	
 	private void showPrevPage(){
@@ -311,8 +326,9 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 			
 			Enumeration<Integer> e = reviewed_match_results.keys();
 			while(e.hasMoreElements()){
-				Integer id = e.nextElement();
-				MatchResult reviewed = reviewed_match_results.get(id);
+				Integer idKey = e.nextElement();
+				MatchResult reviewed = reviewed_match_results.get(idKey);
+				int id = idKey.intValue();
 				if(use_db){
 					DBMatchResultStore dmrs = (DBMatchResultStore)mrs;
 					dmrs.updateMatchResult(id, reviewed.getNote(), reviewed.getMatch_status(), reviewed.getCertainty());
@@ -323,7 +339,33 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 				
 			}
 			reviewed_match_results.clear();
+			refreshCurrentMatchResults();
+			closeReviewLog();
 		}
+	}
+	
+	private void refreshCurrentMatchResults() {
+		final int size = rpanels.size();
+		for (int i = 0; i < size; i++) {
+			reviewed_match_results.put(Integer.valueOf(view_index + i), rpanels.get(i).mr);
+		}
+	}
+	
+	protected static void printReviewLog(final Object s) {
+		try {
+			if (review_log == null) {
+				review_log = new PrintStream(new FileOutputStream(db_file_path + ".review.log", true), true);
+			}
+			review_log.println(s);
+		} catch (final IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	private static void closeReviewLog() {
+		review_log.flush();
+		review_log.close();
+		review_log = null;
 	}
 	
 	public void closeDBConnection(){
@@ -348,6 +390,7 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		return mrs.getSize() < VIEWS_PER_PAGE || view_index >= mrs.getSize() - VIEWS_PER_PAGE;
 	}
 
+	@Override
 	public void actionPerformed(ActionEvent ae) {
 		if(ae.getSource() instanceof JButton){
 			JButton source = (JButton)ae.getSource();
@@ -358,6 +401,7 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 				int retval = jfc.showOpenDialog(this);
 				if(retval == JFileChooser.APPROVE_OPTION){
 					File db_file = jfc.getSelectedFile();
+					db_file_path = db_file.getAbsolutePath();
 					db = SavedResultDBConnection.openDBResults(db_file);
 					SavedResultDBConnection.validateMatchResultTables(db);
 					if(db != null){
@@ -372,7 +416,6 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 						updateView(view_index);
 						setFirstUnreviewed();
 						setTotal();
-						rpanels.get(0).setFocus();
 					}
 				}
 			} else if(source == next_page){
@@ -380,33 +423,44 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 			} else if(source == prev_page){
 				showPrevPage();
 			} else if(source == save){
+				final MatchResultReviewPanel focused = getFocusedPanel();
 				saveChanges();
 				setFirstUnreviewed();
-			} else if(source == exit){
-				
+				if (focused != null) {
+					focused.setFocus();
+				}
 			} else if(source == goto_mr){
-				int index = 0;
 				try{
-					index = Integer.parseInt(row.getText());
+					updateView(Integer.parseInt(row.getText()));
+				} catch(NumberFormatException nfe){
 				}
-				catch(NumberFormatException nfe){
-					return;
+			} else if(source == goto_first_unreviewed){
+				try{
+					updateView(Integer.parseInt(first_unreviewed.getText()));
+				} catch(NumberFormatException nfe){
 				}
-				updateView(index);
-				rpanels.get(0).setFocus();
 			}
 		}
 	}
+	
+	private MatchResultReviewPanel getFocusedPanel() {
+		for (final MatchResultReviewPanel panel : this.rpanels) {
+			if (panel.focused) {
+				return panel;
+			}
+		}
+		return null;
+	}
 
+	@Override
 	public void windowActivated(WindowEvent arg0) {
-		
 	}
 
+	@Override
 	public void windowClosed(WindowEvent arg0) {
-		
-		
 	}
 
+	@Override
 	public void windowClosing(WindowEvent arg0) {
 		if(db != null){
 			int n = JOptionPane.showConfirmDialog(this,"Save review changes before closing?","Exitting program",JOptionPane.YES_NO_OPTION);
@@ -417,19 +471,19 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		}
 	}
 
+	@Override
 	public void windowDeactivated(WindowEvent arg0) {
-		
 	}
 
+	@Override
 	public void windowDeiconified(WindowEvent arg0) {
-		
 	}
 
+	@Override
 	public void windowIconified(WindowEvent arg0) {
-		
 	}
 
+	@Override
 	public void windowOpened(WindowEvent arg0) {
-		
 	}
 }
