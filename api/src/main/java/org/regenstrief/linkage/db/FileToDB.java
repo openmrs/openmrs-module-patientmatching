@@ -11,6 +11,8 @@ import java.util.regex.Pattern;
 
 public class FileToDB {
 	
+	private final static String PROP_DELIM = "org.regenstrief.linkage.db.FileToDB.delim";
+	
 	private static Connection con = null;
 	
 	private static int numColumns = -1;
@@ -19,13 +21,19 @@ public class FileToDB {
 	
 	private static PreparedStatement insert = null;
 	
-	private final static Pattern PAT_PIPE = Pattern.compile("\\|");
+	private static Pattern patDelim = null;
 	
 	public final static void main(final String[] args) throws Exception {
 		run(args[0], (args.length < 2) ? null : args[1], (args.length < 3) ? null : args[2]);
 	}
 	
 	private final static void run(final String inFile, String outFile, String tableName) throws Exception {
+		final String delim = System.getProperty(PROP_DELIM);
+		if ((delim == null) || "pipe".equalsIgnoreCase(delim) || "|".equalsIgnoreCase(delim) || "\\|".equalsIgnoreCase(delim)) {
+			patDelim = Pattern.compile("\\|");
+		} else if ("tab".equalsIgnoreCase(delim) || "\t".equalsIgnoreCase(delim) || "\\t".equalsIgnoreCase(delim)) {
+			patDelim = Pattern.compile("\\t");
+		}
 		if (outFile == null) {
 			outFile = inFile + ".db";
 		}
@@ -66,7 +74,9 @@ public class FileToDB {
 		b.append("create table ").append(tableName).append(" (\n");
 		numColumns = tokens.length;
 		for (int i = 0; i < numColumns; i++) {
-			b.append(tokens[i]).append(" varchar(4000)");
+			final String token = formatColumnName(tokens[i]);
+			tokens[i] = token;
+			b.append(token).append(" varchar(4000)");
 			if (i < (numColumns - 1)) {
 				b.append(',');
 			}
@@ -79,6 +89,10 @@ public class FileToDB {
 		con.commit();
 		stmt.close();
 		prepareInsert(tokens);
+	}
+	
+	private final static String formatColumnName(final String name) {
+		return name.replace(' ', '_');
 	}
 	
 	private final static void prepareInsert(final String[] tokens) throws Exception {
@@ -120,7 +134,7 @@ public class FileToDB {
 	}
 	
 	private final static String[] split(final String line) {
-		return PAT_PIPE.split(line);
+		return patDelim.split(line);
 	}
 	
 	private final static void info(final Object s) {

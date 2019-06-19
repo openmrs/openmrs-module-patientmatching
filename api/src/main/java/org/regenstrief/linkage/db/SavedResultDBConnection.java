@@ -14,6 +14,8 @@ import java.sql.Statement;
  */
 public class SavedResultDBConnection {
 	
+	public static final String PROP_VALIDATE = "org.regenstrief.linkage.db.SavedResultDBConnection.validate";
+	
 	public static final String CREATE_RECORD_TABLE = "create table record(" +
 			"uid bigint primary key" +
 			")";
@@ -52,9 +54,13 @@ public class SavedResultDBConnection {
 			")";
 	
 	public static Connection openDBResults(final File f) {
+		return openDBResults(f.getPath());
+	}
+	
+	public static Connection openDBResults(final String fileLocation) {
 		try {
 			Class.forName("org.sqlite.JDBC");
-			return DriverManager.getConnection("jdbc:sqlite:" + f.getPath());
+			return DriverManager.getConnection("jdbc:sqlite:" + fileLocation);
 		} catch (final Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -75,6 +81,9 @@ public class SavedResultDBConnection {
 	}
 	
 	public static void validateMatchResultTables(final Connection db) {
+		if (!"true".equalsIgnoreCase(System.getProperty(PROP_VALIDATE))) {
+			return;
+		}
 		try {
 			final Statement st = db.createStatement();
 			validate0(st, "select count(1) from matchresult m where not exists(select 1 from record r where r.uid=m.uid1)");
