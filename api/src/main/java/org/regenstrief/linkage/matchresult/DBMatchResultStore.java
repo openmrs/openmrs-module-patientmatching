@@ -38,6 +38,7 @@ public class DBMatchResultStore implements MatchResultStore {
 			" values (?,?,?,?)";
 	public static final String COUNT_QUERY = "select count(*) from matchresult where report_date = ?";
 	public static final String MATCH_RESULT_QUERY = "select * from matchresult where ID = ? and report_date = ?";
+	public static final String MATCH_RESULT_PAIR_QUERY = "select ID from matchresult where uid1 = ? and uid2 = ? and report_date = ?";
 	public static final String DEMOGRAPHIC_QUERY = "select * from demographic where uid = ?";
 	public static final String RECORD_COUNT_QUERY = "select count(*) from record where uid = ?";
 	public static final String FIELD_AGREEMENT_QUERY = "select * from field_agreement where ID = ?";
@@ -57,7 +58,7 @@ public class DBMatchResultStore implements MatchResultStore {
 	protected PreparedStatement dem_insert;
 	protected PreparedStatement fa_insert;
 	protected PreparedStatement mr_count;
-	protected PreparedStatement mr_query, dem_query, rec_count_query, fa_query;
+	protected PreparedStatement mr_query, mr_pair_query, dem_query, rec_count_query, fa_query;
 	protected PreparedStatement mr_delete, fa_delete;
 	protected PreparedStatement mr_update;
 	protected PreparedStatement min_query;
@@ -77,6 +78,7 @@ public class DBMatchResultStore implements MatchResultStore {
 			fa_insert = db.prepareStatement(FIELD_AGREEMENT_INSERT);
 			mr_count = db.prepareStatement(COUNT_QUERY);
 			mr_query = db.prepareStatement(MATCH_RESULT_QUERY);
+			mr_pair_query = db.prepareStatement(MATCH_RESULT_PAIR_QUERY);
 			dem_query = db.prepareStatement(DEMOGRAPHIC_QUERY);
 			rec_count_query = db.prepareStatement(RECORD_COUNT_QUERY);
 			fa_query = db.prepareStatement(FIELD_AGREEMENT_QUERY);
@@ -113,6 +115,32 @@ public class DBMatchResultStore implements MatchResultStore {
 	
 	public int getAddCount() {
 		return addCount;
+	}
+	
+	public MatchResult getMatchResult(final long uid1, final long uid2) {
+		int index = getIndex(uid1, uid2);
+		if (index < 0) {
+			index = getIndex(uid2, uid1);
+			if (index < 0) {
+				return null;
+			}
+		}
+		return getMatchResult(index);
+	}
+	
+	private int getIndex(final long uid1, final long uid2) {
+		ResultSet rs = null;
+		try {
+			mr_pair_query.setLong(1, uid1);
+			mr_pair_query.setLong(2, uid2);
+			mr_pair_query.setDate(3, set_date);
+			rs = mr_pair_query.executeQuery();
+			return rs.next() ? rs.getInt(1) : -1;
+		} catch (final SQLException e) {
+			throw new RuntimeException(e);
+		} finally {
+			close(rs);
+		}
 	}
 	
 	@Override
@@ -293,9 +321,9 @@ public class DBMatchResultStore implements MatchResultStore {
 	public void addIndexes() {
 		try {
 			final Statement st = db.createStatement();
-			st.execute("create index mr_idx on matchresult(ID, report_date)");
-			st.execute("create index dem_idx on demographic(uid)");
-			st.execute("create index fa_idx on field_agreement(ID)");
+			st.execute("create index if not exists mr_idx on matchresult(ID, report_date)");
+			st.execute("create index if not exists dem_idx on demographic(uid)");
+			st.execute("create index if not exists fa_idx on field_agreement(ID)");
 			st.close();
 		} catch (final SQLException e) {
 			throw new RuntimeException(e);
@@ -368,6 +396,7 @@ public class DBMatchResultStore implements MatchResultStore {
 			fa_insert.close();
 			mr_count.close();
 			mr_query.close();
+			mr_pair_query.close();
 			dem_query.close();
 			rec_count_query.close();
 			fa_query.close();
