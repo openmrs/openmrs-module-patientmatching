@@ -164,7 +164,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
     }
 
     @Override
-	public void contextRefreshed() {
+	public void willStart() {
     }
 
     /**
@@ -172,7 +172,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
      * record linkage table is populated with the existing patients in OpenMRS.
      */
     @Override
-	public void willStart() {
+	public void contextRefreshed() {
         log.info("Starting Patient Matching Module");
 
         try{

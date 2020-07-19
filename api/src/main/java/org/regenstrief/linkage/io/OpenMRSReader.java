@@ -24,6 +24,7 @@ import org.openmrs.Patient;
 import org.openmrs.PatientIdentifierType;
 import org.openmrs.PersonAttributeType;
 import org.openmrs.api.context.Context;
+import org.openmrs.api.db.hibernate.DbSession;
 import org.openmrs.module.patientmatching.HibernateConnection;
 import org.openmrs.module.patientmatching.LinkDBConnections;
 import org.regenstrief.linkage.Record;
@@ -123,10 +124,9 @@ public class OpenMRSReader implements DataSourceReader {
     	return criteria;
     }
     
-    private Session createHibernateSession() {
+    private DbSession createHibernateSession() {
         HibernateConnection connection = new HibernateConnection();
-        SessionFactory sessionFactory = connection.getSessionFactory();
-        return sessionFactory.getCurrentSession();
+       return connection.getSessionFactory().getCurrentSession();
     }
     
     private void updatePatientList() {

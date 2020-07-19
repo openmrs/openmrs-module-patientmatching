@@ -90,7 +90,7 @@
 
 	<bean class="org.openmrs.module.patientmatching.HibernateConnection">
 		<property name="sessionFactory">
-			<ref bean="sessionFactory" />
+			<ref bean="dbSessionFactory" />
 		</property>
 	</bean>
 
@@ -110,7 +110,7 @@
 								<bean
 									class="org.openmrs.module.patientmatching.db.hibernate.HibernatePatientMatchingReportMetadataDAO">
 									<property name="sessionFactory">
-										<ref bean="sessionFactory" />
+										<ref bean="dbSessionFactory" />
 									</property>
 								</bean>
 							</property>
