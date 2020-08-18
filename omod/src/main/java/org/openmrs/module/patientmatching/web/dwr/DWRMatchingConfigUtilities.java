@@ -134,7 +134,7 @@ public class DWRMatchingConfigUtilities {
 			Util pages3 = new Util(sessions3);
 			pages3.addFunctionCall("scheduledTaskRunning");
 		}
-		log.info("DWRMatchingConfigUtilities: returning step " + new Integer(step));
+		log.debug("DWRMatchingConfigUtilities: returning step " + new Integer(step));
 		return (new Integer(step).toString()) + "," + processStarted.toString() + "," + activeReverseAjaxEnabled;
 	}
 

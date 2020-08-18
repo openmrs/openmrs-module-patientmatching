@@ -39,8 +39,8 @@ public class EMAnalyzer extends RecordPairAnalyzer implements LoggingObject { //
 	final static int INIT_COMP = 0;
 	final static double EARLY_TERMINATION_THRESHOLD = 0.00001;
 	
-	final static int MIN_ITERATIONS = 15;
-	final static int MAX_ITERATIONS = 200;
+	final static int MIN_ITERATIONS = 5;
+	final static int MAX_ITERATIONS = 5;
 	private int iterations;
 	private boolean pin_u_values;
 	private boolean null_avg;

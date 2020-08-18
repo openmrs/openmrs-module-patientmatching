@@ -3,6 +3,7 @@ package org.openmrs.module.patientmatching;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.SessionFactory;
+import org.openmrs.api.db.hibernate.DbSessionFactory;
 
 /**
  * Class retrieves a Hibernate SessionFactory to give to the Reader object
@@ -12,16 +13,16 @@ import org.hibernate.SessionFactory;
  */
 
 public class HibernateConnection {
-	private static SessionFactory sessionFactory;
+	private static DbSessionFactory sessionFactory;
 	protected final Log log = LogFactory.getLog(getClass());
 	
 	public HibernateConnection(){};
-	
-	public SessionFactory getSessionFactory() {
+
+	public DbSessionFactory getSessionFactory() {
 		return HibernateConnection.sessionFactory;
 	}
 	
-	public void setSessionFactory(SessionFactory sessionFactory) {
+	public void setSessionFactory(DbSessionFactory sessionFactory) {
 		//log.warn("set session factory called with object : " + sessionFactory);
 		HibernateConnection.sessionFactory = sessionFactory;
 	}

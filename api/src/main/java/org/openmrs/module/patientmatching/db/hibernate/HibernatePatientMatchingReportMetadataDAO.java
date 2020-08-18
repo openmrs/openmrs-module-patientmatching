@@ -13,6 +13,8 @@ import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openmrs.Cohort;
+import org.openmrs.api.db.hibernate.DbSession;
+import org.openmrs.api.db.hibernate.DbSessionFactory;
 import org.openmrs.module.patientmatching.PatientMatchingConfiguration;
 import org.openmrs.module.patientmatching.Report;
 import org.openmrs.module.patientmatching.db.PatientMatchingReportMetadataDao;
@@ -21,14 +23,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class HibernatePatientMatchingReportMetadataDAO implements PatientMatchingReportMetadataDao {
 
-	private SessionFactory sessionFactory;
+	private DbSessionFactory sessionFactory;
 	protected final Log log = LogFactory.getLog(this.getClass());
 
-	public SessionFactory getSessionFactory() {
+	public DbSessionFactory getSessionFactory() {
 		return sessionFactory;
 	}
 
-	public void setSessionFactory(SessionFactory sessionFactory) {
+	public void setSessionFactory(DbSessionFactory sessionFactory) {
 		this.sessionFactory = sessionFactory;
 	}
 
@@ -117,14 +119,14 @@ public class HibernatePatientMatchingReportMetadataDAO implements PatientMatchin
 	 * 
 	 * @return the current hibernate session.
 	 */
-	private org.hibernate.Session getCurrentSession() {
+	private DbSession getCurrentSession() {
 		try {
 			return sessionFactory.getCurrentSession();
 		}
 		catch (NoSuchMethodError ex) {
 			try {
 				Method method = sessionFactory.getClass().getMethod("getCurrentSession", null);
-				return (org.hibernate.Session) method.invoke(sessionFactory, null);
+				return (DbSession) method.invoke(sessionFactory, null);
 			}
 			catch (Exception e) {
 				throw new RuntimeException("Failed to get the current hibernate session", e);
