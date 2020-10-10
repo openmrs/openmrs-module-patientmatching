@@ -184,6 +184,8 @@ public class MatchingConfigRow implements Cloneable {
 		ret += "non-agreement weight: " + non_agreement + "\n";
 		ret += "scale weight: " + scale_weight + "\n";
 		ret += "algorithm: " + MatchingConfig.ALGORITHMS[algorithm] + "\n";
+        ret += "threshold: " + threshold + "\n";
+        ret += "setID: " + setID + "\n";
 		return ret;
 	}
 
