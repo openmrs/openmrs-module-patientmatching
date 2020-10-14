@@ -17,6 +17,7 @@ import java.util.TreeMap;
 public class ManualReviewEvaluator {
 	
 	private static final int CERTAINTY_LEVELS = 4;
+	
 	private static final int MATCH_THRESHOLD = CERTAINTY_LEVELS / 2;
 	
 	private static final Map<Long, ManualReviewResult> map = new LinkedHashMap<Long, ManualReviewResult>();
@@ -124,7 +125,8 @@ public class ManualReviewEvaluator {
 			}
 			rs.close();
 			stmt.close();
-		} finally {
+		}
+		finally {
 			con.close();
 		}
 	}
@@ -175,7 +177,8 @@ public class ManualReviewEvaluator {
 				if (level < 3) {
 					return false;
 				}
-				b.append("Status: ").append(matchStatus).append("; Score: ").append(this.scoreToReviewer.keySet().iterator().next());
+				b.append("Status: ").append(matchStatus).append("; Score: ")
+				        .append(this.scoreToReviewer.keySet().iterator().next());
 				return true;
 			}
 			b.append("Status: ");

@@ -6,27 +6,25 @@ import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
 
 /**
- * Class created because secondary JTable of the GUI, the bottom table, has
- * different requirements when a column is dragged.  The column names should
- * be anchored to the index, but include position of the LinkDataSource columns
- * be updated.
+ * Class created because secondary JTable of the GUI, the bottom table, has different requirements
+ * when a column is dragged. The column names should be anchored to the index, but include position
+ * of the LinkDataSource columns be updated.
  * 
  * @author jegg
- *
  */
 
 public class SecondaryMatchingTableColumnModel extends MatchingTableColumnModel {
 	
-	public SecondaryMatchingTableColumnModel(LinkDataSource lds){
+	public SecondaryMatchingTableColumnModel(LinkDataSource lds) {
 		super(lds);
 	}
 	
-	protected void updateLDS(int original_index, int new_index){
+	protected void updateLDS(int original_index, int new_index) {
 		TableColumn tc = this.getColumn(new_index);
 		int model_index = tc.getModelIndex();
 		DataColumn dc = lds.getDataColumn(model_index);
 		dc.setIncludePosition(new_index);
-		if(Math.abs(original_index - new_index) == 1){
+		if (Math.abs(original_index - new_index) == 1) {
 			// two adjacent columns were swapped, so set include value for neighbor
 			TableColumn tc2 = this.getColumn(original_index);
 			int model_index2 = tc2.getModelIndex();

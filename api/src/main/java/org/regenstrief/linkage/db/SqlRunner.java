@@ -46,7 +46,8 @@ public class SqlRunner {
 				stmt.getUpdateCount();
 			}
 			stmt.close();
-		} finally {
+		}
+		finally {
 			con.close();
 		}
 	}

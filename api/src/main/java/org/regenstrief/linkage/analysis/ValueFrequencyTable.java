@@ -8,27 +8,27 @@ import java.util.List;
 
 /**
  * Class stores how often a given token value is present.
+ * 
  * @author jegg
- *
  */
 
 public class ValueFrequencyTable {
-
-	Hashtable<String,Long> frequencies;
 	
-	public ValueFrequencyTable(){
-		frequencies = new Hashtable<String,Long>();
+	Hashtable<String, Long> frequencies;
+	
+	public ValueFrequencyTable() {
+		frequencies = new Hashtable<String, Long>();
 	}
 	
-	public int getRank(String value){
+	public int getRank(String value) {
 		long val_freq = getFrequency(value);
-		if(val_freq == 0){
+		if (val_freq == 0) {
 			return 0;
 		}
 		
 		List<Long> freqs = new ArrayList<Long>();
 		Enumeration<Long> e = frequencies.elements();
-		while(e.hasMoreElements()){
+		while (e.hasMoreElements()) {
 			Long l = e.nextElement();
 			freqs.add(l);
 		}
@@ -38,23 +38,23 @@ public class ValueFrequencyTable {
 		return rank;
 	}
 	
-	public Long getFrequency(String value){
+	public Long getFrequency(String value) {
 		Long l = frequencies.get(value);
-		if(l == null){
+		if (l == null) {
 			return 0L;
 		}
 		return l;
 	}
 	
-	public int getUniqueValueCount(){
+	public int getUniqueValueCount() {
 		return frequencies.keySet().size();
 	}
 	
-	public void setFrequency(String value, long freq){
+	public void setFrequency(String value, long freq) {
 		frequencies.put(value, freq);
 	}
 	
-	public List<String> getValues(){
+	public List<String> getValues() {
 		List<String> ret = new ArrayList<String>();
 		ret.addAll(frequencies.keySet());
 		return ret;

@@ -32,26 +32,27 @@ import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.matchresult.DBMatchResultStore;
 
 /**
- * Purpose of class is to find matches between two data sources using all the
- * given MatchingConfigs and write a simple output file
+ * Purpose of class is to find matches between two data sources using all the given MatchingConfigs
+ * and write a simple output file This class is a temp measure until better output can be created
  * 
- * This class is a temp measure until better output can be created
  * @author jegg
- *
  */
 public class FileWritingMatcher {
 	
 	public static final String OUT_FILE = "linkage.out";
 	
-	private static boolean scoreNeededInOutput = Boolean.getBoolean("org.regenstrief.linkage.util.FileWritingMatcher.scoreNeededInOutput");
+	private static boolean scoreNeededInOutput = Boolean
+	        .getBoolean("org.regenstrief.linkage.util.FileWritingMatcher.scoreNeededInOutput");
 	
 	public static File writeMatchResults(RecMatchConfig rmc) {
 		return writeMatchResults(rmc, new File(OUT_FILE), false, 0, false, false, false);
 	}
 	
-	public static File writeMatchResults(RecMatchConfig rmc, File f, boolean writeXml, int reviewers, boolean groupAnalysis, boolean vectorObs, boolean filterPairs) {
+	public static File writeMatchResults(RecMatchConfig rmc, File f, boolean writeXml, int reviewers, boolean groupAnalysis,
+	        boolean vectorObs, boolean filterPairs) {
 		if (writeXml) {
-			throw new UnsupportedOperationException("writeXml not supported; depended on a result list that is no longer maintained");
+			throw new UnsupportedOperationException(
+			        "writeXml not supported; depended on a result list that is no longer maintained");
 		}
 		final int numDbs = (reviewers == 2) ? 1 : reviewers;
 		final List<int[]> reviewerPairs = (numDbs > 1) ? generateReviewerPairs(reviewers) : null;
@@ -88,7 +89,8 @@ public class FileWritingMatcher {
 					SavedResultDBConnection.createMatchResultTables(db);
 					try {
 						db.setAutoCommit(false);
-					} catch (SQLException e) {
+					}
+					catch (SQLException e) {
 						throw new RuntimeException(e);
 					}
 					final DBMatchResultStore mrs = new DBMatchResultStore(db);
@@ -111,17 +113,17 @@ public class FileWritingMatcher {
 				odsr1 = rp.getReader(rmc.getLinkDataSource1(), mc);
 				odsr2 = rp.getReader(rmc.getLinkDataSource2(), mc);*/
 				if (odsr1 != null && odsr2 != null) {
-				    FormPairs fp;
-				    if (rmc.isDeduplication()) {
-				        fp = new DedupOrderedDataSourceFormPairs(odsr1, mc, rmc.getLinkDataSource1().getTypeTable());
-				    } else {
-				        fp = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rmc.getLinkDataSource1().getTypeTable());
-				    }
+					FormPairs fp;
+					if (rmc.isDeduplication()) {
+						fp = new DedupOrderedDataSourceFormPairs(odsr1, mc, rmc.getLinkDataSource1().getTypeTable());
+					} else {
+						fp = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rmc.getLinkDataSource1().getTypeTable());
+					}
 					
-				    if (filterPairs) {
-				    	fp = new NoMatchFilteringFormPairs(fp);
-				    }
-				    
+					if (filterPairs) {
+						fp = new NoMatchFilteringFormPairs(fp);
+					}
+					
 					final ScorePair sp = new ScorePair(mc);
 					
 					// check if scoring needs to be modified
@@ -170,7 +172,8 @@ public class FileWritingMatcher {
 						try {
 							db.commit();
 							db.close();
-						} catch (final SQLException e) {
+						}
+						catch (final SQLException e) {
 							throw new RuntimeException(e);
 						}
 					}
@@ -209,7 +212,8 @@ public class FileWritingMatcher {
 							final double expected_true = vt.getMatchVectorTrueProbability(mv_obs) * p * count;
 							final double expected_false = vt.getMatchVectorFalseProbability(mv_obs) * (1 - p) * count;
 							final double expected = expected_true + expected_false;
-							v_out.write("\"" + mv_obs + "\"|" + score + "|" + vt.getMatchVectorTrueProbability(mv_obs) + "|" + vt.getMatchVectorFalseProbability(mv_obs) + "|" + expected + "|" + l + "\n");
+							v_out.write("\"" + mv_obs + "\"|" + score + "|" + vt.getMatchVectorTrueProbability(mv_obs) + "|"
+							        + vt.getMatchVectorFalseProbability(mv_obs) + "|" + expected + "|" + l + "\n");
 						}
 						v_out.flush();
 						v_out.close();
@@ -242,9 +246,11 @@ public class FileWritingMatcher {
 					MatchResultsXML.groupsToXML(groups, new File(f.getPath() + "_groups.xml"));
 				}
 			}
-		} catch (final IOException e) {
+		}
+		catch (final IOException e) {
 			throw new RuntimeException("error writing linkage results", e);
-		} finally {
+		}
+		finally {
 			close(fout);
 		}
 		
@@ -252,21 +258,22 @@ public class FileWritingMatcher {
 	}
 	
 	private final static List<int[]> generateReviewerPairs(final int reviewers) {
-	    final List<int[]> reviewerPairs = new ArrayList<int[]>();
-	    final int reviewers1 = reviewers - 1;
-	    for (int i = 0; i < reviewers1; i++) {
-	        for (int j = i + 1; j < reviewers; j++) {
-	            reviewerPairs.add(new int[] { i, j });
-	        }
-	    }
-	    return reviewerPairs;
+		final List<int[]> reviewerPairs = new ArrayList<int[]>();
+		final int reviewers1 = reviewers - 1;
+		for (int i = 0; i < reviewers1; i++) {
+			for (int j = i + 1; j < reviewers; j++) {
+				reviewerPairs.add(new int[] { i, j });
+			}
+		}
+		return reviewerPairs;
 	}
 	
 	private final static void close(final Closeable c) {
 		if (c != null) {
 			try {
 				c.close();
-			} catch (final IOException e) {
+			}
+			catch (final IOException e) {
 				throw new RuntimeException(e);
 			}
 		}

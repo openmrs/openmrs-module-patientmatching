@@ -16,45 +16,44 @@ import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
 
 /**
- * Class calculates information on a set of Records fed to it
- * incrementally through successive calls to its analyzeRecord
- * method.  The finishAnalysis method is used when aggregate
- * calculations need to be performed as a last step of the analysis
- * 
+ * Class calculates information on a set of Records fed to it incrementally through successive calls
+ * to its analyzeRecord method. The finishAnalysis method is used when aggregate calculations need
+ * to be performed as a last step of the analysis
  */
 
-
-public abstract class DataSourceAnalyzer implements SingleSourceAnalyzer, LoggingObject, MatchingConfigAnalyzer{
+public abstract class DataSourceAnalyzer implements SingleSourceAnalyzer, LoggingObject, MatchingConfigAnalyzer {
 	
 	protected MatchingConfig config;
+	
 	protected LinkDataSource lds;
-	protected Hashtable<String,Boolean> analyzed_demographics;
+	
+	protected Hashtable<String, Boolean> analyzed_demographics;
+	
 	protected Logger log = Logger.getLogger(this.getClass() + this.toString());
 	
 	/**
-	 * Constructor takes the LinkDataSource to be analyzed
-	 * and the MatchingConfig is inspected to determine what
-	 * demographics need to be analyzed by the Analyzer
+	 * Constructor takes the LinkDataSource to be analyzed and the MatchingConfig is inspected to
+	 * determine what demographics need to be analyzed by the Analyzer
 	 * 
-	 * @param lds	the source of Records and demographics to analyze
-	 * @param mc	object contains matching information, including
-	 * 	which scores to modify using an analysis
+	 * @param lds the source of Records and demographics to analyze
+	 * @param mc object contains matching information, including which scores to modify using an
+	 *            analysis
 	 */
-	public DataSourceAnalyzer(LinkDataSource lds, MatchingConfig mc){
+	public DataSourceAnalyzer(LinkDataSource lds, MatchingConfig mc) {
 		this.config = mc;
 		this.lds = lds;
-		analyzed_demographics = new Hashtable<String,Boolean>();
-		if(mc != null){
+		analyzed_demographics = new Hashtable<String, Boolean>();
+		if (mc != null) {
 			List<MatchingConfigRow> matching_options = mc.getMatchingConfigRows();
-			for(MatchingConfigRow mcr : matching_options){
-				if(isAnalyzedDemographic(mcr)){
+			for (MatchingConfigRow mcr : matching_options) {
+				if (isAnalyzedDemographic(mcr)) {
 					// store this demographic as one to analyze when analyzeRecord(Record) is called
 					analyzed_demographics.put(mcr.getName(), Boolean.TRUE);
 				}
 			}
 		} else {
 			// analyze all columns in the datasource
-			for(DataColumn dc : lds.getDataColumns()){
+			for (DataColumn dc : lds.getDataColumns()) {
 				analyzed_demographics.put(dc.getName(), Boolean.TRUE);
 			}
 		}
@@ -66,44 +65,42 @@ public abstract class DataSourceAnalyzer implements SingleSourceAnalyzer, Loggin
 		log.setLevel(Level.INFO);
 	}
 	
-	public MatchingConfig getAnalyzerMatchingConfig(){
+	public MatchingConfig getAnalyzerMatchingConfig() {
 		return config;
 	}
 	
-	public Logger getLogger(){
+	public Logger getLogger() {
 		return log;
 	}
 	
 	/**
 	 * Analyzes the given record
 	 * 
-	 * @param rec	the latest Record to be included in the analysis
+	 * @param rec the latest Record to be included in the analysis
 	 */
 	public abstract void analyzeRecord(Record rec);
 	
 	/**
-	 * Method is implemented by subclasses to determine if the
-	 * MatchingConfigRow (information on demographics used in matching)
-	 * is valid for score modification by the specific Analyzer
+	 * Method is implemented by subclasses to determine if the MatchingConfigRow (information on
+	 * demographics used in matching) is valid for score modification by the specific Analyzer
 	 * 
-	 * @param mcr	object containing information on how a demographic will be used
-	 * @return	true if this demographic needs to be analyzed for use in matching
+	 * @param mcr object containing information on how a demographic will be used
+	 * @return true if this demographic needs to be analyzed for use in matching
 	 */
 	public abstract boolean isAnalyzedDemographic(MatchingConfigRow mcr);
 	
 	/**
-	 * Methods returns true if the given demographic needs to be
-	 * analyzed in the analyzeRecord() method
+	 * Methods returns true if the given demographic needs to be analyzed in the analyzeRecord() method
 	 * 
-	 * @param demographic	the name of the demographic to look-up
-	 * @return	true if the demographic needs to be analyzed
+	 * @param demographic the name of the demographic to look-up
+	 * @return true if the demographic needs to be analyzed
 	 */
-	protected boolean analyzeDemographic(String demographic){
-		if(demographic == null){
+	protected boolean analyzeDemographic(String demographic) {
+		if (demographic == null) {
 			return false;
 		}
 		Boolean analyze = analyzed_demographics.get(demographic);
-		if(analyze == null || !analyze){
+		if (analyze == null || !analyze) {
 			return false;
 		} else {
 			return true;

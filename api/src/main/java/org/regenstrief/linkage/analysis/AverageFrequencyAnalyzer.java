@@ -12,15 +12,19 @@ import org.regenstrief.linkage.util.MatchingConfigRow;
 
 /**
  * Calculates the average frequency of values in each demographic.
- * 
  */
 public class AverageFrequencyAnalyzer extends DataSourceAnalyzer {
+	
 	private TreeMap<String, Integer> unique_freq_table;
+	
 	private TreeMap<String, Double> result_table;
+	
 	private int total_records;
+	
 	private SummaryStatisticsStore sss;
-
-	public AverageFrequencyAnalyzer(LinkDataSource lds, MatchingConfig mc, TreeMap<String, Integer> computed_unique_freq_table, SummaryStatisticsStore s) {
+	
+	public AverageFrequencyAnalyzer(LinkDataSource lds, MatchingConfig mc,
+	    TreeMap<String, Integer> computed_unique_freq_table, SummaryStatisticsStore s) {
 		super(lds, mc);
 		sss = s;
 		unique_freq_table = computed_unique_freq_table;
@@ -30,7 +34,7 @@ public class AverageFrequencyAnalyzer extends DataSourceAnalyzer {
 	public TreeMap<String, Double> getResults() {
 		return result_table;
 	}
-
+	
 	/**
 	 * @see org.regenstrief.linkage.analysis.DataSourceAnalyzer#analyzeRecord(org.regenstrief.linkage.Record)
 	 */
@@ -40,7 +44,7 @@ public class AverageFrequencyAnalyzer extends DataSourceAnalyzer {
 		
 		++total_records;
 	}
-
+	
 	/**
 	 * @see org.regenstrief.linkage.analysis.DataSourceAnalyzer#isAnalyzedDemographic(org.regenstrief.linkage.util.MatchingConfigRow)
 	 */
@@ -48,7 +52,7 @@ public class AverageFrequencyAnalyzer extends DataSourceAnalyzer {
 	public boolean isAnalyzedDemographic(MatchingConfigRow mcr) {
 		return false;
 	}
-
+	
 	/**
 	 * @see org.regenstrief.linkage.analysis.Analyzer#finishAnalysis()
 	 */
@@ -57,16 +61,14 @@ public class AverageFrequencyAnalyzer extends DataSourceAnalyzer {
 		Iterator<String> demographic_it = unique_freq_table.keySet().iterator();
 		while (demographic_it.hasNext()) {
 			String current_demographic = demographic_it.next();
-
+			
 			Double favg = new Double(total_records) / unique_freq_table.get(current_demographic);
-			log.info("column/demographic " + current_demographic
-					+ " has average frequency: "
-					+ favg);
+			log.info("column/demographic " + current_demographic + " has average frequency: " + favg);
 			result_table.put(current_demographic, favg);
 			sss.setAverageFrequency(current_demographic, favg);
 		}
 	}
-
+	
 	/**
 	 * Inherited from DataSourceAnalyzer.
 	 * 

@@ -27,12 +27,12 @@ public class FrequencyAnalyzer extends DataSourceAnalyzer {
 			counter.incrementCount(entry.getKey(), entry.getValue());
 		}
 	}
-
+	
 	@Override
 	public boolean isAnalyzedDemographic(final MatchingConfigRow mcr) {
 		return true;
 	}
-
+	
 	@Override
 	public void finishAnalysis() {
 		counter.setFinished(true);

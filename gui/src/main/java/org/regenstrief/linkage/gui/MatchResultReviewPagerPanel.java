@@ -45,17 +45,24 @@ import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.db.SavedResultDBConnection;
 import org.regenstrief.linkage.matchresult.DBMatchResultStore;
 
-public class MatchResultReviewPagerPanel extends JPanel implements ActionListener, WindowListener{
-
+public class MatchResultReviewPagerPanel extends JPanel implements ActionListener, WindowListener {
+	
 	private static final long serialVersionUID = 1L;
+	
 	public static int VIEWS_PER_PAGE = 5;
+	
 	public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
+	
 	private int view_index;
+	
 	private final List<MatchResultReviewPanel> rpanels = new ArrayList<MatchResultReviewPanel>();
+	
 	private DBMatchResultStore mrs;
+	
 	private DateFormat ui_datefmt;
 	
 	private JButton next_page, prev_page, goto_mr, goto_first_unreviewed, open, save;
+	
 	private JTextField row, first_unreviewed, total;
 	
 	private final Hashtable<Integer, MatchResult> reviewed_match_results = new Hashtable<Integer, MatchResult>();
@@ -63,6 +70,7 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 	private Connection db;
 	
 	private static String db_file_path;
+	
 	private static PrintStream review_log;
 	
 	public MatchResultReviewPagerPanel() {
@@ -91,21 +99,16 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 	
 	private final Date chooseDate(final List<Date> options) {
 		// Date object toStrings can be ambiguous, so create more precise string
-		final Hashtable<String,Date> option_dates = new Hashtable<String, Date>();
+		final Hashtable<String, Date> option_dates = new Hashtable<String, Date>();
 		
 		for (final Date d : options) {
 			option_dates.put(ui_datefmt.format(d), d);
 		}
 		
 		final Object[] o = option_dates.keySet().toArray();
-		final String choice = (String) JOptionPane.showInputDialog(
-                this,
-                "Multiple runs exist in review database.\nWhich run to open?",
-                "Select date",
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                o,
-                o[0]);
+		final String choice = (String) JOptionPane.showInputDialog(this,
+		    "Multiple runs exist in review database.\nWhich run to open?", "Select date", JOptionPane.PLAIN_MESSAGE, null, o,
+		    o[0]);
 		return (choice == null) ? null : option_dates.get(choice);
 	}
 	
@@ -302,7 +305,8 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 				review_log = new PrintStream(new FileOutputStream(db_file_path + ".review.log", true), true);
 			}
 			review_log.println(s);
-		} catch (final IOException e) {
+		}
+		catch (final IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -323,7 +327,8 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		if (db != null) {
 			try {
 				db.close();
-			} catch (final SQLException e) {
+			}
+			catch (final SQLException e) {
 				e.printStackTrace();
 			}
 		}
@@ -345,7 +350,8 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		final FileReader r;
 		try {
 			r = new FileReader(getLastDirectoryConfigFile());
-		} catch (final FileNotFoundException e) {
+		}
+		catch (final FileNotFoundException e) {
 			return null;
 		}
 		final String lastDirectory;
@@ -353,7 +359,8 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 			final BufferedReader b = new BufferedReader(r);
 			lastDirectory = b.readLine();
 			b.close();
-		} finally {
+		}
+		finally {
 			r.close();
 		}
 		return lastDirectory;
@@ -364,16 +371,18 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		try {
 			w.write(lastDirectory);
 			w.flush();
-		} finally {
+		}
+		finally {
 			w.close();
 		}
 	}
-
+	
 	@Override
 	public final void actionPerformed(final ActionEvent ae) {
 		try {
 			actionPerformedEx(ae);
-		} catch (final IOException e) {
+		}
+		catch (final IOException e) {
 			throw new IllegalStateException(e);
 		}
 	}
@@ -435,15 +444,15 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 					focused.setFocus();
 				}
 			} else if (source == goto_mr) {
-				try{
+				try {
 					updateView(Integer.parseInt(row.getText()));
-				} catch(NumberFormatException nfe) {
 				}
+				catch (NumberFormatException nfe) {}
 			} else if (source == goto_first_unreviewed) {
-				try{
+				try {
 					updateView(Integer.parseInt(first_unreviewed.getText()));
-				} catch(NumberFormatException nfe) {
 				}
+				catch (NumberFormatException nfe) {}
 			}
 		}
 	}
@@ -456,38 +465,39 @@ public class MatchResultReviewPagerPanel extends JPanel implements ActionListene
 		}
 		return null;
 	}
-
+	
 	@Override
 	public final void windowActivated(final WindowEvent arg0) {
 	}
-
+	
 	@Override
 	public final void windowClosed(final WindowEvent arg0) {
 	}
-
+	
 	@Override
 	public final void windowClosing(final WindowEvent arg0) {
 		if (db != null) {
-			final int n = JOptionPane.showConfirmDialog(this, "Save review changes before closing?", "Exitting program", JOptionPane.YES_NO_OPTION);
+			final int n = JOptionPane.showConfirmDialog(this, "Save review changes before closing?", "Exitting program",
+			    JOptionPane.YES_NO_OPTION);
 			if (n == JOptionPane.YES_OPTION) {
 				saveChanges();
 			}
 			closeDBConnection();
 		}
 	}
-
+	
 	@Override
 	public final void windowDeactivated(final WindowEvent arg0) {
 	}
-
+	
 	@Override
 	public final void windowDeiconified(final WindowEvent arg0) {
 	}
-
+	
 	@Override
 	public final void windowIconified(final WindowEvent arg0) {
 	}
-
+	
 	@Override
 	public final void windowOpened(final WindowEvent arg0) {
 	}

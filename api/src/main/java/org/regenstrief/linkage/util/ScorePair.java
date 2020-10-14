@@ -23,23 +23,26 @@ import org.regenstrief.linkage.analysis.Modifier;
 import org.regenstrief.linkage.analysis.VectorTable;
 
 public class ScorePair {
-
+	
 	private VectorTable vt;
+	
 	private MatchingConfig mc;
+	
 	private List<Modifier> modifiers;
+	
 	private Hashtable<MatchVector, Long> observed_vectors;
-
+	
 	public ScorePair(MatchingConfig mc) {
 		this.mc = mc;
 		vt = new VectorTable(mc);
 		modifiers = new ArrayList<Modifier>();
 		observed_vectors = new Hashtable<MatchVector, Long>();
 	}
-
+	
 	public void addScoreModifier(Modifier sm) {
 		modifiers.add(sm);
 	}
-
+	
 	/**
 	 * Scores a pair of records
 	 * 
@@ -55,20 +58,20 @@ public class ScorePair {
 		} else {
 			mv = new MatchVector();
 		}
-
+		
 		for (final MatchingConfigRow mcr : mc.getIncludedColumns()) {
 			final String comparison_demographic = mcr.getName();
 			final int algorithm = mcr.getAlgorithm();
 			final double threshold = mcr.getThreshold();
-
+			
 			String data1 = rec1.getDemographic(comparison_demographic);
 			String data2 = rec2.getDemographic(comparison_demographic);
-
+			
 			if (StringUtils.isBlank(data1) || StringUtils.isBlank(data2)) {
 				NullDemographicsMatchVector nsmv = (NullDemographicsMatchVector) mv;
 				nsmv.hadNullValue(comparison_demographic);
 			}
-
+			
 			// multi-field demographics need to be analyzed on each combination of values
 			// TODO base this on a flag on MatchingConfigRow vs the beginning of the name
 			if (comparison_demographic.startsWith("(Identifier)")) {
@@ -82,16 +85,18 @@ public class ScorePair {
 				match(mv, comparison_demographic, algorithm, threshold, data1, data2);
 			}
 		}
-
+		
 		enableInterchageableFieldComparsion(rec1, rec2, mv);
-		MatchResult mr = new MatchResult(vt.getScore(mv), vt.getInclusiveScore(mv), vt.getMatchVectorTrueProbability(mv), vt.getMatchVectorFalseProbability(mv), vt.getSensitivity(mv), vt.getSpecificity(mv), mv, vt.getScoreVector(mv), rec1, rec2, mc);
+		MatchResult mr = new MatchResult(vt.getScore(mv), vt.getInclusiveScore(mv), vt.getMatchVectorTrueProbability(mv),
+		        vt.getMatchVectorFalseProbability(mv), vt.getSensitivity(mv), vt.getSpecificity(mv), mv,
+		        vt.getScoreVector(mv), rec1, rec2, mc);
 		for (Modifier m : modifiers) {
 			mr = m.getModifiedMatchResult(mr, mc);
 		}
-
+		
 		mr.setCertainty(1);
 		mr.setMatch_status(MatchResult.UNKNOWN);
-
+		
 		Long l = observed_vectors.get(mr.getMatchVector());
 		if (l == null) {
 			l = Long.valueOf(1);
@@ -99,13 +104,12 @@ public class ScorePair {
 			l = Long.valueOf(l.longValue() + 1);
 		}
 		observed_vectors.put(mr.getMatchVector(), l);
-
+		
 		return mr;
 	}
-
+	
 	/**
-	 * returns a list of all possible combinations of candidates from multiple
-	 * field demographics
+	 * returns a list of all possible combinations of candidates from multiple field demographics
 	 *
 	 * @param data1
 	 * @param data2
@@ -115,52 +119,53 @@ public class ScorePair {
 	protected List<String[]> getCandidatesFromMultiFieldDemographics(String data1, String data2) {
 		String[] a = data1.split(MatchingConstants.MULTI_FIELD_DELIMITER);
 		String[] b = data2.split(MatchingConstants.MULTI_FIELD_DELIMITER);
-
+		
 		List<String[]> res = new ArrayList<String[]>();
 		for (String i : a) {
 			for (String j : b) {
-				res.add(new String[]{i, j});
+				res.add(new String[] { i, j });
 			}
 		}
-
+		
 		return res;
 	}
-
-	private boolean match(MatchVector mv, String comparison_demographic, int algorithm, double threshold, String data1, String data2) {
+	
+	private boolean match(MatchVector mv, String comparison_demographic, int algorithm, double threshold, String data1,
+	        String data2) {
 		if (data1 == null || data2 == null) {
 			mv.setMatch(comparison_demographic, 0, false);
 			return false;
 		}
-
+		
 		final float similarity;
 		final boolean match;
 		switch (algorithm) {
-
+			
 			case (MatchingConfig.EXACT_MATCH):
 				match = StringMatch.exactMatch(data1, data2);
 				similarity = match ? 1 : 0;
 				break;
-
+			
 			case (MatchingConfig.JWC):
 				similarity = StringMatch.getJWCMatchSimilarity(data1, data2);
 				match = similarity > threshold;
 				break;
-
+			
 			case (MatchingConfig.LCS):
 				similarity = StringMatch.getLCSMatchSimilarity(data1, data2);
 				match = similarity > threshold;
 				break;
-
+			
 			case (MatchingConfig.LEV):
 				similarity = StringMatch.getLEVMatchSimilarity(data1, data2);
 				match = similarity > threshold;
 				break;
-				
+			
 			case (MatchingConfig.DICE):
 				similarity = StringMatch.getDiceMatchSimilarity(data1, data2);
 				match = similarity > threshold;
 				break;
-
+			
 			default:
 				throw new IllegalArgumentException("Unexpected algorithm: " + algorithm);
 		}
@@ -168,11 +173,10 @@ public class ScorePair {
 		mv.setMatch(comparison_demographic, similarity, match);
 		return match;
 	}
-
+	
 	/**
-	 * This method would check if the interchangeable columns have same value ,
-	 * if the columns match with each other then the individual columns which
-	 * make the concat1 column would be set as true
+	 * This method would check if the interchangeable columns have same value , if the columns match
+	 * with each other then the individual columns which make the concat1 column would be set as true
 	 **/
 	private void enableInterchageableFieldComparsion(Record rec1, Record rec2, final MatchVector mv) {
 		for (final String comparision_demographic : mc.getInterchangeableColumns()) {
@@ -182,17 +186,17 @@ public class ScorePair {
 				float similarity = StringMatch.getLCSMatchSimilarity(rec1ConcatValue, rec2ConcatValue);
 				if (similarity > StringMatch.LCS_THRESH) {
 					List<String> interchangeableColumns = mc.getConcatenatedDemographics(comparision_demographic);
-					for (String mcr: interchangeableColumns) {
+					for (String mcr : interchangeableColumns) {
 						mv.setMatch(mcr, similarity, true);
 					}
 				}
 				return;
 			}
 		}
-
+		
 		return;
 	}
-
+	
 	public Hashtable<MatchVector, Long> getObservedVectors() {
 		return observed_vectors;
 	}

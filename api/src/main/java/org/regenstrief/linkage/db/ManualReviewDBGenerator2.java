@@ -17,13 +17,21 @@ import org.regenstrief.linkage.util.MatchingConfig;
 public class ManualReviewDBGenerator2 {
 	
 	private static final Pattern PAT_PIPE = Pattern.compile("\\|");
+	
 	private static String pairFile = null;
+	
 	private static Connection con = null;
+	
 	private static BufferedReader in = null;
+	
 	private static DBMatchResultStore mrs;
+	
 	private static MatchingConfig mc = null;
+	
 	private static int pairId = 0;
+	
 	private static final Map<String, Integer> fields1 = new LinkedHashMap<String, Integer>();
+	
 	private static final Map<String, Integer> fields2 = new LinkedHashMap<String, Integer>();
 	
 	public final static void main(final String[] args) throws Exception {
@@ -57,7 +65,8 @@ public class ManualReviewDBGenerator2 {
 			mrs.addIndexes();
 			con.commit();
 			mrs.close();
-		} finally {
+		}
+		finally {
 			close();
 		}
 		info("Finished " + pairFile + " after " + count + " records");
@@ -88,7 +97,8 @@ public class ManualReviewDBGenerator2 {
 			}
 		}
 		if (fields1.size() != fields2.size()) {
-			throw new IllegalStateException("Found " + fields1.size() + " side-1 fields but " + fields2.size() + "side-2 fields");
+			throw new IllegalStateException(
+			        "Found " + fields1.size() + " side-1 fields but " + fields2.size() + "side-2 fields");
 		}
 	}
 	
@@ -103,7 +113,8 @@ public class ManualReviewDBGenerator2 {
 		pairId++;
 	}
 	
-	private final static Record getRecord(final String[] tokens, final Map<String, Integer> fields, final String context) throws Exception {
+	private final static Record getRecord(final String[] tokens, final Map<String, Integer> fields, final String context)
+	        throws Exception {
 		Record r = null;
 		final int size = fields.size();
 		final String[] dems;

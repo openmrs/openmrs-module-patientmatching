@@ -15,36 +15,41 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
- * Class created to store the options for the Record Linkage GUI and 
- * record linkage classes.  It stores two data source objects and a list of 
- * MatchingConfig objects.
+ * Class created to store the options for the Record Linkage GUI and record linkage classes. It
+ * stores two data source objects and a list of MatchingConfig objects.
  */
 
 public class RecMatchConfig implements Iterable<MatchingConfig> {
-static{
+	
+	static {
 		
 		System.out.println("RecMatchConfig entity called");
 	}
-	private LinkDataSource lds1, lds2;	
+	
+	private LinkDataSource lds1, lds2;
+	
 	private AnalysisConfig analysis_configs;
+	
 	private List<MatchingConfig> mc_configs;
+	
 	private DataSourceFrequency dsf1, dsf2;
 	
 	private boolean deduplication;
 	
-	public RecMatchConfig(){
+	public RecMatchConfig() {
 		lds1 = null;
 		lds2 = null;
 		mc_configs = new ArrayList<MatchingConfig>();
 	}
 	
-	public RecMatchConfig(LinkDataSource lds1, LinkDataSource lds2, List<MatchingConfig> mc_configs){
+	public RecMatchConfig(LinkDataSource lds1, LinkDataSource lds2, List<MatchingConfig> mc_configs) {
 		this.lds1 = lds1;
 		this.lds2 = lds2;
 		this.mc_configs = mc_configs;
 	}
 	
-	public RecMatchConfig(LinkDataSource lds1, LinkDataSource lds2, List<MatchingConfig> mc_configs, AnalysisConfig analysis_settings){
+	public RecMatchConfig(LinkDataSource lds1, LinkDataSource lds2, List<MatchingConfig> mc_configs,
+	    AnalysisConfig analysis_settings) {
 		this.lds1 = lds1;
 		this.lds2 = lds2;
 		this.mc_configs = mc_configs;
@@ -55,61 +60,54 @@ static{
 		return mc_configs.iterator();
 	}
 	
-	
-	
 	public DataSourceFrequency getDataSourceFrequency1() {
 		return dsf1;
 	}
-
+	
 	public void setDataSourceFrequency1(DataSourceFrequency dsf1) {
 		this.dsf1 = dsf1;
 	}
-
+	
 	public DataSourceFrequency getDataSourceFrequencyf2() {
 		return dsf2;
 	}
-
+	
 	public void setDataSourceFrequency2(DataSourceFrequency dsf2) {
 		this.dsf2 = dsf2;
 	}
-
+	
 	/**
-	 * 
-	 * @param lds	the new first LinkDataSource
+	 * @param lds the new first LinkDataSource
 	 */
-	public void setLinkDataSource1(LinkDataSource lds){
+	public void setLinkDataSource1(LinkDataSource lds) {
 		lds1 = lds;
 	}
 	
 	/**
-	 * 
-	 * @return	the first LinkDataSource
+	 * @return the first LinkDataSource
 	 */
-	public LinkDataSource getLinkDataSource1(){
+	public LinkDataSource getLinkDataSource1() {
 		return lds1;
 	}
 	
 	/**
-	 * 
-	 * @param lds	the new second LinkDataSource
+	 * @param lds the new second LinkDataSource
 	 */
-	public void setLinkDataSource2(LinkDataSource lds){
+	public void setLinkDataSource2(LinkDataSource lds) {
 		lds2 = lds;
 	}
 	
 	/**
-	 * 
-	 * @return	the second LinkDataSource
+	 * @return the second LinkDataSource
 	 */
-	public LinkDataSource getLinkDataSource2(){
+	public LinkDataSource getLinkDataSource2() {
 		return lds2;
 	}
 	
 	/**
-	 * 
-	 * @return	a List of the MatchingConfig objects
+	 * @return a List of the MatchingConfig objects
 	 */
-	public List<MatchingConfig> getMatchingConfigs(){
+	public List<MatchingConfig> getMatchingConfigs() {
 		System.out.println("getMatchingConfigs called ");
 		return mc_configs;
 	}
@@ -134,52 +132,51 @@ static{
 	/*
 	 * Test method to take an XML file and create a RecMatch object from mit
 	 */
-	public static void main(String[] args){
-		if(args.length != 1){
+	public static void main(String[] args) {
+		if (args.length != 1) {
 			System.out.println("usage: java RecMatchConfig <XML config file>");
 			System.exit(0);
 		}
 		File config = new File(args[0]);
-		if(!config.exists()){
+		if (!config.exists()) {
 			System.out.println("config file does not exist, exiting");
 			System.exit(0);
 		}
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		try{
+		try {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.parse(config);
 			RecMatchConfig rmc = XMLTranslator.createRecMatchConfig(doc);
 			System.out.println("created RecMatchConfig of:\n\t" + rmc);
 			XMLTranslator.writeXMLDocToFile(XMLTranslator.toXML(rmc), new File("test.xml"));
 		}
-		catch(ParserConfigurationException pce){
+		catch (ParserConfigurationException pce) {
 			System.out.println("error making XML parser: " + pce.getMessage());
 		}
-		catch(SAXException spe){
+		catch (SAXException spe) {
 			System.out.println("error parsing config file: " + spe.getMessage());
 		}
-		catch(IOException ioe){
+		catch (IOException ioe) {
 			System.out.println("IO error parsing config file: " + ioe.getMessage());
 		}
 	}
-
+	
 	public AnalysisConfig getAnalysis_configs() {
 		return analysis_configs;
 	}
-
-    /**
-     * @return the deduplication
-     */
-    public boolean isDeduplication() {
-        return deduplication;
-    }
-
-    /**
-     * @param deduplication the deduplication to set
-     */
-    public void setDeduplication(boolean deduplication) {
-        this.deduplication = deduplication;
-    }
-
-
+	
+	/**
+	 * @return the deduplication
+	 */
+	public boolean isDeduplication() {
+		return deduplication;
+	}
+	
+	/**
+	 * @param deduplication the deduplication to set
+	 */
+	public void setDeduplication(boolean deduplication) {
+		this.deduplication = deduplication;
+	}
+	
 }

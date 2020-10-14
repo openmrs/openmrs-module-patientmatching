@@ -21,36 +21,43 @@ import javax.swing.JTextField;
 import org.regenstrief.linkage.util.LinkDataSource;
 
 /**
- * Class created to get the information of a LinkDataSource through
- * a GUI, being either a database or flat file
+ * Class created to get the information of a LinkDataSource through a GUI, being either a database
+ * or flat file
  * 
  * @author jegg
- *
  */
 
-public class LinkDataSourceChooser implements ActionListener{
+public class LinkDataSourceChooser implements ActionListener {
 	
 	// create this to return in chooseLinkDataSource()
 	LinkDataSource lds;
 	
 	JTabbedPane tabs;
+	
 	JTextField file, delim, table, url, user, driver;
+	
 	JPasswordField passwd;
+	
 	JButton ok, cancel, choose_file;
+	
 	JDialog dialog;
+	
 	JCheckBox header, skip_first_row;
 	
 	// variables to save for creating the return object
 	String name;
+	
 	String type;
+	
 	String access;
+	
 	int id;
 	
-	public LinkDataSourceChooser(){
+	public LinkDataSourceChooser() {
 		
 	}
 	
-	private JTabbedPane getTabs(){
+	private JTabbedPane getTabs() {
 		tabs = new JTabbedPane();
 		JPanel file = getDelimFilePanel();
 		JPanel db = getDBPanel();
@@ -61,7 +68,7 @@ public class LinkDataSourceChooser implements ActionListener{
 		return tabs;
 	}
 	
-	private JPanel getDBPanel(){
+	private JPanel getDBPanel() {
 		JPanel ret = new JPanel();
 		ret.setLayout(new BoxLayout(ret, BoxLayout.PAGE_AXIS));
 		
@@ -101,7 +108,7 @@ public class LinkDataSourceChooser implements ActionListener{
 		return ret;
 	}
 	
-	private JPanel getDelimFilePanel(){
+	private JPanel getDelimFilePanel() {
 		JPanel ret = new JPanel();
 		
 		JPanel line;
@@ -139,8 +146,8 @@ public class LinkDataSourceChooser implements ActionListener{
 		return ret;
 	}
 	
-	private void setResult(){
-		if(tabs.getSelectedIndex() == 0){
+	private void setResult() {
+		if (tabs.getSelectedIndex() == 0) {
 			name = file.getText();
 			type = "CharDelimFile";
 			access = delim.getText();
@@ -153,32 +160,32 @@ public class LinkDataSourceChooser implements ActionListener{
 		}
 		
 		lds = new LinkDataSource(name, type, access, id);
-		if(header.isSelected()){
+		if (header.isSelected()) {
 			lds.setFileHeaderLine(true);
 		}
-		if(skip_first_row.isSelected()){
+		if (skip_first_row.isSelected()) {
 			lds.setSkipFirstRow(true);
 		}
 	}
 	
-	public void actionPerformed(ActionEvent ae){
-		if(ae.getSource() == choose_file){
+	public void actionPerformed(ActionEvent ae) {
+		if (ae.getSource() == choose_file) {
 			JFileChooser jfc = new JFileChooser();
 			int ret = jfc.showOpenDialog(null);
-			if(ret == JFileChooser.APPROVE_OPTION){
+			if (ret == JFileChooser.APPROVE_OPTION) {
 				File f = jfc.getSelectedFile();
 				file.setText(f.getPath());
 			}
-		} else if(ae.getSource() == header){
-			if(header.isSelected()){
+		} else if (ae.getSource() == header) {
+			if (header.isSelected()) {
 				skip_first_row.setSelected(false);
 			}
-		} else if(ae.getSource() == skip_first_row){
-			if(skip_first_row.isSelected()){
+		} else if (ae.getSource() == skip_first_row) {
+			if (skip_first_row.isSelected()) {
 				header.setSelected(false);
 			}
 		} else {
-			if(ae.getSource() == ok){
+			if (ae.getSource() == ok) {
 				// create and set LinkDataSource lds
 				setResult();
 			} else {
@@ -190,22 +197,22 @@ public class LinkDataSourceChooser implements ActionListener{
 		
 	}
 	
-	private LinkDataSource getResult(){
+	private LinkDataSource getResult() {
 		return lds;
 	}
 	
-	public void showDialog(){
+	public void showDialog() {
 		dialog = getDialog();
 		dialog.setVisible(true);
 	}
 	
-	private JDialog getDialog(){
+	private JDialog getDialog() {
 		Frame f = null;
 		JDialog dialog = new JDialog(f, "Define datasource", true);
 		Container contentPane = dialog.getContentPane();
-        contentPane.setLayout(new BorderLayout());
-        contentPane.add(getTabs(), BorderLayout.CENTER);
-        
+		contentPane.setLayout(new BorderLayout());
+		contentPane.add(getTabs(), BorderLayout.CENTER);
+		
 		ok = new JButton("Ok");
 		ok.addActionListener(this);
 		cancel = new JButton("Cancel");
@@ -215,21 +222,20 @@ public class LinkDataSourceChooser implements ActionListener{
 		bottom_panel.add(cancel);
 		
 		contentPane.add(bottom_panel, BorderLayout.SOUTH);
-        
-        dialog.setSize(350, 250);
-        dialog.setLocationRelativeTo(null);
-        
+		
+		dialog.setSize(350, 250);
+		dialog.setLocationRelativeTo(null);
+		
 		return dialog;
 	}
 	
 	/**
-	 * The method to use to get a LinkDataSource using a GUI.  No verification
-	 * of the options is done, such as database URL's or delimiting character
-	 * tests
+	 * The method to use to get a LinkDataSource using a GUI. No verification of the options is done,
+	 * such as database URL's or delimiting character tests
 	 * 
-	 * @return	the LinkDataSource representing the user's choices
+	 * @return the LinkDataSource representing the user's choices
 	 */
-	public static LinkDataSource chooseLinkDataSource(){
+	public static LinkDataSource chooseLinkDataSource() {
 		LinkDataSourceChooser ldsc = new LinkDataSourceChooser();
 		ldsc.showDialog();
 		

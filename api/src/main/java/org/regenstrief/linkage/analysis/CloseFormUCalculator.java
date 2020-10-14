@@ -6,19 +6,16 @@ import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
 
 /**
- * To calculate U values for linkage of two files: 
- * sum ( [ n * m ] )  /  [ N * M ]
- * where n is the frequency of the given token in file 1, m is the frequency of the given token in file 2,
- * N is the total number of records in file 1, and M is the total number of records in file 2
- * 
- * To calcule U values for each field when de-duplicating one file:
- * sum ( [ (n^2 - n) / 2 ] )  /  [ (N^2 - N) / 2]
+ * To calculate U values for linkage of two files: sum ( [ n * m ] ) / [ N * M ] where n is the
+ * frequency of the given token in file 1, m is the frequency of the given token in file 2, N is the
+ * total number of records in file 1, and M is the total number of records in file 2 To calcule U
+ * values for each field when de-duplicating one file: sum ( [ (n^2 - n) / 2 ] ) / [ (N^2 - N) / 2]
  * where n is the frequency of the given token and N is the total number of records in the file
  * 
  * @author jegg
- *
  */
 public class CloseFormUCalculator extends FrequencyBasedCalculator {
+	
 	private static final CloseFormUCalculator instance = new CloseFormUCalculator();
 	
 	protected CloseFormUCalculator() {

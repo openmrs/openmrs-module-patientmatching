@@ -13,7 +13,8 @@ import org.regenstrief.linkage.util.MatchingConfig;
  * Implementing subclasses define the methods that do the above steps
  */
 
-public abstract class Linker implements Runnable{
+public abstract class Linker implements Runnable {
+	
 	// a flag telling whether match and non-match values should be optimized
 	protected boolean estimate;
 	
@@ -24,27 +25,27 @@ public abstract class Linker implements Runnable{
 	// the matching
 	protected MatchingConfig mc;
 	
-	public Linker(LinkDataSource lds1, LinkDataSource lds2, MatchingConfig mc, boolean est){
+	public Linker(LinkDataSource lds1, LinkDataSource lds2, MatchingConfig mc, boolean est) {
 		this.mc = mc;
 		this.lds1 = lds1;
 		this.lds2 = lds2;
 		estimate = est;
 	}
 	
-	public Linker(MatchingConfig mc, LinkDataSource lds){
+	public Linker(MatchingConfig mc, LinkDataSource lds) {
 		this.mc = mc;
 		this.lds1 = lds1;
 		this.lds2 = lds2;
 		estimate = false;
 	}
 	
-	public void run(){
+	public void run() {
 		// calling runLinkage after starting a new thread will keep the main application responsive
 		// threading is implemented in this class as 
 		runLinkage();
 	}
 	
-	public boolean runLinkage(){
+	public boolean runLinkage() {
 		// run the steps to perform the linking
 		// success variable will keep track of each step succeeding
 		boolean success;
@@ -53,12 +54,12 @@ public abstract class Linker implements Runnable{
 		success = formPairs();
 		
 		// if estimating, call EM
-		if(success && estimate){
+		if (success && estimate) {
 			success = estimateValues();
 		}
 		
 		// last step is to score the pairs to rank the possible matches
-		if(success){
+		if (success) {
 			success = scorePairs();
 		}
 		

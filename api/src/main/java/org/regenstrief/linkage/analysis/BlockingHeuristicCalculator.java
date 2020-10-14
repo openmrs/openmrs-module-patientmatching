@@ -18,33 +18,47 @@ import org.regenstrief.linkage.util.MatchingConfigRow;
 import org.regenstrief.linkage.util.RecMatchConfig;
 
 public final class BlockingHeuristicCalculator extends FrequencyBasedCalculator {
+	
 	private final static String FIELD = BlockingFrequencyAnalyzer.FIELD;
+	
 	private final static double entropyDenominator = -Math.log(2.0);
+	
 	private final static double log10 = Math.log(10.0);
 	
 	private boolean fileEnabled = true;
+	
 	private double entropy;
+	
 	private double maxEntropy;
+	
 	private long uniqueValues = 0;
+	
 	private long nullValues = 0;
+	
 	private double u;
+	
 	private long totalPairs = 0;
 	
 	public final static List<MatchingConfig> getBlockingSchemesToAnalyze(final RecMatchConfig rmConf) {
-		final String specificSchemeString = System.getProperty("org.regenstrief.linkage.analysis.BlockingHeuristicCalculator.specificSchemes");
+		final String specificSchemeString = System
+		        .getProperty("org.regenstrief.linkage.analysis.BlockingHeuristicCalculator.specificSchemes");
 		if (specificSchemeString != null) {
 			return getSpecificBlockingSchemes(specificSchemeString);
 		}
-		final String possibleSchemeString = System.getProperty("org.regenstrief.linkage.analysis.BlockingHeuristicCalculator.possibleSchemes");
+		final String possibleSchemeString = System
+		        .getProperty("org.regenstrief.linkage.analysis.BlockingHeuristicCalculator.possibleSchemes");
 		if (possibleSchemeString != null) {
 			return getPossibleBlockingSchemeIntersections(possibleSchemeString);
 		}
-		final String possibleFieldString = System.getProperty("org.regenstrief.linkage.analysis.BlockingHeuristicCalculator.possibleFields");
+		final String possibleFieldString = System
+		        .getProperty("org.regenstrief.linkage.analysis.BlockingHeuristicCalculator.possibleFields");
 		if (possibleFieldString == null) {
 			return rmConf.getMatchingConfigs();
 		}
-		final int minFields = Integer.parseInt(System.getProperty("org.regenstrief.linkage.analysis.BlockingHeuristicCalculator.minFields"));
-		final int maxFields = Integer.parseInt(System.getProperty("org.regenstrief.linkage.analysis.BlockingHeuristicCalculator.maxFields"));
+		final int minFields = Integer
+		        .parseInt(System.getProperty("org.regenstrief.linkage.analysis.BlockingHeuristicCalculator.minFields"));
+		final int maxFields = Integer
+		        .parseInt(System.getProperty("org.regenstrief.linkage.analysis.BlockingHeuristicCalculator.maxFields"));
 		final String[] possibleFields = possibleFieldString.split(";");
 		return getPossibleBlockingSchemes(minFields, maxFields, possibleFields);
 	}
@@ -74,7 +88,8 @@ public final class BlockingHeuristicCalculator extends FrequencyBasedCalculator 
 		for (final String[] combination : possibleCombinations) {
 			addIntersections(intersections, possibleCombinations, new TreeSet<String>(Arrays.asList(combination)));
 		}
-		final String minFieldsValue = System.getProperty("org.regenstrief.linkage.analysis.BlockingHeuristicCalculator.minFields");
+		final String minFieldsValue = System
+		        .getProperty("org.regenstrief.linkage.analysis.BlockingHeuristicCalculator.minFields");
 		if (minFieldsValue != null) {
 			final int minFields = Integer.parseInt(minFieldsValue);
 			final Iterator<Set<String>> iter = intersections.iterator();
@@ -92,7 +107,8 @@ public final class BlockingHeuristicCalculator extends FrequencyBasedCalculator 
 		return list;
 	}
 	
-	private final static void addIntersections(final Set<Set<String>> intersections, final String[][] possibleCombinations, final Set<String> base) {
+	private final static void addIntersections(final Set<Set<String>> intersections, final String[][] possibleCombinations,
+	        final Set<String> base) {
 		final int baseSize = base.size();
 		for (final String[] combination : possibleCombinations) {
 			final Set<String> intersection = new TreeSet<String>(Arrays.asList(combination));
@@ -106,7 +122,8 @@ public final class BlockingHeuristicCalculator extends FrequencyBasedCalculator 
 		}
 	}
 	
-	public final static List<MatchingConfig> getPossibleBlockingSchemes(final int minFields, final int maxFields, final String[] possibleFields) {
+	public final static List<MatchingConfig> getPossibleBlockingSchemes(final int minFields, final int maxFields,
+	        final String[] possibleFields) {
 		final List<MatchingConfig> mcs = new ArrayList<MatchingConfig>();
 		for (int numFields = minFields; numFields <= maxFields; numFields++) {
 			final String[] currentFields = new String[numFields];
@@ -115,8 +132,8 @@ public final class BlockingHeuristicCalculator extends FrequencyBasedCalculator 
 		return mcs;
 	}
 	
-	private final static void addBlockingSchemes(final List<MatchingConfig> mcs, final String[] currentFields, final int currentIndex,
-	                                             final String[] possibleFields, final int possibleIndex, final int numFields) {
+	private final static void addBlockingSchemes(final List<MatchingConfig> mcs, final String[] currentFields,
+	        final int currentIndex, final String[] possibleFields, final int possibleIndex, final int numFields) {
 		final int nextIndex = currentIndex + 1;
 		for (int i = possibleIndex; i < possibleFields.length; i++) {
 			currentFields[currentIndex] = possibleFields[i];
@@ -169,7 +186,8 @@ public final class BlockingHeuristicCalculator extends FrequencyBasedCalculator 
 			entropyNumerator += getFieldEntropyNumerator(numRecords, totalRecords);
 		}
 		final double uNumerator = totalPairs, u = uNumerator / uDenominator;
-		finishCalculation(mc, totalRecords, totalPairs, entropyNumerator, uniqueValues, nullValues, u, getOutName(freq.getDataSourceName()));
+		finishCalculation(mc, totalRecords, totalPairs, entropyNumerator, uniqueValues, nullValues, u,
+		    getOutName(freq.getDataSourceName()));
 	}
 	
 	@Override
@@ -203,7 +221,8 @@ public final class BlockingHeuristicCalculator extends FrequencyBasedCalculator 
 			entropyNumerator += getFieldEntropyNumerator(numRecords2, totalRecords);
 		}
 		final double uNumerator = totalPairs, u = uNumerator / uDenominator;
-		finishCalculation(mc, totalRecords, totalPairs, entropyNumerator, uniqueValues, nullValues, u, getOutName(freq1.getDataSourceName(), freq2.getDataSourceName()));
+		finishCalculation(mc, totalRecords, totalPairs, entropyNumerator, uniqueValues, nullValues, u,
+		    getOutName(freq1.getDataSourceName(), freq2.getDataSourceName()));
 	}
 	
 	private final static String getOutName(final String loc1, final String loc2) {
@@ -238,8 +257,9 @@ public final class BlockingHeuristicCalculator extends FrequencyBasedCalculator 
 		return t / 1000.0;
 	}
 	
-	private final void finishCalculation(final MatchingConfig mc, final double totalRecords, final long totalPairs, final double entropyNumerator,
-	                                     final long uniqueValues, final long nullValues, final double u, final String dataSourceName) {
+	private final void finishCalculation(final MatchingConfig mc, final double totalRecords, final long totalPairs,
+	        final double entropyNumerator, final long uniqueValues, final long nullValues, final double u,
+	        final String dataSourceName) {
 		entropy = divide(entropyNumerator, (totalRecords * entropyDenominator));
 		maxEntropy = -Math.log(uniqueValues) / entropyDenominator;
 		final double entropyPercentage = divide(entropy, maxEntropy);
@@ -250,8 +270,10 @@ public final class BlockingHeuristicCalculator extends FrequencyBasedCalculator 
 		this.u = u;
 		this.totalPairs = totalPairs;
 		final double logTotalPairs = (totalPairs == 0) ? 0 : (Math.log(totalPairs) / log10);
-		final double dispEntropy = round(entropy), dispMaxEntropy = round(maxEntropy), dispEntropyPercentage = round(entropyPercentage);
-		final double dispRatio = round(ratio), dispNullPercentage = round(nullPercentage), dispU = round(u), dispLog = round(logTotalPairs);
+		final double dispEntropy = round(entropy), dispMaxEntropy = round(maxEntropy),
+		        dispEntropyPercentage = round(entropyPercentage);
+		final double dispRatio = round(ratio), dispNullPercentage = round(nullPercentage), dispU = round(u),
+		        dispLog = round(logTotalPairs);
 		log.info(mc.getName() + " Heuristics");
 		log.info("Entropy: " + dispEntropy);
 		log.info("Maximum entropy: " + dispMaxEntropy);
@@ -300,9 +322,11 @@ public final class BlockingHeuristicCalculator extends FrequencyBasedCalculator 
 			out.println();
 			out.flush();
 			out.close();
-		} catch (final IOException e) {
+		}
+		catch (final IOException e) {
 			throw new RuntimeException(e);
-		} finally {
+		}
+		finally {
 			if (out != null) {
 				out.close();
 			}

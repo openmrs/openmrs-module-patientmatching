@@ -20,47 +20,45 @@ import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.MatchingConfig;
 
 /**
- * identifier and attribute convention and examples:
- * 
- * (Attribute) Birthplace
- * (Identifer) OpenMRS Identification Number
- * (Attribute) Credit Card Number
- * 
- * Object fields convention and examples:
- * 
- * org.openmrs.Person.gender
- * org.openmrs.PersonAddress.cityVillage
- * 
+ * identifier and attribute convention and examples: (Attribute) Birthplace (Identifer) OpenMRS
+ * Identification Number (Attribute) Credit Card Number Object fields convention and examples:
+ * org.openmrs.Person.gender org.openmrs.PersonAddress.cityVillage
  * 
  * @author jegg
- *
  */
 
-public class OrderedOpenMRSReader implements OrderedDataSourceReader{
+public class OrderedOpenMRSReader implements OrderedDataSourceReader {
 	
 	protected List<String> blocking_cols;
+	
 	protected List<Object[]> blocking_values;
+	
 	protected Object[] current_blocking_values;
+	
 	protected List<Integer> value_set;
 	
 	public final static String ATTRIBUTE_PREFIX = "(Attribute) ";
+	
 	public final static String IDENT_PREFIX = "(Identifier) ";
+	
 	public final static String GET_ID_METHOD = "getPersonId";
+	
 	//public final static String GET_PATIENT_ID_METHOD = "getPatientId";
 	public final static String GET_PERSON_METHOD = "getPerson";
+	
 	public final static String GET_PATIENT_METHOD = "getPatient";
 	
-	
 	private Log log = LogFactory.getLog(this.getClass());
+	
 	protected SessionFactory sessionFactory;
 	
-	public OrderedOpenMRSReader(MatchingConfig mc, SessionFactory session_factory){
+	public OrderedOpenMRSReader(MatchingConfig mc, SessionFactory session_factory) {
 		sessionFactory = session_factory;
 		
 		initReader(mc);
 	}
 	
-	protected void initReader(MatchingConfig mc){
+	protected void initReader(MatchingConfig mc) {
 		value_set = new ArrayList<Integer>();
 		
 		String[] b_cols = mc.getBlockingColumns();
@@ -68,33 +66,33 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 		
 		current_blocking_values = new Object[b_cols.length];
 		
-		for(int i = 0; i < b_cols.length; i++){
+		for (int i = 0; i < b_cols.length; i++) {
 			blocking_cols.add(b_cols[i]);
 		}
 		
 		blocking_values = getDemographicValues(blocking_cols);
 		
-		if(blocking_values != null && blocking_values.size() > 0){
+		if (blocking_values != null && blocking_values.size() > 0) {
 			current_blocking_values = blocking_values.remove(0);
 			fillIDValueSet();
 		}
 		
 	}
 	
-	public void setSessionFactory(SessionFactory sessionFactory) { 
+	public void setSessionFactory(SessionFactory sessionFactory) {
 		this.sessionFactory = sessionFactory;
 	}
 	
-	public int getRecordSize(){
+	public int getRecordSize() {
 		return 0;
 	}
 	
-	public boolean reset(){
+	public boolean reset() {
 		return false;
 	}
 	
-	public boolean hasNextRecord(){
-		if(value_set.size() > 0){
+	public boolean hasNextRecord() {
+		if (value_set.size() > 0) {
 			// there are more IDs at the current set of blocking values
 			return true;
 		}
@@ -102,11 +100,11 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 		return false;
 	}
 	
-	public boolean close(){
+	public boolean close() {
 		return false;
 	}
 	
-	protected int fillIDValueSet(){
+	protected int fillIDValueSet() {
 		value_set = getPatientIDs(blocking_cols, current_blocking_values);
 		//int col = 1;
 		//while(value_set.size() > 0 && col < blocking_cols.length){
@@ -117,15 +115,15 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 		return value_set.size();
 	}
 	
-	public Record nextRecord(){
+	public Record nextRecord() {
 		// possible future optimization - remove values from blocking_values if all references
 		// to a value has been read
 		
-		if(value_set.size() > 0){
+		if (value_set.size() > 0) {
 			Integer id = value_set.remove(0);
 			
 			Patient p = Context.getPatientService().getPatient(id);
-			if(value_set.size() == 0 && blocking_values.size() > 0){
+			if (value_set.size() == 0 && blocking_values.size() > 0) {
 				// removed last ID at this point in blocking values, need to increment iterators and refill
 				// value_set
 				//while(incrementIterators() && fillIDValueSet() < 1){
@@ -154,11 +152,10 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 	}*/
 	
 	/**
-	 * 
 	 * @param demographic
 	 * @return
 	 */
-	protected List<Object[]> getDemographicValues(List<String> demographics){
+	protected List<Object[]> getDemographicValues(List<String> demographics) {
 		List<Object[]> ret = null;
 		String query_text = new String();
 		
@@ -171,27 +168,28 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 		Query q = sessionFactory.getCurrentSession().createQuery(query_text);
 		
 		// if list of demographics includes attributes or identifiers, need to set types in query text from method
-		for(int i = 0; i < demographics.size(); i++){
+		for (int i = 0; i < demographics.size(); i++) {
 			String demographic = demographics.get(i);
-			if(demographic.indexOf(ATTRIBUTE_PREFIX) != -1){
+			if (demographic.indexOf(ATTRIBUTE_PREFIX) != -1) {
 				// set o<i>.type equal to pat
 				PersonAttributeType pat = Context.getPersonService().getPersonAttributeTypeByName(stripType(demographic));
-				if(pat != null){
+				if (pat != null) {
 					q.setParameter("val" + i, pat);
 				}
-			} else if(demographic.indexOf(IDENT_PREFIX) != -1){
+			} else if (demographic.indexOf(IDENT_PREFIX) != -1) {
 				// everything we need to query for is in PatientIdentifier
-				PatientIdentifierType pit = Context.getPatientService().getPatientIdentifierTypeByName(stripType(demographic));
-				if(pit != null){
+				PatientIdentifierType pit = Context.getPatientService()
+				        .getPatientIdentifierTypeByName(stripType(demographic));
+				if (pit != null) {
 					q.setParameter("val" + i, pit);
 				}
 			}
 		}
 		
-		if(demographics.size() == 1){
+		if (demographics.size() == 1) {
 			ret = new ArrayList<Object[]>();
 			List l = q.list();
-			for(int i = 0; i < l.size(); i++){
+			for (int i = 0; i < l.size(); i++) {
 				Object[] val = new Object[1];
 				val[0] = l.get(i);
 				ret.add(val);
@@ -201,15 +199,14 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 			ret = q.list();
 		}
 		
-		
 		return ret;
 	}
 	
-	protected String stripType(String type_name){
+	protected String stripType(String type_name) {
 		// method strips the first 
-		if(type_name.indexOf(ATTRIBUTE_PREFIX) != -1){
+		if (type_name.indexOf(ATTRIBUTE_PREFIX) != -1) {
 			return type_name.substring(ATTRIBUTE_PREFIX.length());
-		} else if(type_name.indexOf(IDENT_PREFIX) != -1){
+		} else if (type_name.indexOf(IDENT_PREFIX) != -1) {
 			return type_name.substring(IDENT_PREFIX.length());
 		}
 		return type_name;
@@ -222,12 +219,12 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 	 * @param value
 	 * @return
 	 */
-	protected List<Integer> getPatientIDs(List<String> demographics, Object[] vals){
+	protected List<Integer> getPatientIDs(List<String> demographics, Object[] vals) {
 		List<Integer> ret = null;
 		String query_text = new String();
 		
 		List<Object> values = new ArrayList<Object>();
-		for(int i = 0; i < vals.length; i++){
+		for (int i = 0; i < vals.length; i++) {
 			values.add(vals[i]);
 		}
 		
@@ -240,7 +237,7 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 		Query q = sessionFactory.getCurrentSession().createQuery(query_text);
 		
 		// if list of demographics includes attributes or identifiers, need to set types in query text from method
-		for(int i = 0; i < values.size(); i++){
+		for (int i = 0; i < values.size(); i++) {
 			q.setParameter("val" + i, values.get(i));
 		}
 		
@@ -250,28 +247,28 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 	}
 	
 	/**
-	 * Method returns a string with the select clause of the HQL query used to get
-	 * the distinct values for the demographics
+	 * Method returns a string with the select clause of the HQL query used to get the distinct values
+	 * for the demographics
 	 * 
 	 * @param demographics
 	 * @return
 	 */
-	protected String getSelectDistinctValuesClause(List<String> demographics){
+	protected String getSelectDistinctValuesClause(List<String> demographics) {
 		String clause = "SELECT DISTINCT ";
-		for(int i = 0; i < demographics.size(); i++){
+		for (int i = 0; i < demographics.size(); i++) {
 			String demographic = demographics.get(i);
-			if(i > 0){
+			if (i > 0) {
 				clause += ", ";
 			}
 			
-			if(demographic.contains(".")){
+			if (demographic.contains(".")) {
 				// only need to know the field name of the object
 				clause += "o" + i + "." + getFieldName(demographic);
 			} else {
-				if(demographic.indexOf(ATTRIBUTE_PREFIX) != -1){
+				if (demographic.indexOf(ATTRIBUTE_PREFIX) != -1) {
 					// attribute values are stored in PersonAttribute.value
 					clause += "o" + i + ".value";
-				} else if(demographic.indexOf(IDENT_PREFIX) != -1){
+				} else if (demographic.indexOf(IDENT_PREFIX) != -1) {
 					// identifier values are stored in PatientIdentifier.identifier
 					clause += "o" + i + ".identifier";
 				}
@@ -283,7 +280,7 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 		return clause;
 	}
 	
-	protected String getSelectIDsClause(List<String> demographics){
+	protected String getSelectIDsClause(List<String> demographics) {
 		return "SELECT p.patientId";
 	}
 	
@@ -293,22 +290,22 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 	 * @param demographics
 	 * @return
 	 */
-	protected String getFromClause(List<String> demographics){
+	protected String getFromClause(List<String> demographics) {
 		String clause = "FROM Patient p, ";
-		for(int i = 0; i < demographics.size(); i++){
+		for (int i = 0; i < demographics.size(); i++) {
 			String demographic = demographics.get(i);
-			if(i > 0){
+			if (i > 0) {
 				clause += ", ";
 			}
 			
-			if(demographic.contains(".")){
+			if (demographic.contains(".")) {
 				// only need to know object name to query from
-				clause += getObjectName(demographic)  + " o" + i;
+				clause += getObjectName(demographic) + " o" + i;
 			} else {
-				if(demographic.indexOf(ATTRIBUTE_PREFIX) != -1){
+				if (demographic.indexOf(ATTRIBUTE_PREFIX) != -1) {
 					// everything we need to query for is in PersonAttribute objects
 					clause += "PersonAttribute o" + i;
-				} else if(demographic.indexOf(IDENT_PREFIX) != -1){
+				} else if (demographic.indexOf(IDENT_PREFIX) != -1) {
 					// everything we need to query for is in PatientIdentifier
 					clause += "PatientIdentifier o" + i;
 				}
@@ -319,30 +316,32 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 		return clause;
 	}
 	
-	protected String getIDsWhereClause(List<String> demographics){
+	protected String getIDsWhereClause(List<String> demographics) {
 		String clause = "WHERE ";
 		
-		for(int i = 0; i < demographics.size(); i++){
+		for (int i = 0; i < demographics.size(); i++) {
 			String demographic = demographics.get(i);
-			if(i > 0){
+			if (i > 0) {
 				clause += " AND ";
 			}
 			
-			if(demographic.contains(".")){
+			if (demographic.contains(".")) {
 				// only need to know object name to query from
-				clause += "o" + i + "." + getFieldName(demographic)  + " = :val" + i;
+				clause += "o" + i + "." + getFieldName(demographic) + " = :val" + i;
 				
 			} else {
-				if(demographic.indexOf(ATTRIBUTE_PREFIX) != -1){
+				if (demographic.indexOf(ATTRIBUTE_PREFIX) != -1) {
 					// everything we need to query for is in PersonAttribute objects
-					PersonAttributeType pat = Context.getPersonService().getPersonAttributeTypeByName(stripType(demographic));
-					if(pat != null){
+					PersonAttributeType pat = Context.getPersonService()
+					        .getPersonAttributeTypeByName(stripType(demographic));
+					if (pat != null) {
 						clause += "o" + i + ".value = :val" + i;
 					}
-				} else if(demographic.indexOf(IDENT_PREFIX) != -1){
+				} else if (demographic.indexOf(IDENT_PREFIX) != -1) {
 					// everything we need to query for is in PatientIdentifier
-					PatientIdentifierType pit = Context.getPatientService().getPatientIdentifierTypeByName(stripType(demographic));
-					if(pit != null){
+					PatientIdentifierType pit = Context.getPatientService()
+					        .getPatientIdentifierTypeByName(stripType(demographic));
+					if (pit != null) {
 						clause += "o" + i + ".identifier = :val" + i;
 					}
 				}
@@ -353,28 +352,30 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 		return clause;
 	}
 	
-	protected String getValuesWhereClause(List<String> demographics){
+	protected String getValuesWhereClause(List<String> demographics) {
 		String clause = "WHERE ";
-		for(int i = 0; i < demographics.size(); i++){
+		for (int i = 0; i < demographics.size(); i++) {
 			String demographic = demographics.get(i);
-			if(i > 0){
+			if (i > 0) {
 				clause += " AND ";
 			}
 			
-			if(demographic.contains(".")){
+			if (demographic.contains(".")) {
 				// only need to know object name to query from
-				clause += "o" + i + "." + getFieldName(demographic)  + " IS NOT NULL";
+				clause += "o" + i + "." + getFieldName(demographic) + " IS NOT NULL";
 			} else {
-				if(demographic.indexOf(ATTRIBUTE_PREFIX) != -1){
+				if (demographic.indexOf(ATTRIBUTE_PREFIX) != -1) {
 					// everything we need to query for is in PersonAttribute objects
-					PersonAttributeType pat = Context.getPersonService().getPersonAttributeTypeByName(stripType(demographic));
-					if(pat != null){
+					PersonAttributeType pat = Context.getPersonService()
+					        .getPersonAttributeTypeByName(stripType(demographic));
+					if (pat != null) {
 						clause += "o" + i + ".value IS NOT NULL AND o" + i + ".attributeType = :val" + i;
 					}
-				} else if(demographic.indexOf(IDENT_PREFIX) != -1){
+				} else if (demographic.indexOf(IDENT_PREFIX) != -1) {
 					// everything we need to query for is in PatientIdentifier
-					PatientIdentifierType pit = Context.getPatientService().getPatientIdentifierTypeByName(stripType(demographic));
-					if(pit != null){
+					PatientIdentifierType pit = Context.getPatientService()
+					        .getPatientIdentifierTypeByName(stripType(demographic));
+					if (pit != null) {
 						clause += "o" + i + ".identifier IS NOT NULL AND o" + i + ".identifierType = :val" + i;
 					}
 				}
@@ -387,55 +388,56 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 	}
 	
 	/**
-	 * Method returns the portion in the WHERE clause that relates the given demographic to the
-	 * Patient objects.  We need this since we only want Patient IDs (not Users or Persons) and
-	 * when querying for IDs using multiple values, we want the results to be for the same person
+	 * Method returns the portion in the WHERE clause that relates the given demographic to the Patient
+	 * objects. We need this since we only want Patient IDs (not Users or Persons) and when querying for
+	 * IDs using multiple values, we want the results to be for the same person
 	 * 
-	 * @param suffix		position of the given demographic within the list of demographics and values
-	 * @param demographic	the demographic that needs linked to Patient
-	 * @return	a String that can be place in an HQL WHERE clause that will specify equivalence of Patient and demographic
+	 * @param suffix position of the given demographic within the list of demographics and values
+	 * @param demographic the demographic that needs linked to Patient
+	 * @return a String that can be place in an HQL WHERE clause that will specify equivalence of
+	 *         Patient and demographic
 	 */
-	protected String getPatientRelation(int suffix, String demographic){
-		if(demographic.contains(".")){
+	protected String getPatientRelation(int suffix, String demographic) {
+		if (demographic.contains(".")) {
 			// load class given by demographic and examine what fields it has
 			String type = getObjectName(demographic);
-			if(type.endsWith("Patient") || type.endsWith("org.openmrs.Person")){
+			if (type.endsWith("Patient") || type.endsWith("org.openmrs.Person")) {
 				return "p = o" + suffix;
 			} else {
-				try{
+				try {
 					Class c = Class.forName(type);
 					Method[] methods = c.getMethods();
-					for(int i = 0; i < methods.length; i++){
-						if(methods[i].getName().equals("getPerson")){
+					for (int i = 0; i < methods.length; i++) {
+						if (methods[i].getName().equals("getPerson")) {
 							return "p = o" + suffix + ".person";
 						}
 					}
 				}
-				catch(ClassNotFoundException cnfe){
+				catch (ClassNotFoundException cnfe) {
 					return "";
 				}
 			}
 		} else {
 			// if it's attribute or identifier, then it'll have a Person or Patient field
-			if(demographic.indexOf(ATTRIBUTE_PREFIX) != -1){
+			if (demographic.indexOf(ATTRIBUTE_PREFIX) != -1) {
 				return "p = o" + suffix + ".person";
-			} else if(demographic.indexOf(IDENT_PREFIX) != -1){
+			} else if (demographic.indexOf(IDENT_PREFIX) != -1) {
 				return "p = o" + suffix + ".patient";
 			}
 		}
-	
-	return "";
+		
+		return "";
 	}
 	
 	/**
 	 * Method returns the field name of a demographic using the convention for specifying an object's
-	 * field.  For example, if the demographic is "org.openmrs.Patient.gender", this this method would return
-	 * "gender"
+	 * field. For example, if the demographic is "org.openmrs.Patient.gender", this this method would
+	 * return "gender"
 	 * 
 	 * @param demographic
-	 * @return	the last field of the demographic when split on "."
+	 * @return the last field of the demographic when split on "."
 	 */
-	protected String getFieldName(String demographic){
+	protected String getFieldName(String demographic) {
 		String[] object_field = demographic.split("\\.");
 		String field = object_field[object_field.length - 1];
 		return field;
@@ -443,16 +445,16 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 	
 	/**
 	 * Method returns the object name of a demographic using the convention for specifying an object's
-	 * field as a demographic.  For example, if the demographic is "org.openmrs.Patient.gender", this this method would return
-	 * "org.openmrs.Patient"
+	 * field as a demographic. For example, if the demographic is "org.openmrs.Patient.gender", this
+	 * this method would return "org.openmrs.Patient"
 	 * 
 	 * @param demographic
-	 * @return	all but the last element when the demographic is split on "."
+	 * @return all but the last element when the demographic is split on "."
 	 */
-	protected String getObjectName(String demographic){
+	protected String getObjectName(String demographic) {
 		String[] object_field = demographic.split("\\.");
 		String object_name = object_field[0];
-		for(int i = 1; i < object_field.length - 1; i++){
+		for (int i = 1; i < object_field.length - 1; i++) {
 			object_name += "." + object_field[i];
 		}
 		
@@ -463,37 +465,37 @@ public class OrderedOpenMRSReader implements OrderedDataSourceReader{
 	 * Method checks for a method that returns the person ID, patient, or person
 	 * of the object returned from a query and inserts the IDs into a list
 	 */
-	protected List<Integer> getIDs(List<Object> openmrs_objects){
+	protected List<Integer> getIDs(List<Object> openmrs_objects) {
 		List<Integer> ret = new ArrayList<Integer>();
 		Iterator<Object> it = openmrs_objects.iterator();
-		try{
-			while(it.hasNext()){
+		try {
+			while (it.hasNext()) {
 				Object o = it.next();
 				
 				Class cls = o.getClass();
 				Method[] methods = cls.getMethods();
-				for(int i = 0; i < methods.length; i++){
+				for (int i = 0; i < methods.length; i++) {
 					Method m = methods[i];
-					if(m.getName().equals(GET_ID_METHOD)){
-						Integer id = (Integer)m.invoke(o, (Object[])null);
+					if (m.getName().equals(GET_ID_METHOD)) {
+						Integer id = (Integer) m.invoke(o, (Object[]) null);
 						ret.add(id);
 						i = methods.length;
-					} else if(m.getName().equals(GET_PERSON_METHOD)){
-						Person p = (Person)m.invoke(o, (Object[])null);
+					} else if (m.getName().equals(GET_PERSON_METHOD)) {
+						Person p = (Person) m.invoke(o, (Object[]) null);
 						ret.add(p.getPersonId());
 						i = methods.length;
-					} else if(m.getName().equals(GET_PATIENT_METHOD)){
-						Patient p = (Patient)m.invoke(o, (Object[])null);
+					} else if (m.getName().equals(GET_PATIENT_METHOD)) {
+						Patient p = (Patient) m.invoke(o, (Object[]) null);
 						ret.add(p.getPatientId());
 						i = methods.length;
 					}
 				}
 			}
 		}
-		catch(IllegalAccessException iae){
+		catch (IllegalAccessException iae) {
 			log.warn("exception reading OpenMRS DB:  " + iae.getMessage());
 		}
-		catch(InvocationTargetException ite){
+		catch (InvocationTargetException ite) {
 			log.warn("exception reading OpenMRS DB:  " + ite.getMessage());
 		}
 		

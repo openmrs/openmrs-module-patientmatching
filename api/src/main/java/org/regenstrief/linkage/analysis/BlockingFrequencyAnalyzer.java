@@ -5,9 +5,11 @@ import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
 
 public class BlockingFrequencyAnalyzer extends FrequencyAnalyzer {
+	
 	protected final static String FIELD = "blocking_scheme";
 	
 	private final String[] blockingColumns;
+	
 	private final StringBuilder stringBuilder = new StringBuilder();
 	
 	public BlockingFrequencyAnalyzer(final LinkDataSource lds, final MatchingConfig mc, final DataSourceFrequency dsf) {

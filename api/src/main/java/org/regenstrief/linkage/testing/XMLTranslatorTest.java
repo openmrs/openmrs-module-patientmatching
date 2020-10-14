@@ -13,24 +13,25 @@ public class XMLTranslatorTest {
 	
 	public static void main(String[] args) {
 		File config = new File(args[0]);
-		if(!config.exists()){
+		if (!config.exists()) {
 			System.out.println("config file does not exist, exiting");
 			System.exit(0);
 		}
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		try{
+		try {
 			// Load the XML configuration file
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.parse(config);
 			RecMatchConfig rmc = XMLTranslator.createRecMatchConfig(doc);
 			String fname = config.getAbsolutePath();
-			fname = fname.substring(0, fname.length()-3);
+			fname = fname.substring(0, fname.length() - 3);
 			File newconfig = new File(fname + "test.xml");
 			Document d = XMLTranslator.toXML(rmc);
 			XMLTranslator.writeXMLDocToFile(d, newconfig);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-
+	
 }

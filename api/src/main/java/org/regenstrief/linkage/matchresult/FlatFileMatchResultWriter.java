@@ -8,17 +8,15 @@ import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;
 
 /**
- * Class writes each incoming MatchResult to the Writer in the format of 
- * pipe delimited fields with the score printed first followed by the values of
- * the demographics in the two Records.
+ * Class writes each incoming MatchResult to the Writer in the format of pipe delimited fields with
+ * the score printed first followed by the values of the demographics in the two Records.
  * 
  * @author jegg
- *
  */
 
 public class FlatFileMatchResultWriter extends MatchResultWriter {
 	
-	public FlatFileMatchResultWriter(Writer w){
+	public FlatFileMatchResultWriter(Writer w) {
 		super(w);
 	}
 	
@@ -29,18 +27,18 @@ public class FlatFileMatchResultWriter extends MatchResultWriter {
 		Record r1 = mr.getRecord1();
 		Record r2 = mr.getRecord2();
 		Enumeration<String> demographics = r1.getDemographics().elements();
-		while(demographics.hasMoreElements()){
+		while (demographics.hasMoreElements()) {
 			String demographic = demographics.nextElement();
 			s += "|" + r1.getDemographic(demographic) + "|" + r2.getDemographic(demographic);
 		}
 		s += "\n";
 		
-		try{
+		try {
 			output.write(s);
 		}
-		catch(IOException ioe){
+		catch (IOException ioe) {
 			
 		}
 	}
-
+	
 }

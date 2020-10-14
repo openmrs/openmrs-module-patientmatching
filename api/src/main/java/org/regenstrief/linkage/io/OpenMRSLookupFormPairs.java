@@ -9,10 +9,9 @@ import org.openmrs.module.patientmatching.LinkDBConnections;
 import org.regenstrief.linkage.Record;
 
 /**
- * Class stores the list of Record pairs from the given FormPairs in an OpenMRS
- * module.
+ * Class stores the list of Record pairs from the given FormPairs in an OpenMRS module.
+ * 
  * @author jegg
- *
  */
 
 public class OpenMRSLookupFormPairs extends LookupFormPairs {
@@ -22,16 +21,16 @@ public class OpenMRSLookupFormPairs extends LookupFormPairs {
 	// place in list for getNextRecordPair() and reset methods
 	int current_pair;
 	
-	public OpenMRSLookupFormPairs(FormPairs fp){
+	public OpenMRSLookupFormPairs(FormPairs fp) {
 		super(fp);
 		ids = new ArrayList<long[]>();
 		fillIDList();
 		reset();
 	}
 	
-	protected void fillIDList(){
+	protected void fillIDList() {
 		Record[] pair;
-		while((pair = fp.getNextRecordPair()) != null){
+		while ((pair = fp.getNextRecordPair()) != null) {
 			long[] id_pair = new long[2];
 			id_pair[0] = pair[0].getUID();
 			id_pair[1] = pair[1].getUID();
@@ -41,16 +40,16 @@ public class OpenMRSLookupFormPairs extends LookupFormPairs {
 	
 	@Override
 	protected Record getRecordFromUID(long id, String context) {
-		int int_id = (int)id;
+		int int_id = (int) id;
 		Patient p = Context.getPatientService().getPatient(int_id);
-		if(p != null){
+		if (p != null) {
 			return LinkDBConnections.getInstance().patientToRecord(p);
 		} else {
 			return null;
 		}
 		
 	}
-
+	
 	@Override
 	public Record[] getRecordPair(int index) {
 		Record[] ret = new Record[2];
@@ -59,24 +58,24 @@ public class OpenMRSLookupFormPairs extends LookupFormPairs {
 		ret[1] = getRecordFromUID(pair[1], "OpenMRS");
 		return ret;
 	}
-
+	
 	@Override
 	public boolean reset() {
 		current_pair = 0;
 		return true;
 	}
-
+	
 	@Override
 	public Record[] getNextRecordPair() {
-		if(current_pair < ids.size()){
+		if (current_pair < ids.size()) {
 			return getRecordPair(current_pair++);
 		} else {
 			return null;
 		}
 	}
 	
-	public int size(){
+	public int size() {
 		return ids.size();
 	}
-
+	
 }

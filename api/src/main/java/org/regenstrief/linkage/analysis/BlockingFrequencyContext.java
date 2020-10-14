@@ -8,6 +8,7 @@ import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
 
 public class BlockingFrequencyContext extends FrequencyContext {
+	
 	private List<SingleFieldSqliteDataSourceFrequency> listToClose = null;
 	
 	public BlockingFrequencyContext(final MatchingConfig mc, final LinkDataSource lds) {
@@ -20,10 +21,12 @@ public class BlockingFrequencyContext extends FrequencyContext {
 	
 	@Override
 	protected final DataSourceFrequency newDataSourceFrequency() {
-		if ("true".equalsIgnoreCase(System.getProperty("org.regenstrief.linkage.analysis.BlockingFrequencyContext.memoryBacked"))) {
+		if ("true".equalsIgnoreCase(
+		    System.getProperty("org.regenstrief.linkage.analysis.BlockingFrequencyContext.memoryBacked"))) {
 			return new SingleFieldDataSourceFrequency(BlockingFrequencyAnalyzer.FIELD);
 		} else {
-			final SingleFieldSqliteDataSourceFrequency freq = new SingleFieldSqliteDataSourceFrequency(BlockingFrequencyAnalyzer.FIELD);
+			final SingleFieldSqliteDataSourceFrequency freq = new SingleFieldSqliteDataSourceFrequency(
+			        BlockingFrequencyAnalyzer.FIELD);
 			if (listToClose == null) {
 				listToClose = new ArrayList<SingleFieldSqliteDataSourceFrequency>(2);
 			}

@@ -66,7 +66,8 @@ public class ManualReviewDBTieResolver {
 				}
 				for (int i = 0; i < size; i++) {
 					if (i == statusIndex) {
-						final PairKey key = new PairKey(Long.parseLong(tokens[uid1Index]), Long.parseLong(tokens[uid2Index]));
+						final PairKey key = new PairKey(Long.parseLong(tokens[uid1Index]),
+						        Long.parseLong(tokens[uid2Index]));
 						final PairResult result = cache.get(key);
 						if (result.matchStatus.booleanValue()) {
 							trueCount++;
@@ -82,13 +83,15 @@ public class ManualReviewDBTieResolver {
 				out.println(tieBreakerReviewer);
 			}
 			in.close();
-		} finally {
+		}
+		finally {
 			out.close();
 		}
 		info("Finished after finding " + trueCount + " matches and " + falseCount + " non-matches");
 	}
 	
-	private final static Map<PairKey, PairResult> loadDbCache(final String tieBreakerReviewer, final String tieBreakerDbFile) throws Exception {
+	private final static Map<PairKey, PairResult> loadDbCache(final String tieBreakerReviewer, final String tieBreakerDbFile)
+	        throws Exception {
 		ManualReviewDBCombiner.runReviewer(tieBreakerReviewer, tieBreakerDbFile);
 		return ManualReviewDBCombiner.pairs;
 	}

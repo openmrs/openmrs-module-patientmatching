@@ -14,7 +14,8 @@ public class DBPairCoverageAnalyzer extends DBPairCounter {
 		run(args[0], args[1], args[2], args[3]);
 	}
 	
-	private final static void run(final String dbFile, final String conditionLists, final String table, final String table2) throws Exception {
+	private final static void run(final String dbFile, final String conditionLists, final String table, final String table2)
+	        throws Exception {
 		DBPairCoverageAnalyzer.table = table;
 		DBPairCoverageAnalyzer.table2 = table2;
 		con = SavedResultDBConnection.openDBResults(new File(dbFile));
@@ -24,7 +25,8 @@ public class DBPairCoverageAnalyzer extends DBPairCounter {
 				return;
 			}
 			final Collection<? extends Collection<JoinCondition>> joinConditionLists = parseConditionLists(conditionLists);
-			System.out.println("Preparing to find how many rows in " + table + " have are linked to " + table2 + " by these conditions:");
+			System.out.println(
+			    "Preparing to find how many rows in " + table + " have are linked to " + table2 + " by these conditions:");
 			System.out.println();
 			for (final Collection<JoinCondition> joinConditions : joinConditionLists) {
 				System.out.println(serializeJoinConditionList(joinConditions));
@@ -36,7 +38,8 @@ public class DBPairCoverageAnalyzer extends DBPairCounter {
 			}
 			final long count = getCoveredIdCount();
 			System.out.println(count + " rows in " + table + " are linked to " + table2);
-		} finally {
+		}
+		finally {
 			con.close();
 		}
 	}
@@ -45,14 +48,16 @@ public class DBPairCoverageAnalyzer extends DBPairCounter {
 		System.err.println("Dumping unlinked rows from " + table);
 		final Statement stmt = con.createStatement();
 		try {
-			final String sql = "select uid from " + table + " r where not exists(select 1 from temp_union u where u.uid=r.uid)";
+			final String sql = "select uid from " + table
+			        + " r where not exists(select 1 from temp_union u where u.uid=r.uid)";
 			System.err.println(sql);
 			final ResultSet rs = stmt.executeQuery(sql);
 			while (rs.next()) {
 				System.out.println(rs.getString(1));
 			}
 			rs.close();
-		} finally {
+		}
+		finally {
 			stmt.close();
 		}
 		System.err.println("Finished");
@@ -68,7 +73,8 @@ public class DBPairCoverageAnalyzer extends DBPairCounter {
 			b.append(")");
 			execute(stmt, b);
 			execute(stmt, "create unique index temp_union_idx on temp_union (uid)");
-		} finally {
+		}
+		finally {
 			stmt.close();
 		}
 	}
@@ -86,12 +92,14 @@ public class DBPairCoverageAnalyzer extends DBPairCounter {
 		final Statement stmt = con.createStatement();
 		try {
 			execute(stmt, b);
-		} finally {
+		}
+		finally {
 			stmt.close();
 		}
 	}
 	
-	private final static void createCoverageTempTable(final String table, final Collection<JoinCondition> joinConditions) throws Exception {
+	private final static void createCoverageTempTable(final String table, final Collection<JoinCondition> joinConditions)
+	        throws Exception {
 		final Statement stmt = con.createStatement();
 		try {
 			execute(stmt, "drop table if exists temp_" + table);
@@ -114,7 +122,8 @@ public class DBPairCoverageAnalyzer extends DBPairCounter {
 			b.append('\n');
 			execute(stmt, b);
 			execute(stmt, "create unique index temp_" + table + "_idx on temp_" + table + " (row_key,uid)");
-		} finally {
+		}
+		finally {
 			stmt.close();
 		}
 	}

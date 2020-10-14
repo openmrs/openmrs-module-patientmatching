@@ -8,51 +8,55 @@ package org.regenstrief.linkage.util;
  */
 
 public class ColumnSortOption {
+	
 	public static final int NUMERIC = 0;
+	
 	public static final int TEXT = 1;
+	
 	public static final int ASCENDING = 2;
+	
 	public static final int DESCENDING = 3;
 	
 	public int column_index, sort_order, data_type;
 	
-	public ColumnSortOption(int ci, int order, int type){
+	public ColumnSortOption(int ci, int order, int type) {
 		column_index = ci;
 		sort_order = order;
 		data_type = type;
 	}
 	
-	public void setType(int t){
+	public void setType(int t) {
 		data_type = t;
 	}
 	
-	public void setOrder(int order){
+	public void setOrder(int order) {
 		sort_order = order;
 	}
 	
-	public void setIndex(int index){
+	public void setIndex(int index) {
 		column_index = index;
 	}
 	
-	public int getType(){
+	public int getType() {
 		return data_type;
 	}
 	
-	public int getOrder(){
+	public int getOrder() {
 		return sort_order;
 	}
 	
-	public int getIndex(){
+	public int getIndex() {
 		return column_index;
 	}
 	
-	public String toString(){
+	public String toString() {
 		String t, o;
-		if(data_type == NUMERIC){
+		if (data_type == NUMERIC) {
 			t = "numeric";
 		} else {
 			t = "text";
 		}
-		if(sort_order == ASCENDING){
+		if (sort_order == ASCENDING) {
 			o = "ascending";
 		} else {
 			o = "descending";

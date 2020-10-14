@@ -25,38 +25,39 @@ import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * Code uses SAX to emit XML representation of MatchResults to a Writer
+ * 
  * @author jegg
- *
  */
 
 public class XMLMatchResultWriter extends MatchResultWriter {
 	
 	protected TransformerHandler hd;
+	
 	protected AttributesImpl atts;
 	
-	public XMLMatchResultWriter(Writer w){
+	public XMLMatchResultWriter(Writer w) {
 		super(w);
 		
 		// setup SAX
 		StreamResult streamResult = new StreamResult(output);
 		SAXTransformerFactory tf = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
 		// SAX2.0 ContentHandler
-		try{
+		try {
 			hd = tf.newTransformerHandler();
 			Transformer serializer = hd.getTransformer();
 			//serializer.setOutputProperty(OutputKeys.ENCODING,"ISO-8859-1");
-			serializer.setOutputProperty(OutputKeys.INDENT,"yes");
+			serializer.setOutputProperty(OutputKeys.INDENT, "yes");
 			hd.setResult(streamResult);
 			
 			hd.startDocument();
 			atts = new AttributesImpl();
-			hd.startElement("","","matches",atts);
+			hd.startElement("", "", "matches", atts);
 			
 		}
-		catch(TransformerConfigurationException tce){
+		catch (TransformerConfigurationException tce) {
 			output = null;
 		}
-		catch(SAXException se){
+		catch (SAXException se) {
 			output = null;
 		}
 		
@@ -64,10 +65,10 @@ public class XMLMatchResultWriter extends MatchResultWriter {
 	
 	public void acceptMatchResult(MatchResult mr) {
 		// call SAX events for MatchResult object
-		if(output != null){
-			try{
+		if (output != null) {
+			try {
 				atts.clear();
-				hd.startElement("","","pair",atts);
+				hd.startElement("", "", "pair", atts);
 				
 				// add metadata
 				hd.startElement("", "", "metadata", atts);
@@ -77,19 +78,19 @@ public class XMLMatchResultWriter extends MatchResultWriter {
 				
 				hd.startElement("", "", "score", atts);
 				hd.characters(score_chars, 0, score_chars.length);
-				hd.endElement("","", "score");
+				hd.endElement("", "", "score");
 				hd.startElement("", "", "sensitivity", atts);
 				hd.characters(sens_chars, 0, sens_chars.length);
-				hd.endElement("","", "sensitivity");
+				hd.endElement("", "", "sensitivity");
 				hd.startElement("", "", "specificity", atts);
 				hd.characters(spec_chars, 0, spec_chars.length);
-				hd.endElement("","", "specificity");
+				hd.endElement("", "", "specificity");
 				
-				hd.endElement("","", "metadata");
+				hd.endElement("", "", "metadata");
 				
 				// if it's a modified match result, write modifier information
-				if(mr instanceof ModifiedMatchResult){
-					ModifiedMatchResult mmr = (ModifiedMatchResult)mr;
+				if (mr instanceof ModifiedMatchResult) {
+					ModifiedMatchResult mmr = (ModifiedMatchResult) mr;
 					atts.clear();
 					hd.startElement("", "", "modifiers", atts);
 					
@@ -97,13 +98,14 @@ public class XMLMatchResultWriter extends MatchResultWriter {
 					Iterator<String> demo_it = base_mr.getDemographics().iterator();
 					ScoreVector sv = base_mr.getScoreVector();
 					hd.startElement("", "", "base_values", atts);
-					while(demo_it.hasNext()){
+					while (demo_it.hasNext()) {
 						String current_field = demo_it.next();
 						atts.addAttribute("", "", "label", "CDATA", current_field);
 						hd.startElement("", "", "base_field", atts);
 						atts.clear();
 						hd.startElement("", "", "base_value", atts);
-						String base_val = Double.toString(mmr.getBasicMatchResult().getScoreVector().getScore(current_field));
+						String base_val = Double
+						        .toString(mmr.getBasicMatchResult().getScoreVector().getScore(current_field));
 						hd.characters(base_val.toCharArray(), 0, base_val.length());
 						hd.endElement("", "", "base_value");
 						hd.endElement("", "", "base_field");
@@ -113,16 +115,16 @@ public class XMLMatchResultWriter extends MatchResultWriter {
 					List<Modifier> modifiers = mmr.getModifiers();
 					Iterator<Modifier> it2 = modifiers.iterator();
 					int order = 1;
-					while(it2.hasNext()){
+					while (it2.hasNext()) {
 						Modifier m = it2.next();
 						atts.clear();
 						atts.addAttribute("", "", "label", "CDATA", m.getModifierName());
 						atts.addAttribute("", "", "order", "CDATA", Integer.toString(order));
 						hd.startElement("", "", "modifier", atts);
 						
-						Hashtable<String,Double> mods = mmr.getModifications().get(m);
+						Hashtable<String, Double> mods = mmr.getModifications().get(m);
 						Iterator<String> it3 = mods.keySet().iterator();
-						while(it3.hasNext()){
+						while (it3.hasNext()) {
 							String demographic = it3.next();
 							Double d = mods.get(demographic);
 							atts.clear();
@@ -135,7 +137,7 @@ public class XMLMatchResultWriter extends MatchResultWriter {
 							hd.endElement("", "", "modification");
 							hd.startElement("", "", "operator", atts);
 							Operator o = mmr.getModifierOperators().get(m);
-							if(o.equals(ModifiedMatchResult.Operator.MULTIPLY)){
+							if (o.equals(ModifiedMatchResult.Operator.MULTIPLY)) {
 								hd.characters("MULTIPLEY".toCharArray(), 0, "MULTIPLY".length());
 							} else {
 								hd.characters("PLUS".toCharArray(), 0, "PLUS".length());
@@ -155,7 +157,7 @@ public class XMLMatchResultWriter extends MatchResultWriter {
 				// iterate over fields
 				hd.startElement("", "", "fields", atts);
 				Iterator<String> it2 = mr.getDemographics().iterator();
-				while(it2.hasNext()){
+				while (it2.hasNext()) {
 					String demographic = it2.next();
 					// set field attributes
 					atts.addAttribute("", "", "label", "CDATA", demographic);
@@ -172,7 +174,7 @@ public class XMLMatchResultWriter extends MatchResultWriter {
 					hd.characters(val_b.toCharArray(), 0, val_b.length());
 					hd.endElement("", "", "valueB");
 					hd.startElement("", "", "matched", atts);
-					if(mr.matchedOn(demographic)){
+					if (mr.matchedOn(demographic)) {
 						hd.characters("true".toCharArray(), 0, "true".length());
 					} else {
 						hd.characters("false".toCharArray(), 0, "false".length());
@@ -183,7 +185,8 @@ public class XMLMatchResultWriter extends MatchResultWriter {
 					hd.characters(score.toCharArray(), 0, score.length());
 					hd.endElement("", "", "score_value");
 					hd.startElement("", "", "comparator", atts);
-					String comp = MatchingConfig.ALGORITHMS[mr.getMatchingConfig().getAlgorithm(mr.getMatchingConfig().getRowIndexforName(demographic))];
+					String comp = MatchingConfig.ALGORITHMS[mr.getMatchingConfig()
+					        .getAlgorithm(mr.getMatchingConfig().getRowIndexforName(demographic))];
 					hd.characters(comp.toCharArray(), 0, comp.length());
 					hd.endElement("", "", "comparator");
 					hd.startElement("", "", "similarity", atts);
@@ -202,15 +205,15 @@ public class XMLMatchResultWriter extends MatchResultWriter {
 				List<String> matched_demographics = mr.getMatchVector().getDemographics();
 				String[] bd = mr.getMatchingConfig().getBlockingColumns();
 				List<String> blocking_demographics = new ArrayList<String>();
-				for(int i = 0; i < bd.length; i++){
+				for (int i = 0; i < bd.length; i++) {
 					blocking_demographics.add(bd[i]);
 				}
-				while(it3.hasNext()){
+				while (it3.hasNext()) {
 					String dem = it3.next();
-					if(!matched_demographics.contains(dem)){
+					if (!matched_demographics.contains(dem)) {
 						atts.clear();
 						atts.addAttribute("", "", "label", "CDATA", dem);
-						if(blocking_demographics.contains(dem)){
+						if (blocking_demographics.contains(dem)) {
 							atts.addAttribute("", "", "type", "CDATA", "block");
 						} else {
 							atts.addAttribute("", "", "type", "CDATA", "display");
@@ -236,23 +239,23 @@ public class XMLMatchResultWriter extends MatchResultWriter {
 				
 				//hd.characters(desc[i].toCharArray(),0,desc[i].length());
 				hd.endElement("", "", "fields");
-				hd.endElement("","","pair");
+				hd.endElement("", "", "pair");
 			}
-			catch(SAXException se){
+			catch (SAXException se) {
 				
 			}
 			
 		}
 	}
-
+	
 	public void close() {
 		open = false;
-		if(output != null){
-			try{
-				hd.endElement("","","matches");
+		if (output != null) {
+			try {
+				hd.endElement("", "", "matches");
 				hd.endDocument();
 			}
-			catch(SAXException se){
+			catch (SAXException se) {
 				
 			}
 		}
@@ -260,5 +263,5 @@ public class XMLMatchResultWriter extends MatchResultWriter {
 		// flushes and closes the output stream
 		// super.close();
 	}
-
+	
 }

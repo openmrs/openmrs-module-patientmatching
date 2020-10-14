@@ -1,17 +1,18 @@
 package org.regenstrief.linkage.analysis;
 
 /**
- * Designed to be used by ScorePair class
- * Stores weight scaling information and calculates scaling factor
+ * Designed to be used by ScorePair class Stores weight scaling information and calculates scaling
+ * factor
  * 
  * @author scentel
- *
  */
 public class SWAdjustScore {
-
+	
 	// Parameters needed for weight scaling
 	private int total_tokens;
+	
 	private int unique_tokens;
+	
 	private int token_freq;
 	
 	public SWAdjustScore(int total, int unique, int token) {
@@ -22,6 +23,7 @@ public class SWAdjustScore {
 	
 	/**
 	 * Creates a new AdjustScore object whose fields are the sum of two AdjustScore objects
+	 * 
 	 * @param s1
 	 * @param s2
 	 * @return
@@ -33,6 +35,7 @@ public class SWAdjustScore {
 	
 	/**
 	 * Calculates the scaling factor
+	 * 
 	 * @return
 	 */
 	public double getScalingFactor() {
@@ -40,6 +43,6 @@ public class SWAdjustScore {
 		double total = this.total_tokens;
 		double unique = this.unique_tokens;
 		double freq = this.token_freq;
-		return Math.sqrt(total/(unique*freq));
+		return Math.sqrt(total / (unique * freq));
 	}
 }

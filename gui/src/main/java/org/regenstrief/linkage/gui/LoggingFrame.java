@@ -20,59 +20,58 @@ import org.apache.log4j.WriterAppender;
 import org.regenstrief.linkage.util.LoggingObject;
 
 /**
- * Class takes an object with a getLogger method and adds an
- * OutputStream appender to it.  This class then creates a
- * frame with a text area that displays the logging done by
- * the object until the close button is used.  Then the log
- * appender is removed and the frame set invisible
+ * Class takes an object with a getLogger method and adds an OutputStream appender to it. This class
+ * then creates a frame with a text area that displays the logging done by the object until the
+ * close button is used. Then the log appender is removed and the frame set invisible
  * 
  * @author jegg
- *
  */
 
-public class LoggingFrame extends JFrame implements ActionListener{
-    
-    /*
-     * List of object that will output the log to the current frame
-     */
-    protected List<LoggingObject> logSources;
-    
-    protected JPanel button_panel;
-    
+public class LoggingFrame extends JFrame implements ActionListener {
+	
+	/*
+	 * List of object that will output the log to the current frame
+	 */
+	protected List<LoggingObject> logSources;
+	
+	protected JPanel button_panel;
+	
 	Appender window_appender;
 	
 	JTextArea jta;
+	
 	JButton close_window;
 	
 	public LoggingFrame(String title) {
-	    super(title);
-	    logSources = new ArrayList<LoggingObject>();
+		super(title);
+		logSources = new ArrayList<LoggingObject>();
 	}
 	
 	/**
 	 * Add a new object that will output the log to the current frame
+	 * 
 	 * @param l object that will output the log
 	 */
-	public void addLoggingObject(LoggingObject l){
-	    logSources.add(l);
+	public void addLoggingObject(LoggingObject l) {
+		logSources.add(l);
 	}
 	
 	/**
-	 * Prepare the logging frame and add new appender to each logging object to
-	 * enable each object output their log to the current frame
+	 * Prepare the logging frame and add new appender to each logging object to enable each object
+	 * output their log to the current frame
 	 */
 	public void configureLoggingFrame() {
-        initGUI();
-        OutputStream os = new OutputStreamTextArea(jta);
-        window_appender = new WriterAppender(new PatternLayout("%m%n"), os);
-	    for (LoggingObject lo : logSources) {
-            Logger l = lo.getLogger();
-            l.addAppender(window_appender);
-        }
-	    configureGUI();
+		initGUI();
+		OutputStream os = new OutputStreamTextArea(jta);
+		window_appender = new WriterAppender(new PatternLayout("%m%n"), os);
+		for (LoggingObject lo : logSources) {
+			Logger l = lo.getLogger();
+			l.addAppender(window_appender);
+		}
+		configureGUI();
 	}
 	
-	protected void initGUI(){
+	protected void initGUI() {
 		this.setLayout(new BorderLayout());
 		button_panel = new JPanel();
 		close_window = new JButton("Close Window");
@@ -86,17 +85,17 @@ public class LoggingFrame extends JFrame implements ActionListener{
 		this.add(jsp, BorderLayout.CENTER);
 	}
 	
-	private void configureGUI(){
-        this.setSize(500, 500);
-        this.setLocationRelativeTo(null);
-        this.setVisible(true);
+	private void configureGUI() {
+		this.setSize(500, 500);
+		this.setLocationRelativeTo(null);
+		this.setVisible(true);
 	}
-
-    public void actionPerformed(ActionEvent ae){
-	    for (LoggingObject lo : logSources) {
-	        Logger l = lo.getLogger();
-	        l.removeAppender(window_appender);
-	    }
-	    this.dispose();
+	
+	public void actionPerformed(ActionEvent ae) {
+		for (LoggingObject lo : logSources) {
+			Logger l = lo.getLogger();
+			l.removeAppender(window_appender);
+		}
+		this.dispose();
 	}
 }

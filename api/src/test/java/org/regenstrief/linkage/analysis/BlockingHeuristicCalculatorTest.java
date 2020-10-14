@@ -21,7 +21,7 @@ public class BlockingHeuristicCalculatorTest {
 	}
 	
 	private void runDedupAnalysis(final long exPairs, final double exEntropy, final long exUnique, final long exNull,
-	                              final DataSourceReader r) {
+	        final DataSourceReader r) {
 		final MatchingConfig mc = ArrayDataSourceReader.newFullNameBlockingMatchingConfig();
 		final BlockingHeuristicCalculator calculator = newBlockingHeuristicCalculator();
 		calculator.calculateDedup(mc, new BlockingFrequencyContext(mc, ArrayDataSourceReader.SAMPLE_LINK_DATA_SOURCE, r));
@@ -30,18 +30,20 @@ public class BlockingHeuristicCalculatorTest {
 	
 	@Test
 	public void analysisIsCorrect() {
-		runAnalysis(1, ((2.0 * 2.0 * log2(2.0 / 5.0)) + log2(1.0 / 5.0)) / -5.0, 3, 0, ArrayDataSourceReader.getSampleDoe(), ArrayDataSourceReader.getSampleDoe2());
-		runAnalysis(2, ((2.0 * 2.0 * log2(2.0 / 7.0)) + (3.0 * log2(1.0 / 7.0))) / -7.0, 5, 0, ArrayDataSourceReader.getSampleMix(), ArrayDataSourceReader.getSampleDoe2());
-		runAnalysis(1, 2.0 * log2(2.0 / 8.0) / -8.0, 2, 6, ArrayDataSourceReader.getSampleNull(), ArrayDataSourceReader.getSampleNull2());
+		runAnalysis(1, ((2.0 * 2.0 * log2(2.0 / 5.0)) + log2(1.0 / 5.0)) / -5.0, 3, 0, ArrayDataSourceReader.getSampleDoe(),
+		    ArrayDataSourceReader.getSampleDoe2());
+		runAnalysis(2, ((2.0 * 2.0 * log2(2.0 / 7.0)) + (3.0 * log2(1.0 / 7.0))) / -7.0, 5, 0,
+		    ArrayDataSourceReader.getSampleMix(), ArrayDataSourceReader.getSampleDoe2());
+		runAnalysis(1, 2.0 * log2(2.0 / 8.0) / -8.0, 2, 6, ArrayDataSourceReader.getSampleNull(),
+		    ArrayDataSourceReader.getSampleNull2());
 	}
 	
 	private void runAnalysis(final long exPairs, final double exEntropy, final long exUnique, final long exNull,
-	                         final DataSourceReader r1, final DataSourceReader r2) {
+	        final DataSourceReader r1, final DataSourceReader r2) {
 		final MatchingConfig mc = ArrayDataSourceReader.newFullNameBlockingMatchingConfig();
 		final BlockingHeuristicCalculator calculator = newBlockingHeuristicCalculator();
-		calculator.calculate(mc,
-			new BlockingFrequencyContext(mc, ArrayDataSourceReader.SAMPLE_LINK_DATA_SOURCE, r1),
-			new BlockingFrequencyContext(mc, ArrayDataSourceReader.SAMPLE_LINK_DATA_SOURCE, r2));
+		calculator.calculate(mc, new BlockingFrequencyContext(mc, ArrayDataSourceReader.SAMPLE_LINK_DATA_SOURCE, r1),
+		    new BlockingFrequencyContext(mc, ArrayDataSourceReader.SAMPLE_LINK_DATA_SOURCE, r2));
 		assertResults(exPairs, exEntropy, exUnique, exNull, calculator);
 	}
 	
@@ -52,7 +54,7 @@ public class BlockingHeuristicCalculatorTest {
 	}
 	
 	private void assertResults(final long exPairs, final double exEntropy, final long exUnique, final long exNull,
-	                           final BlockingHeuristicCalculator calculator) {
+	        final BlockingHeuristicCalculator calculator) {
 		Assert.assertEquals(exPairs, calculator.getTotalPairs());
 		Assert.assertEquals(exEntropy, calculator.getEntropy(), 0.001);
 		Assert.assertEquals(log2(exUnique), calculator.getMaxEntropy(), 0.001);

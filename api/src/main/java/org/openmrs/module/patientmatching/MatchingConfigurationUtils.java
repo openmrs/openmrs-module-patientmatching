@@ -34,9 +34,9 @@ import org.regenstrief.linkage.util.RecMatchConfig;
 import org.regenstrief.linkage.util.XMLTranslator;
 
 /**
- * Utility class to manage the duplication removal(de-duplication) configuration. This utility class contains methods to
- * read, update and delete a de-duplication configuration from the actual file in the file system.
- * Each de-duplication configuration will be converted to a
+ * Utility class to manage the duplication removal(de-duplication) configuration. This utility class
+ * contains methods to read, update and delete a de-duplication configuration from the actual file
+ * in the file system. Each de-duplication configuration will be converted to a
  * <code>PatientMatchingConfiguration</code> object and the object will be sent to the web page
  * controller. During enhancements to move data stored in a flat file system to a database, we
  * introduced several database related methods to this class. from these, the suffix '_db' was added
@@ -47,11 +47,11 @@ public class MatchingConfigurationUtils {
 	protected static final Log log = LogFactory.getLog(MatchingConfigurationUtils.class);
 	
 	/**
-	 * Create a blank <code>PatientMatchingConfig</code> object and sent it to the web controller.
-	 * This object will be used to enable user to tailor the configuration to match their need. This
-	 * is the method that needs to be called to create a new de-duplication configuration. During
-	 * the saving process, this <code>PatientMatchingConfiguration</code> will be saved as a
-	 * blocking run in the configuration file.
+	 * Create a blank <code>PatientMatchingConfig</code> object and sent it to the web controller. This
+	 * object will be used to enable user to tailor the configuration to match their need. This is the
+	 * method that needs to be called to create a new de-duplication configuration. During the saving
+	 * process, this <code>PatientMatchingConfiguration</code> will be saved as a blocking run in the
+	 * configuration file.
 	 * 
 	 * @see PatientMatchingConfiguration
 	 * @return blank <code>PatientMatchingConfiguration</code>
@@ -102,15 +102,14 @@ public class MatchingConfigurationUtils {
 	}
 	
 	/**
-	 * Retrieve a particular matching configuration from a configuration file based on the blocking
-	 * run name and then return it as <code>PatientMatchingConfiguration</code> object to the web
-	 * controller
+	 * Retrieve a particular matching configuration from a configuration file based on the blocking run
+	 * name and then return it as <code>PatientMatchingConfiguration</code> object to the web controller
 	 * 
 	 * @param name the blocking run name
 	 * @return <code>PatientMatchingObject</code> representing the selected blocking run
 	 */
 	public static final PatientMatchingConfiguration loadPatientMatchingConfig(String name,
-	                                                                           List<String> listExcludedProperties) {
+	        List<String> listExcludedProperties) {
 		String configurationFolder = MatchingConstants.CONFIG_FOLDER_NAME;
 		File configurationFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configurationFolder);
 		File configurationFile = new File(configurationFileFolder, MatchingConstants.CONFIG_FILE_NAME);
@@ -119,8 +118,8 @@ public class MatchingConfigurationUtils {
 		log.info("Loading PatientMatchingConfig with name: " + name);
 		
 		if (configurationFile.exists()) {
-			RecMatchConfig recMatchConfig = XMLTranslator.createRecMatchConfig(XMLTranslator
-			        .getXMLDocFromFile(configurationFile));
+			RecMatchConfig recMatchConfig = XMLTranslator
+			        .createRecMatchConfig(XMLTranslator.getXMLDocFromFile(configurationFile));
 			List<MatchingConfig> matchingConfigList = recMatchConfig.getMatchingConfigs();
 			MatchingConfig matchingConfig = findMatchingConfigByName(name, matchingConfigList);
 			
@@ -155,7 +154,8 @@ public class MatchingConfigurationUtils {
 		return patientMatchingConfig;
 	}
 	
-	public static PatientMatchingConfiguration loadPatientMatchingConfig_db(String name, List<String> listExcludedProperties) {
+	public static PatientMatchingConfiguration loadPatientMatchingConfig_db(String name,
+	        List<String> listExcludedProperties) {
 		
 		PatientMatchingConfiguration patientMatchingConfig = createPatientMatchingConfig(listExcludedProperties);
 		log.info("Loading PatientMatchingConfig with name: " + name);
@@ -216,106 +216,106 @@ public class MatchingConfigurationUtils {
 	 * @param patientMatchingConfig
 	 */
 	public static final void savePatientMatchingConfig(PatientMatchingConfiguration patientMatchingConfig) {
-
+		
 		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
-
+		
 		File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
-
+		
 		File configFile = new File(configFileFolder, MatchingConstants.CONFIG_FILE_NAME);
-
+		
 		RecMatchConfig recMatchConfig = null;
 		LinkDataSource linkDataSource = new LinkDataSource("dummy", "dummy", "dummy", 1);
-
+		
 		if (!configFile.exists()) {
 			int counter = 0;
 			Set<String> s = new HashSet<String>();
-
+			
 			for (ConfigurationEntry configEntry : patientMatchingConfig.getConfigurationEntries()) {
-
+				
 				if (!(configEntry.getSET().equals("0"))) {
 					if (!(configEntry.getSET().equals("")))
 						s.add(configEntry.getSET());
-
+					
 				}
-
+				
 				DataColumn column = new DataColumn(String.valueOf(counter));
-
+				
 				column.setIncludePosition(counter);
-
+				
 				column.setName(configEntry.getFieldName());
-
+				
 				column.setType(DataColumn.STRING_TYPE);
-
+				
 				linkDataSource.addDataColumn(column);
-
+				
 				counter++;
-
+				
 			}
-
+			
 			Iterator<String> it = s.iterator();
-
+			
 			while (it.hasNext()) {
-
+				
 				if (!s.contains("")) {
-
+					
 					DataColumn column = new DataColumn(String.valueOf(counter));
-
+					
 					column.setIncludePosition(counter);
-
+					
 					column.setName("concat" + it.next());
-
+					
 					column.setType(DataColumn.STRING_TYPE);
-
+					
 					linkDataSource.addDataColumn(column);
-
+					
 					counter++;
-
+					
 				}
 			}
 			List<MatchingConfig> matchingConfigLists = new ArrayList<MatchingConfig>();
-
+			
 			recMatchConfig = new RecMatchConfig(linkDataSource, linkDataSource, matchingConfigLists);
-
+			
 		} else {
 			int counter = 0;
-
+			
 			SortedSet<String> s = new TreeSet<String>();
-
+			
 			for (ConfigurationEntry configEntry : patientMatchingConfig.getConfigurationEntries()) {
-
+				
 				if (!(configEntry.getSET().equals("0"))) {
-
+					
 					if (!(configEntry.getSET().equals("")))
 						s.add(configEntry.getSET());
 				}
 			}
 			Iterator<String> it = s.iterator();
-
+			
 			while (it.hasNext()) {
-
+				
 				if (!s.contains("")) {
-
+					
 					DataColumn column = new DataColumn(String.valueOf(counter));
-
+					
 					column.setIncludePosition(counter);
-
+					
 					column.setName("concat" + it.next());
-
+					
 					column.setType(DataColumn.STRING_TYPE);
-
+					
 					linkDataSource.addDataColumn(column);
-
+					
 					counter++;
-
+					
 				}
 			}
-
+			
 			recMatchConfig = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(configFile));
 		}
-
+		
 		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
 		service.savePatientMatchingConfiguration(patientMatchingConfig);
-
+		
 		XMLTranslator.writeXMLDocToFile(XMLTranslator.toXML(recMatchConfig), configFile);
 	}
 	
@@ -324,9 +324,9 @@ public class MatchingConfigurationUtils {
 	 * used to display all blocking run for further modification or deletion from the web front end.
 	 * 
 	 * @return list of all blocking runs found in the configuration file
-     * @deprecated Use listAvailableBlockingRuns_db
+	 * @deprecated Use listAvailableBlockingRuns_db
 	 */
-    @Deprecated
+	@Deprecated
 	public static final List<String> listAvailableBlockingRuns() {
 		log.info("Listing all available blocking run");
 		List<String> blockingRuns = new ArrayList<String>();
@@ -362,6 +362,7 @@ public class MatchingConfigurationUtils {
 	
 	/**
 	 * List all available blocking configurations
+	 * 
 	 * @return list of blocking configurations
 	 */
 	public static List<PatientMatchingConfiguration> listAvailableBlockingRunConfigs() {
@@ -372,10 +373,10 @@ public class MatchingConfigurationUtils {
 		new Estimator().updateStrategies(configs);
 		return configs;
 	}
-
+	
 	/**
-	 * Method to delete a particular blocking run from the configuration file. If the blocking run
-	 * is the last entry in the configuration file, the configuration file will also be deleted.
+	 * Method to delete a particular blocking run from the configuration file. If the blocking run is
+	 * the last entry in the configuration file, the configuration file will also be deleted.
 	 * 
 	 * @param name blocking run name that will be deleted
 	 */
@@ -409,15 +410,15 @@ public class MatchingConfigurationUtils {
 		PatientMatchingReportMetadataService service = Context.getService(PatientMatchingReportMetadataService.class);
 		service.deletePatientMatchingConfigurationByName(name);
 	}
-
+	
 	/**
 	 * generates an updated set of configuration entries from the current data model.
 	 * 
-	 * @return 
+	 * @return
 	 */
-	public static SortedSet<ConfigurationEntry> generateUpdatedConfigurationEntries(List<String> listExcludedProperties){
+	public static SortedSet<ConfigurationEntry> generateUpdatedConfigurationEntries(List<String> listExcludedProperties) {
 		Class[] classes = { Patient.class, PersonAddress.class, PersonName.class };
-
+		
 		SortedSet<ConfigurationEntry> configurationEntries = new TreeSet<ConfigurationEntry>();
 		for (Class clazz : classes) {
 			configurationEntries.addAll(MatchingUtils.generateProperties(listExcludedProperties, clazz));
@@ -451,9 +452,10 @@ public class MatchingConfigurationUtils {
 	 * creates a hashmap of names to ConfigurationEntries for the purposes of quick lookup.
 	 * 
 	 * @param listExcludedProperties
-	 * @return 
+	 * @return
 	 */
-	private static Map<String, ConfigurationEntry> generateUpdatedConfigurationEntriesMap(List<String> listExcludedProperties) {
+	private static Map<String, ConfigurationEntry> generateUpdatedConfigurationEntriesMap(
+	        List<String> listExcludedProperties) {
 		Map<String, ConfigurationEntry> newConfigsMap = new HashMap<String, ConfigurationEntry>();
 		for (ConfigurationEntry ce : MatchingConfigurationUtils.generateUpdatedConfigurationEntries(listExcludedProperties))
 			newConfigsMap.put(ce.getFieldName(), ce);
@@ -464,12 +466,13 @@ public class MatchingConfigurationUtils {
 	 * refresh a PatientMatchingConfiguration with properties from current data model.
 	 * 
 	 * @param configuration
-	 * @param listExcludedProperties 
+	 * @param listExcludedProperties
 	 * @should leave a configuration alone if no properties have changed
 	 * @should add properties if they are not in target configuration
 	 * @should leave properties alone if they no longer exist in the data model
 	 */
-	public static void refreshPatientMatchingConfig(PatientMatchingConfiguration configuration, List<String> listExcludedProperties) {
+	public static void refreshPatientMatchingConfig(PatientMatchingConfiguration configuration,
+	        List<String> listExcludedProperties) {
 		if (log.isDebugEnabled()) {
 			log.debug("refreshing PatientMatchingConfiguration \"" + configuration.getConfigurationName() + "\"");
 		}
@@ -478,7 +481,7 @@ public class MatchingConfigurationUtils {
 			throw new APIException("cannot refresh a null configuration");
 		
 		Map<String, ConfigurationEntry> newConfigsMap = MatchingConfigurationUtils
-				.generateUpdatedConfigurationEntriesMap(listExcludedProperties);
+		        .generateUpdatedConfigurationEntriesMap(listExcludedProperties);
 		
 		// iterate through existing configs
 		for (ConfigurationEntry ce : configuration.getConfigurationEntries()) {
@@ -495,5 +498,5 @@ public class MatchingConfigurationUtils {
 		for (ConfigurationEntry ce : newConfigsMap.values())
 			configuration.getConfigurationEntries().add(ce);
 	}
-
+	
 }

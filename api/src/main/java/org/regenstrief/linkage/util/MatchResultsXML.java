@@ -30,20 +30,18 @@ import org.w3c.dom.Node;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
- * Class creates an XML document from a list of MatchResult
- * objects containing all the information of how the matching
- * performed.
+ * Class creates an XML document from a list of MatchResult objects containing all the information
+ * of how the matching performed.
  * 
  * @author jegg
- *
  */
 
 public class MatchResultsXML {
 	
-	public static Document resultsToXML(List<MatchResult> results){
+	public static Document resultsToXML(List<MatchResult> results) {
 		Document ret = null;
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		try{
+		try {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			ret = builder.newDocument();
 			Element root = ret.createElement("matches");
@@ -51,20 +49,20 @@ public class MatchResultsXML {
 			
 			// iterate over results, creating document nodes for
 			Iterator<MatchResult> it = results.iterator();
-			while(it.hasNext()){
+			while (it.hasNext()) {
 				MatchResult mr = it.next();
 				root.appendChild(toDOMNode(mr, ret));
 			}
 		}
-		catch(ParserConfigurationException pce){
+		catch (ParserConfigurationException pce) {
 			return null;
 		}
 		
 		return ret;
 	}
 	
-	public static boolean groupsToXML(List<SameEntityRecordGroup> groups, File f){
-		try{
+	public static boolean groupsToXML(List<SameEntityRecordGroup> groups, File f) {
+		try {
 			FileWriter out = new FileWriter(f);
 			StreamResult streamResult = new StreamResult(out);
 			SAXTransformerFactory tf = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
@@ -72,28 +70,28 @@ public class MatchResultsXML {
 			TransformerHandler hd = tf.newTransformerHandler();
 			Transformer serializer = hd.getTransformer();
 			//serializer.setOutputProperty(OutputKeys.ENCODING,"ISO-8859-1");
-			serializer.setOutputProperty(OutputKeys.INDENT,"yes");
+			serializer.setOutputProperty(OutputKeys.INDENT, "yes");
 			hd.setResult(streamResult);
-
+			
 			hd.startDocument();
 			AttributesImpl atts = new AttributesImpl();
 			
-			hd.startElement("","","groups",atts);
+			hd.startElement("", "", "groups", atts);
 			Iterator<SameEntityRecordGroup> it = groups.iterator();
-			while(it.hasNext()){
+			while (it.hasNext()) {
 				SameEntityRecordGroup group = it.next();
 				atts.addAttribute("", "", "group_ID", "CDATA", Integer.toString(group.getGroupID()));
-				hd.startElement("","","group", atts);
+				hd.startElement("", "", "group", atts);
 				
 				// for each group, iterate over match results as well
 				List<RecordLink> links = group.getGroupLinks();
 				Iterator<RecordLink> links_it = links.iterator();
-				while(links_it.hasNext()){
+				while (links_it.hasNext()) {
 					RecordLink rl = links_it.next();
-					if(rl instanceof MatchResult){
-						MatchResult mr = (MatchResult)rl;
+					if (rl instanceof MatchResult) {
+						MatchResult mr = (MatchResult) rl;
 						atts.clear();
-						hd.startElement("","","matchresult",atts);
+						hd.startElement("", "", "matchresult", atts);
 						
 						// add metadata
 						hd.startElement("", "", "metadata", atts);
@@ -105,26 +103,25 @@ public class MatchResultsXML {
 						
 						hd.startElement("", "", "score", atts);
 						hd.characters(score_chars, 0, score_chars.length);
-						hd.endElement("","", "score");
+						hd.endElement("", "", "score");
 						hd.startElement("", "", "sensitivity", atts);
 						hd.characters(sens_chars, 0, sens_chars.length);
-						hd.endElement("","", "sensitivity");
+						hd.endElement("", "", "sensitivity");
 						hd.startElement("", "", "specificity", atts);
 						hd.characters(spec_chars, 0, spec_chars.length);
-						hd.endElement("","", "specificity");
+						hd.endElement("", "", "specificity");
 						hd.startElement("", "", "rec1_ID", atts);
 						hd.characters(rec1_id, 0, rec1_id.length);
-						hd.endElement("","", "rec1_ID");
+						hd.endElement("", "", "rec1_ID");
 						hd.startElement("", "", "rec2_ID", atts);
 						hd.characters(rec2_id, 0, rec2_id.length);
-						hd.endElement("","", "rec2_ID");
+						hd.endElement("", "", "rec2_ID");
 						
-						
-						hd.endElement("","", "metadata");
+						hd.endElement("", "", "metadata");
 						
 						// if it's a modified match result, write modifier information
-						if(mr instanceof ModifiedMatchResult){
-							ModifiedMatchResult mmr = (ModifiedMatchResult)mr;
+						if (mr instanceof ModifiedMatchResult) {
+							ModifiedMatchResult mmr = (ModifiedMatchResult) mr;
 							atts.clear();
 							hd.startElement("", "", "modifiers", atts);
 							
@@ -132,13 +129,14 @@ public class MatchResultsXML {
 							Iterator<String> demo_it = base_mr.getDemographics().iterator();
 							ScoreVector sv = base_mr.getScoreVector();
 							hd.startElement("", "", "base_values", atts);
-							while(demo_it.hasNext()){
+							while (demo_it.hasNext()) {
 								String current_field = demo_it.next();
 								atts.addAttribute("", "", "label", "CDATA", current_field);
 								hd.startElement("", "", "base_field", atts);
 								atts.clear();
 								hd.startElement("", "", "base_value", atts);
-								String base_val = Double.toString(mmr.getBasicMatchResult().getScoreVector().getScore(current_field));
+								String base_val = Double
+								        .toString(mmr.getBasicMatchResult().getScoreVector().getScore(current_field));
 								hd.characters(base_val.toCharArray(), 0, base_val.length());
 								hd.endElement("", "", "base_value");
 								hd.endElement("", "", "base_field");
@@ -148,16 +146,16 @@ public class MatchResultsXML {
 							List<Modifier> modifiers = mmr.getModifiers();
 							Iterator<Modifier> it2 = modifiers.iterator();
 							int order = 1;
-							while(it2.hasNext()){
+							while (it2.hasNext()) {
 								Modifier m = it2.next();
 								atts.clear();
 								atts.addAttribute("", "", "label", "CDATA", m.getModifierName());
 								atts.addAttribute("", "", "order", "CDATA", Integer.toString(order));
 								hd.startElement("", "", "modifier", atts);
 								
-								Hashtable<String,Double> mods = mmr.getModifications().get(m);
+								Hashtable<String, Double> mods = mmr.getModifications().get(m);
 								Iterator<String> it3 = mods.keySet().iterator();
-								while(it3.hasNext()){
+								while (it3.hasNext()) {
 									String demographic = it3.next();
 									Double d = mods.get(demographic);
 									atts.clear();
@@ -170,7 +168,7 @@ public class MatchResultsXML {
 									hd.endElement("", "", "modification");
 									hd.startElement("", "", "operator", atts);
 									Operator o = mmr.getModifierOperators().get(m);
-									if(o.equals(ModifiedMatchResult.Operator.MULTIPLY)){
+									if (o.equals(ModifiedMatchResult.Operator.MULTIPLY)) {
 										hd.characters("MULTIPLEY".toCharArray(), 0, "MULTIPLY".length());
 									} else {
 										hd.characters("PLUS".toCharArray(), 0, "PLUS".length());
@@ -190,7 +188,7 @@ public class MatchResultsXML {
 						// iterate over fields
 						hd.startElement("", "", "fields", atts);
 						Iterator<String> it2 = mr.getDemographics().iterator();
-						while(it2.hasNext()){
+						while (it2.hasNext()) {
 							String demographic = it2.next();
 							// set field attributes
 							atts.addAttribute("", "", "label", "CDATA", demographic);
@@ -207,7 +205,7 @@ public class MatchResultsXML {
 							hd.characters(val_b.toCharArray(), 0, val_b.length());
 							hd.endElement("", "", "valueB");
 							hd.startElement("", "", "matched", atts);
-							if(mr.matchedOn(demographic)){
+							if (mr.matchedOn(demographic)) {
 								hd.characters("true".toCharArray(), 0, "true".length());
 							} else {
 								hd.characters("false".toCharArray(), 0, "false".length());
@@ -218,7 +216,8 @@ public class MatchResultsXML {
 							hd.characters(score.toCharArray(), 0, score.length());
 							hd.endElement("", "", "score_value");
 							hd.startElement("", "", "comparator", atts);
-							String comp = MatchingConfig.ALGORITHMS[mr.getMatchingConfig().getAlgorithm(mr.getMatchingConfig().getRowIndexforName(demographic))];
+							String comp = MatchingConfig.ALGORITHMS[mr.getMatchingConfig()
+							        .getAlgorithm(mr.getMatchingConfig().getRowIndexforName(demographic))];
 							hd.characters(comp.toCharArray(), 0, comp.length());
 							hd.endElement("", "", "comparator");
 							hd.startElement("", "", "similarity", atts);
@@ -237,15 +236,15 @@ public class MatchResultsXML {
 						List<String> matched_demographics = mr.getMatchVector().getDemographics();
 						String[] bd = mr.getMatchingConfig().getBlockingColumns();
 						List<String> blocking_demographics = new ArrayList<String>();
-						for(int i = 0; i < bd.length; i++){
+						for (int i = 0; i < bd.length; i++) {
 							blocking_demographics.add(bd[i]);
 						}
-						while(it3.hasNext()){
+						while (it3.hasNext()) {
 							String dem = it3.next();
-							if(!matched_demographics.contains(dem)){
+							if (!matched_demographics.contains(dem)) {
 								atts.clear();
 								atts.addAttribute("", "", "label", "CDATA", dem);
-								if(blocking_demographics.contains(dem)){
+								if (blocking_demographics.contains(dem)) {
 									atts.addAttribute("", "", "type", "CDATA", "block");
 								} else {
 									atts.addAttribute("", "", "type", "CDATA", "display");
@@ -271,24 +270,24 @@ public class MatchResultsXML {
 						
 						//hd.characters(desc[i].toCharArray(),0,desc[i].length());
 						hd.endElement("", "", "fields");
-						hd.endElement("","","matchresult");
+						hd.endElement("", "", "matchresult");
 					}
 					
 				}
-				hd.endElement("","","group");
+				hd.endElement("", "", "group");
 			}
-			hd.endElement("","","groups");
+			hd.endElement("", "", "groups");
 			hd.endDocument();
 		}
-		catch(Exception e){
+		catch (Exception e) {
 			return false;
 		}
-
+		
 		return true;
 	}
 	
-	public static boolean resultsToXML(List<MatchResult> results, File f){
-		try{
+	public static boolean resultsToXML(List<MatchResult> results, File f) {
+		try {
 			FileWriter out = new FileWriter(f);
 			StreamResult streamResult = new StreamResult(out);
 			SAXTransformerFactory tf = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
@@ -296,18 +295,18 @@ public class MatchResultsXML {
 			TransformerHandler hd = tf.newTransformerHandler();
 			Transformer serializer = hd.getTransformer();
 			//serializer.setOutputProperty(OutputKeys.ENCODING,"ISO-8859-1");
-			serializer.setOutputProperty(OutputKeys.INDENT,"yes");
+			serializer.setOutputProperty(OutputKeys.INDENT, "yes");
 			hd.setResult(streamResult);
-
+			
 			hd.startDocument();
 			AttributesImpl atts = new AttributesImpl();
-			hd.startElement("","","matches",atts);
+			hd.startElement("", "", "matches", atts);
 			
 			Iterator<MatchResult> it = results.iterator();
-			while(it.hasNext()){
+			while (it.hasNext()) {
 				MatchResult mr = it.next();
 				atts.clear();
-				hd.startElement("","","pair",atts);
+				hd.startElement("", "", "pair", atts);
 				
 				// add metadata
 				hd.startElement("", "", "metadata", atts);
@@ -319,26 +318,25 @@ public class MatchResultsXML {
 				
 				hd.startElement("", "", "score", atts);
 				hd.characters(score_chars, 0, score_chars.length);
-				hd.endElement("","", "score");
+				hd.endElement("", "", "score");
 				hd.startElement("", "", "sensitivity", atts);
 				hd.characters(sens_chars, 0, sens_chars.length);
-				hd.endElement("","", "sensitivity");
+				hd.endElement("", "", "sensitivity");
 				hd.startElement("", "", "specificity", atts);
 				hd.characters(spec_chars, 0, spec_chars.length);
-				hd.endElement("","", "specificity");
+				hd.endElement("", "", "specificity");
 				hd.startElement("", "", "rec1_ID", atts);
 				hd.characters(rec1_id, 0, rec1_id.length);
-				hd.endElement("","", "rec1_ID");
+				hd.endElement("", "", "rec1_ID");
 				hd.startElement("", "", "rec2_ID", atts);
 				hd.characters(rec2_id, 0, rec2_id.length);
-				hd.endElement("","", "rec2_ID");
+				hd.endElement("", "", "rec2_ID");
 				
-				
-				hd.endElement("","", "metadata");
+				hd.endElement("", "", "metadata");
 				
 				// if it's a modified match result, write modifier information
-				if(mr instanceof ModifiedMatchResult){
-					ModifiedMatchResult mmr = (ModifiedMatchResult)mr;
+				if (mr instanceof ModifiedMatchResult) {
+					ModifiedMatchResult mmr = (ModifiedMatchResult) mr;
 					atts.clear();
 					hd.startElement("", "", "modifiers", atts);
 					
@@ -346,13 +344,14 @@ public class MatchResultsXML {
 					Iterator<String> demo_it = base_mr.getDemographics().iterator();
 					ScoreVector sv = base_mr.getScoreVector();
 					hd.startElement("", "", "base_values", atts);
-					while(demo_it.hasNext()){
+					while (demo_it.hasNext()) {
 						String current_field = demo_it.next();
 						atts.addAttribute("", "", "label", "CDATA", current_field);
 						hd.startElement("", "", "base_field", atts);
 						atts.clear();
 						hd.startElement("", "", "base_value", atts);
-						String base_val = Double.toString(mmr.getBasicMatchResult().getScoreVector().getScore(current_field));
+						String base_val = Double
+						        .toString(mmr.getBasicMatchResult().getScoreVector().getScore(current_field));
 						hd.characters(base_val.toCharArray(), 0, base_val.length());
 						hd.endElement("", "", "base_value");
 						hd.endElement("", "", "base_field");
@@ -362,16 +361,16 @@ public class MatchResultsXML {
 					List<Modifier> modifiers = mmr.getModifiers();
 					Iterator<Modifier> it2 = modifiers.iterator();
 					int order = 1;
-					while(it2.hasNext()){
+					while (it2.hasNext()) {
 						Modifier m = it2.next();
 						atts.clear();
 						atts.addAttribute("", "", "label", "CDATA", m.getModifierName());
 						atts.addAttribute("", "", "order", "CDATA", Integer.toString(order));
 						hd.startElement("", "", "modifier", atts);
 						
-						Hashtable<String,Double> mods = mmr.getModifications().get(m);
+						Hashtable<String, Double> mods = mmr.getModifications().get(m);
 						Iterator<String> it3 = mods.keySet().iterator();
-						while(it3.hasNext()){
+						while (it3.hasNext()) {
 							String demographic = it3.next();
 							Double d = mods.get(demographic);
 							atts.clear();
@@ -384,7 +383,7 @@ public class MatchResultsXML {
 							hd.endElement("", "", "modification");
 							hd.startElement("", "", "operator", atts);
 							Operator o = mmr.getModifierOperators().get(m);
-							if(o.equals(ModifiedMatchResult.Operator.MULTIPLY)){
+							if (o.equals(ModifiedMatchResult.Operator.MULTIPLY)) {
 								hd.characters("MULTIPLEY".toCharArray(), 0, "MULTIPLY".length());
 							} else {
 								hd.characters("PLUS".toCharArray(), 0, "PLUS".length());
@@ -404,7 +403,7 @@ public class MatchResultsXML {
 				// iterate over fields
 				hd.startElement("", "", "fields", atts);
 				Iterator<String> it2 = mr.getDemographics().iterator();
-				while(it2.hasNext()){
+				while (it2.hasNext()) {
 					String demographic = it2.next();
 					// set field attributes
 					atts.addAttribute("", "", "label", "CDATA", demographic);
@@ -421,7 +420,7 @@ public class MatchResultsXML {
 					hd.characters(val_b.toCharArray(), 0, val_b.length());
 					hd.endElement("", "", "valueB");
 					hd.startElement("", "", "matched", atts);
-					if(mr.matchedOn(demographic)){
+					if (mr.matchedOn(demographic)) {
 						hd.characters("true".toCharArray(), 0, "true".length());
 					} else {
 						hd.characters("false".toCharArray(), 0, "false".length());
@@ -432,7 +431,8 @@ public class MatchResultsXML {
 					hd.characters(score.toCharArray(), 0, score.length());
 					hd.endElement("", "", "score_value");
 					hd.startElement("", "", "comparator", atts);
-					String comp = MatchingConfig.ALGORITHMS[mr.getMatchingConfig().getAlgorithm(mr.getMatchingConfig().getRowIndexforName(demographic))];
+					String comp = MatchingConfig.ALGORITHMS[mr.getMatchingConfig()
+					        .getAlgorithm(mr.getMatchingConfig().getRowIndexforName(demographic))];
 					hd.characters(comp.toCharArray(), 0, comp.length());
 					hd.endElement("", "", "comparator");
 					hd.startElement("", "", "similarity", atts);
@@ -451,15 +451,15 @@ public class MatchResultsXML {
 				List<String> matched_demographics = mr.getMatchVector().getDemographics();
 				String[] bd = mr.getMatchingConfig().getBlockingColumns();
 				List<String> blocking_demographics = new ArrayList<String>();
-				for(int i = 0; i < bd.length; i++){
+				for (int i = 0; i < bd.length; i++) {
 					blocking_demographics.add(bd[i]);
 				}
-				while(it3.hasNext()){
+				while (it3.hasNext()) {
 					String dem = it3.next();
-					if(!matched_demographics.contains(dem)){
+					if (!matched_demographics.contains(dem)) {
 						atts.clear();
 						atts.addAttribute("", "", "label", "CDATA", dem);
-						if(blocking_demographics.contains(dem)){
+						if (blocking_demographics.contains(dem)) {
 							atts.addAttribute("", "", "type", "CDATA", "block");
 						} else {
 							atts.addAttribute("", "", "type", "CDATA", "display");
@@ -485,20 +485,19 @@ public class MatchResultsXML {
 				
 				//hd.characters(desc[i].toCharArray(),0,desc[i].length());
 				hd.endElement("", "", "fields");
-				hd.endElement("","","pair");
+				hd.endElement("", "", "pair");
 			}
-			hd.endElement("","","matches");
+			hd.endElement("", "", "matches");
 			hd.endDocument();
 		}
-		catch(Exception e){
+		catch (Exception e) {
 			return false;
 		}
-		 
 		
 		return true;
 	}
 	
-	public static Node toDOMNode(MatchResult mr, Document doc){
+	public static Node toDOMNode(MatchResult mr, Document doc) {
 		Element ret = doc.createElement("pair");
 		
 		// add metadata
@@ -515,15 +514,15 @@ public class MatchResultsXML {
 		metadata.appendChild(spec);
 		
 		// add modifier information
-		if(mr instanceof ModifiedMatchResult){
-			ModifiedMatchResult mmr = (ModifiedMatchResult)mr;
+		if (mr instanceof ModifiedMatchResult) {
+			ModifiedMatchResult mmr = (ModifiedMatchResult) mr;
 			ret.appendChild(getModifierNodes(mmr, doc));
 		}
 		
 		// iterate over fields
 		Iterator<String> it = mr.getDemographics().iterator();
 		Element fields = doc.createElement("fields");
-		while(it.hasNext()){
+		while (it.hasNext()) {
 			String demographic = it.next();
 			Element field = doc.createElement("field");
 			field.setAttribute("label", demographic);
@@ -539,13 +538,14 @@ public class MatchResultsXML {
 			
 			val_a.setTextContent(mr.getRecord1().getDemographic(demographic));
 			val_b.setTextContent(mr.getRecord2().getDemographic(demographic));
-			if(mr.matchedOn(demographic)){
+			if (mr.matchedOn(demographic)) {
 				matched.setTextContent("true");
 			} else {
 				matched.setTextContent("false");
 			}
 			score_val.setTextContent(Double.toString(mr.getScoreVector().getScore(demographic)));
-			comparator.setTextContent(MatchingConfig.ALGORITHMS[mr.getMatchingConfig().getAlgorithm(mr.getMatchingConfig().getRowIndexforName(demographic))]);
+			comparator.setTextContent(MatchingConfig.ALGORITHMS[mr.getMatchingConfig()
+			        .getAlgorithm(mr.getMatchingConfig().getRowIndexforName(demographic))]);
 			similarity.setTextContent(Double.toString(mr.getSimilarityScore(demographic)));
 			
 			field.appendChild(val_a);
@@ -565,17 +565,17 @@ public class MatchResultsXML {
 		List<String> matched_demographics = mr.getMatchVector().getDemographics();
 		String[] bd = mr.getMatchingConfig().getBlockingColumns();
 		List<String> blocking_demographics = new ArrayList<String>();
-		for(int i = 0; i < bd.length; i++){
+		for (int i = 0; i < bd.length; i++) {
 			blocking_demographics.add(bd[i]);
 		}
-		while(it2.hasNext()){
+		while (it2.hasNext()) {
 			String dem = it2.next();
-			if(!matched_demographics.contains(dem)){
+			if (!matched_demographics.contains(dem)) {
 				// demographic wasn't used when calculating the score, but is present and needs to be added
 				Element field = doc.createElement("field");
 				field.setAttribute("label", dem);
 				fields.appendChild(field);
-				if(blocking_demographics.contains(dem)){
+				if (blocking_demographics.contains(dem)) {
 					field.setAttribute("type", "block");
 				} else {
 					field.setAttribute("type", "display");
@@ -594,7 +594,7 @@ public class MatchResultsXML {
 		return ret;
 	}
 	
-	private static Node getModifierNodes(ModifiedMatchResult mr, Document doc){
+	private static Node getModifierNodes(ModifiedMatchResult mr, Document doc) {
 		Element ret = doc.createElement("modifiers");
 		
 		// write information about base score, before modifications are done
@@ -602,7 +602,7 @@ public class MatchResultsXML {
 		MatchResult base_mr = mr.getBasicMatchResult();
 		Iterator<String> demo_it = base_mr.getDemographics().iterator();
 		ScoreVector sv = base_mr.getScoreVector();
-		while(demo_it.hasNext()){
+		while (demo_it.hasNext()) {
 			String current_field = demo_it.next();
 			Element base_field = doc.createElement("base_field");
 			base_field.setAttribute("label", current_field);
@@ -618,16 +618,16 @@ public class MatchResultsXML {
 		List<Modifier> modifiers = mr.getModifiers();
 		Iterator<Modifier> it = modifiers.iterator();
 		int order = 1;
-		while(it.hasNext()){
+		while (it.hasNext()) {
 			Modifier m = it.next();
 			Element mod_element = doc.createElement("modifier");
 			mod_element.setAttribute("label", m.getModifierName());
 			mod_element.setAttribute("order", Integer.toString(order));
 			ret.appendChild(mod_element);
 			
-			Hashtable<String,Double> mods = mr.getModifications().get(m);
+			Hashtable<String, Double> mods = mr.getModifications().get(m);
 			Iterator<String> it2 = mods.keySet().iterator();
-			while(it2.hasNext()){
+			while (it2.hasNext()) {
 				String demographic = it2.next();
 				Double d = mods.get(demographic);
 				Element field_element = doc.createElement("field_modification");
@@ -638,14 +638,13 @@ public class MatchResultsXML {
 				field_element.appendChild(mod_value);
 				Element mod_operator = doc.createElement("operator");
 				Operator o = mr.getModifierOperators().get(m);
-				if(o.equals(ModifiedMatchResult.Operator.MULTIPLY)){
+				if (o.equals(ModifiedMatchResult.Operator.MULTIPLY)) {
 					mod_operator.setTextContent("MULTIPLY");
 				} else {
 					mod_operator.setTextContent("PLUS");
 				}
 				field_element.appendChild(mod_operator);
 			}
-			
 			
 		}
 		

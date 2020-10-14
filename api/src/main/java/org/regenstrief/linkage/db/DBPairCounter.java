@@ -19,12 +19,17 @@ import java.util.regex.Pattern;
 public class DBPairCounter {
 	
 	private final static char DELIM_SWAP = '^';
+	
 	private final static char DELIM_BLOCKING = '@';
+	
 	private final static char DELIM_FUNCTION = '.';
 	
 	private final static String FUNCTION_SUB = "sub";
+	
 	private final static String FUNCTION_NAME = "name";
+	
 	private final static String FUNCTION_CONST = "const";
+	
 	private final static String FUNCTION_NUM = "num";
 	
 	private final static Pattern PAT_PLUS = Pattern.compile("\\+");
@@ -34,6 +39,7 @@ public class DBPairCounter {
 	protected static Connection con = null;
 	
 	protected static String table = "record";
+	
 	protected static String table2 = null;
 	
 	private static boolean combinationsAndIndividuals = true;
@@ -58,7 +64,8 @@ public class DBPairCounter {
 			for (final Collection<JoinCondition> joinConditions : joinConditionLists) {
 				System.out.println(serializeJoinConditionList(joinConditions) + "|" + countPairs(joinConditions));
 			}
-		} finally {
+		}
+		finally {
 			con.close();
 		}
 		System.out.println();
@@ -88,7 +95,8 @@ public class DBPairCounter {
 		return readCount(b);
 	}
 	
-	public final static void createTempTable(final String table, final Collection<JoinCondition> joinConditions) throws Exception {
+	public final static void createTempTable(final String table, final Collection<JoinCondition> joinConditions)
+	        throws Exception {
 		final Statement stmt = con.createStatement();
 		execute(stmt, "drop table if exists temp_" + table);
 		final StringBuilder b = new StringBuilder();
@@ -180,7 +188,8 @@ public class DBPairCounter {
 			final long pairCount = rs.next() ? rs.getLong(1) : 0;
 			rs.close();
 			return pairCount;
-		} finally {
+		}
+		finally {
 			stmt.close();
 		}
 	}
@@ -216,7 +225,8 @@ public class DBPairCounter {
 		return list;
 	}
 	
-	private final static Collection<? extends Collection<JoinCondition>> getConditionListCombinations(final List<List<JoinCondition>> lists) {
+	private final static Collection<? extends Collection<JoinCondition>> getConditionListCombinations(
+	        final List<List<JoinCondition>> lists) {
 		final Set<Set<JoinCondition>> sets = new LinkedHashSet<Set<JoinCondition>>(lists.size());
 		for (final List<JoinCondition> list : lists) {
 			sets.add(new TreeSet<JoinCondition>(list));
@@ -228,7 +238,8 @@ public class DBPairCounter {
 		return combinations;
 	}
 	
-	private final static void addConditionListCombinations(final Set<Set<JoinCondition>> combinations, final Set<Set<JoinCondition>> sets, final Set<JoinCondition> base) {
+	private final static void addConditionListCombinations(final Set<Set<JoinCondition>> combinations,
+	        final Set<Set<JoinCondition>> sets, final Set<JoinCondition> base) {
 		for (final Set<JoinCondition> set : sets) {
 			final Set<JoinCondition> combination = new TreeSet<JoinCondition>(base);
 			final boolean individual = !combination.addAll(set);
@@ -306,14 +317,14 @@ public class DBPairCounter {
 			} else if (o.getClass() != JoinCondition.class) {
 				return false;
 			}
-			return this.joinCondition.equals(((JoinCondition) o).joinCondition); 
+			return this.joinCondition.equals(((JoinCondition) o).joinCondition);
 		}
 		
 		@Override
 		public final int hashCode() {
 			return this.joinCondition.hashCode();
 		}
-
+		
 		@Override
 		public final int compareTo(final JoinCondition o) {
 			return this.joinCondition.compareTo(o.joinCondition);
@@ -387,7 +398,8 @@ public class DBPairCounter {
 				final String len = this.function.substring(FUNCTION_SUB.length());
 				return "substr(" + col + ",1," + len + ")";
 			} else if (FUNCTION_NAME.equals(this.function)) {
-				return "case when " + col + " is null then null when length(" + col + ") <= 1 then null else " + col + " end";
+				return "case when " + col + " is null then null when length(" + col + ") <= 1 then null else " + col
+				        + " end";
 			} else if (this.function.startsWith(FUNCTION_CONST)) {
 				final String val = "'" + this.function.substring(FUNCTION_CONST.length()) + "'";
 				return "case when " + col + "=" + val + " then " + val + " else null end";
@@ -417,14 +429,14 @@ public class DBPairCounter {
 			} else if (o.getClass() != JoinColumn.class) {
 				return false;
 			}
-			return this.joinColumn.equals(((JoinColumn) o).joinColumn); 
+			return this.joinColumn.equals(((JoinColumn) o).joinColumn);
 		}
 		
 		@Override
 		public final int hashCode() {
 			return this.joinColumn.hashCode();
 		}
-
+		
 		@Override
 		public final int compareTo(final JoinColumn o) {
 			return this.joinColumn.compareTo(o.joinColumn);

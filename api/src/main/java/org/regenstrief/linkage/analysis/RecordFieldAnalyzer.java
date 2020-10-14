@@ -15,23 +15,26 @@ import org.regenstrief.linkage.*;
 import java.util.*;
 
 public class RecordFieldAnalyzer {
+	
 	// integer constants for actions
 	public static final int DISCARD = 1;
+	
 	public static final int DO_NOTHING = 2;
+	
 	public static final int NULLIFY = 3;
 	
 	List<List<DemographicValueAction>> rules;
 	
-	public RecordFieldAnalyzer(){
+	public RecordFieldAnalyzer() {
 		// initialize with default rules
 		rules = getDefaultRules();
 	}
 	
-	public RecordFieldAnalyzer(List<List<DemographicValueAction>> rules){
+	public RecordFieldAnalyzer(List<List<DemographicValueAction>> rules) {
 		this.rules = rules;
 	}
 	
-	public List<List<DemographicValueAction>> getDefaultRules(){
+	public List<List<DemographicValueAction>> getDefaultRules() {
 		ArrayList<List<DemographicValueAction>> defaults = new ArrayList<List<DemographicValueAction>>();
 		DemographicValueAction rule;
 		ArrayList<DemographicValueAction> rule_set;
@@ -224,30 +227,30 @@ public class RecordFieldAnalyzer {
 		return defaults;
 	}
 	
-	public int analyzeRecordFields(Record r){
+	public int analyzeRecordFields(Record r) {
 		int ret = DO_NOTHING;
 		Iterator<List<DemographicValueAction>> it = rules.iterator();
-		while(it.hasNext()){
+		while (it.hasNext()) {
 			List<DemographicValueAction> rule_set = it.next();
 			boolean set_true = true;
 			int action = DO_NOTHING;
 			Iterator<DemographicValueAction> it2 = rule_set.iterator();
-			while(it2.hasNext()){
+			while (it2.hasNext()) {
 				DemographicValueAction rule = it2.next();
 				action = rule.getAction();
 				set_true = set_true && rule.recordMatches(r);
 			}
-			if(set_true){
+			if (set_true) {
 				// need to inspect the action value to see what to do
-				if(action == DISCARD){
+				if (action == DISCARD) {
 					return action;
-				} else if(action == NULLIFY){
+				} else if (action == NULLIFY) {
 					// need to change the demographic to an empty string
 					// set ret equal to NULLIFY to notify caller values changed
 					// do not return here so that if further demographics need to be cleared,
 					// they will be modified
 					it2 = rule_set.iterator();
-					while(it2.hasNext()){
+					while (it2.hasNext()) {
 						DemographicValueAction rule = it2.next();
 						String dem = rule.getDemographic();
 						r.addDemographic(dem, "");

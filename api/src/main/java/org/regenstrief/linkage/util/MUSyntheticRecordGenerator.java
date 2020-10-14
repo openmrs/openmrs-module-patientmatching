@@ -12,16 +12,22 @@ import org.regenstrief.linkage.analysis.RecordFrequencies;
 import org.regenstrief.linkage.analysis.VectorTable;
 
 public class MUSyntheticRecordGenerator extends SyntheticRecordGenerator {
-
+	
 	double p;
+	
 	Random rand;
+	
 	long count;
+	
 	VectorTable vt;
+	
 	private List<String> primary_demographics;
+	
 	private List<String> dependent_demographics;
+	
 	private ScorePair sp;
 	
-	public MUSyntheticRecordGenerator(MatchingConfig mc, RecordFrequencies rf, double p){
+	public MUSyntheticRecordGenerator(MatchingConfig mc, RecordFrequencies rf, double p) {
 		super(mc, rf);
 		this.p = p;
 		count = 0;
@@ -41,20 +47,20 @@ public class MUSyntheticRecordGenerator extends SyntheticRecordGenerator {
 		
 		boolean true_match = false;
 		double d = rand.nextDouble();
-		if(d <= p){
+		if (d <= p) {
 			true_match = true;
 		}
 		
 		MatchVector mv = generateMatchVector(true_match);
 		
 		Iterator<String> p_it = primary_demographics.iterator();
-		while(p_it.hasNext()){
+		while (p_it.hasNext()) {
 			String p_demographic = p_it.next();
 			MatchingConfigRow mcr = mc.getMatchingConfigRowByName(p_demographic);
-			if(true_match){
+			if (true_match) {
 				setRandomDemographic(mv, ret[0], p_demographic);
 				double agreement = rand.nextDouble();
-				if(agreement < mcr.getAgreement()){
+				if (agreement < mcr.getAgreement()) {
 					ret[1].addDemographic(p_demographic, ret[0].getDemographic(p_demographic));
 					String rank_demographic = p_demographic + DEMOGRAPHIC_RANK_SUFFIX;
 					ret[1].addDemographic(rank_demographic, ret[0].getDemographic(rank_demographic));
@@ -69,13 +75,13 @@ public class MUSyntheticRecordGenerator extends SyntheticRecordGenerator {
 		}
 		
 		Iterator<String> d_it = dependent_demographics.iterator();
-		while(d_it.hasNext()){
+		while (d_it.hasNext()) {
 			String demographic = d_it.next();
 			MatchingConfigRow mcr = mc.getMatchingConfigRowByName(demographic);
-			if(true_match){
+			if (true_match) {
 				setRandomDemographic(mv, ret[0], demographic);
 				double agreement = rand.nextDouble();
-				if(agreement < mcr.getAgreement()){
+				if (agreement < mcr.getAgreement()) {
 					ret[1].addDemographic(demographic, ret[0].getDemographic(demographic));
 					String rank_demographic = demographic + DEMOGRAPHIC_RANK_SUFFIX;
 					ret[1].addDemographic(rank_demographic, ret[0].getDemographic(rank_demographic));
@@ -99,10 +105,10 @@ public class MUSyntheticRecordGenerator extends SyntheticRecordGenerator {
 		
 	}
 	
-	private MatchVector generateMatchVector(boolean true_match){
+	private MatchVector generateMatchVector(boolean true_match) {
 		MatchVector ret = new MatchVector();
 		Iterator<MatchingConfigRow> it = mc.getMatchingConfigRows().iterator();
-		while(it.hasNext()){
+		while (it.hasNext()) {
 			MatchingConfigRow mcr = it.next();
 			String demographic = mcr.getName();
 			
@@ -110,25 +116,25 @@ public class MUSyntheticRecordGenerator extends SyntheticRecordGenerator {
 		return ret;
 	}
 	
-	private void generateDemographicsLists(){
+	private void generateDemographicsLists() {
 		//Iterator<MatchingConfigRow> it = mc.getIncludedColumns().iterator();
 		Iterator<MatchingConfigRow> it = mc.getMatchingConfigRows().iterator();
 		
-		while(it.hasNext()){
+		while (it.hasNext()) {
 			String demographic = it.next().getName();
 			String context = rf1.getContext(demographic);
-			if(context != null && !primary_demographics.contains(context)){
+			if (context != null && !primary_demographics.contains(context)) {
 				primary_demographics.add(context);
 				dependent_demographics.add(demographic);
-				if(dependent_demographics.contains(context)){
+				if (dependent_demographics.contains(context)) {
 					dependent_demographics.remove(context);
 				}
 			}
-			if(!dependent_demographics.contains(demographic) && !primary_demographics.contains(demographic)){
+			if (!dependent_demographics.contains(demographic) && !primary_demographics.contains(demographic)) {
 				dependent_demographics.add(demographic);
 			}
 			
 		}
 	}
-
+	
 }

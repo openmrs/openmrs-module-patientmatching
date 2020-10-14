@@ -38,9 +38,13 @@ import org.regenstrief.linkage.matchresult.DBMatchResultStore;
 public class ManualReviewDBCombiner {
 	
 	private final static String fileSep = System.getProperty("file.separator");
+	
 	private final static Set<String> fields = new LinkedHashSet<String>();
+	
 	protected final static Map<PairKey, PairResult> pairs = new HashMap<PairKey, PairResult>();
+	
 	private static Connection con = null;
+	
 	private static DBMatchResultStore mrs = null;
 	
 	public final static void main(final String[] args) throws Exception {
@@ -104,9 +108,12 @@ public class ManualReviewDBCombiner {
 				final Record record1 = mr.getRecord1(), record2 = mr.getRecord2();
 				final long uid1 = record1.getUID(), uid2 = record2.getUID();
 				if (mr.getMatch_status() == MatchResult.UNKNOWN) {
-					throw new IllegalStateException(databaseLocation + " contained unknown match status for " + uid1 + "-" + uid2);
+					throw new IllegalStateException(
+					        databaseLocation + " contained unknown match status for " + uid1 + "-" + uid2);
 				}
-				final boolean matchStatus = ManualReviewEvaluator.getMatchStatus(ManualReviewEvaluator.getMatchScore(mr.getCertainty()));;
+				final boolean matchStatus = ManualReviewEvaluator
+				        .getMatchStatus(ManualReviewEvaluator.getMatchScore(mr.getCertainty()));
+				;
 				final PairKey pk = new PairKey(uid1, uid2);
 				PairResult pr = pairs.get(pk);
 				if (pr == null) {
@@ -117,10 +124,12 @@ public class ManualReviewDBCombiner {
 				}
 			}
 			mrs.close();
-		} finally {
+		}
+		finally {
 			con.close();
 		}
-		info("Finished analyzing " + databaseLocation + " which had " + size + " record pairs; found " + pairs.size() + " total record pairs so far across all reviewers");
+		info("Finished analyzing " + databaseLocation + " which had " + size + " record pairs; found " + pairs.size()
+		        + " total record pairs so far across all reviewers");
 	}
 	
 	private final static void writeOutput(final String outPrefix) throws Exception {
@@ -157,7 +166,8 @@ public class ManualReviewDBCombiner {
 				print(out, pr.record2);
 				out.println(matchStatus + "|" + pr.reviewer1 + "|" + pr.reviewer2);
 			}
-		} finally {
+		}
+		finally {
 			close(discordantOut);
 			close(agreedOut);
 		}
@@ -166,7 +176,8 @@ public class ManualReviewDBCombiner {
 		info("Found " + agreedCount + " harmonious pairs and " + discordantCount + " discordant pairs");
 	}
 	
-	private final static void putDisagreement(final Map<String, Integer> disagreementsPerReviewerCombo, final Map<String, Integer> disagreementsPerReviewer, final PairResult pr) {
+	private final static void putDisagreement(final Map<String, Integer> disagreementsPerReviewerCombo,
+	        final Map<String, Integer> disagreementsPerReviewer, final PairResult pr) {
 		final String reviewer1 = pr.reviewer1, reviewer2 = pr.reviewer2, key;
 		if (reviewer1.compareTo(reviewer2) < 0) {
 			key = reviewer1 + ", " + reviewer2;
@@ -242,6 +253,7 @@ public class ManualReviewDBCombiner {
 	protected final static class PairKey {
 		
 		private final long uid1;
+		
 		private final long uid2;
 		
 		protected PairKey(final long uid1, final long uid2) {
@@ -269,9 +281,13 @@ public class ManualReviewDBCombiner {
 	protected final static class PairResult {
 		
 		private final Record record1;
+		
 		private final Record record2;
+		
 		private final String reviewer1;
+		
 		private String reviewer2 = null;
+		
 		protected Boolean matchStatus;
 		// Need to know both of the reviewers (at least if they're discordant) so that a different reviewer can be chosen as the tie-breaker
 		
@@ -284,7 +300,8 @@ public class ManualReviewDBCombiner {
 		
 		private void addSecondStatus(final String reviewer, final boolean matchStatus) {
 			if (this.reviewer2 != null) {
-				throw new IllegalStateException("Found 3 reviewers for " + this + ": " + this.reviewer1 + ", " + this.reviewer2 + ", " + reviewer);
+				throw new IllegalStateException(
+				        "Found 3 reviewers for " + this + ": " + this.reviewer1 + ", " + this.reviewer2 + ", " + reviewer);
 			} else if (this.reviewer1.equals(reviewer)) {
 				throw new IllegalStateException(reviewer + " reviewed same pair twice: " + this);
 			}

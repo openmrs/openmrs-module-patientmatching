@@ -21,8 +21,11 @@ import org.regenstrief.linkage.util.MatchingConfig;
  * FrequencyContext
  */
 public class FrequencyContext {
+	
 	private final DataSourceAnalysis dsa;
+	
 	private final DataSourceFrequency dsf;
+	
 	private final FrequencyAnalyzer fa;
 	
 	public FrequencyContext(final MatchingConfig mc, final LinkDataSource lds) {

@@ -75,38 +75,53 @@ import org.regenstrief.linkage.util.RecMatchConfig;
 
 /**
  * @author james-egg
- *
  */
-public class SessionsPanel extends JPanel implements ActionListener, KeyListener,
-        ListSelectionListener, ItemListener, FocusListener, TableModelListener, MouseListener{
+public class SessionsPanel extends JPanel implements ActionListener, KeyListener, ListSelectionListener, ItemListener, FocusListener, TableModelListener, MouseListener {
+	
 	public final String DEFAULT_NAME = "New match";
 	
 	JList<MatchingConfig> runs;
+	
 	JTextField run_name;
+	
 	JTable session_options;
+	
 	JComboBox<String> jcb;
 	
 	RecMatchConfig rm_conf;
-	 
-	MatchingConfig current_working_config;
-
-    private boolean mutualInfoScore, write_xml, groupAnalysis, common_pairs_fp;
 	
-    private JTextField randomSampleTextField;
-    private JLabel randomSampleSizeLabel;
-    private JTextField thresholdTextField;
-    private JCheckBox cbMutualInfoScore;
-    private JCheckBox cbWriteXML;
-    private JComboBox<String> reviewers;
-    private JCheckBox cbGrouping;
-    private JCheckBox filter_pairs;
-    private JCheckBox scoreIncluded;
+	MatchingConfig current_working_config;
+	
+	private boolean mutualInfoScore, write_xml, groupAnalysis, common_pairs_fp;
+	
+	private JTextField randomSampleTextField;
+	
+	private JLabel randomSampleSizeLabel;
+	
+	private JTextField thresholdTextField;
+	
+	private JCheckBox cbMutualInfoScore;
+	
+	private JCheckBox cbWriteXML;
+	
+	private JComboBox<String> reviewers;
+	
+	private JCheckBox cbGrouping;
+	
+	private JCheckBox filter_pairs;
+	
+	private JCheckBox scoreIncluded;
+	
 	private JRadioButton ucalc_closed, ucalc_rand, mcalc_lock, mcalc_uinclude;
-    private ButtonGroup ucalc_group, mcalc_group;
-    private JButton calculate_uvalue, calculate_mvalue;
-    private JPopupMenu resetm, resetu;
-    private JCheckBox common_pairs;
-    
+	
+	private ButtonGroup ucalc_group, mcalc_group;
+	
+	private JButton calculate_uvalue, calculate_mvalue;
+	
+	private JPopupMenu resetm, resetu;
+	
+	private JCheckBox common_pairs;
+	
 	public SessionsPanel(RecMatchConfig rmc) {
 		//super();
 		rm_conf = rmc;
@@ -119,26 +134,26 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	}
 	
 	private void updateBlockingRunsList() {
-        DefaultListModel<MatchingConfig> dlm = new DefaultListModel<MatchingConfig>();
-        if (rm_conf != null) {
-            if (rm_conf.getMatchingConfigs().size() > 0) {
-                for (final MatchingConfig mc : rm_conf.getMatchingConfigs()) {
-                    dlm.addElement(mc);
-                }
-                runs.setSelectedIndex(0);
-                current_working_config = rm_conf.getMatchingConfigs().get(0);
-                displayThisMatchingConfig(current_working_config);
-            } else {
-                current_working_config = null;
-            }
-        }
-        runs.setModel(dlm);
+		DefaultListModel<MatchingConfig> dlm = new DefaultListModel<MatchingConfig>();
+		if (rm_conf != null) {
+			if (rm_conf.getMatchingConfigs().size() > 0) {
+				for (final MatchingConfig mc : rm_conf.getMatchingConfigs()) {
+					dlm.addElement(mc);
+				}
+				runs.setSelectedIndex(0);
+				current_working_config = rm_conf.getMatchingConfigs().get(0);
+				displayThisMatchingConfig(current_working_config);
+			} else {
+				current_working_config = null;
+			}
+		}
+		runs.setModel(dlm);
 	}
 	
 	private void createSessionPanel() {
 		// split the panel into two parts, top for table, bottom for other user interaction
 		//JPanel session_panel = new JPanel(new GridLayout(2, 1));
-		this.setLayout(new GridLayout(2,1));
+		this.setLayout(new GridLayout(2, 1));
 		
 		// item for the top panel
 		this.add(getSessionTable());
@@ -155,474 +170,472 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		resetu.add(reset);
 		
 		// add items for the bottom panel
-        /* *********************************
-         * list and move up down button area
-         * *********************************/
-        JPanel list_panel = new JPanel();
-        list_panel.setBorder(BorderFactory.createTitledBorder("Session List"));
-        
-        JButton up = new JButton();
-        up.addActionListener(this);
-        up.setText("Move Up");
-        
-        JButton down = new JButton();
-        down.addActionListener(this);
-        down.setText("Move Down");
-        
-        common_pairs = new JCheckBox("Combine pairs in blocks");
-        common_pairs.addActionListener(this);
-        
-        runs = new JList<MatchingConfig>();
-        runs.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        runs.addListSelectionListener(this);
-        runs.setCellRenderer(new MatchingConfigCellRenderer());
-        
-        updateBlockingRunsList();
-
-        JScrollPane blockingRunScrollPane = new JScrollPane();
-        blockingRunScrollPane.setViewportView(runs);
-        /* ****************************************
-         * End of list and move up down button area
-         * ****************************************/
-        
-        /* ******************************
-         * Session Entry Modificator Area
-         * ******************************/
-        JPanel sessionListEntryPanel = new JPanel();
-        
-        run_name = new JTextField();
-        run_name.addKeyListener(this);
-        
-        JButton remove = new JButton();
-        remove.addActionListener(this);
-        remove.setText("Remove");
-        
-        JButton rename = new JButton();
-        rename.addActionListener(this);
-        rename.setText("Rename");
-        
-        JButton new_run = new JButton();
-        new_run.addActionListener(this);
-        new_run.setText("New");
-
-        sessionListEntryPanel.setBorder(BorderFactory.createTitledBorder("Edit Session Label"));
-        /* ******************************
-         * End Session Entry Modificator Area
-         * ******************************/
-        
-        /* ******************************
-         * Random Sample Area
-         * ******************************/
-        JPanel uvalue_panel = new JPanel();
-        uvalue_panel.setBorder(BorderFactory.createTitledBorder("u-Value calculation"));
-        ucalc_closed = new JRadioButton("Closed form");
-        ucalc_closed.addActionListener(this);
-        ucalc_rand = new JRadioButton("Random Sample");
-        ucalc_rand.addActionListener(this);
-        
-        ucalc_group = new ButtonGroup();
-        ucalc_group.add(ucalc_closed);
-        ucalc_group.add(ucalc_rand);
-        
-        randomSampleSizeLabel = new JLabel();
-        randomSampleSizeLabel.setText("Sample Size");
-        randomSampleSizeLabel.setEnabled(false);
-        
-        randomSampleTextField = new JTextField();
-        randomSampleTextField.setText("100000");
-        randomSampleTextField.setEnabled(false);
-        randomSampleTextField.addFocusListener(this);
-        
-        calculate_uvalue = new JButton("Calculate u-values");
-        calculate_uvalue.addActionListener(this);
-        /* ******************************
-         * End Random Sample Area
-         * ******************************/
-        
-        /* ******************************
-         * M value calculation area
-         * ******************************/
-        JPanel mvalue_panel = new JPanel();
-        mvalue_panel.setBorder(BorderFactory.createTitledBorder("m / u-Value calculation"));
-        mcalc_lock = new JRadioButton("Lock existing u-values in EM calculation");
-        mcalc_lock.addActionListener(this);
-        mcalc_uinclude = new JRadioButton("Calculate u-values along with m-values in EM");
-        mcalc_uinclude.addActionListener(this);
-        
-        mcalc_group = new ButtonGroup();
-        mcalc_group.add(mcalc_lock);
-        mcalc_group.add(mcalc_uinclude);
-        
-        calculate_mvalue = new JButton("Calculate values");
-        calculate_mvalue.addActionListener(this);
-        /* ******************************
-         * End M value calculation area
-         * ******************************/
-        
-        /* ******************
-         * Linkage Panel Area
-         * ******************/
-        JPanel linkagePanel = new JPanel();
-        linkagePanel.setBorder(BorderFactory.createTitledBorder("Linkage Process"));
-        
-        cbMutualInfoScore = new JCheckBox("Calculate and use MI scores");
-        cbMutualInfoScore.addActionListener(this);
-        
-        cbWriteXML = new JCheckBox("Include XML When Writing Output");
-        cbWriteXML.addActionListener(this);
-        cbGrouping = new JCheckBox("Perform Grouping When Writing Output");
-        cbGrouping.addActionListener(this);
-        reviewers = new JComboBox<String>();
-        reviewers.addItem("Write Results DB Files?");
-        for (int i = 0; i <= 20; i++) {
-        	reviewers.addItem(String.valueOf(i));
-        }
-        filter_pairs = new JCheckBox("Filter Pairs When Writing Output");
-        filter_pairs.addActionListener(this);
-        scoreIncluded = new JCheckBox("Comparator Scores Included in Output");
-        scoreIncluded.setSelected(FileWritingMatcher.isScoreNeededInOutput());
-        scoreIncluded.addActionListener(this);
-        
-        JButton run_link = new JButton();
-        run_link.addActionListener(this);
-        run_link.setText("Run Linkage Process");
-        /* **********************
-         * End Linkage Panel Area
-         * **********************/
-        
-        /* *******************************
-         * Threshold Area
-         * *******************************/
-        JPanel thresholdPanel = new JPanel();
-        JLabel thresholdLabel = new JLabel();
-        thresholdTextField = new JTextField();
-        thresholdTextField.addFocusListener(this);
-        /* *******************************
-         * End Threshold Area
-         * *******************************/
-        
-        GridBagConstraints gridBagConstraints;
-        JPanel flowPanel = new JPanel();
-        JPanel mainPanelSessions = new JPanel();
-        JPanel listPanel = new JPanel();
-        
-        list_panel.setLayout(new GridLayout(1, 0));
-
-        flowPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0));
-
-        mainPanelSessions.setLayout(new GridBagLayout());
-
-        /*
-         * Blocking Run List Section
-         * 
-         * Blocking run list section. This section contains list of
-         * blocking runs and two button (up and down) to control the sequence of
-         * the blocking run process.
-         */
-        listPanel.setLayout(new GridBagLayout());
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = GridBagConstraints.BOTH;
-        gridBagConstraints.ipadx = 5;
-        gridBagConstraints.anchor = GridBagConstraints.NORTH;
-        gridBagConstraints.weighty = 0.7;
-        gridBagConstraints.insets = new Insets(1, 1, 1, 1);
-        listPanel.add(blockingRunScrollPane, gridBagConstraints);
-        
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.ipadx = 15;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(5, 0, 0, 2);
-        listPanel.add(up, gridBagConstraints);
-        
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = GridBagConstraints.EAST;
-        gridBagConstraints.insets = new Insets(5, 2, 0, 0);
-        listPanel.add(down, gridBagConstraints);
-        
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = GridBagConstraints.SOUTH;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(5, 0, 0, 0);
-        listPanel.add(common_pairs, gridBagConstraints);
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 4;
-        gridBagConstraints.fill = GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new Insets(5, 10, 5, 10);
-        mainPanelSessions.add(listPanel, gridBagConstraints);
-        
-        /*
-         * End of Blocking Run List Section
-         */
-        
-        /*
-         * Blocking Run Modifier Section
-         * 
-         * This sections is used to update the blocking runs list. User
-         * can add, remove or rename a blocking run. The text field will
-         * display current active blocking run.
-         */
-        sessionListEntryPanel.setLayout(new GridBagLayout());
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.ipadx = 10;
-        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
-        sessionListEntryPanel.add(new_run, gridBagConstraints);
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridwidth = 4;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new Insets(0, 0, 5, 5);
-        sessionListEntryPanel.add(run_name, gridBagConstraints);
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.ipadx = 2;
-        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
-        sessionListEntryPanel.add(rename, gridBagConstraints);
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.ipadx = 2;
-        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
-        sessionListEntryPanel.add(remove, gridBagConstraints);
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        //gridBagConstraints.gridheight = 2;
-        gridBagConstraints.anchor = GridBagConstraints.NORTH;
-        mainPanelSessions.add(sessionListEntryPanel, gridBagConstraints);
-        /*
-         * End of Blocking Run Modifier Section
-         */
-        
-        /*
-         * Random Sampling Parameters Section
-         * 
-         * This section is used to modify the random sampling parameter
-         * that will be used to generate the u-values. User can specify
-         * whether to use random sampling and the sample size
-         */
-        uvalue_panel.setLayout(new GridBagLayout());
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 5;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.7;
-        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
-        uvalue_panel.add(ucalc_closed, gridBagConstraints);
-        
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 5;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.7;
-        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
-        uvalue_panel.add(ucalc_rand, gridBagConstraints);
-        
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.ipadx = 5;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
-        uvalue_panel.add(randomSampleSizeLabel, gridBagConstraints);
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 4;
-        gridBagConstraints.fill = GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
-        uvalue_panel.add(randomSampleTextField, gridBagConstraints);
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 5;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.7;
-        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
-        uvalue_panel.add(calculate_uvalue, gridBagConstraints);
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        mainPanelSessions.add(uvalue_panel, gridBagConstraints);
-        /*
-         * End of Random Sampling Parameters Section
-         */
-        
-        /*
-         * Begin m-calculation panel section
-         */
-        mvalue_panel.setLayout(new GridBagLayout());
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 5;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.7;
-        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
-        mvalue_panel.add(mcalc_uinclude, gridBagConstraints);
-        
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 5;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.7;
-        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
-        mvalue_panel.add(mcalc_lock, gridBagConstraints);
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 5;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.7;
-        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
-        mvalue_panel.add(calculate_mvalue, gridBagConstraints);
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        mainPanelSessions.add(mvalue_panel, gridBagConstraints);
-        
-        /*
-         * end m-calculation panel section
-         */
-
-        /*
-         * Linkage Process Section
-         * 
-         * This section is used to run the linkage process after the 
-         * record is analyzed using EM with or without random sampling
-         */
-        linkagePanel.setLayout(new GridBagLayout());
-        
-        int gridy = 0;
-        addComponent(linkagePanel, cbMutualInfoScore, gridy++);
-        addComponent(linkagePanel, cbWriteXML, gridy++);
-        addComponent(linkagePanel, cbGrouping, gridy++);
-        addComponent(linkagePanel, reviewers, gridy++);
-        addComponent(linkagePanel, filter_pairs, gridy++);
-        addComponent(linkagePanel, scoreIncluded, gridy++);
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = gridy++;
-        gridBagConstraints.insets = new Insets(0, 5, 5, 5);
-        linkagePanel.add(run_link, gridBagConstraints);
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-       // gridBagConstraints.gridheight = 4;
-        gridBagConstraints.anchor = GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new Insets(0, 0, 0, 0);
-        mainPanelSessions.add(linkagePanel, gridBagConstraints);
-        /*
-         * End of Linkage Process Section
-         */
-
-        /*
-         * Matching Threshold Section
-         * 
-         * This section is used input a threshold value to determine whether a record is match
-         * or not. #807
-         */
-        thresholdPanel.setBorder(BorderFactory.createTitledBorder("Matching Threshold"));
-        thresholdPanel.setLayout(new GridBagLayout());
-
-        thresholdLabel.setText("Threshold Value");
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(5, 5, 5, 2);
-        thresholdPanel.add(thresholdLabel, gridBagConstraints);
-
-        thresholdTextField.setText("0");
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 4;
-        gridBagConstraints.fill = GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.weighty = 0.5;
-        gridBagConstraints.insets = new Insets(5, 2, 5, 5);
-        thresholdPanel.add(thresholdTextField, gridBagConstraints);
-
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-        //gridBagConstraints.anchor = GridBagConstraints.NORTH;
-        mainPanelSessions.add(thresholdPanel, gridBagConstraints);
-        /*
-         * End of Linkage Process Section
-         */
-
-        flowPanel.add(mainPanelSessions);
-
-        list_panel.add(flowPanel);
+		/* *********************************
+		 * list and move up down button area
+		 * *********************************/
+		JPanel list_panel = new JPanel();
+		list_panel.setBorder(BorderFactory.createTitledBorder("Session List"));
+		
+		JButton up = new JButton();
+		up.addActionListener(this);
+		up.setText("Move Up");
+		
+		JButton down = new JButton();
+		down.addActionListener(this);
+		down.setText("Move Down");
+		
+		common_pairs = new JCheckBox("Combine pairs in blocks");
+		common_pairs.addActionListener(this);
+		
+		runs = new JList<MatchingConfig>();
+		runs.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		runs.addListSelectionListener(this);
+		runs.setCellRenderer(new MatchingConfigCellRenderer());
+		
+		updateBlockingRunsList();
+		
+		JScrollPane blockingRunScrollPane = new JScrollPane();
+		blockingRunScrollPane.setViewportView(runs);
+		/* ****************************************
+		 * End of list and move up down button area
+		 * ****************************************/
+		
+		/* ******************************
+		 * Session Entry Modificator Area
+		 * ******************************/
+		JPanel sessionListEntryPanel = new JPanel();
+		
+		run_name = new JTextField();
+		run_name.addKeyListener(this);
+		
+		JButton remove = new JButton();
+		remove.addActionListener(this);
+		remove.setText("Remove");
+		
+		JButton rename = new JButton();
+		rename.addActionListener(this);
+		rename.setText("Rename");
+		
+		JButton new_run = new JButton();
+		new_run.addActionListener(this);
+		new_run.setText("New");
+		
+		sessionListEntryPanel.setBorder(BorderFactory.createTitledBorder("Edit Session Label"));
+		/* ******************************
+		 * End Session Entry Modificator Area
+		 * ******************************/
+		
+		/* ******************************
+		 * Random Sample Area
+		 * ******************************/
+		JPanel uvalue_panel = new JPanel();
+		uvalue_panel.setBorder(BorderFactory.createTitledBorder("u-Value calculation"));
+		ucalc_closed = new JRadioButton("Closed form");
+		ucalc_closed.addActionListener(this);
+		ucalc_rand = new JRadioButton("Random Sample");
+		ucalc_rand.addActionListener(this);
+		
+		ucalc_group = new ButtonGroup();
+		ucalc_group.add(ucalc_closed);
+		ucalc_group.add(ucalc_rand);
+		
+		randomSampleSizeLabel = new JLabel();
+		randomSampleSizeLabel.setText("Sample Size");
+		randomSampleSizeLabel.setEnabled(false);
+		
+		randomSampleTextField = new JTextField();
+		randomSampleTextField.setText("100000");
+		randomSampleTextField.setEnabled(false);
+		randomSampleTextField.addFocusListener(this);
+		
+		calculate_uvalue = new JButton("Calculate u-values");
+		calculate_uvalue.addActionListener(this);
+		/* ******************************
+		 * End Random Sample Area
+		 * ******************************/
+		
+		/* ******************************
+		 * M value calculation area
+		 * ******************************/
+		JPanel mvalue_panel = new JPanel();
+		mvalue_panel.setBorder(BorderFactory.createTitledBorder("m / u-Value calculation"));
+		mcalc_lock = new JRadioButton("Lock existing u-values in EM calculation");
+		mcalc_lock.addActionListener(this);
+		mcalc_uinclude = new JRadioButton("Calculate u-values along with m-values in EM");
+		mcalc_uinclude.addActionListener(this);
+		
+		mcalc_group = new ButtonGroup();
+		mcalc_group.add(mcalc_lock);
+		mcalc_group.add(mcalc_uinclude);
+		
+		calculate_mvalue = new JButton("Calculate values");
+		calculate_mvalue.addActionListener(this);
+		/* ******************************
+		 * End M value calculation area
+		 * ******************************/
+		
+		/* ******************
+		 * Linkage Panel Area
+		 * ******************/
+		JPanel linkagePanel = new JPanel();
+		linkagePanel.setBorder(BorderFactory.createTitledBorder("Linkage Process"));
+		
+		cbMutualInfoScore = new JCheckBox("Calculate and use MI scores");
+		cbMutualInfoScore.addActionListener(this);
+		
+		cbWriteXML = new JCheckBox("Include XML When Writing Output");
+		cbWriteXML.addActionListener(this);
+		cbGrouping = new JCheckBox("Perform Grouping When Writing Output");
+		cbGrouping.addActionListener(this);
+		reviewers = new JComboBox<String>();
+		reviewers.addItem("Write Results DB Files?");
+		for (int i = 0; i <= 20; i++) {
+			reviewers.addItem(String.valueOf(i));
+		}
+		filter_pairs = new JCheckBox("Filter Pairs When Writing Output");
+		filter_pairs.addActionListener(this);
+		scoreIncluded = new JCheckBox("Comparator Scores Included in Output");
+		scoreIncluded.setSelected(FileWritingMatcher.isScoreNeededInOutput());
+		scoreIncluded.addActionListener(this);
+		
+		JButton run_link = new JButton();
+		run_link.addActionListener(this);
+		run_link.setText("Run Linkage Process");
+		/* **********************
+		 * End Linkage Panel Area
+		 * **********************/
+		
+		/* *******************************
+		 * Threshold Area
+		 * *******************************/
+		JPanel thresholdPanel = new JPanel();
+		JLabel thresholdLabel = new JLabel();
+		thresholdTextField = new JTextField();
+		thresholdTextField.addFocusListener(this);
+		/* *******************************
+		 * End Threshold Area
+		 * *******************************/
+		
+		GridBagConstraints gridBagConstraints;
+		JPanel flowPanel = new JPanel();
+		JPanel mainPanelSessions = new JPanel();
+		JPanel listPanel = new JPanel();
+		
+		list_panel.setLayout(new GridLayout(1, 0));
+		
+		flowPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0));
+		
+		mainPanelSessions.setLayout(new GridBagLayout());
+		
+		/*
+		 * Blocking Run List Section
+		 * 
+		 * Blocking run list section. This section contains list of
+		 * blocking runs and two button (up and down) to control the sequence of
+		 * the blocking run process.
+		 */
+		listPanel.setLayout(new GridBagLayout());
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridwidth = 2;
+		gridBagConstraints.fill = GridBagConstraints.BOTH;
+		gridBagConstraints.ipadx = 5;
+		gridBagConstraints.anchor = GridBagConstraints.NORTH;
+		gridBagConstraints.weighty = 0.7;
+		gridBagConstraints.insets = new Insets(1, 1, 1, 1);
+		listPanel.add(blockingRunScrollPane, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.ipadx = 15;
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		gridBagConstraints.insets = new Insets(5, 0, 0, 2);
+		listPanel.add(up, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.anchor = GridBagConstraints.EAST;
+		gridBagConstraints.insets = new Insets(5, 2, 0, 0);
+		listPanel.add(down, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 2;
+		gridBagConstraints.gridwidth = 2;
+		gridBagConstraints.anchor = GridBagConstraints.SOUTH;
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		gridBagConstraints.insets = new Insets(5, 0, 0, 0);
+		listPanel.add(common_pairs, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.gridheight = 4;
+		gridBagConstraints.fill = GridBagConstraints.BOTH;
+		gridBagConstraints.anchor = GridBagConstraints.NORTH;
+		gridBagConstraints.insets = new Insets(5, 10, 5, 10);
+		mainPanelSessions.add(listPanel, gridBagConstraints);
+		
+		/*
+		 * End of Blocking Run List Section
+		 */
+		
+		/*
+		 * Blocking Run Modifier Section
+		 * 
+		 * This sections is used to update the blocking runs list. User
+		 * can add, remove or rename a blocking run. The text field will
+		 * display current active blocking run.
+		 */
+		sessionListEntryPanel.setLayout(new GridBagLayout());
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.ipadx = 10;
+		gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+		sessionListEntryPanel.add(new_run, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridwidth = 4;
+		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.insets = new Insets(0, 0, 5, 5);
+		sessionListEntryPanel.add(run_name, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 3;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.ipadx = 2;
+		gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+		sessionListEntryPanel.add(rename, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 4;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.ipadx = 2;
+		gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+		sessionListEntryPanel.add(remove, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 0;
+		//gridBagConstraints.gridheight = 2;
+		gridBagConstraints.anchor = GridBagConstraints.NORTH;
+		mainPanelSessions.add(sessionListEntryPanel, gridBagConstraints);
+		/*
+		 * End of Blocking Run Modifier Section
+		 */
+		
+		/*
+		 * Random Sampling Parameters Section
+		 * 
+		 * This section is used to modify the random sampling parameter
+		 * that will be used to generate the u-values. User can specify
+		 * whether to use random sampling and the sample size
+		 */
+		uvalue_panel.setLayout(new GridBagLayout());
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.gridwidth = 5;
+		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		gridBagConstraints.weightx = 0.7;
+		gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+		uvalue_panel.add(ucalc_closed, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.gridwidth = 5;
+		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		gridBagConstraints.weightx = 0.7;
+		gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+		uvalue_panel.add(ucalc_rand, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 2;
+		gridBagConstraints.ipadx = 5;
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+		uvalue_panel.add(randomSampleSizeLabel, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 2;
+		gridBagConstraints.gridwidth = 4;
+		gridBagConstraints.fill = GridBagConstraints.BOTH;
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+		uvalue_panel.add(randomSampleTextField, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 3;
+		gridBagConstraints.gridwidth = 5;
+		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		gridBagConstraints.weightx = 0.7;
+		gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+		uvalue_panel.add(calculate_uvalue, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.gridheight = 2;
+		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		mainPanelSessions.add(uvalue_panel, gridBagConstraints);
+		/*
+		 * End of Random Sampling Parameters Section
+		 */
+		
+		/*
+		 * Begin m-calculation panel section
+		 */
+		mvalue_panel.setLayout(new GridBagLayout());
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.gridwidth = 5;
+		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		gridBagConstraints.weightx = 0.7;
+		gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+		mvalue_panel.add(mcalc_uinclude, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.gridwidth = 5;
+		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		gridBagConstraints.weightx = 0.7;
+		gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+		mvalue_panel.add(mcalc_lock, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 2;
+		gridBagConstraints.gridwidth = 5;
+		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		gridBagConstraints.weightx = 0.7;
+		gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+		mvalue_panel.add(calculate_mvalue, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 2;
+		gridBagConstraints.fill = GridBagConstraints.BOTH;
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		mainPanelSessions.add(mvalue_panel, gridBagConstraints);
+		
+		/*
+		 * end m-calculation panel section
+		 */
+		
+		/*
+		 * Linkage Process Section
+		 * 
+		 * This section is used to run the linkage process after the 
+		 * record is analyzed using EM with or without random sampling
+		 */
+		linkagePanel.setLayout(new GridBagLayout());
+		
+		int gridy = 0;
+		addComponent(linkagePanel, cbMutualInfoScore, gridy++);
+		addComponent(linkagePanel, cbWriteXML, gridy++);
+		addComponent(linkagePanel, cbGrouping, gridy++);
+		addComponent(linkagePanel, reviewers, gridy++);
+		addComponent(linkagePanel, filter_pairs, gridy++);
+		addComponent(linkagePanel, scoreIncluded, gridy++);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = gridy++;
+		gridBagConstraints.insets = new Insets(0, 5, 5, 5);
+		linkagePanel.add(run_link, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 2;
+		// gridBagConstraints.gridheight = 4;
+		gridBagConstraints.anchor = GridBagConstraints.NORTH;
+		gridBagConstraints.insets = new Insets(0, 0, 0, 0);
+		mainPanelSessions.add(linkagePanel, gridBagConstraints);
+		/*
+		 * End of Linkage Process Section
+		 */
+		
+		/*
+		 * Matching Threshold Section
+		 * 
+		 * This section is used input a threshold value to determine whether a record is match
+		 * or not. #807
+		 */
+		thresholdPanel.setBorder(BorderFactory.createTitledBorder("Matching Threshold"));
+		thresholdPanel.setLayout(new GridBagLayout());
+		
+		thresholdLabel.setText("Threshold Value");
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		gridBagConstraints.insets = new Insets(5, 5, 5, 2);
+		thresholdPanel.add(thresholdLabel, gridBagConstraints);
+		
+		thresholdTextField.setText("0");
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.gridwidth = 4;
+		gridBagConstraints.fill = GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 0.5;
+		gridBagConstraints.weighty = 0.5;
+		gridBagConstraints.insets = new Insets(5, 2, 5, 5);
+		thresholdPanel.add(thresholdTextField, gridBagConstraints);
+		
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+		//gridBagConstraints.anchor = GridBagConstraints.NORTH;
+		mainPanelSessions.add(thresholdPanel, gridBagConstraints);
+		/*
+		 * End of Linkage Process Section
+		 */
+		
+		flowPanel.add(mainPanelSessions);
+		
+		list_panel.add(flowPanel);
 		
 		this.add(list_panel);
 	}
 	
 	private static void addComponent(final Container container, final Component component, final int gridy) {
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = gridy;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.insets = new Insets(0, 5, 0, 5);
-        container.add(component, gridBagConstraints);
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = gridy;
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		gridBagConstraints.insets = new Insets(0, 5, 0, 5);
+		container.add(component, gridBagConstraints);
 	}
 	
 	private void invalidBlockingSchemeNotification() {
-		JOptionPane.showMessageDialog(this,
-			    "Invalid blocking scheme; cannot run process",
-			    "Invalid Configuration",
-			    JOptionPane.ERROR_MESSAGE);
+		JOptionPane.showMessageDialog(this, "Invalid blocking scheme; cannot run process", "Invalid Configuration",
+		    JOptionPane.ERROR_MESSAGE);
 	}
 	
 	private Component getSessionTable() {
-	    SessionOptionsTableModel model = new SessionOptionsTableModel();
-	    model.addTableModelListener(this);
+		SessionOptionsTableModel model = new SessionOptionsTableModel();
+		model.addTableModelListener(this);
 		session_options = new JTable(model);
 		
 		jcb = new JComboBox<String>();
@@ -668,21 +681,21 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			
 			// update the random sample size and check box based on the matching
 			// config data
-            if (m.isUsingRandomSampling()) {
-                randomSampleTextField.setText(String.valueOf(m.getRandomSampleSize()));
-                ucalc_rand.setSelected(true);
-                randomSampleSizeLabel.setEnabled(true);
-                randomSampleTextField.setEnabled(true);
-            } else {
-            	ucalc_closed.setSelected(true);
-            }
-            if (m.isLockedUValues()) {
-            	this.mcalc_lock.setSelected(true);
-            } else {
-            	this.mcalc_uinclude.setSelected(true);
-            }
+			if (m.isUsingRandomSampling()) {
+				randomSampleTextField.setText(String.valueOf(m.getRandomSampleSize()));
+				ucalc_rand.setSelected(true);
+				randomSampleSizeLabel.setEnabled(true);
+				randomSampleTextField.setEnabled(true);
+			} else {
+				ucalc_closed.setSelected(true);
+			}
+			if (m.isLockedUValues()) {
+				this.mcalc_lock.setSelected(true);
+			} else {
+				this.mcalc_uinclude.setSelected(true);
+			}
 			
-            thresholdTextField.setText(String.valueOf(m.getScoreThreshold()));
+			thresholdTextField.setText(String.valueOf(m.getScoreThreshold()));
 		}
 		current_working_config = mc;
 		SessionOptionsTableModel model = new SessionOptionsTableModel(mc);
@@ -733,11 +746,11 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			Object to_move = dlm.remove(index);
 			dlm.add(index - 1, to_move);
 			runs.setSelectedIndex(index - 1);
-            // swap matching config
-            MatchingConfig configA = rm_conf.getMatchingConfigs().remove(index);
-            MatchingConfig configB = rm_conf.getMatchingConfigs().remove(index - 1);
-            rm_conf.getMatchingConfigs().add(index - 1, configA);
-            rm_conf.getMatchingConfigs().add(index, configB);
+			// swap matching config
+			MatchingConfig configA = rm_conf.getMatchingConfigs().remove(index);
+			MatchingConfig configB = rm_conf.getMatchingConfigs().remove(index - 1);
+			rm_conf.getMatchingConfigs().add(index - 1, configA);
+			rm_conf.getMatchingConfigs().add(index, configB);
 		}
 	}
 	
@@ -750,11 +763,11 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			Object to_move = dlm.remove(index);
 			dlm.add(index + 1, to_move);
 			runs.setSelectedIndex(index + 1);
-            // swap matching config
-            MatchingConfig configA = rm_conf.getMatchingConfigs().remove(index);
-            MatchingConfig configB = rm_conf.getMatchingConfigs().remove(index + 1);
-            rm_conf.getMatchingConfigs().add(index, configB);
-            rm_conf.getMatchingConfigs().add(index + 1, configA);
+			// swap matching config
+			MatchingConfig configA = rm_conf.getMatchingConfigs().remove(index);
+			MatchingConfig configB = rm_conf.getMatchingConfigs().remove(index + 1);
+			rm_conf.getMatchingConfigs().add(index, configB);
+			rm_conf.getMatchingConfigs().add(index + 1, configA);
 		}
 	}
 	
@@ -808,7 +821,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			}
 		}
 	}
-		
+	
 	@Override
 	public void actionPerformed(ActionEvent ae) {
 		final Object source = ae.getSource();
@@ -833,12 +846,12 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			} else if (text.equals("Random Sample")) {
 				randomSampleTextField.setEnabled(true);
 				randomSampleSizeLabel.setEnabled(true);
-                randomSampleTextField.setEnabled(true);
-                randomSampleTextField.requestFocus();
+				randomSampleTextField.setEnabled(true);
+				randomSampleTextField.requestFocus();
 				for (MatchingConfig matchingConfig : rm_conf.getMatchingConfigs()) {
 					if (matchingConfig != null) {
 						matchingConfig.setUsingRandomSampling(true);
-	                    matchingConfig.setRandomSampleSize(Integer.parseInt(randomSampleTextField.getText()));
+						matchingConfig.setRandomSampleSize(Integer.parseInt(randomSampleTextField.getText()));
 					}
 				}
 			} else if (text.equals("Calculate u-values along with m-values in EM")) {
@@ -870,7 +883,7 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			} else if (text.equals("New")) {
 				MatchingConfig mc = makeNewMatchingConfig();
 				rm_conf.getMatchingConfigs().add(mc);
-				DefaultListModel dlm = (DefaultListModel)runs.getModel();
+				DefaultListModel dlm = (DefaultListModel) runs.getModel();
 				dlm.addElement(mc);
 				runs.setSelectedIndex(dlm.getSize() - 1);
 				displayThisMatchingConfig(mc);
@@ -931,23 +944,21 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			int rev;
 			try {
 				rev = Integer.parseInt(revVal);
-			} catch (final Exception e) {
+			}
+			catch (final Exception e) {
 				// Default option/label is non-numeric; user didn't request any manual reviewer databases
 				rev = 0;
 			}
 			final boolean filter = filter_pairs.isSelected();
 			FileWritingMatcher.setScoreNeededInOutput(scoreIncluded.isSelected());
 			match_file = FileWritingMatcher.writeMatchResults(rm_conf, out, write_xml, rev, groupAnalysis, true, filter);
-            
-            if (match_file == null) {
-                JOptionPane.showMessageDialog(this,
-                        "Error writing match result file",
-                        "Error", JOptionPane.ERROR_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(this,
-                        "Matching results written to " + match_file,
-                        "Matching Successful", JOptionPane.INFORMATION_MESSAGE);
-            }
+			
+			if (match_file == null) {
+				JOptionPane.showMessageDialog(this, "Error writing match result file", "Error", JOptionPane.ERROR_MESSAGE);
+			} else {
+				JOptionPane.showMessageDialog(this, "Matching results written to " + match_file, "Matching Successful",
+				    JOptionPane.INFORMATION_MESSAGE);
+			}
 		}
 	}
 	
@@ -977,75 +988,72 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			if (!MatchingConfigValidator.validMatchingConfig(mc)) {
 				invalidBlockingSchemeNotification();
 				return;
-			}	
-		// if the user not choose to use random sampling, then do nothing
-        // if the u-values is already locked then do nothing as well
-        if (mc.isUsingRandomSampling()) {
-        	
-        	FormPairs fp2 = getFormPairs();
-        	
-            
-            if (fp2 != null) {
-                
-                PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
-                
-                ApplyAnalyzerLoggingFrame frame = new ApplyAnalyzerLoggingFrame(mc, this);
-                
-                MatchingConfig mcCopy = (MatchingConfig) mc.clone();
-                
-				FormPairs rsa_fp2 = getFormPairs();
-				RandomSampleAnalyzer rsa ;
-				if (rm_conf.isDeduplication()) {
-					rsa = new DedupRandomSampleAnalyzer(mcCopy, rsa_fp2);
-				} else {
-					rsa = new RandomSampleAnalyzer(mcCopy, rsa_fp2);
+			}
+			// if the user not choose to use random sampling, then do nothing
+			// if the u-values is already locked then do nothing as well
+			if (mc.isUsingRandomSampling()) {
+				
+				FormPairs fp2 = getFormPairs();
+				
+				if (fp2 != null) {
+					
+					PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
+					
+					ApplyAnalyzerLoggingFrame frame = new ApplyAnalyzerLoggingFrame(mc, this);
+					
+					MatchingConfig mcCopy = (MatchingConfig) mc.clone();
+					
+					FormPairs rsa_fp2 = getFormPairs();
+					RandomSampleAnalyzer rsa;
+					if (rm_conf.isDeduplication()) {
+						rsa = new DedupRandomSampleAnalyzer(mcCopy, rsa_fp2);
+					} else {
+						rsa = new RandomSampleAnalyzer(mcCopy, rsa_fp2);
+					}
+					
+					pdsa.addAnalyzer(rsa);
+					frame.addLoggingObject(rsa);
+					
+					frame.configureLoggingFrame();
+					pdsa.analyzeData();
+					
 				}
-                
-                
-                pdsa.addAnalyzer(rsa);
-                frame.addLoggingObject(rsa);
-                    
-                frame.configureLoggingFrame();
-                pdsa.analyzeData();
-                
-                
-            }
-            
-        }
-        session_options.repaint();
+				
+			}
+			session_options.repaint();
 		}
-    }
+	}
 	
 	private void calculateClosedUValues() {
 		
 		List<MatchingConfig> matchingConfigs = rm_conf.getMatchingConfigs();
 		for (MatchingConfig mc : matchingConfigs) {
 			
-		if (!MatchingConfigValidator.validMatchingConfig(mc)) {
-			invalidBlockingSchemeNotification();
-			return;
-		}
-		
-		final MatchingConfig mcCopy = (MatchingConfig) mc.clone();
-		final ApplyAnalyzerLoggingFrame frame = new ApplyAnalyzerLoggingFrame(mc, this);
-		frame.setNewConfig(mcCopy);
-		final CloseFormUCalculator calc = CloseFormUCalculator.getInstance();
-		frame.addLoggingObject(calc);
-		final FrequencyContext fc1 = new FrequencyContext(mc, rm_conf.getLinkDataSource1());
-		
-		if (rm_conf.isDeduplication()) {
-			frame.addLoggingObject(fc1.getFrequencyAnalyzer());
-			frame.configureLoggingFrame();
-			calc.calculateDedup(mcCopy, fc1);
-		} else {
-			final FrequencyContext fc2 = new FrequencyContext(mc, rm_conf.getLinkDataSource2());
-			final FrequencyContext[] fcs = { fc1, fc2 };
-			for (final FrequencyContext fc : fcs) {
-				frame.addLoggingObject(fc.getFrequencyAnalyzer());
+			if (!MatchingConfigValidator.validMatchingConfig(mc)) {
+				invalidBlockingSchemeNotification();
+				return;
 			}
-            frame.configureLoggingFrame();
-            calc.calculate(mcCopy, fc1, fc2);
-		}
+			
+			final MatchingConfig mcCopy = (MatchingConfig) mc.clone();
+			final ApplyAnalyzerLoggingFrame frame = new ApplyAnalyzerLoggingFrame(mc, this);
+			frame.setNewConfig(mcCopy);
+			final CloseFormUCalculator calc = CloseFormUCalculator.getInstance();
+			frame.addLoggingObject(calc);
+			final FrequencyContext fc1 = new FrequencyContext(mc, rm_conf.getLinkDataSource1());
+			
+			if (rm_conf.isDeduplication()) {
+				frame.addLoggingObject(fc1.getFrequencyAnalyzer());
+				frame.configureLoggingFrame();
+				calc.calculateDedup(mcCopy, fc1);
+			} else {
+				final FrequencyContext fc2 = new FrequencyContext(mc, rm_conf.getLinkDataSource2());
+				final FrequencyContext[] fcs = { fc1, fc2 };
+				for (final FrequencyContext fc : fcs) {
+					frame.addLoggingObject(fc.getFrequencyAnalyzer());
+				}
+				frame.configureLoggingFrame();
+				calc.calculate(mcCopy, fc1, fc2);
+			}
 		}
 	}
 	
@@ -1059,10 +1067,10 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
 		
 		if (rm_conf.isDeduplication()) {
-	        ret = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
-	    } else {
-	        ret = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
-	    }
+			ret = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
+		} else {
+			ret = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+		}
 		
 		if (common_pairs_fp) {
 			List<FormPairs> fps = new ArrayList<FormPairs>();
@@ -1075,10 +1083,10 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 					odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
 					odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
 					if (rm_conf.isDeduplication()) {
-			        	ret = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
-			    	} else {
-			    		ret = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
-			    	}
+						ret = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
+					} else {
+						ret = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+					}
 					fps.add(ret);
 				}
 			}
@@ -1094,29 +1102,29 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 		List<MatchingConfig> matchingConfigs = rm_conf.getMatchingConfigs();
 		for (MatchingConfig mc : matchingConfigs) {
 			
-		if (!MatchingConfigValidator.validMatchingConfig(mc)) {
-			invalidBlockingSchemeNotification();
-			return;
-		}
-		
-		FormPairs fp2 = getFormPairs();
-		//BlockSizeFormPairs bsfp = new BlockSizeFormPairs(mc, fp2);
-		//bsfp.setSizeLimit(1000);
-		//fp2 = bsfp;
-		ApplyAnalyzerLoggingFrame frame = new ApplyAnalyzerLoggingFrame(mc, this);
-		PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
-		
-		MatchingConfig mcCopy = (MatchingConfig) mc.clone();
-		
-		EMAnalyzer ema = new EMAnalyzer(mcCopy);
-		ema.setNullAveraging(mcCopy.isNullAveragingEM());
-		pdsa.addAnalyzer(ema);
-		frame.addLoggingObject(ema);
-		frame.configureLoggingFrame();
-		pdsa.analyzeData();
-		
-		session_options.repaint();
-		thresholdTextField.setText(Double.toString(mc.getScoreThreshold()));
+			if (!MatchingConfigValidator.validMatchingConfig(mc)) {
+				invalidBlockingSchemeNotification();
+				return;
+			}
+			
+			FormPairs fp2 = getFormPairs();
+			//BlockSizeFormPairs bsfp = new BlockSizeFormPairs(mc, fp2);
+			//bsfp.setSizeLimit(1000);
+			//fp2 = bsfp;
+			ApplyAnalyzerLoggingFrame frame = new ApplyAnalyzerLoggingFrame(mc, this);
+			PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
+			
+			MatchingConfig mcCopy = (MatchingConfig) mc.clone();
+			
+			EMAnalyzer ema = new EMAnalyzer(mcCopy);
+			ema.setNullAveraging(mcCopy.isNullAveragingEM());
+			pdsa.addAnalyzer(ema);
+			frame.addLoggingObject(ema);
+			frame.configureLoggingFrame();
+			pdsa.analyzeData();
+			
+			session_options.repaint();
+			thresholdTextField.setText(Double.toString(mc.getScoreThreshold()));
 		}
 		
 	}
@@ -1141,8 +1149,8 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 	}
 	
 	/**
-	 * Method first adds a check to see what MatchingConfig to set as active
-	 * for the SessionOptionsTable to display
+	 * Method first adds a check to see what MatchingConfig to set as active for the SessionOptionsTable
+	 * to display
 	 */
 	public void setGuiElements() {
 		if (rm_conf.getMatchingConfigs().size() == 0) {
@@ -1166,48 +1174,48 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 			for (final MatchingConfig mc : rm_conf) {
 				dlm.addElement(mc);
 			}
-			current_working_config = (MatchingConfig)dlm.get(0);
+			current_working_config = (MatchingConfig) dlm.get(0);
 		}
 		
 		displayThisMatchingConfig(current_working_config);
 		
 	}
-
+	
 	@Override
-    public void itemStateChanged(ItemEvent e) {
-    	// update the ui based on whether the use random sample is checked or not
-        if (e.getSource() == ucalc_rand) {
-            if (e.getStateChange() == ItemEvent.SELECTED) {
-                randomSampleSizeLabel.setEnabled(true);
-                randomSampleTextField.setEnabled(true);
-                //lock_uvalue.setEnabled(true);
-                randomSampleTextField.requestFocus();
-                if (current_working_config != null) {
-                    current_working_config.setUsingRandomSampling(true);
-                    int sampleSize = Integer.parseInt(randomSampleTextField.getText());
-                    current_working_config.setRandomSampleSize(sampleSize);
-                }
-            } else if (e.getStateChange() == ItemEvent.DESELECTED) {
-                randomSampleSizeLabel.setEnabled(false);
-                randomSampleTextField.setEnabled(false);
-                //lock_uvalue.setEnabled(false);
-                randomSampleTextField.select(0, 0);
-                if (current_working_config != null) {
-                    current_working_config.setUsingRandomSampling(false);
-                }
-            }
-        }
-    }
-
-    @Override
+	public void itemStateChanged(ItemEvent e) {
+		// update the ui based on whether the use random sample is checked or not
+		if (e.getSource() == ucalc_rand) {
+			if (e.getStateChange() == ItemEvent.SELECTED) {
+				randomSampleSizeLabel.setEnabled(true);
+				randomSampleTextField.setEnabled(true);
+				//lock_uvalue.setEnabled(true);
+				randomSampleTextField.requestFocus();
+				if (current_working_config != null) {
+					current_working_config.setUsingRandomSampling(true);
+					int sampleSize = Integer.parseInt(randomSampleTextField.getText());
+					current_working_config.setRandomSampleSize(sampleSize);
+				}
+			} else if (e.getStateChange() == ItemEvent.DESELECTED) {
+				randomSampleSizeLabel.setEnabled(false);
+				randomSampleTextField.setEnabled(false);
+				//lock_uvalue.setEnabled(false);
+				randomSampleTextField.select(0, 0);
+				if (current_working_config != null) {
+					current_working_config.setUsingRandomSampling(false);
+				}
+			}
+		}
+	}
+	
+	@Override
 	public void focusGained(FocusEvent e) {
 		if (randomSampleTextField == e.getSource()) {
 			randomSampleTextField.selectAll();
 		} else if (thresholdTextField == e.getSource()) {
-		    thresholdTextField.selectAll();
+			thresholdTextField.selectAll();
 		}
 	}
-
+	
 	@Override
 	public void focusLost(FocusEvent e) {
 		if (randomSampleTextField == e.getSource()) {
@@ -1226,83 +1234,83 @@ public class SessionsPanel extends JPanel implements ActionListener, KeyListener
 				randomSampleTextField.setText("100000");
 			}
 		} else if (thresholdTextField == e.getSource()) {
-		    String thresholdPattern = "(\\d+)(.\\d*) {0,1}";
-		    String textValue = thresholdTextField.getText();
-		    Pattern pattern = Pattern.compile(thresholdPattern);
-		    Matcher matcher = pattern.matcher(textValue);
-		    if (matcher.matches()) {
-                if (current_working_config != null) {
-                    double threshold = Double.parseDouble(textValue);
-                    current_working_config.setScoreThreshold(threshold);
-                }
-		    } else {
-		        thresholdTextField.setText("0");
-		    }
+			String thresholdPattern = "(\\d+)(.\\d*) {0,1}";
+			String textValue = thresholdTextField.getText();
+			Pattern pattern = Pattern.compile(thresholdPattern);
+			Matcher matcher = pattern.matcher(textValue);
+			if (matcher.matches()) {
+				if (current_working_config != null) {
+					double threshold = Double.parseDouble(textValue);
+					current_working_config.setScoreThreshold(threshold);
+				}
+			} else {
+				thresholdTextField.setText("0");
+			}
 		}
 	}
-
+	
 	@Override
-    public void tableChanged(TableModelEvent e) {
-        /*--NOTES--*/
-        // changes to the SessionOptionsTableModel must be propagated to this method
-        // changes that need to be propagated are:
-        // - adding new columns
-        // - deleting columns
-        final int rowIndex = e.getFirstRow(), columnIndex = e.getColumn();
-        TableModel model = (TableModel) e.getSource();
-        if (columnIndex == 3) {
-            Boolean included = (Boolean) model.getValueAt(rowIndex, columnIndex);
-            if (included) {
-                model.setValueAt(0, rowIndex, 1);
-            }
-        } else if (columnIndex == 1) {
-            Integer blockOrder = (Integer) model.getValueAt(rowIndex, columnIndex);
-            if (blockOrder > 0) {
-                model.setValueAt(new Boolean(false), rowIndex, 3);
-            }
-        }
-    }
-    
-    @Override
-    public void mouseClicked(MouseEvent me) {
+	public void tableChanged(TableModelEvent e) {
+		/*--NOTES--*/
+		// changes to the SessionOptionsTableModel must be propagated to this method
+		// changes that need to be propagated are:
+		// - adding new columns
+		// - deleting columns
+		final int rowIndex = e.getFirstRow(), columnIndex = e.getColumn();
+		TableModel model = (TableModel) e.getSource();
+		if (columnIndex == 3) {
+			Boolean included = (Boolean) model.getValueAt(rowIndex, columnIndex);
+			if (included) {
+				model.setValueAt(0, rowIndex, 1);
+			}
+		} else if (columnIndex == 1) {
+			Integer blockOrder = (Integer) model.getValueAt(rowIndex, columnIndex);
+			if (blockOrder > 0) {
+				model.setValueAt(new Boolean(false), rowIndex, 3);
+			}
+		}
+	}
+	
+	@Override
+	public void mouseClicked(MouseEvent me) {
 		// important to notice that 'int column' is set to table model's column index, NOT
 		// column model's index
 		
 		// determine what collumn user clicked on
 		if (me.getSource() instanceof JTableHeader) {
-			JTableHeader jth = (JTableHeader)me.getSource();
+			JTableHeader jth = (JTableHeader) me.getSource();
 			TableColumnModel columnModel = jth.getColumnModel();
-            int viewColumn = columnModel.getColumnIndexAtX(me.getX());
-            
-            if (me.getButton() == MouseEvent.BUTTON3) {
-            	// show popup menu for resetting values
-            	if (viewColumn == 4) {
-            		resetm.show(this, me.getX(), me.getY());
-            	} else if (viewColumn == 5) {
-            		resetu.show(this, me.getX(), me.getY());
-            	}
-            }
+			int viewColumn = columnModel.getColumnIndexAtX(me.getX());
+			
+			if (me.getButton() == MouseEvent.BUTTON3) {
+				// show popup menu for resetting values
+				if (viewColumn == 4) {
+					resetm.show(this, me.getX(), me.getY());
+				} else if (viewColumn == 5) {
+					resetu.show(this, me.getX(), me.getY());
+				}
+			}
 		}
 		
-    }
-    
-    @Override
-    public void mousePressed(MouseEvent me) {
-    	
-    }
-    
-    @Override
-    public void mouseReleased(MouseEvent me) {
-    	
-    }
-    
-    @Override
-    public void mouseExited(MouseEvent me) {
-    	
-    }
-    
-    @Override
-    public void mouseEntered(MouseEvent me) {
-    	
-    }
+	}
+	
+	@Override
+	public void mousePressed(MouseEvent me) {
+		
+	}
+	
+	@Override
+	public void mouseReleased(MouseEvent me) {
+		
+	}
+	
+	@Override
+	public void mouseExited(MouseEvent me) {
+		
+	}
+	
+	@Override
+	public void mouseEntered(MouseEvent me) {
+		
+	}
 }

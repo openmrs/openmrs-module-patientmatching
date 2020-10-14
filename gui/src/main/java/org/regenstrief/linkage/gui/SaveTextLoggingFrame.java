@@ -11,46 +11,43 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
 public class SaveTextLoggingFrame extends LoggingFrame {
-
+	
 	JButton save;
 	
-	public SaveTextLoggingFrame(String title){
+	public SaveTextLoggingFrame(String title) {
 		super(title);
 	}
 	
-	protected void initGUI(){
+	protected void initGUI() {
 		super.initGUI();
 		save = new JButton("Save Text to File");
 		save.addActionListener(this);
 		button_panel.add(save);
 	}
 	
-	public void actionPerformed(ActionEvent ae){
-		if(ae.getSource() == save){
+	public void actionPerformed(ActionEvent ae) {
+		if (ae.getSource() == save) {
 			boolean success = saveFile();
-			if(!success){
-				JOptionPane.showMessageDialog(this,
-					    "Error writing text to file",
-					    "File error",
-					    JOptionPane.ERROR_MESSAGE);
+			if (!success) {
+				JOptionPane.showMessageDialog(this, "Error writing text to file", "File error", JOptionPane.ERROR_MESSAGE);
 			}
 		} else {
 			super.actionPerformed(ae);
 		}
 	}
 	
-	protected boolean saveFile(){
+	protected boolean saveFile() {
 		JFileChooser jfc = new JFileChooser();
 		int ret = jfc.showSaveDialog(this);
-		if(ret == JFileChooser.APPROVE_OPTION){
-			try{
+		if (ret == JFileChooser.APPROVE_OPTION) {
+			try {
 				File f = jfc.getSelectedFile();
 				BufferedWriter out = new BufferedWriter(new FileWriter(f));
 				out.write(jta.getText());
 				out.flush();
 				out.close();
 			}
-			catch(IOException ioe){
+			catch (IOException ioe) {
 				System.err.println(ioe.getMessage());
 				return false;
 			}

@@ -22,86 +22,87 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 public class HibernatePatientMatchingReportMetadataDAO implements PatientMatchingReportMetadataDao {
-
+	
 	private DbSessionFactory sessionFactory;
+	
 	protected final Log log = LogFactory.getLog(this.getClass());
-
+	
 	public DbSessionFactory getSessionFactory() {
 		return sessionFactory;
 	}
-
+	
 	public void setSessionFactory(DbSessionFactory sessionFactory) {
 		this.sessionFactory = sessionFactory;
 	}
-
+	
 	public HibernatePatientMatchingReportMetadataDAO() {
 		super();
 	}
-
+	
 	@Override
 	public void savePatientMatchingConfiguration(PatientMatchingConfiguration patientMatchingConfiguration) {
 		getCurrentSession().saveOrUpdate(patientMatchingConfiguration);
 	}
-
-    @Override
+	
+	@Override
 	public void savePatientMatchingReport(Report report) {
 		getCurrentSession().saveOrUpdate(report);
-    }
-
-    @Override
+	}
+	
+	@Override
 	public void deletePatientMatchingConfigurationByName(String name) {
 		PatientMatchingConfiguration pmc = findPatientMatchingConfigurationByName(name);
 		getCurrentSession().delete(pmc);
 	}
-
+	
 	@Override
 	public PatientMatchingConfiguration findPatientMatchingConfigurationByName(String name) {
 		Criteria criteria = getCurrentSession().createCriteria(PatientMatchingConfiguration.class);
 		criteria.add(Restrictions.eq("configurationName", name));
 		return (PatientMatchingConfiguration) criteria.uniqueResult();
 	}
-
+	
 	@Override
 	public List<PatientMatchingConfiguration> getMatchingConfigs() {
 		Criteria criteria = getCurrentSession().createCriteria(PatientMatchingConfiguration.class);
 		return criteria.list();
 	}
-
+	
 	@Override
 	public PatientMatchingConfiguration getPatientMatchingConfiguration(int configurationId) {
 		return (PatientMatchingConfiguration) getCurrentSession().get(PatientMatchingConfiguration.class, configurationId);
 	}
-
+	
 	@Override
 	public void deletePatientMatchingConfiguration(PatientMatchingConfiguration configuration) {
 		getCurrentSession().delete(configuration);
 	}
-
+	
 	@Override
 	public long getCustomCount(String query) {
 		Query countQuery = getCurrentSession().createQuery(query);
-		Long count = (Long)countQuery.uniqueResult();
+		Long count = (Long) countQuery.uniqueResult();
 		return count;
 	}
-
-    @Override
+	
+	@Override
 	public java.util.List<String> getReportNames() {
 		Criteria criteria = getCurrentSession().createCriteria(Report.class)
 		        .setProjection(Projections.property("reportName"));
-        return criteria.list();
-    }
-
-    @Override
+		return criteria.list();
+	}
+	
+	@Override
 	public Report getReportByName(String name) {
 		Criteria criteria = getCurrentSession().createCriteria(Report.class);
-        criteria.add(Restrictions.eq("reportName", name));
-        return (Report) criteria.uniqueResult();
-    }
-
-    @Override
+		criteria.add(Restrictions.eq("reportName", name));
+		return (Report) criteria.uniqueResult();
+	}
+	
+	@Override
 	public void deleteReport(Report report) {
 		getCurrentSession().delete(report);
-    }
+	}
 	
 	@SuppressWarnings("unchecked")
 	public Cohort getAllPatients() {

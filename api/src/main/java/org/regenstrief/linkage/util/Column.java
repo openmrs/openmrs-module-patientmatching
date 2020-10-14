@@ -9,37 +9,42 @@ import java.util.Set;
 import org.regenstrief.linkage.analysis.DataSourceFrequency;
 
 public class Column {
+	
 	private String name;
+	
 	private DataSourceFrequency dsf;
+	
 	private Map<String, Integer> frequency = new HashMap();
+	
 	private List<Token> tokenFrequency = new ArrayList();
+	
 	private double conditionalEntropy;
-
+	
 	public double getConditionalEntropy() {
 		return conditionalEntropy;
 	}
-
+	
 	public void setConditionalEntropy(double conditionalEntropy) {
 		this.conditionalEntropy = conditionalEntropy;
 	}
-
+	
 	public String getName() {
 		return name;
 	}
-
+	
 	public void setName(String name) {
 		this.name = name;
 	}
-
+	
 	public Map<String, Integer> getFrequency() {
 		return frequency;
 	}
-
+	
 	public void setFrequency(Map<String, Integer> frequency) {
 		this.frequency = frequency;
 	}
-
-	public Column(String name, DataSourceFrequency dsf1){
+	
+	public Column(String name, DataSourceFrequency dsf1) {
 		this.name = name;
 		this.dsf = dsf1;
 	}
@@ -47,7 +52,7 @@ public class Column {
 	public List<Token> getTokenFrequency() {
 		return tokenFrequency;
 	}
-
+	
 	public void setTokenFrequency(List<Token> tokenFrequency) {
 		this.tokenFrequency = tokenFrequency;
 	}
@@ -65,5 +70,5 @@ public class Column {
 			frequency.put(token, dsf.getFrequency(getName(), token));
 		}
 	}
-*/
+	*/
 }

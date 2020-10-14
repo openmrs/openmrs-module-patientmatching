@@ -8,7 +8,7 @@ import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.analysis.SetSimilarityAnalysis;
 
 public class TransitiveSetAnalysisTest {
-
+	
 	/**
 	 * @param args
 	 */
@@ -63,5 +63,5 @@ public class TransitiveSetAnalysisTest {
 			}
 		}*/
 	}
-
+	
 }

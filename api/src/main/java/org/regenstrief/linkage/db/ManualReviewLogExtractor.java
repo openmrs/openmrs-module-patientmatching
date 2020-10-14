@@ -27,8 +27,11 @@ import org.regenstrief.linkage.matchresult.DBMatchResultStore;
 public class ManualReviewLogExtractor {
 	
 	private final static Pattern PAT_PIPE = Pattern.compile("\\|");
+	
 	private static Connection con = null;
+	
 	private static DBMatchResultStore mrs;
+	
 	private static PreparedStatement update = null;
 	
 	public final static void main(final String[] args) throws Exception {
@@ -41,7 +44,8 @@ public class ManualReviewLogExtractor {
 		final Reader in = new FileReader(logFile);
 		try {
 			run(dbFile, in);
-		} finally {
+		}
+		finally {
 			in.close();
 		}
 	}
@@ -68,7 +72,8 @@ public class ManualReviewLogExtractor {
 			update.executeBatch();
 			con.commit();
 			close();
-		} finally {
+		}
+		finally {
 			con.close();
 		}
 	}

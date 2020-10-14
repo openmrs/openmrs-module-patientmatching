@@ -5,34 +5,32 @@ import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
 
 /**
- * @author scentel
- * Used to analyze databases
- * 
- * TODO: Test with PostgreSQL
- * TODO: Add method: analyzeTokenFrequencies(List<DataColumn> cols)
+ * @author scentel Used to analyze databases TODO: Test with PostgreSQL TODO: Add method:
+ *         analyzeTokenFrequencies(List<DataColumn> cols)
  */
 
 public class DataBaseSWAnalyzer extends SWAnalyzer {
 	
 	private DataBaseReader db_reader;
+	
 	private String data_table;
 	
 	public DataBaseSWAnalyzer(LinkDataSource lds, String access) {
 		super(access);
 		reader = new DataBaseReader(lds, null);
-		datasource_id =lds.getDataSource_ID();
+		datasource_id = lds.getDataSource_ID();
 		db_reader = (DataBaseReader) reader;
 		data_table = lds.getName();
 	}
 	
 	public int getNullCount(DataColumn target_column) {
-		String query ="SELECT COUNT(*) FROM " + data_table + " WHERE " + target_column.getColumnID() + " IS NULL";
+		String query = "SELECT COUNT(*) FROM " + data_table + " WHERE " + target_column.getColumnID() + " IS NULL";
 		//return db_reader.getQueryResult(query);
 		return 0;
 	}
 	
 	public int getNonNullCount(DataColumn target_column) {
-		String query ="SELECT COUNT(*) FROM " + data_table + " WHERE " + target_column.getColumnID() + " IS NOT NULL";
+		String query = "SELECT COUNT(*) FROM " + data_table + " WHERE " + target_column.getColumnID() + " IS NOT NULL";
 		//return db_reader.getQueryResult(query);
 		return 0;
 	}
@@ -52,9 +50,10 @@ public class DataBaseSWAnalyzer extends SWAnalyzer {
 	public void analyzeTokenFrequencies(DataColumn target_column, int record_limit) {
 		int upper_limit = getUniqueRecordCount(target_column);
 		String column_name = target_column.getColumnID();
-		for(int offset=0; offset < upper_limit ; offset = offset + record_limit ) {
+		for (int offset = 0; offset < upper_limit; offset = offset + record_limit) {
 			// Use here a StringBuilder instead?
-			String query = "SELECT DISTINCT " + column_name + " AS token, COUNT(" + column_name + ") AS frequency FROM " + data_table + " GROUP BY " + column_name + " LIMIT " + offset + "," + record_limit;
+			String query = "SELECT DISTINCT " + column_name + " AS token, COUNT(" + column_name + ") AS frequency FROM "
+			        + data_table + " GROUP BY " + column_name + " LIMIT " + offset + "," + record_limit;
 			/*
 			 try{
 				Statement stmt = db_reader.db.createStatement();

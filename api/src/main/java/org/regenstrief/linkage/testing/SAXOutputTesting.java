@@ -27,7 +27,7 @@ import org.xml.sax.SAXException;
 
 public class SAXOutputTesting {
 	
-	public static void main(String[] args) throws Exception{
+	public static void main(String[] args) throws Exception {
 		List<MatchResult> some_results = getMatchResults();
 		System.out.println("have " + some_results.size() + " results to write");
 		
@@ -47,22 +47,22 @@ public class SAXOutputTesting {
 		Transformer serializer = tf.newTransformer();
 		serializer.transform(mrss, out);
 		*/
-		if(MatchResultsXML.resultsToXML(some_results,new File("sax_test.xml"))){
+		if (MatchResultsXML.resultsToXML(some_results, new File("sax_test.xml"))) {
 			System.out.println("file written successfully");
 		} else {
 			System.out.println("file write failed");
 		}
 	}
 	
-	public static List<MatchResult> getMatchResults(){
+	public static List<MatchResult> getMatchResults() {
 		ArrayList<MatchResult> ret = new ArrayList<MatchResult>();
 		File config = new File("test.xml");
-		if(!config.exists()){
+		if (!config.exists()) {
 			System.out.println("config file does not exist, exiting");
 			System.exit(0);
 		}
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		try{
+		try {
 			// Load the XML configuration file
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.parse(config);
@@ -74,9 +74,9 @@ public class SAXOutputTesting {
 			Hashtable<String, Integer> type_table = new Hashtable<String, Integer>();
 			List<DataColumn> dc = rmc.getLinkDataSource1().getDataColumns();
 			Iterator<DataColumn> it = dc.iterator();
-			while(it.hasNext()){
+			while (it.hasNext()) {
 				DataColumn d = it.next();
-				if(d.getIncludePosition() != DataColumn.INCLUDE_NA){
+				if (d.getIncludePosition() != DataColumn.INCLUDE_NA) {
 					type_table.put(d.getName(), new Integer(d.getType()));
 				}
 			}
@@ -86,24 +86,25 @@ public class SAXOutputTesting {
 			// ugly casting needed until io package object/interface hierarchy is improved or updated
 			OrderedDataSourceReader dsr1 = rp.getReader(rmc.getLinkDataSource1(), mc_test);
 			OrderedDataSourceReader dsr2 = rp.getReader(rmc.getLinkDataSource1(), mc_test);
-			org.regenstrief.linkage.io.OrderedDataSourceFormPairs fp = new org.regenstrief.linkage.io.OrderedDataSourceFormPairs(dsr1, dsr2, mc_test, type_table);
+			org.regenstrief.linkage.io.OrderedDataSourceFormPairs fp = new org.regenstrief.linkage.io.OrderedDataSourceFormPairs(
+			        dsr1, dsr2, mc_test, type_table);
 			
 			// iterate through the Record pairs and print the score
 			Record[] pair;
 			ScorePair sp = new ScorePair(mc_test);
-			while((pair = fp.getNextRecordPair()) != null){
+			while ((pair = fp.getNextRecordPair()) != null) {
 				Record r1 = pair[0];
 				Record r2 = pair[1];
 				ret.add(sp.scorePair(r1, r2));
 			}
 		}
-		catch(ParserConfigurationException pce){
+		catch (ParserConfigurationException pce) {
 			System.out.println("error making XML parser: " + pce.getMessage());
 		}
-		catch(SAXException spe){
+		catch (SAXException spe) {
 			System.out.println("error parsing config file: " + spe.getMessage());
 		}
-		catch(IOException ioe){
+		catch (IOException ioe) {
 			System.out.println(ioe.getMessage());
 		}
 		return ret;

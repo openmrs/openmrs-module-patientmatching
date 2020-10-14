@@ -12,11 +12,7 @@ import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
 
 /**
- * @author scentel 
- * 
- * Used to analyze character delimited files
- * 
- * TODO: Test with PostgreSQL
+ * @author scentel Used to analyze character delimited files TODO: Test with PostgreSQL
  */
 public class CharDelimFileSWAnalyzer extends SWAnalyzer {
 	
@@ -31,11 +27,9 @@ public class CharDelimFileSWAnalyzer extends SWAnalyzer {
 		int loop_count = 0;
 		while (reader.hasNextRecord()) {
 			Record current_record = reader.nextRecord();
-			String column_value = current_record.getDemographic(target_column
-					.getName());
+			String column_value = current_record.getDemographic(target_column.getName());
 			if (column_value != null && !column_value.equals("")) {
-				int record_frequency = sw_connection.getTokenFrequencyFromDB(
-						target_column, datasource_id, column_value);
+				int record_frequency = sw_connection.getTokenFrequencyFromDB(target_column, datasource_id, column_value);
 				record_frequency++;
 				sw_connection.addOrUpdateToken(target_column, datasource_id, column_value, record_frequency);
 			}
@@ -43,22 +37,19 @@ public class CharDelimFileSWAnalyzer extends SWAnalyzer {
 		}
 		finishAnalysis();
 		long end = System.currentTimeMillis();
-		System.out.println("Time ellapsed: " + (end - start) + " Loop Count: "
-				+ loop_count);
+		System.out.println("Time ellapsed: " + (end - start) + " Loop Count: " + loop_count);
 	}
 	
 	public void analyzeTokenFrequencies(DataColumn target_column, int size) {
 		long start = System.currentTimeMillis();
-		PriorityQueue<AnalysisObject> pq = new PriorityQueue<AnalysisObject>(
-				size,AnalysisObject.frequencyComparator);
+		PriorityQueue<AnalysisObject> pq = new PriorityQueue<AnalysisObject>(size, AnalysisObject.frequencyComparator);
 		Hashtable<String, Integer> ht = new Hashtable<String, Integer>(2 * size);
 		int loop_count = 0;
 		int hash_table = 0;
 		int dirty_read = 0;
 		while (reader.hasNextRecord()) {
 			Record current_record = reader.nextRecord();
-			String column_value = current_record.getDemographic(target_column
-					.getName());
+			String column_value = current_record.getDemographic(target_column.getName());
 			if (column_value != null && !column_value.equals("")) {
 				try {
 					int frequency = ht.get(column_value);
@@ -69,11 +60,11 @@ public class CharDelimFileSWAnalyzer extends SWAnalyzer {
 					pq.add(new AnalysisObject(column_value, frequency));
 					hash_table++;
 					
-				} catch (NullPointerException e) {
-					int record_frequency = sw_connection.getTokenFrequencyFromDB(
-							target_column, datasource_id, column_value) + 1;
-					AnalysisObject ao = new AnalysisObject(column_value,
-							record_frequency);
+				}
+				catch (NullPointerException e) {
+					int record_frequency = sw_connection.getTokenFrequencyFromDB(target_column, datasource_id, column_value)
+					        + 1;
+					AnalysisObject ao = new AnalysisObject(column_value, record_frequency);
 					
 					int num_el = ht.size();
 					if (num_el < size) {
@@ -89,8 +80,7 @@ public class CharDelimFileSWAnalyzer extends SWAnalyzer {
 							ht.put(column_value, record_frequency);
 							pq.remove();
 							pq.add(ao);
-						}
-						else {
+						} else {
 							sw_connection.addOrUpdateToken(target_column, datasource_id, column_value, record_frequency);
 						}
 					}
@@ -99,18 +89,17 @@ public class CharDelimFileSWAnalyzer extends SWAnalyzer {
 			loop_count++;
 		}
 		
-		for(Enumeration e = ht.keys(); e.hasMoreElements();) {
-			String token = (String) e.nextElement(); 
-			Integer frequency =	ht.get(token);
+		for (Enumeration e = ht.keys(); e.hasMoreElements();) {
+			String token = (String) e.nextElement();
+			Integer frequency = ht.get(token);
 			sw_connection.addOrUpdateToken(target_column, datasource_id, token, frequency);
 		}
 		
 		finishAnalysis();
 		long end = System.currentTimeMillis();
-		System.out.println("Time ellapsed: " + (end - start) + " Loop Count: "
-				+ loop_count + "Hash table: " + hash_table);
+		System.out.println("Time ellapsed: " + (end - start) + " Loop Count: " + loop_count + "Hash table: " + hash_table);
 	}
-		
+	
 	public int getRecordCount() {
 		int no_records = 0;
 		while (reader.hasNextRecord()) {
@@ -125,8 +114,7 @@ public class CharDelimFileSWAnalyzer extends SWAnalyzer {
 		int non_null_count = 0;
 		while (reader.hasNextRecord()) {
 			Record current_record = reader.nextRecord();
-			String column_value = current_record.getDemographic(target_column
-					.getName());
+			String column_value = current_record.getDemographic(target_column.getName());
 			if (column_value != null && !column_value.equals("")) {
 				non_null_count++;
 			}
@@ -139,8 +127,7 @@ public class CharDelimFileSWAnalyzer extends SWAnalyzer {
 		int null_count = 0;
 		while (reader.hasNextRecord()) {
 			Record current_record = reader.nextRecord();
-			String column_value = current_record.getDemographic(target_column
-					.getName());
+			String column_value = current_record.getDemographic(target_column.getName());
 			if (column_value == null || column_value.equals("")) {
 				null_count++;
 			}

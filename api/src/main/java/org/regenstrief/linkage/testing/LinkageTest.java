@@ -29,16 +29,15 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 public class LinkageTest {
-
 	
 	public static void main(String[] args) {
 		File config = new File(args[0]);
-		if(!config.exists()){
+		if (!config.exists()) {
 			System.out.println("config file does not exist, exiting");
 			System.exit(0);
 		}
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		try{
+		try {
 			// Load the XML configuration file
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.parse(config);
@@ -50,9 +49,9 @@ public class LinkageTest {
 			Hashtable<String, Integer> type_table = new Hashtable<String, Integer>();
 			List<DataColumn> dc = rmc.getLinkDataSource1().getDataColumns();
 			Iterator<DataColumn> it = dc.iterator();
-			while(it.hasNext()){
+			while (it.hasNext()) {
 				DataColumn d = it.next();
-				if(d.getIncludePosition() != DataColumn.INCLUDE_NA){
+				if (d.getIncludePosition() != DataColumn.INCLUDE_NA) {
 					type_table.put(d.getName(), new Integer(d.getType()));
 				}
 			}
@@ -72,7 +71,8 @@ public class LinkageTest {
 			// ugly casting needed until io package object/interface hierarchy is improved or updated
 			OrderedDataSourceReader dsr1 = rp.getReader(rmc.getLinkDataSource1(), mc_test);
 			OrderedDataSourceReader dsr2 = rp.getReader(rmc.getLinkDataSource1(), mc_test);
-			org.regenstrief.linkage.io.OrderedDataSourceFormPairs fp = new org.regenstrief.linkage.io.OrderedDataSourceFormPairs(dsr1, dsr2, mc_test, type_table);
+			org.regenstrief.linkage.io.OrderedDataSourceFormPairs fp = new org.regenstrief.linkage.io.OrderedDataSourceFormPairs(
+			        dsr1, dsr2, mc_test, type_table);
 			
 			// perform EM analysis
 			PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp);
@@ -88,7 +88,7 @@ public class LinkageTest {
 			Record[] pair;
 			ScorePair sp = new ScorePair(mc_test);
 			int i = 0;
-			while((pair = fp.getNextRecordPair()) != null){
+			while ((pair = fp.getNextRecordPair()) != null) {
 				Record r1 = pair[0];
 				Record r2 = pair[1];
 				double score = sp.scorePair(r1, r2).getScore();
@@ -98,16 +98,16 @@ public class LinkageTest {
 			}
 			System.out.println("found " + i + " records that matched on the blocking field");
 		}
-		catch(ParserConfigurationException pce){
+		catch (ParserConfigurationException pce) {
 			System.out.println("error making XML parser: " + pce.getMessage());
 		}
-		catch(SAXException spe){
+		catch (SAXException spe) {
 			System.out.println("error parsing config file: " + spe.getMessage());
 		}
-		catch(IOException ioe){
+		catch (IOException ioe) {
 			System.out.println(ioe.getMessage());
 		}
 		
 	}
-
+	
 }

@@ -4,8 +4,11 @@ import java.util.Iterator;
 import java.util.Set;
 
 public abstract class DataSourceFrequency {
+	
 	protected boolean finished = false;
+	
 	protected int total = 0;
+	
 	protected String dataSourceName = null;
 	
 	public boolean isFinished() {

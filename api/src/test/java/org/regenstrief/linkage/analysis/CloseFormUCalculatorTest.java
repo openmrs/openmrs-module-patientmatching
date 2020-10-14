@@ -7,7 +7,9 @@ import org.regenstrief.linkage.io.DataSourceReader;
 import org.regenstrief.linkage.util.MatchingConfig;
 
 public class CloseFormUCalculatorTest {
+	
 	private final static MatchingConfig mcLast = BlockingHeuristicCalculator.newMatchingConfig("LAST");
+	
 	private final static MatchingConfig mcFirst = BlockingHeuristicCalculator.newMatchingConfig("FIRST");
 	
 	static {
@@ -24,7 +26,8 @@ public class CloseFormUCalculatorTest {
 	
 	private void runDedupAnalysis(final double exLast, final double exFirst, final DataSourceReader r) {
 		final MatchingConfig mc = ArrayDataSourceReader.newSampleMatchingConfig();
-		CloseFormUCalculator.getInstance().calculateDedup(mc, new FrequencyContext(mc, ArrayDataSourceReader.SAMPLE_LINK_DATA_SOURCE, r));
+		CloseFormUCalculator.getInstance().calculateDedup(mc,
+		    new FrequencyContext(mc, ArrayDataSourceReader.SAMPLE_LINK_DATA_SOURCE, r));
 		assertEquals(exLast, mc.getNonAgreementValue(1));
 		assertEquals(exFirst, mc.getNonAgreementValue(2));
 		
@@ -43,14 +46,16 @@ public class CloseFormUCalculatorTest {
 	public void analysisIsCorrect() {
 		runAnalysis(1, (1.0 / 6.0), ArrayDataSourceReader.getSampleDoe(), ArrayDataSourceReader.getSampleDoe2());
 		runAnalysis((4.0 / 10.0), (4.0 / 10.0), ArrayDataSourceReader.getSampleMix(), ArrayDataSourceReader.getSampleDoe2());
-		runAnalysis((9.0 / 15.0), (1.0 / 15.0), ArrayDataSourceReader.getSampleNull(), ArrayDataSourceReader.getSampleNull2());
+		runAnalysis((9.0 / 15.0), (1.0 / 15.0), ArrayDataSourceReader.getSampleNull(),
+		    ArrayDataSourceReader.getSampleNull2());
 	}
 	
-	private void runAnalysis(final double exLast, final double exFirst, final DataSourceReader r1, final DataSourceReader r2) {
+	private void runAnalysis(final double exLast, final double exFirst, final DataSourceReader r1,
+	        final DataSourceReader r2) {
 		final MatchingConfig mc = ArrayDataSourceReader.newSampleMatchingConfig();
 		CloseFormUCalculator.getInstance().calculate(mc,
-			new FrequencyContext(mc, ArrayDataSourceReader.SAMPLE_LINK_DATA_SOURCE, r1),
-			new FrequencyContext(mc, ArrayDataSourceReader.SAMPLE_LINK_DATA_SOURCE, r2));
+		    new FrequencyContext(mc, ArrayDataSourceReader.SAMPLE_LINK_DATA_SOURCE, r1),
+		    new FrequencyContext(mc, ArrayDataSourceReader.SAMPLE_LINK_DATA_SOURCE, r2));
 		assertEquals(exLast, mc.getNonAgreementValue(1));
 		assertEquals(exFirst, mc.getNonAgreementValue(2));
 		
@@ -58,13 +63,13 @@ public class CloseFormUCalculatorTest {
 		runHeuristic(exFirst, mcFirst, r1, r2);
 	}
 	
-	private void runHeuristic(final double ex, final MatchingConfig mc, final DataSourceReader r1, final DataSourceReader r2) {
+	private void runHeuristic(final double ex, final MatchingConfig mc, final DataSourceReader r1,
+	        final DataSourceReader r2) {
 		r1.reset();
 		r2.reset();
 		final BlockingHeuristicCalculator calc = newBlockingHeuristicCalculator();
-		calc.calculate(mc,
-			new BlockingFrequencyContext(mc, ArrayDataSourceReader.SAMPLE_LINK_DATA_SOURCE, r1),
-			new BlockingFrequencyContext(mc, ArrayDataSourceReader.SAMPLE_LINK_DATA_SOURCE, r2));
+		calc.calculate(mc, new BlockingFrequencyContext(mc, ArrayDataSourceReader.SAMPLE_LINK_DATA_SOURCE, r1),
+		    new BlockingFrequencyContext(mc, ArrayDataSourceReader.SAMPLE_LINK_DATA_SOURCE, r2));
 		assertEquals(ex, calc.getU());
 	}
 	

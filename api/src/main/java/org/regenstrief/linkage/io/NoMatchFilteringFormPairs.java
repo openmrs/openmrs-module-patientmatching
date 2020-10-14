@@ -7,21 +7,23 @@ import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.ScorePair;
 
 /**
- * Class takes a FormPairs object, and only passes through pairs which match
- * on one of the include fields other than sex/gender
+ * Class takes a FormPairs object, and only passes through pairs which match on one of the include
+ * fields other than sex/gender
  * 
  * @author jegg
- *
  */
 
 public class NoMatchFilteringFormPairs extends FormPairs {
-
+	
 	private FormPairs fp;
+	
 	private ScorePair sp;
+	
 	private String allowed_demographic;
+	
 	private int filtered, printed;
 	
-	public NoMatchFilteringFormPairs(FormPairs fp){
+	public NoMatchFilteringFormPairs(FormPairs fp) {
 		super(fp.getMatchingConfig());
 		this.fp = fp;
 		sp = new ScorePair(fp.getMatchingConfig());
@@ -29,11 +31,11 @@ public class NoMatchFilteringFormPairs extends FormPairs {
 		printed = filtered = 0;
 	}
 	
-	public String getAllowedDemographic(){
+	public String getAllowedDemographic() {
 		return allowed_demographic;
 	}
 	
-	public void setAllowedDemographic(String demographic){
+	public void setAllowedDemographic(String demographic) {
 		allowed_demographic = demographic;
 	}
 	
@@ -41,12 +43,12 @@ public class NoMatchFilteringFormPairs extends FormPairs {
 	public Record[] getNextRecordPair() {
 		boolean finished = false;
 		Record[] candidate = null;
-		while(!finished){
+		while (!finished) {
 			candidate = fp.getNextRecordPair();
-			if(candidate == null){
+			if (candidate == null) {
 				finished = true;
 			} else {
-				if(passesFilter(candidate)){
+				if (passesFilter(candidate)) {
 					finished = true;
 					printed++;
 				} else {
@@ -58,14 +60,14 @@ public class NoMatchFilteringFormPairs extends FormPairs {
 		return candidate;
 	}
 	
-	private boolean passesFilter(Record[] pair){
+	private boolean passesFilter(Record[] pair) {
 		MatchResult mr = sp.scorePair(pair[0], pair[1]);
 		boolean passes = false;
 		Iterator<String> it = mr.getMatchVector().getDemographics().iterator();
-		while(it.hasNext() && !passes){
+		while (it.hasNext() && !passes) {
 			String demographic = it.next();
-			if(!demographic.equals(allowed_demographic)){
-				if(mr.getMatchVector().matchedOn(demographic)){
+			if (!demographic.equals(allowed_demographic)) {
+				if (mr.getMatchVector().matchedOn(demographic)) {
 					passes = true;
 				}
 			}
@@ -74,12 +76,12 @@ public class NoMatchFilteringFormPairs extends FormPairs {
 		return passes;
 	}
 	
-	public int getFilteredCount(){
+	public int getFilteredCount() {
 		return filtered;
 	}
 	
-	public int getAllowedCount(){
+	public int getAllowedCount() {
 		return printed;
 	}
-
+	
 }

@@ -8,12 +8,13 @@ import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.LoggingObject;
 import org.regenstrief.linkage.util.MatchingConfig;
 
-public abstract class RecordPairAnalyzer implements PairAnalyzer, MatchingConfigAnalyzer, LoggingObject{
+public abstract class RecordPairAnalyzer implements PairAnalyzer, MatchingConfigAnalyzer, LoggingObject {
 	
 	MatchingConfig mc;
+	
 	protected Logger log = Logger.getLogger(this.getClass() + this.toString());
 	
-	public RecordPairAnalyzer(MatchingConfig mc){
+	public RecordPairAnalyzer(MatchingConfig mc) {
 		this.mc = mc;
 		
 		log.addAppender(new ConsoleAppender(new PatternLayout("%m%n")));
@@ -22,7 +23,7 @@ public abstract class RecordPairAnalyzer implements PairAnalyzer, MatchingConfig
 	}
 	
 	public MatchingConfig getAnalyzerMatchingConfig() {
-	    return mc;
+		return mc;
 	}
 	
 	public abstract void analyzeRecordPair(Record[] pair);

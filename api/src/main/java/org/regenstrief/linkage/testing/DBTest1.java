@@ -24,20 +24,19 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 public class DBTest1 {
-
 	
 	public static void main(String[] args) {
-		if(args.length == 0){
+		if (args.length == 0) {
 			System.out.println("usage: java DBTest <config file>");
 			System.exit(0);
 		}
 		File config = new File(args[0]);
-		if(!config.exists()){
+		if (!config.exists()) {
 			System.out.println("config file does not exist, exiting");
 			System.exit(0);
 		}
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		try{
+		try {
 			// Load the XML configuration file
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.parse(config);
@@ -45,31 +44,30 @@ public class DBTest1 {
 			MatchingConfig test_mc = rmc.getMatchingConfigs().get(0);
 			RecordDBManager ldbm = new RecordDBManager(rmc.getLinkDataSource1());
 			
-			MatchFinder mf = new MatchFinder(rmc.getLinkDataSource1(), ReaderProvider.getInstance(), rmc.getMatchingConfigs(), new RecordFieldAnalyzer(),MatchFinder.Scoring.BLOCKING_EXCLUSIVE);
+			MatchFinder mf = new MatchFinder(rmc.getLinkDataSource1(), ReaderProvider.getInstance(),
+			        rmc.getMatchingConfigs(), new RecordFieldAnalyzer(), MatchFinder.Scoring.BLOCKING_EXCLUSIVE);
 			Record test_find = new Record(0, "testing");
 			test_find.addDemographic("fn", "test");
 			test_find.addDemographic("ln", "patient");
 			
-			try{
+			try {
 				mf.findBestMatch(test_find);
 			}
-			catch(UnMatchableRecordException umre){
+			catch (UnMatchableRecordException umre) {
 				
 			}
 			
-			
 		}
-		catch(ParserConfigurationException pce){
+		catch (ParserConfigurationException pce) {
 			System.out.println("error making XML parser: " + pce.getMessage());
 		}
-		catch(SAXException spe){
+		catch (SAXException spe) {
 			System.out.println("error parsing config file: " + spe.getMessage());
 		}
-		catch(IOException ioe){
+		catch (IOException ioe) {
 			System.out.println(ioe.getMessage());
 		}
 		
-		
 	}
-
+	
 }

@@ -12,46 +12,44 @@ import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
 
 /**
- * Class extends DataBaseReader by taking a MatchingConfig object in the 
- * constructor providng Record order information in its blocking variable
- * information.  A different result set is obtained by overriding the
- * constructQuery() method.
- *
+ * Class extends DataBaseReader by taking a MatchingConfig object in the constructor providng Record
+ * order information in its blocking variable information. A different result set is obtained by
+ * overriding the constructQuery() method.
  */
 
-public class OrderedDataBaseReader extends DataBaseReader  implements OrderedDataSourceReader{
+public class OrderedDataBaseReader extends DataBaseReader implements OrderedDataSourceReader {
 	
 	protected MatchingConfig mc;
 	
 	/**
-	 * Constructs a reader, but returns the Records in order specified by the
-	 * blocking variables.
+	 * Constructs a reader, but returns the Records in order specified by the blocking variables.
 	 * 
-	 * @param lds	the description of the data
-	 * @param mc	information on the record linkage options, containing blocking variable order (sort order)
+	 * @param lds the description of the data
+	 * @param mc information on the record linkage options, containing blocking variable order (sort
+	 *            order)
 	 */
-	public OrderedDataBaseReader(LinkDataSource lds, Connection db, MatchingConfig mc){
+	public OrderedDataBaseReader(LinkDataSource lds, Connection db, MatchingConfig mc) {
 		super(lds, db);
 		this.mc = mc;
 	}
 	
 	/**
-	 * Overridden method adds an "ORDER BY" clause to the SQL to return the
-	 * records ordered by blocking column.
+	 * Overridden method adds an "ORDER BY" clause to the SQL to return the records ordered by blocking
+	 * column.
 	 */
-	public String constructQuery(){
+	public String constructQuery() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("SELECT ");
 		incl_cols = new ArrayList<DataColumn>();
 		Iterator<DataColumn> it = data_source.getDataColumns().iterator();
-		while(it.hasNext()){
+		while (it.hasNext()) {
 			DataColumn dc = it.next();
-			if(dc.getIncludePosition() != DataColumn.INCLUDE_NA){
+			if (dc.getIncludePosition() != DataColumn.INCLUDE_NA) {
 				incl_cols.add(dc);
 			}
 		}
 		
-		for(int i = 0; i < incl_cols.size() - 1; i++){
+		for (int i = 0; i < incl_cols.size() - 1; i++) {
 			buffer.append(quote_string).append(incl_cols.get(i).getName()).append(quote_string).append(", ");
 		}
 		
@@ -61,7 +59,7 @@ public class OrderedDataBaseReader extends DataBaseReader  implements OrderedDat
 		
 		// append a comma-separated list of quoted column names for blocking
 		List<String> quotedColumns = new ArrayList<String>();
-		for (String column: mc.getBlockingColumns())
+		for (String column : mc.getBlockingColumns())
 			quotedColumns.add(quote_string + column + quote_string);
 		buffer.append(OpenmrsUtil.join(quotedColumns, ", "));
 		

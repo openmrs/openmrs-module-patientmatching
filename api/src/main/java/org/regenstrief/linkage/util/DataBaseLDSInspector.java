@@ -7,38 +7,36 @@ import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.sql.Types;
 
-
 /**
- * Class inspects a database type LinkDataSource and creates DataColumn
- * objects for it.  It does this by using the information in the
- * LinkDataSource object to connect to the database, query the table, and
- * discover the information about all the columns.
+ * Class inspects a database type LinkDataSource and creates DataColumn objects for it. It does this
+ * by using the information in the LinkDataSource object to connect to the database, query the
+ * table, and discover the information about all the columns.
  * 
  * @author jegg
- *
  */
 
-public class DataBaseLDSInspector implements LinkDataSourceInspector{
+public class DataBaseLDSInspector implements LinkDataSourceInspector {
 	
-	public DataBaseLDSInspector(){
+	public DataBaseLDSInspector() {
 		
 	}
 	
-	public void setDefaultDataColumns(LinkDataSource lds){
+	public void setDefaultDataColumns(LinkDataSource lds) {
 		Connection db = getConnection(lds);
 		String table = lds.getName();
 		String query = "Select * from " + table;
 		
-		try{
+		try {
 			Statement stmt = db.createStatement();
 			ResultSet rs = stmt.executeQuery(query);
 			ResultSetMetaData rsm = rs.getMetaData();
-			for(int i = 1; i <= rsm.getColumnCount(); i++){
+			for (int i = 1; i <= rsm.getColumnCount(); i++) {
 				String col_name = rsm.getColumnName(i);
 				DataColumn dc = new DataColumn(col_name);
-				dc.setIncludePosition(i-1);
+				dc.setIncludePosition(i - 1);
 				int col_type = rsm.getColumnType(i);
-				if(col_type == Types.NUMERIC || col_type == Types.INTEGER || col_type == Types.FLOAT || col_type == Types.DOUBLE){
+				if (col_type == Types.NUMERIC || col_type == Types.INTEGER || col_type == Types.FLOAT
+				        || col_type == Types.DOUBLE) {
 					dc.setType(DataColumn.NUMERIC_TYPE);
 				} else {
 					dc.setType(DataColumn.STRING_TYPE);
@@ -47,15 +45,15 @@ public class DataBaseLDSInspector implements LinkDataSourceInspector{
 				lds.addDataColumn(dc);
 			}
 		}
-		catch(Exception e){
+		catch (Exception e) {
 			String msg = e.getMessage();
 			System.err.println(msg);
 		}
 		
 	}
 	
-	private Connection getConnection(LinkDataSource lds){
-		try{
+	private Connection getConnection(LinkDataSource lds) {
+		try {
 			String driver, url, user, passwd;
 			String[] access = lds.getAccess().split(",");
 			driver = access[0];
@@ -66,10 +64,10 @@ public class DataBaseLDSInspector implements LinkDataSourceInspector{
 			Class.forName(driver);
 			
 			Connection db = DriverManager.getConnection(url, user, passwd);
-	        
-	        return db;
+			
+			return db;
 		}
-		catch(Exception e){
+		catch (Exception e) {
 			
 		}
 		

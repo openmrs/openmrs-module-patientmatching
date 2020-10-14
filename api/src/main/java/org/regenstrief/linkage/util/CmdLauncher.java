@@ -20,16 +20,25 @@ import java.io.*;
 import java.util.*;
 
 public class CmdLauncher implements Runnable {
+	
 	public static final String WIN_PREFIX = "cmd.exe /c ";
+	
 	public static final String UNIX_PREFIX = "/bin/sh ";
+	
 	public static final String QUOTED_CMD_DELIM = "\"";
 	
 	String err;
+	
 	String cmd[];
+	
 	String envp[] = null;
+	
 	Process p;
+	
 	InputStream process_output, process_err;
+	
 	BufferedReader child_output, child_err;
+	
 	PrintStream out;
 	
 	int lines_read;
@@ -71,7 +80,7 @@ public class CmdLauncher implements Runnable {
 		System.out.println("CmdLauncher: running " + cmdToString(cmd));
 		final int exitValue;
 		
-		try{
+		try {
 			//File process_directory = new File(".");
 			p = Runtime.getRuntime().exec(cmd, envp, null);
 			process_output = p.getInputStream();
@@ -80,19 +89,21 @@ public class CmdLauncher implements Runnable {
 			child_err = new BufferedReader(new InputStreamReader(process_err));
 			// start a new thread to read the err stream
 			new Thread(this).start();
-			while( (line = child_output.readLine()) != null) {
+			while ((line = child_output.readLine()) != null) {
 				lines_read++;
 				out.println(line);
 			}
 			exitValue = p.waitFor();
 			//System.out.println("exit val: " + p.exitValue());
-		} catch (final IOException e) {
-			throw new IllegalStateException(e); 
-		} catch (final InterruptedException e) {
-		    throw new IllegalStateException(e);
+		}
+		catch (final IOException e) {
+			throw new IllegalStateException(e);
+		}
+		catch (final InterruptedException e) {
+			throw new IllegalStateException(e);
 		}
 		if (exitValue != 0) {
-		    throw new IllegalStateException(cmd[0] + " returned non-0 exit value: " + exitValue);
+			throw new IllegalStateException(cmd[0] + " returned non-0 exit value: " + exitValue);
 		}
 	}
 	
@@ -109,13 +120,13 @@ public class CmdLauncher implements Runnable {
 	public final void run() {
 		// reads from the err stream of the process so it does not hang
 		String line;
-		try{
-			while((line = child_err.readLine()) != null) {
+		try {
+			while ((line = child_err.readLine()) != null) {
 				err += line;
 				System.err.println(line);
 			}
 		}
-		catch(IOException ioe) {
+		catch (IOException ioe) {
 			System.out.println("error reading err stream from child process");
 		}
 		
@@ -142,7 +153,7 @@ public class CmdLauncher implements Runnable {
 	public static String cmdToString(String[] cmd) {
 		// reassemble the elements in the array to a signle string
 		String ret = new String();
-		for(int i = 0; i < cmd.length; i++) {
+		for (int i = 0; i < cmd.length; i++) {
 			ret += cmd[i] + " ";
 		}
 		return ret;
@@ -155,28 +166,28 @@ public class CmdLauncher implements Runnable {
 		boolean in_quoted_string = false;
 		Vector<String> parsed_strings = new Vector<String>();
 		StringTokenizer stok = new StringTokenizer(cmd, " \"", true);
-		String quoted_string  = new String();
+		String quoted_string = new String();
 		String token;
 		
-		while(stok.hasMoreTokens()) {
+		while (stok.hasMoreTokens()) {
 			token = stok.nextToken();
-			if(token.compareTo(QUOTED_CMD_DELIM) == 0) {
+			if (token.compareTo(QUOTED_CMD_DELIM) == 0) {
 				// switch whether the tokens are part of the same string
-				if(!in_quoted_string) {
+				if (!in_quoted_string) {
 					// not yet between quotes, but will be.  allocate new string
 					quoted_string = new String();
 				} else {
 					// at the end of the quotes, add quoted_string to parsed_strings Vector
 					// remove space at the end of string
-					if(quoted_string.charAt(quoted_string.length() - 1) == ' ') {
+					if (quoted_string.charAt(quoted_string.length() - 1) == ' ') {
 						quoted_string = quoted_string.substring(0, quoted_string.length() - 1);
 					}
 					parsed_strings.add(quoted_string);
 				}
 				in_quoted_string = !in_quoted_string;
-			} else if(token.compareTo(" ") != 0) {
+			} else if (token.compareTo(" ") != 0) {
 				// is a word token that is either alone or inside quotes
-				if(in_quoted_string) {
+				if (in_quoted_string) {
 					quoted_string += token + " ";
 				} else {
 					parsed_strings.add(token);
@@ -187,7 +198,7 @@ public class CmdLauncher implements Runnable {
 		// the vector parsed_strings should now have correctly split strings
 		// convert to a String[] and return
 		String[] ret = new String[parsed_strings.size()];
-		for(int i = 0; i < parsed_strings.size(); i++) {
+		for (int i = 0; i < parsed_strings.size(); i++) {
 			ret[i] = parsed_strings.elementAt(i);
 		}
 		
@@ -198,7 +209,7 @@ public class CmdLauncher implements Runnable {
 		// return the command to use, depending on OS
 		String p;
 		String os_name = System.getProperties().getProperty("os.name");
-		if(os_name.indexOf("Windows") == -1) {
+		if (os_name.indexOf("Windows") == -1) {
 			// "Windows" not in OS name, assuming to be unix where shell scripting is supported
 			p = UNIX_PREFIX;
 		} else {

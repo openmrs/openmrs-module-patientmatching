@@ -13,13 +13,21 @@ import java.util.Set;
 public final class SingleFieldSqliteDataSourceFrequency extends SingleFieldBaseDataSourceFrequency {
 	
 	private final Connection con;
+	
 	private final PreparedStatement readFreq;
+	
 	private final PreparedStatement insertFreq;
+	
 	private final PreparedStatement updateSet;
+	
 	private final PreparedStatement updateIncrement;
+	
 	private final PreparedStatement deleteFreq;
+	
 	private final PreparedStatement readTokens;
+	
 	private final int commitThreshold;
+	
 	private int writeCount = 0;
 	
 	public SingleFieldSqliteDataSourceFrequency(final String field) {
@@ -38,9 +46,11 @@ public final class SingleFieldSqliteDataSourceFrequency extends SingleFieldBaseD
 			updateIncrement = con.prepareStatement("update freq set amt=(amt+1) where token=?");
 			deleteFreq = con.prepareStatement("delete from freq where token=?");
 			readTokens = con.prepareStatement("select token from freq");
-			final String commitValue = System.getProperty("org.regenstrief.linkage.analysis.SingleFieldSqliteDataSourceFrequency.commitThreshold");
+			final String commitValue = System
+			        .getProperty("org.regenstrief.linkage.analysis.SingleFieldSqliteDataSourceFrequency.commitThreshold");
 			commitThreshold = (commitValue == null) ? 5000 : Integer.parseInt(commitValue);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -49,7 +59,8 @@ public final class SingleFieldSqliteDataSourceFrequency extends SingleFieldBaseD
 		try {
 			con.commit();
 			closeAll();
-		} catch (final Exception e) {
+		}
+		catch (final Exception e) {
 			e.printStackTrace();
 		}
 		//TODO SHOULD PROBABLY DELETE THE .DB FILES; ONE HAS HAD VALUES REMOVED AND ISN'T VERY USEFUL ANYMORE; DON'T HAVE STRATEGRY FOR DETECTING STALE .DB FILES TO KNOW WHEN ONE CAN REUSED ANYWAY
@@ -58,7 +69,8 @@ public final class SingleFieldSqliteDataSourceFrequency extends SingleFieldBaseD
 	private void closeAll() throws Exception {
 		try {
 			closeStatements();
-		} finally {
+		}
+		finally {
 			con.close();
 		}
 	}
@@ -76,7 +88,8 @@ public final class SingleFieldSqliteDataSourceFrequency extends SingleFieldBaseD
 		if (stmt != null) {
 			try {
 				stmt.close();
-			} catch (final Exception e) {
+			}
+			catch (final Exception e) {
 				e.printStackTrace();
 			}
 		}
@@ -86,7 +99,8 @@ public final class SingleFieldSqliteDataSourceFrequency extends SingleFieldBaseD
 		if (rs != null) {
 			try {
 				rs.close();
-			} catch (final Exception e) {
+			}
+			catch (final Exception e) {
 				e.printStackTrace();
 			}
 		}
@@ -98,7 +112,8 @@ public final class SingleFieldSqliteDataSourceFrequency extends SingleFieldBaseD
 			stmt.execute("create table freq (token varchar(4000) not null, amt integer not null)");
 			stmt.execute("create unique index freq_idx on freq(token)");
 			con.commit();
-		} finally {
+		}
+		finally {
 			stmt.close();
 		}
 	}
@@ -110,10 +125,12 @@ public final class SingleFieldSqliteDataSourceFrequency extends SingleFieldBaseD
 			final ResultSet rs = readFreq.executeQuery();
 			try {
 				return rs.next() ? rs.getInt(1) : 0;
-			} finally {
+			}
+			finally {
 				rs.close();
 			}
-		} catch (final Exception e) {
+		}
+		catch (final Exception e) {
 			throw new IllegalStateException(e);
 		}
 	}
@@ -126,7 +143,8 @@ public final class SingleFieldSqliteDataSourceFrequency extends SingleFieldBaseD
 				deleteFreq.setString(1, token);
 				deleteFreq.executeUpdate();
 				commitIfNeeded();
-			} catch (final Exception e) {
+			}
+			catch (final Exception e) {
 				throw new IllegalStateException(e);
 			}
 		}
@@ -156,7 +174,8 @@ public final class SingleFieldSqliteDataSourceFrequency extends SingleFieldBaseD
 				insert(token, freq);
 			}
 			commitIfNeeded();
-		} catch (final Exception e) {
+		}
+		catch (final Exception e) {
 			throw new IllegalStateException(e);
 		}
 	}
@@ -169,7 +188,8 @@ public final class SingleFieldSqliteDataSourceFrequency extends SingleFieldBaseD
 				insert(token, 1);
 			}
 			commitIfNeeded();
-		} catch (final Exception e) {
+		}
+		catch (final Exception e) {
 			throw new IllegalStateException(e);
 		}
 	}
@@ -178,7 +198,8 @@ public final class SingleFieldSqliteDataSourceFrequency extends SingleFieldBaseD
 	public final Set<String> getTokens(final String field) {
 		try {
 			return readTokens();
-		} catch (final Exception e) {
+		}
+		catch (final Exception e) {
 			throw new IllegalStateException(e);
 		}
 	}
@@ -191,7 +212,8 @@ public final class SingleFieldSqliteDataSourceFrequency extends SingleFieldBaseD
 				tokens.add(rs.getString(1));
 			}
 			return tokens;
-		} finally {
+		}
+		finally {
 			rs.close();
 		}
 	}
@@ -208,7 +230,8 @@ public final class SingleFieldSqliteDataSourceFrequency extends SingleFieldBaseD
 		private TokenIterator() {
 			try {
 				rs = readTokens.executeQuery();
-			} catch (final Exception e) {
+			}
+			catch (final Exception e) {
 				throw new IllegalStateException(e);
 			}
 		}
@@ -221,17 +244,19 @@ public final class SingleFieldSqliteDataSourceFrequency extends SingleFieldBaseD
 					close();
 				}
 				return next;
-			} catch (final Exception e) {
+			}
+			catch (final Exception e) {
 				close();
 				throw new IllegalStateException(e);
 			}
 		}
-
+		
 		@Override
 		public String next() {
 			try {
 				return rs.getString(1);
-			} catch (final Exception e) {
+			}
+			catch (final Exception e) {
 				close();
 				throw new IllegalStateException(e);
 			}

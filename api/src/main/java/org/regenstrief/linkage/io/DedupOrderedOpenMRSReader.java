@@ -5,7 +5,7 @@ import org.regenstrief.linkage.util.MatchingConfig;
 
 public class DedupOrderedOpenMRSReader extends OrderedOpenMRSReader {
 	
-	public DedupOrderedOpenMRSReader(MatchingConfig mc, SessionFactory session_factory){
+	public DedupOrderedOpenMRSReader(MatchingConfig mc, SessionFactory session_factory) {
 		super(mc, session_factory);
 	}
 }

@@ -30,9 +30,7 @@ public class StringMatchTest {
 		runDice(1, "01", "01");
 		runDice(1, "11", "11");
 		runDice(2f / 3f, "10", "11");
-		runDice(16f / 22f,
-			"10101001100011001011",
-			"10011001100111110011");
+		runDice(16f / 22f, "10101001100011001011", "10011001100111110011");
 	}
 	
 	private void runDice(final float ex, final String s1, final String s2) {

@@ -8,14 +8,15 @@ package org.regenstrief.linkage.analysis;
 import org.regenstrief.linkage.*;
 
 public class UnMatchableRecordException extends Exception {
+	
 	Record invalid;
 	
-	public UnMatchableRecordException(Record r){
+	public UnMatchableRecordException(Record r) {
 		super();
 		invalid = r;
 	}
 	
-	public Record getRecord(){
+	public Record getRecord() {
 		return invalid;
 	}
 }

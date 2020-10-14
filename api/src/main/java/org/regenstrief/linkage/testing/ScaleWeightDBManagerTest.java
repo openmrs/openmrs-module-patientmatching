@@ -5,9 +5,10 @@ import org.regenstrief.linkage.db.ScaleWeightDBManager.CountType;
 import org.regenstrief.linkage.util.DataColumn;
 
 public class ScaleWeightDBManagerTest {
-
+	
 	public static void main(String[] args) {
-		ScaleWeightDBManager dbm = new ScaleWeightDBManager("com.mysql.jdbc.Driver", "jdbc:mysql://localhost/patientmatching_datasource_analysis","root","");
+		ScaleWeightDBManager dbm = new ScaleWeightDBManager("com.mysql.jdbc.Driver",
+		        "jdbc:mysql://localhost/patientmatching_datasource_analysis", "root", "");
 		boolean connected = dbm.connect();
 		DataColumn target_col = new DataColumn("isim");
 		target_col.setName("name");

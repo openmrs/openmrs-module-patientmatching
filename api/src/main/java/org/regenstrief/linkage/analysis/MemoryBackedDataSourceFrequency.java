@@ -6,7 +6,7 @@ import java.util.Set;
 
 public class MemoryBackedDataSourceFrequency extends DataSourceFrequency {
 	
-	Map<String,Map<String, Count>> frequencies;
+	Map<String, Map<String, Count>> frequencies;
 	
 	public MemoryBackedDataSourceFrequency() {
 		frequencies = new Hashtable<String, Map<String, Count>>();
@@ -48,7 +48,7 @@ public class MemoryBackedDataSourceFrequency extends DataSourceFrequency {
 		}
 		return fieldFrequencies;
 	}
-
+	
 	@Override
 	public void incrementCount(String field, String token) {
 		if (token != null) {

@@ -3,9 +3,8 @@ package org.regenstrief.linkage.util;
 import java.util.HashMap;
 
 /**
- * A simple class to store settings regarding Analyzers
+ * A simple class to store settings regarding Analyzers TODO: Document possible analyzer names
  * 
- * TODO: Document possible analyzer names
  * @author scentel
  */
 
@@ -33,9 +32,9 @@ public class AnalysisConfig {
 	public String getInitString(String analyzer_name) {
 		return settings.get(analyzer_name);
 	}
-
+	
 	public HashMap<String, String> getSettings() {
 		return settings;
 	}
-
+	
 }

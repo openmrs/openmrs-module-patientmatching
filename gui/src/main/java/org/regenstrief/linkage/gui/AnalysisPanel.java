@@ -63,31 +63,32 @@ import org.regenstrief.linkage.util.SyntheticRecordGenerator;
  * Class displays different analysis options available in the record linkage GUI
  * 
  * @author jegg
- *
  */
 
 public class AnalysisPanel extends JPanel implements ActionListener, LoggingObject {
+	
 	private static final long serialVersionUID = -6402375274052004924L;
 	
 	private static final Logger log = Logger.getLogger(AnalysisPanel.class);
-
+	
 	RecMatchConfig rm_conf;
 	
 	private JButton random_button;
 	
-	private JButton em_button, vector_button, summary_button, freq_button, closed_form_button, vector_obs_button, synthetic_button, mi_score_button, blocking_heuristics;
+	private JButton em_button, vector_button, summary_button, freq_button, closed_form_button, vector_obs_button,
+	        synthetic_button, mi_score_button, blocking_heuristics;
 	
-	public AnalysisPanel(RecMatchConfig rmc){
+	public AnalysisPanel(RecMatchConfig rmc) {
 		super();
 		rm_conf = rmc;
 		createAnalysisPanel();
 	}
 	
-	public void setRecMatchConfig(RecMatchConfig rmc){
+	public void setRecMatchConfig(RecMatchConfig rmc) {
 		rm_conf = rmc;
 	}
 	
-	private void createAnalysisPanel(){
+	private void createAnalysisPanel() {
 		FlowLayout fl = new FlowLayout();
 		JPanel row1 = new JPanel();
 		JPanel row2 = new JPanel();
@@ -100,10 +101,10 @@ public class AnalysisPanel extends JPanel implements ActionListener, LoggingObje
 		this.add(row2);
 		this.add(row3);
 		
-	    random_button = new JButton("Perform Random Sampling");
-        row1.add(random_button);
-        random_button.addActionListener(this);
-        
+		random_button = new JButton("Perform Random Sampling");
+		row1.add(random_button);
+		random_button.addActionListener(this);
+		
 		em_button = new JButton("Perform EM Analysis");
 		row1.add(em_button);
 		em_button.addActionListener(this);
@@ -143,23 +144,23 @@ public class AnalysisPanel extends JPanel implements ActionListener, LoggingObje
 		this.add(Box.createVerticalGlue());
 	}
 	
-	private void runEMAnalysis(){
+	private void runEMAnalysis() {
 		ReaderProvider rp = ReaderProvider.getInstance();
 		List<MatchingConfig> mcs = rm_conf.getMatchingConfigs();
 		Iterator<MatchingConfig> it = mcs.iterator();
-		while(it.hasNext()){
+		while (it.hasNext()) {
 			MatchingConfig mc = it.next();
 			
 			OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
 			OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
-			if(odsr1 != null && odsr2 != null){
+			if (odsr1 != null && odsr2 != null) {
 				// analyze with EM
-			    FormPairs fp2 = null;
-			    if (rm_conf.isDeduplication()) {
-			        fp2 = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
-			    } else {
-			        fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
-			    }
+				FormPairs fp2 = null;
+				if (rm_conf.isDeduplication()) {
+					fp2 = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
+				} else {
+					fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+				}
 				/*
 				 * Using two analyzer at a time in the PairDataSourceAnalysis. The order when adding the analyzer to
 				 * PairDataSourceAnalysis will affect the end results. For example in the following code fragment,
@@ -176,23 +177,25 @@ public class AnalysisPanel extends JPanel implements ActionListener, LoggingObje
 				 * I don't think we need to instantiate the RandomSampleAnalyzer here if the user doesn't want to
 				 * use random sampling :D
 				 */
-                LoggingFrame frame = new LoggingFrame(mc.getName());
+				LoggingFrame frame = new LoggingFrame(mc.getName());
 				PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
 				// if not using random sampling then don't instantiate random sample analyzer
 				// if the value is locked then don't instantiate random sampler analyzer
-				if(mc.isUsingRandomSampling() && !mc.isLockedUValues()) {
+				if (mc.isUsingRandomSampling() && !mc.isLockedUValues()) {
 					// create FormPairs for rsa to use
 					OrderedDataSourceReader rsa_odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
 					OrderedDataSourceReader rsa_odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
 					FormPairs rsa_fp2 = null;
-				    if (rm_conf.isDeduplication()) {
-				        rsa_fp2 = new DedupOrderedDataSourceFormPairs(rsa_odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
-				    } else {
-				        rsa_fp2 = new OrderedDataSourceFormPairs(rsa_odsr1, rsa_odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
-				    }
-				    RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(mc, rsa_fp2);
-	                pdsa.addAnalyzer(rsa);
-	                frame.addLoggingObject(rsa);
+					if (rm_conf.isDeduplication()) {
+						rsa_fp2 = new DedupOrderedDataSourceFormPairs(rsa_odsr1, mc,
+						        rm_conf.getLinkDataSource1().getTypeTable());
+					} else {
+						rsa_fp2 = new OrderedDataSourceFormPairs(rsa_odsr1, rsa_odsr2, mc,
+						        rm_conf.getLinkDataSource1().getTypeTable());
+					}
+					RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(mc, rsa_fp2);
+					pdsa.addAnalyzer(rsa);
+					frame.addLoggingObject(rsa);
 				}
 				EMAnalyzer ema = new EMAnalyzer(mc);
 				pdsa.addAnalyzer(ema);
@@ -205,28 +208,29 @@ public class AnalysisPanel extends JPanel implements ActionListener, LoggingObje
 		}
 	}
 	
-	private void createSyntheticData(){
+	private void createSyntheticData() {
 		// do frequency analysis to get values to sample from
 		ReaderProvider rp = ReaderProvider.getInstance();
 		List<MatchingConfig> mcs = rm_conf.getMatchingConfigs();
 		Iterator<MatchingConfig> it = mcs.iterator();
 		int n = 1000;
 		boolean valid_n = false;
-		do{
-			String s = (String)JOptionPane.showInputDialog(this,"Number of pairs to create:","Synthetic Pairs",JOptionPane.PLAIN_MESSAGE,null,null,"1000");
-			if(s == null){
+		do {
+			String s = (String) JOptionPane.showInputDialog(this, "Number of pairs to create:", "Synthetic Pairs",
+			    JOptionPane.PLAIN_MESSAGE, null, null, "1000");
+			if (s == null) {
 				return;
 			} else {
-				try{
+				try {
 					n = Integer.parseInt(s);
 					valid_n = true;
 				}
-				catch(NumberFormatException nfe){
+				catch (NumberFormatException nfe) {
 					
 				}
 			}
-		}while(!valid_n);
-				
+		} while (!valid_n);
+		
 		// get file to write synthetic data files to
 		File output_base = null;
 		JFileChooser fc = new JFileChooser();
@@ -234,18 +238,18 @@ public class AnalysisPanel extends JPanel implements ActionListener, LoggingObje
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 			output_base = fc.getSelectedFile();
 			
-			while(it.hasNext()){
+			while (it.hasNext()) {
 				MatchingConfig mc = it.next();
 				OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
 				OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
 				
 				String order[] = mc.getIncludedColumnsNames();
 				String rank_order[] = new String[order.length];
-				for(int i = 0; i < order.length; i++){
+				for (int i = 0; i < order.length; i++) {
 					rank_order[i] = order[i] + FSSyntheticRecordGenerator.DEMOGRAPHIC_RANK_SUFFIX;
 				}
 				
-				if(odsr1 != null && odsr2 != null){
+				if (odsr1 != null && odsr2 != null) {
 					// analyze frequencies in data sources first
 					DataSourceAnalysis dsa = new DataSourceAnalysis(odsr1);
 					ValueFrequencyAnalyzer vfa = new ValueFrequencyAnalyzer(rm_conf.getLinkDataSource1(), mc);
@@ -255,7 +259,7 @@ public class AnalysisPanel extends JPanel implements ActionListener, LoggingObje
 					RecordFrequencies rf2 = null;
 					
 					// analyze data source 2 if not de-duplication
-					if(!rm_conf.isDeduplication()){
+					if (!rm_conf.isDeduplication()) {
 						dsa = new DataSourceAnalysis(odsr2);
 						vfa = new ValueFrequencyAnalyzer(rm_conf.getLinkDataSource1(), mc);
 						dsa.addAnalyzer(vfa);
@@ -267,104 +271,102 @@ public class AnalysisPanel extends JPanel implements ActionListener, LoggingObje
 					odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
 					odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
 					
-				    FormPairs fp2 = null;
-				    if (rm_conf.isDeduplication()) {
-				        fp2 = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
-				    } else {
-				        fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
-				    }
-				    
-				    PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
-				    VectorValuesFrequencyAnalyzer vvfa = new VectorValuesFrequencyAnalyzer(mc);
-				    pdsa.addAnalyzer(vvfa);
-				    pdsa.analyzeData();
-				    // two lines to remove UID field from MatchingConfig object.  synthetic records shouldn't have this generated like other fields, nor
-				    // is it in the frequency tables
-				    MatchingConfig mc_clone = (MatchingConfig)mc.clone();
-				    mc_clone.getMatchingConfigRows().remove(mc_clone.getMatchingConfigRowByName(rm_conf.getLinkDataSource1().getUniqueID()));
-				    SyntheticRecordGenerator srg = new MUSyntheticRecordGenerator(mc_clone, rf1, mc.getP());
-				    //SyntheticRecordGenerator srg = new FSSyntheticRecordGenerator(mc, rf1, vvfa.getVectorFrequencies());
-				    if(!rm_conf.isDeduplication()){
-				    	srg.setRecordFrequencies2(rf2);
-				    }
-				    Date start = new Date();
-				    System.out.println("data analyzed, creating records at " + start);
-				    File synthetic_output = new File(output_base.getPath() + "_" + mc.getName() + "_synthetic.txt");
-				    File synthetic_rank_output = new File(output_base.getPath() + "_" + mc.getName() + "_synthetic_rank.txt");
-				    Hashtable<MatchVector,Integer> mv_counter = new Hashtable<MatchVector,Integer>();
-				    try{
-				    	BufferedWriter fout = new BufferedWriter(new FileWriter(synthetic_output));
-				    	BufferedWriter rfout = new BufferedWriter(new FileWriter(synthetic_rank_output));
-				    	for(int i = 0; i < n; i++){
-					    	//System.out.println("=========== pair " + i + " ===========");
-					    	MatchResult mr = srg.getRecordPair();
-					    	String output_line = FileWritingMatcher.getOutputLine(mr, order);
-					    	String is_match = "false";
-					    	if(mr.isMatch()){
-					    		is_match = "true";
-					    	}
-					    	fout.write(output_line + "|" + is_match + "\n");
-					    	output_line = FileWritingMatcher.getOutputLine(mr, rank_order);
-					    	rfout.write(output_line + "|" + is_match + "\n");
-					    	//System.out.println(r[0]);
-						    //System.out.println(r[1]);
-					    	Integer mv_count = mv_counter.get(mr.getMatchVector());
-					    	if(mv_count == null){
-					    		mv_counter.put(mr.getMatchVector(), 1);
-					    	} else {
-					    		Integer new_count = mv_count + 1;
-					    		mv_counter.put(mr.getMatchVector(), new_count);
-					    	}
-					    }
-				    	fout.flush();
-				    	fout.close();
-				    	rfout.flush();
-				    	rfout.close();
-				    	/*Iterator<MatchVector> mv_it = mv_counter.keySet().iterator();
-				    	System.out.println("generated vectors:");
-				    	while(mv_it.hasNext()){
-				    		MatchVector mv = mv_it.next();
-				    		System.out.println(mv + ":\t" + mv_counter.get(mv));
-				    	}*/
-				    }
-				    catch(IOException ioe){
-				    	System.err.println("error writing synthetic data to file: " + ioe.getMessage());
-				    }
-				    
-				    Date end = new Date();
-				    System.out.println(n + " records created between " + start + " and " + end);
+					FormPairs fp2 = null;
+					if (rm_conf.isDeduplication()) {
+						fp2 = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
+					} else {
+						fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+					}
+					
+					PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
+					VectorValuesFrequencyAnalyzer vvfa = new VectorValuesFrequencyAnalyzer(mc);
+					pdsa.addAnalyzer(vvfa);
+					pdsa.analyzeData();
+					// two lines to remove UID field from MatchingConfig object.  synthetic records shouldn't have this generated like other fields, nor
+					// is it in the frequency tables
+					MatchingConfig mc_clone = (MatchingConfig) mc.clone();
+					mc_clone.getMatchingConfigRows()
+					        .remove(mc_clone.getMatchingConfigRowByName(rm_conf.getLinkDataSource1().getUniqueID()));
+					SyntheticRecordGenerator srg = new MUSyntheticRecordGenerator(mc_clone, rf1, mc.getP());
+					//SyntheticRecordGenerator srg = new FSSyntheticRecordGenerator(mc, rf1, vvfa.getVectorFrequencies());
+					if (!rm_conf.isDeduplication()) {
+						srg.setRecordFrequencies2(rf2);
+					}
+					Date start = new Date();
+					System.out.println("data analyzed, creating records at " + start);
+					File synthetic_output = new File(output_base.getPath() + "_" + mc.getName() + "_synthetic.txt");
+					File synthetic_rank_output = new File(
+					        output_base.getPath() + "_" + mc.getName() + "_synthetic_rank.txt");
+					Hashtable<MatchVector, Integer> mv_counter = new Hashtable<MatchVector, Integer>();
+					try {
+						BufferedWriter fout = new BufferedWriter(new FileWriter(synthetic_output));
+						BufferedWriter rfout = new BufferedWriter(new FileWriter(synthetic_rank_output));
+						for (int i = 0; i < n; i++) {
+							//System.out.println("=========== pair " + i + " ===========");
+							MatchResult mr = srg.getRecordPair();
+							String output_line = FileWritingMatcher.getOutputLine(mr, order);
+							String is_match = "false";
+							if (mr.isMatch()) {
+								is_match = "true";
+							}
+							fout.write(output_line + "|" + is_match + "\n");
+							output_line = FileWritingMatcher.getOutputLine(mr, rank_order);
+							rfout.write(output_line + "|" + is_match + "\n");
+							//System.out.println(r[0]);
+							//System.out.println(r[1]);
+							Integer mv_count = mv_counter.get(mr.getMatchVector());
+							if (mv_count == null) {
+								mv_counter.put(mr.getMatchVector(), 1);
+							} else {
+								Integer new_count = mv_count + 1;
+								mv_counter.put(mr.getMatchVector(), new_count);
+							}
+						}
+						fout.flush();
+						fout.close();
+						rfout.flush();
+						rfout.close();
+						/*Iterator<MatchVector> mv_it = mv_counter.keySet().iterator();
+						System.out.println("generated vectors:");
+						while(mv_it.hasNext()){
+							MatchVector mv = mv_it.next();
+							System.out.println(mv + ":\t" + mv_counter.get(mv));
+						}*/
+					}
+					catch (IOException ioe) {
+						System.err.println("error writing synthetic data to file: " + ioe.getMessage());
+					}
+					
+					Date end = new Date();
+					System.out.println(n + " records created between " + start + " and " + end);
 				}
-				
 				
 				System.out.println("data generated");
 			}
 		}
 		
-		
 	}
 	
-	private void calculateMIScores() {		
+	private void calculateMIScores() {
 		DataSourceFrequency dsf = new MemoryBackedDataSourceFrequency();
 		rm_conf.setDataSourceFrequency1(dsf);
-		MutualInformationAnalyzer fa = new MutualInformationAnalyzer(rm_conf, rm_conf.getLinkDataSource1(), rm_conf.getDataSourceFrequency1());
+		MutualInformationAnalyzer fa = new MutualInformationAnalyzer(rm_conf, rm_conf.getLinkDataSource1(),
+		        rm_conf.getDataSourceFrequency1());
 		ReaderProvider rp = ReaderProvider.getInstance();
-
-		System.out
-				.println("Calculating pairwise combinations for columns in Dataset...");
-		DataSourceAnalysis dsa = new DataSourceAnalysis(rp.getReader(rm_conf
-				.getLinkDataSource1()));
+		
+		System.out.println("Calculating pairwise combinations for columns in Dataset...");
+		DataSourceAnalysis dsa = new DataSourceAnalysis(rp.getReader(rm_conf.getLinkDataSource1()));
 		dsa.addAnalyzer(fa);
 		dsa.analyzeData();
 		
-		if(!rm_conf.isDeduplication()) {
+		if (!rm_conf.isDeduplication()) {
 			DataSourceFrequency dsf2 = new MemoryBackedDataSourceFrequency();
 			rm_conf.setDataSourceFrequency2(dsf2);
-			MutualInformationAnalyzer fa2 = new MutualInformationAnalyzer(rm_conf, rm_conf.getLinkDataSource2(), rm_conf.getDataSourceFrequencyf2());
+			MutualInformationAnalyzer fa2 = new MutualInformationAnalyzer(rm_conf, rm_conf.getLinkDataSource2(),
+			        rm_conf.getDataSourceFrequencyf2());
 			ReaderProvider rp2 = ReaderProvider.getInstance();
-			System.out
-					.println("Calculating pairwise combinations for columns in Dataset...");
-			DataSourceAnalysis dsa2 = new DataSourceAnalysis(rp.getReader(rm_conf
-					.getLinkDataSource2()));
+			System.out.println("Calculating pairwise combinations for columns in Dataset...");
+			DataSourceAnalysis dsa2 = new DataSourceAnalysis(rp.getReader(rm_conf.getLinkDataSource2()));
 			dsa2.addAnalyzer(fa2);
 			dsa2.analyzeData();
 		}
@@ -404,7 +406,7 @@ public class AnalysisPanel extends JPanel implements ActionListener, LoggingObje
 		}
 		log.info("Finished");
 	}
-
+	
 	private void displayVectorTables() {
 		for (final MatchingConfig mc : rm_conf.getMatchingConfigs()) {
 			VectorTable vt = new VectorTable(mc);
@@ -420,7 +422,7 @@ public class AnalysisPanel extends JPanel implements ActionListener, LoggingObje
 		} else if (source == vector_button) {
 			displayVectorTables();
 		} else if (source == random_button) {
-		    performRandomSampling();
+			performRandomSampling();
 		} else if (source == summary_button) {
 			performSummaryStatistics();
 		} else if (source == freq_button) {
@@ -438,25 +440,25 @@ public class AnalysisPanel extends JPanel implements ActionListener, LoggingObje
 		}
 	}
 	
-	private void performVectorObsAnalysis(){
+	private void performVectorObsAnalysis() {
 		ReaderProvider rp = ReaderProvider.getInstance();
 		List<MatchingConfig> mcs = rm_conf.getMatchingConfigs();
 		Iterator<MatchingConfig> it = mcs.iterator();
-		while(it.hasNext()){
+		while (it.hasNext()) {
 			MatchingConfig mc = it.next();
 			
 			OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
 			OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
-			if(odsr1 != null && odsr2 != null){
+			if (odsr1 != null && odsr2 != null) {
 				// analyze with EM
-			    FormPairs fp2 = null;
-			    if (rm_conf.isDeduplication()) {
-			        fp2 = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
-			    } else {
-			        fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
-			    }
-			    
-			    LoggingFrame frame = new SaveTextLoggingFrame(mc.getName());
+				FormPairs fp2 = null;
+				if (rm_conf.isDeduplication()) {
+					fp2 = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
+				} else {
+					fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+				}
+				
+				LoggingFrame frame = new SaveTextLoggingFrame(mc.getName());
 				PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
 				// if not using random sampling then don't instantiate random sample analyzer
 				// if the value is locked then don't instantiate random sampler analyzer
@@ -510,7 +512,6 @@ public class AnalysisPanel extends JPanel implements ActionListener, LoggingObje
 			System.out.println("analyzed data");
 		}
 		
-		
 	}
 	
 	private void performSummaryStatistics() {
@@ -520,7 +521,7 @@ public class AnalysisPanel extends JPanel implements ActionListener, LoggingObje
 		SummaryStatisticsStore sss1 = new SummaryStatisticsStore(rm_conf.getLinkDataSource1());
 		SummaryStatisticsStore sss2 = new SummaryStatisticsStore(rm_conf.getLinkDataSource2());
 		
-		while(it.hasNext()){
+		while (it.hasNext()) {
 			MatchingConfig mc = it.next();
 			
 			LinkDataSource lds1 = rm_conf.getLinkDataSource1();
@@ -528,13 +529,13 @@ public class AnalysisPanel extends JPanel implements ActionListener, LoggingObje
 			
 			OrderedDataSourceReader odsr1 = rp.getReader(lds1, mc);
 			OrderedDataSourceReader odsr2 = rp.getReader(lds2, mc);
-
-			if(lds1 != null && lds2 != null){
+			
+			if (lds1 != null && lds2 != null) {
 				// compute summary statistics
-                LoggingFrame frame = new LoggingFrame(mc.getName());
+				LoggingFrame frame = new LoggingFrame(mc.getName());
 				DataSourceAnalysis dsa1 = new DataSourceAnalysis(odsr1);
 				DataSourceAnalysis dsa2 = new DataSourceAnalysis(odsr2);
-
+				
 				// Null - compute the number of null elements for each demographic
 				NullAnalyzer na1 = new NullAnalyzer(lds1, mc, sss1);
 				NullAnalyzer na2 = new NullAnalyzer(lds2, mc, sss2);
@@ -544,7 +545,7 @@ public class AnalysisPanel extends JPanel implements ActionListener, LoggingObje
 				/*
 				frame.addLoggingObject(na1);
 				frame.addLoggingObject(na2);
-				*/ 
+				*/
 				
 				// Entropy - compute the entropy of a demographic
 				EntropyAnalyzer ea1 = new EntropyAnalyzer(lds1, mc, sss1);
@@ -568,8 +569,10 @@ public class AnalysisPanel extends JPanel implements ActionListener, LoggingObje
 				dsa2.addAnalyzer(afa2);
 				
 				// Maximum Entropy - compute the maximum entropy of a demographic
-				MaximumEntropyAnalyzer mea1 = new MaximumEntropyAnalyzer(lds1, mc, afa1.getResults(), ua1.getResults(), sss1);
-				MaximumEntropyAnalyzer mea2 = new MaximumEntropyAnalyzer(lds2, mc, afa2.getResults(), ua2.getResults(), sss2);
+				MaximumEntropyAnalyzer mea1 = new MaximumEntropyAnalyzer(lds1, mc, afa1.getResults(), ua1.getResults(),
+				        sss1);
+				MaximumEntropyAnalyzer mea2 = new MaximumEntropyAnalyzer(lds2, mc, afa2.getResults(), ua2.getResults(),
+				        sss2);
 				
 				dsa1.addAnalyzer(mea1);
 				dsa2.addAnalyzer(mea2);
@@ -583,54 +586,56 @@ public class AnalysisPanel extends JPanel implements ActionListener, LoggingObje
 			odsr2.close();
 		}
 	}
-
-    private void performRandomSampling() {
-        ReaderProvider rp = ReaderProvider.getInstance();
-        List<MatchingConfig> mcs = rm_conf.getMatchingConfigs();
-        Iterator<MatchingConfig> it = mcs.iterator();
-        while(it.hasNext()){
-            MatchingConfig mc = it.next();
-            // if the user not choose to use random sampling, then do nothing
-            // if the u-values is already locked then do nothing as well
-            if(mc.isUsingRandomSampling() && !mc.isLockedUValues()) {
-                OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
-                OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
-                if(odsr1 != null && odsr2 != null){
-                    FormPairs fp2 = null;
-                    if(rm_conf.isDeduplication()) {
-                        fp2 = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
-                    } else {
-                        fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
-                    }
-                    
-                    PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
-                    
-                    ApplyAnalyzerLoggingFrame frame = new ApplyAnalyzerLoggingFrame(mc, null);
-                    
-                    MatchingConfig mcCopy = (MatchingConfig) mc.clone();
-                    
-                    OrderedDataSourceReader rsa_odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
+	
+	private void performRandomSampling() {
+		ReaderProvider rp = ReaderProvider.getInstance();
+		List<MatchingConfig> mcs = rm_conf.getMatchingConfigs();
+		Iterator<MatchingConfig> it = mcs.iterator();
+		while (it.hasNext()) {
+			MatchingConfig mc = it.next();
+			// if the user not choose to use random sampling, then do nothing
+			// if the u-values is already locked then do nothing as well
+			if (mc.isUsingRandomSampling() && !mc.isLockedUValues()) {
+				OrderedDataSourceReader odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
+				OrderedDataSourceReader odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
+				if (odsr1 != null && odsr2 != null) {
+					FormPairs fp2 = null;
+					if (rm_conf.isDeduplication()) {
+						fp2 = new DedupOrderedDataSourceFormPairs(odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
+					} else {
+						fp2 = new OrderedDataSourceFormPairs(odsr1, odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
+					}
+					
+					PairDataSourceAnalysis pdsa = new PairDataSourceAnalysis(fp2);
+					
+					ApplyAnalyzerLoggingFrame frame = new ApplyAnalyzerLoggingFrame(mc, null);
+					
+					MatchingConfig mcCopy = (MatchingConfig) mc.clone();
+					
+					OrderedDataSourceReader rsa_odsr1 = rp.getReader(rm_conf.getLinkDataSource1(), mc);
 					OrderedDataSourceReader rsa_odsr2 = rp.getReader(rm_conf.getLinkDataSource2(), mc);
 					FormPairs rsa_fp2 = null;
-				    if (rm_conf.isDeduplication()) {
-				        rsa_fp2 = new DedupOrderedDataSourceFormPairs(rsa_odsr1, mc, rm_conf.getLinkDataSource1().getTypeTable());
-				    } else {
-				        rsa_fp2 = new OrderedDataSourceFormPairs(rsa_odsr1, rsa_odsr2, mc, rm_conf.getLinkDataSource1().getTypeTable());
-				    }
-                    RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(mcCopy, rsa_fp2);
-                    
-                    pdsa.addAnalyzer(rsa);
-                    frame.addLoggingObject(rsa);
-                    
-                    frame.configureLoggingFrame();
-                    pdsa.analyzeData();
-                }
-                odsr1.close();
-                odsr2.close();
-            }
-        }
-    }
-
+					if (rm_conf.isDeduplication()) {
+						rsa_fp2 = new DedupOrderedDataSourceFormPairs(rsa_odsr1, mc,
+						        rm_conf.getLinkDataSource1().getTypeTable());
+					} else {
+						rsa_fp2 = new OrderedDataSourceFormPairs(rsa_odsr1, rsa_odsr2, mc,
+						        rm_conf.getLinkDataSource1().getTypeTable());
+					}
+					RandomSampleAnalyzer rsa = new RandomSampleAnalyzer(mcCopy, rsa_fp2);
+					
+					pdsa.addAnalyzer(rsa);
+					frame.addLoggingObject(rsa);
+					
+					frame.configureLoggingFrame();
+					pdsa.analyzeData();
+				}
+				odsr1.close();
+				odsr2.close();
+			}
+		}
+	}
+	
 	@Override
 	public Logger getLogger() {
 		return log;

@@ -11,11 +11,13 @@ import java.util.List;
 import javax.swing.JTextField;
 
 public class MatchResultReviewKeyboardAccelerator implements KeyListener, ContainerListener {
-
+	
 	public static final MatchResultReviewKeyboardAccelerator INSTANCE = new MatchResultReviewKeyboardAccelerator();
 	
 	private List<MatchResultReviewPanel> review_panels;
+	
 	private MatchResultReviewPagerPanel pager;
+	
 	private int focus_index;
 	
 	private MatchResultReviewKeyboardAccelerator() {
@@ -29,7 +31,7 @@ public class MatchResultReviewKeyboardAccelerator implements KeyListener, Contai
 	public void setPagerPanel(final MatchResultReviewPagerPanel mrppp) {
 		pager = mrppp;
 	}
-
+	
 	@Override
 	public void componentAdded(final ContainerEvent arg0) {
 		addAccelerator(arg0.getChild());
@@ -43,7 +45,7 @@ public class MatchResultReviewKeyboardAccelerator implements KeyListener, Contai
 			}
 		}
 	}
-
+	
 	@Override
 	public void componentRemoved(final ContainerEvent arg0) {
 		removeAccelerator(arg0.getChild());
@@ -89,7 +91,7 @@ public class MatchResultReviewKeyboardAccelerator implements KeyListener, Contai
 			setFocusIndex(focus_index - 1);
 		}
 	}
-
+	
 	@Override
 	public void keyPressed(final KeyEvent e) {
 		if (e.getSource() instanceof JTextField && ((JTextField) e.getSource()).isEditable()) {
@@ -124,15 +126,15 @@ public class MatchResultReviewKeyboardAccelerator implements KeyListener, Contai
 					nextFocus();
 					e.consume();
 				}
-			} catch (final NumberFormatException nfe) {
 			}
+			catch (final NumberFormatException nfe) {}
 		}
 	}
-
+	
 	@Override
 	public void keyReleased(final KeyEvent e) {
 	}
-
+	
 	@Override
 	public void keyTyped(final KeyEvent e) {
 	}

@@ -21,35 +21,55 @@ import org.regenstrief.linkage.util.MatchingConfig;
 public class ManualReviewDBGenerator {
 	
 	private static final String PROP_EXCLUDE_BASED_ON_EMPIRICAL_RULES = "org.regenstrief.linkage.db.ManualReviewDBGenerator.excludeBasedOnEmpiricalRules";
+	
 	private static final String PROP_SKIP_HEADER = "org.regenstrief.linkage.db.ManualReviewDBGenerator.skipHeader";
+	
 	private static final String PROP_FIELD_INDEX_UID1 = "org.regenstrief.linkage.db.ManualReviewDBGenerator.fieldIndexUid1";
+	
 	private static final String PROP_FIELD_INDEX_UID2 = "org.regenstrief.linkage.db.ManualReviewDBGenerator.fieldIndexUid2";
+	
 	private static final String PROP_REVIEWER_INDEX_MAX = "org.regenstrief.linkage.db.ManualReviewDBGenerator.reviewerIndexMax";
+	
 	private static final String PROP_PAIR_FILE_EXTENSION = "org.regenstrief.linkage.db.ManualReviewDBGenerator.pairFileExtension";
 	
 	private static final Pattern PAT_PIPE = Pattern.compile("\\|");
 	
 	private static String pairFile = null;
+	
 	private static String databaseLocation1 = null;
+	
 	private static String table1 = null;
+	
 	private static Connection con1 = null;
+	
 	private static PreparedStatement read1 = null;
+	
 	private static String databaseLocation2 = null;
+	
 	private static String table2 = null;
+	
 	private static Connection con2 = null;
+	
 	private static PreparedStatement read2 = null;
+	
 	private static Connection conPair = null;
+	
 	private static BufferedReader in = null;
+	
 	private static DBMatchResultStore mrs;
+	
 	private static MatchingConfig mc = null;
+	
 	private static int pairId = 0;
+	
 	private static boolean excludeBasedOnEmpiricalRules = true;
 	
 	public final static void main(final String[] args) throws Exception {
 		start(args[0], args[1], args[2], args[3], args[4]);
 	}
 	
-	private final static void start(final String pairFile, final String databaseLocation1, final String table1, final String databaseLocation2, final String table2) throws Exception {
+	private final static void start(final String pairFile, final String databaseLocation1, final String table1,
+	        final String databaseLocation2, final String table2) throws Exception {
 		info("Starting");
 		final String reviewerIndexMax = System.getProperty(PROP_REVIEWER_INDEX_MAX);
 		if (reviewerIndexMax == null) {
@@ -60,7 +80,8 @@ public class ManualReviewDBGenerator {
 		info("Finished");
 	}
 	
-	private final static void run(final String pairFile, final String databaseLocation1, final String table1, final String databaseLocation2, final String table2) throws Exception {
+	private final static void run(final String pairFile, final String databaseLocation1, final String table1,
+	        final String databaseLocation2, final String table2) throws Exception {
 		info("Starting " + pairFile);
 		ManualReviewDBGenerator.pairFile = pairFile;
 		ManualReviewDBGenerator.databaseLocation1 = databaseLocation1;
@@ -102,14 +123,15 @@ public class ManualReviewDBGenerator {
 			mrs.addIndexes();
 			conPair.commit();
 			mrs.close();
-		} finally {
+		}
+		finally {
 			close();
 		}
 		info("Finished " + pairFile + " after adding " + pairsAdded + " pairs and skipping " + pairsSkipped);
 	}
 	
-	private final static void run(final String pairFilePrefix, final int reviewerIndexMax,
-	                              final String databaseLocation1, final String table1, final String databaseLocation2, final String table2) throws Exception {
+	private final static void run(final String pairFilePrefix, final int reviewerIndexMax, final String databaseLocation1,
+	        final String table1, final String databaseLocation2, final String table2) throws Exception {
 		final String ext = System.getProperty(PROP_PAIR_FILE_EXTENSION, "txt");
 		for (int i = 0; i <= reviewerIndexMax; i++) {
 			final String pairFile = pairFilePrefix + i + "." + ext;
@@ -170,7 +192,8 @@ public class ManualReviewDBGenerator {
 		if (con != null) {
 			try {
 				con.close();
-			} catch (final Exception e) {
+			}
+			catch (final Exception e) {
 				e.printStackTrace();
 			}
 		}
@@ -180,7 +203,8 @@ public class ManualReviewDBGenerator {
 		if (stmt != null) {
 			try {
 				stmt.close();
-			} catch (final Exception e) {
+			}
+			catch (final Exception e) {
 				e.printStackTrace();
 			}
 		}
@@ -190,18 +214,22 @@ public class ManualReviewDBGenerator {
 		if (c != null) {
 			try {
 				c.close();
-			} catch (final Exception e) {
+			}
+			catch (final Exception e) {
 				e.printStackTrace();
 			}
 		}
 	}
 	
-	private final static void createIndex(final Connection con, final String table, final String databaseLocation) throws Exception {
+	private final static void createIndex(final Connection con, final String table, final String databaseLocation)
+	        throws Exception {
 		info("Creating " + databaseLocation + " " + table + " index if needed");
-		final PreparedStatement stmt = con.prepareStatement("create unique index if not exists " + table + "_uid_idx on " + table + " (uid)");
+		final PreparedStatement stmt = con
+		        .prepareStatement("create unique index if not exists " + table + "_uid_idx on " + table + " (uid)");
 		try {
 			stmt.execute();
-		} finally {
+		}
+		finally {
 			stmt.close();
 		}
 		info("Finished creating " + databaseLocation + " " + table + " index if needed");
@@ -227,7 +255,8 @@ public class ManualReviewDBGenerator {
 		return new MatchResult(0, 0, 0, 0, 0, 0, mv, null, r1, r2, mc);
 	}
 	
-	private final static Record getRecord(final PreparedStatement read, final String uid, final String context) throws Exception {
+	private final static Record getRecord(final PreparedStatement read, final String uid, final String context)
+	        throws Exception {
 		read.setString(1, uid);
 		final ResultSet rs = read.executeQuery();
 		try {
@@ -254,7 +283,8 @@ public class ManualReviewDBGenerator {
 				mc = new MatchingConfig("ManualReview", dems);
 			}
 			return r;
-		} finally {
+		}
+		finally {
 			rs.close();
 		}
 	}

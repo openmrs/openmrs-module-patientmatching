@@ -5,12 +5,12 @@ package org.regenstrief.linkage.util;
  */
 
 public class LongestCommonSubString {
-
+	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		if(args.length < 2){
+		if (args.length < 2) {
 			System.out.println("usage: java LongestCommonSubString <str1> <str2>");
 			System.exit(0);
 		}
@@ -23,7 +23,7 @@ public class LongestCommonSubString {
 		//int iterations = 1000000;
 		//System.out.println("starting " + iterations + " iterations at " + new java.util.Date());
 		//for(int i = 0; i < iterations; i++){
-			s = getSimilarity(str1, str2);
+		s = getSimilarity(str1, str2);
 		//}
 		//System.out.println("finished at " + new java.util.Date());
 		
@@ -31,7 +31,7 @@ public class LongestCommonSubString {
 		
 	}
 	
-	private LongestCommonSubString(){
+	private LongestCommonSubString() {
 		// instantiate nothing
 	}
 	
@@ -43,25 +43,25 @@ public class LongestCommonSubString {
 	 * Algorithm from:
 	 * http://www.ics.uci.edu/~eppstein/161/960229.html
 	 */
-	static float getLongestCommonSubSequence(String str1, String str2){
+	static float getLongestCommonSubSequence(String str1, String str2) {
 		char[] ch1 = str1.toCharArray();
 		char[] ch2 = str2.toCharArray();
 		int m = str1.length();
 		int n = str2.length();
 		
 		// handle zero length strings
-		if(m == 0 && n == 0){
+		if (m == 0 && n == 0) {
 			return 1;
-		} else if(m == 0 || n == 0){
+		} else if (m == 0 || n == 0) {
 			return 0;
 		}
 		
 		int[][] L = new int[m + 1][n + 1];
-		for(int i = m; i >= 0; i--){
-			for(int j = n; j >= 0; j--){
-				if(i == m || j == n){
+		for (int i = m; i >= 0; i--) {
+			for (int j = n; j >= 0; j--) {
+				if (i == m || j == n) {
 					L[i][j] = 0;
-				} else if(ch1[i] == ch2[j]){
+				} else if (ch1[i] == ch2[j]) {
 					L[i][j] = 1 + L[i + 1][j + 1];
 				} else {
 					L[i][j] = Math.max(L[i + 1][j], L[i][j + 1]);
@@ -69,11 +69,11 @@ public class LongestCommonSubString {
 			}
 		}
 		
-		int lcss_length =  L[0][0];
-		if(m < n){
-			return (float)lcss_length / m;
+		int lcss_length = L[0][0];
+		if (m < n) {
+			return (float) lcss_length / m;
 		} else {
-			return (float)lcss_length / n;
+			return (float) lcss_length / n;
 		}
 	}
 	
@@ -82,11 +82,11 @@ public class LongestCommonSubString {
 	 * Implements algorithm by Lonnie Blevins.
 	 * 
 	 */
-	public static float getSimilarity(String str1, String str2){
+	public static float getSimilarity(String str1, String str2) {
 		String min, max;
 		
 		// set strings to lowercase for comparison purposes
-		if(str1.length() <= str2.length()){
+		if (str1.length() <= str2.length()) {
 			min = str1.toLowerCase();
 			max = str2.toLowerCase();
 		} else {
@@ -95,7 +95,7 @@ public class LongestCommonSubString {
 		}
 		
 		int min_length;
-		if(min.length() >= 6){
+		if (min.length() >= 6) {
 			min_length = 3;
 		} else {
 			min_length = 0;
@@ -103,18 +103,18 @@ public class LongestCommonSubString {
 		
 		int lcss_length = getLCS(min, max, min_length);
 		
-		if(lcss_length == 0){
+		if (lcss_length == 0) {
 			return 0;
 		} else {
-			return (float)lcss_length / min.length();
+			return (float) lcss_length / min.length();
 		}
 	}
 	
-	public static float getSimilarity2(String str1, String str2){
+	public static float getSimilarity2(String str1, String str2) {
 		String min, max;
 		
 		// set strings to lowercase for comparison purposes
-		if(str1.length() <= str2.length()){
+		if (str1.length() <= str2.length()) {
 			min = str1.toLowerCase();
 			max = str2.toLowerCase();
 		} else {
@@ -123,7 +123,7 @@ public class LongestCommonSubString {
 		}
 		
 		int min_length;
-		if(min.length() >= 6){
+		if (min.length() >= 6) {
 			min_length = 3;
 		} else {
 			min_length = 2;
@@ -131,10 +131,10 @@ public class LongestCommonSubString {
 		
 		int lcss_length = getLCS(min, max, min_length);
 		
-		if(lcss_length == 0){
+		if (lcss_length == 0) {
 			return 0;
 		} else {
-			return (float)lcss_length / min.length();
+			return (float) lcss_length / min.length();
 		}
 	}
 	
@@ -142,21 +142,21 @@ public class LongestCommonSubString {
 	 * An iterative version of the below method, written in an attempt to make
 	 * it run faster.  It did not seem to improve when tested.
 	 */
-	private static int getLCS2(String pattern, String str, int limit){
+	private static int getLCS2(String pattern, String str, int limit) {
 		boolean finished = true;
 		int total = 0;
 		int loops = 0;
 		
-		do{
+		do {
 			loops++;
 			finished = true;
-			for(int start = 0; start < pattern.length(); start++){
-				for(int end = pattern.length(); end > start; end--){
+			for (int start = 0; start < pattern.length(); start++) {
+				for (int end = pattern.length(); end > start; end--) {
 					String s = pattern.substring(start, end);
-					if(str.indexOf(s) != -1){
+					if (str.indexOf(s) != -1) {
 						// longest, first occurance of string this length
 						// check ot see if it is at least as long as limit
-						if(s.length() >= limit){
+						if (s.length() >= limit) {
 							//pattern = pattern.replaceFirst(s, "");
 							pattern = replaceFirst(pattern, s, "");
 							//str = str.replaceFirst(s, "");
@@ -171,7 +171,7 @@ public class LongestCommonSubString {
 				
 			}
 			
-		}while(!finished);
+		} while (!finished);
 		//System.out.println("times executed for loops: " + loops);
 		return total;
 	}
@@ -180,14 +180,14 @@ public class LongestCommonSubString {
 	 * Recursive algorithm to find and remove the earliest, longest matching
 	 * substring.
 	 */
-	private static int getLCS(String pattern, String str, int limit){
-		for(int start = 0; start < pattern.length(); start++){
-			for(int end = pattern.length(); end > start; end--){
+	private static int getLCS(String pattern, String str, int limit) {
+		for (int start = 0; start < pattern.length(); start++) {
+			for (int end = pattern.length(); end > start; end--) {
 				String s = pattern.substring(start, end);
-				if(str.indexOf(s) != -1){
+				if (str.indexOf(s) != -1) {
 					// longest, first occurance of string this length
 					// check ot see if it is at least as long as limit
-					if(s.length() >= limit){
+					if (s.length() >= limit) {
 						//String new_pattern = pattern.replaceFirst(s, "");
 						String new_pattern = replaceFirst(pattern, s, "");
 						//String new_str = str.replaceFirst(s, "");
@@ -208,7 +208,7 @@ public class LongestCommonSubString {
 	 * prefixed with a backslash so that they are interpreted correctly
 	 * as literals.
 	 */
-	private static String expandMetaCharacters(String str){
+	private static String expandMetaCharacters(String str) {
 		String ret = new String(str);
 		
 		ret = ret.replaceAll("\\\\", "\\\\\\\\");
@@ -229,9 +229,9 @@ public class LongestCommonSubString {
 	 * this was written to perform the function of replacing the first occurance
 	 * without having to modify the strings.
 	 */
-	private static String replaceFirst(String original, String str, String replacement){
+	private static String replaceFirst(String original, String str, String replacement) {
 		int index = original.indexOf(str);
-		if(index == -1){
+		if (index == -1) {
 			return new String(original);
 		}
 		int str_length = str.length();

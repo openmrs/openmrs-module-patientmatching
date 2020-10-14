@@ -6,54 +6,55 @@ import java.sql.*;
 import java.util.*;
 
 /**
- * Class opens a connection from a database to read Record objects.  For the LinkDataSource
- * object, it is assumed that the access variable is a comma delimited string
- * with the parts:
- * 	Driver - the JDBC driver class name
- * 	URL - the connection URL to the database
- * 	User - the database connection user
- * 	Password - the user's password
- * 
- * The driver class needs to be in the classpath when the program is run.
- *
+ * Class opens a connection from a database to read Record objects. For the LinkDataSource object,
+ * it is assumed that the access variable is a comma delimited string with the parts: Driver - the
+ * JDBC driver class name URL - the connection URL to the database User - the database connection
+ * user Password - the user's password The driver class needs to be in the classpath when the
+ * program is run.
  */
 public class DataBaseReader implements DataSourceReader {
+	
 	protected LinkDataSource data_source;
 	
 	protected String driver, url, user, passwd, query, quote_string;
-	protected Connection db;
-	protected ResultSet data;
-	protected PreparedStatement pstmt;
-	protected boolean ready;
-	protected boolean read_record;
-	protected Record next_record;
-	protected int record_count;
 	
+	protected Connection db;
+	
+	protected ResultSet data;
+	
+	protected PreparedStatement pstmt;
+	
+	protected boolean ready;
+	
+	protected boolean read_record;
+	
+	protected Record next_record;
+	
+	protected int record_count;
 	
 	// columns queried from the data base
 	List<DataColumn> incl_cols;
 	
 	/**
-	 * Constructor parses information from the LinkDataSource
-	 * object and connects to the database.
+	 * Constructor parses information from the LinkDataSource object and connects to the database.
 	 * 
-	 * @param lds	contains the database connection information
+	 * @param lds contains the database connection information
 	 */
-	public DataBaseReader(LinkDataSource lds, Connection db){
+	public DataBaseReader(LinkDataSource lds, Connection db) {
 		data_source = lds;
 		this.db = db;
 		ready = false;
 		record_count = 0;
 		
-		try{
+		try {
 			quote_string = db.getMetaData().getIdentifierQuoteString();
 		}
-		catch(SQLException sqle){
+		catch (SQLException sqle) {
 			quote_string = "";
 		}
 	}
 	
-	public int getRecordSize(){
+	public int getRecordSize() {
 		return data_source.getIncludeCount();
 	}
 	
@@ -64,26 +65,26 @@ public class DataBaseReader implements DataSourceReader {
 	 * in subclasses.  For example, OrderedDataBaseReader uses a MatchingConfig object to make the query,
 	 * and this class's constructor must be called before the object is assigned in the subclass.  
 	 */
-	protected void getResultSet(){
+	protected void getResultSet() {
 		//TODO: MySQL way to stream result set is using:
 		//    - ResultSet.TYPE_FORWARD_ONLY + setFetchSize(Integer.MIN_VALUE)
 		//Pay attention when using other database
-		try{
-			if(!ready){
+		try {
+			if (!ready) {
 				ready = true;
 				query = constructQuery();
-				pstmt = db.prepareStatement(query,ResultSet.TYPE_FORWARD_ONLY,ResultSet.CONCUR_READ_ONLY);
+				pstmt = db.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			}
 			//pstmt.setFetchSize(Integer.MIN_VALUE);
 			data = pstmt.executeQuery();
-			if(data.next()){
+			if (data.next()) {
 				parseDataBaseRow();
 			} else {
 				next_record = null;
 			}
 			
 		}
-		catch(SQLException se){
+		catch (SQLException se) {
 			db = null;
 		}
 	}
@@ -91,18 +92,18 @@ public class DataBaseReader implements DataSourceReader {
 	/*
 	 * Construct a query based on the table name and blocking variables.
 	 */
-	protected String constructQuery(){
+	protected String constructQuery() {
 		String query = new String("SELECT ");
 		incl_cols = new ArrayList<DataColumn>();
 		Iterator<DataColumn> it = data_source.getDataColumns().iterator();
-		while(it.hasNext()){
+		while (it.hasNext()) {
 			DataColumn dc = it.next();
-			if(dc.getIncludePosition() != DataColumn.INCLUDE_NA){
+			if (dc.getIncludePosition() != DataColumn.INCLUDE_NA) {
 				incl_cols.add(dc);
 			}
 		}
 		
-		for(int i = 0; i < incl_cols.size() - 1; i++){
+		for (int i = 0; i < incl_cols.size() - 1; i++) {
 			query += quote_string + incl_cols.get(i).getColumnID() + quote_string + ", ";
 		}
 		
@@ -113,15 +114,15 @@ public class DataBaseReader implements DataSourceReader {
 	}
 	
 	public Record nextRecord() {
-		if(!ready){
+		if (!ready) {
 			getResultSet();
 		}
-		if(!read_record){
+		if (!read_record) {
 			read_record = true;
 			return next_record;
 		} else {
-			try{
-				if(data.next()){
+			try {
+				if (data.next()) {
 					parseDataBaseRow();
 					read_record = true;
 					return next_record;
@@ -129,7 +130,7 @@ public class DataBaseReader implements DataSourceReader {
 					return null;
 				}
 			}
-			catch(SQLException sqle){
+			catch (SQLException sqle) {
 				return null;
 			}
 			
@@ -137,34 +138,34 @@ public class DataBaseReader implements DataSourceReader {
 		
 	}
 	
-	protected void parseDataBaseRow(){
-		try{
+	protected void parseDataBaseRow() {
+		try {
 			DataColumn id_col = data_source.getIncludedDataColumns().get(data_source.getUniqueID());
-			int id = data.getInt(id_col.getIncludePosition()+1);
+			int id = data.getInt(id_col.getIncludePosition() + 1);
 			next_record = new Record(id, data_source.getName());
-			for(int i = 0; i < incl_cols.size(); i++){
-				String demographic = data.getString(i+1);
-				if(incl_cols.get(i).getName() != data_source.getUniqueID()){
+			for (int i = 0; i < incl_cols.size(); i++) {
+				String demographic = data.getString(i + 1);
+				if (incl_cols.get(i).getName() != data_source.getUniqueID()) {
 					next_record.addDemographic(incl_cols.get(i).getName(), demographic);
 				}
 			}
 		}
-		catch(SQLException sqle){
+		catch (SQLException sqle) {
 			next_record = null;
 		}
 		
 	}
 	
 	public boolean hasNextRecord() {
-		if(!ready){
+		if (!ready) {
 			getResultSet();
 		}
 		
-		try{
-			if(db != null){
-				if(read_record){
+		try {
+			if (db != null) {
+				if (read_record) {
 					boolean has_next = data.next();
-					if(has_next){
+					if (has_next) {
 						parseDataBaseRow();
 						read_record = false;
 						return true;
@@ -176,47 +177,46 @@ public class DataBaseReader implements DataSourceReader {
 			}
 			return false;
 		}
-		catch(SQLException sqle){
+		catch (SQLException sqle) {
 			return false;
 		}
 		
-		
 	}
-
-	public boolean reset(){
+	
+	public boolean reset() {
 		next_record = null;
 		read_record = false;
 		record_count = 0;
-		try{
-			if(data != null){
+		try {
+			if (data != null) {
 				data.close();
 			}
 			getResultSet();
 			return db != null;
 		}
-		catch(SQLException sqle){
+		catch (SQLException sqle) {
 			return false;
 		}
 	}
 	
-	public boolean close(){
+	public boolean close() {
 		record_count = 0;
-		try{
-			if(pstmt != null){
+		try {
+			if (pstmt != null) {
 				pstmt.clearParameters();
 				pstmt.close();
 			}
 			
-			if(data != null){
+			if (data != null) {
 				data.close();
 			}
 			
-			if(db != null){
+			if (db != null) {
 				db.close();
 			}
 			return true;
 		}
-		catch(SQLException sqle){
+		catch (SQLException sqle) {
 			return false;
 		}
 	}

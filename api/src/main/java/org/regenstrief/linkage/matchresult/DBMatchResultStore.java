@@ -17,52 +17,75 @@ import org.regenstrief.linkage.util.MatchingConfig;
 
 /**
  * Class implements a MatchResultStore that has the MatchResult information stored within a database
- *
  */
 public class DBMatchResultStore implements MatchResultStore {
 	
 	public static final int LEFT_UID = 1;
+	
 	public static final int RIGHT_UID = 2;
 	
-	public static final String RECORD_INSERT = "insert into record" +
-			"(uid)" +
-			" values (?)";
-	public static final String MATCH_RESULT_INSERT = "insert into matchresult" +
-			"(ID,mc,score,true_prob,false_prob,spec,sens,status,certainty,uid1,uid2,note,report_date)" +
-			" values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
-	public static final String DEMOGRAPHIC_INSERT = "insert into demographic" +
-			"(uid,field,value)" +
-			" values (?,?,?)";
-	public static final String FIELD_AGREEMENT_INSERT = "insert into field_agreement" +
-			"(ID,field,algorithm,agreement)" +
-			" values (?,?,?,?)";
+	public static final String RECORD_INSERT = "insert into record" + "(uid)" + " values (?)";
+	
+	public static final String MATCH_RESULT_INSERT = "insert into matchresult"
+	        + "(ID,mc,score,true_prob,false_prob,spec,sens,status,certainty,uid1,uid2,note,report_date)"
+	        + " values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+	
+	public static final String DEMOGRAPHIC_INSERT = "insert into demographic" + "(uid,field,value)" + " values (?,?,?)";
+	
+	public static final String FIELD_AGREEMENT_INSERT = "insert into field_agreement" + "(ID,field,algorithm,agreement)"
+	        + " values (?,?,?,?)";
+	
 	public static final String COUNT_QUERY = "select count(*) from matchresult where report_date = ?";
+	
 	public static final String MATCH_RESULT_QUERY = "select * from matchresult where ID = ? and report_date = ?";
+	
 	public static final String MATCH_RESULT_PAIR_QUERY = "select ID from matchresult where uid1 = ? and uid2 = ? and report_date = ?";
+	
 	public static final String DEMOGRAPHIC_QUERY = "select * from demographic where uid = ?";
+	
 	public static final String RECORD_COUNT_QUERY = "select count(*) from record where uid = ?";
+	
 	public static final String FIELD_AGREEMENT_QUERY = "select * from field_agreement where ID = ?";
+	
 	public static final String DELETE_MATCH_RESULT_QUERY = "delete from matchresult where ID = ? and report_date = ?";
+	
 	public static final String DELETE_FIELD_AGREEMENT_QUERY = "delete from field_agreement where ID = ?";
+	
 	public static final String UPDATE_MATCH_RESULT_QUERY = "update matchresult set status = ?, certainty = ?, note = ? where ID = ? and report_date = ?";
-	public static final String MIN_UNKNOWN_QUERY = "select min(ID) from matchresult where status = " + MatchResult.UNKNOWN + " and report_date = ?";
+	
+	public static final String MIN_UNKNOWN_QUERY = "select min(ID) from matchresult where status = " + MatchResult.UNKNOWN
+	        + " and report_date = ?";
+	
 	public static final String DATES_QUERY = "select distinct report_date from report_dates";
+	
 	public static final String DATES_INSERT = "insert into report_dates(report_date) values (?)";
 	
 	private final HashSet<Long> imported_uids = new HashSet<Long>();
+	
 	private int importedPairCount = 0;
 	
 	protected Connection db;
+	
 	protected PreparedStatement rec_insert;
+	
 	protected PreparedStatement mr_insert;
+	
 	protected PreparedStatement dem_insert;
+	
 	protected PreparedStatement fa_insert;
+	
 	protected PreparedStatement mr_count;
+	
 	protected PreparedStatement mr_query, mr_pair_query, dem_query, rec_count_query, fa_query;
+	
 	protected PreparedStatement mr_delete, fa_delete;
+	
 	protected PreparedStatement mr_update;
+	
 	protected PreparedStatement min_query;
+	
 	protected PreparedStatement date_query;
+	
 	protected PreparedStatement date_insert;
 	
 	protected Date set_date;
@@ -88,7 +111,8 @@ public class DBMatchResultStore implements MatchResultStore {
 			min_query = db.prepareStatement(MIN_UNKNOWN_QUERY);
 			date_query = db.prepareStatement(DATES_QUERY);
 			date_insert = db.prepareStatement(DATES_INSERT);
-		} catch (final SQLException e) {
+		}
+		catch (final SQLException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -103,7 +127,8 @@ public class DBMatchResultStore implements MatchResultStore {
 			try {
 				date_insert.setDate(1, set_date);
 				date_insert.executeUpdate();
-			} catch (final SQLException e) {
+			}
+			catch (final SQLException e) {
 				throw new RuntimeException(e);
 			}
 		}
@@ -136,9 +161,11 @@ public class DBMatchResultStore implements MatchResultStore {
 			mr_pair_query.setDate(3, set_date);
 			rs = mr_pair_query.executeQuery();
 			return rs.next() ? rs.getInt(1) : -1;
-		} catch (final SQLException e) {
+		}
+		catch (final SQLException e) {
 			throw new RuntimeException(e);
-		} finally {
+		}
+		finally {
 			close(rs);
 		}
 	}
@@ -182,9 +209,11 @@ public class DBMatchResultStore implements MatchResultStore {
 			ret.setCertainty(certainty);
 			ret.setMatch_status(status);
 			return ret;
-		} catch (final SQLException e) {
+		}
+		catch (final SQLException e) {
 			throw new RuntimeException(e);
-		} finally {
+		}
+		finally {
 			close(rs);
 		}
 	}
@@ -197,12 +226,13 @@ public class DBMatchResultStore implements MatchResultStore {
 			while (rs.next()) {
 				r.addDemographic(rs.getString("field"), rs.getString("value"));
 			}
-		} finally {
+		}
+		finally {
 			rs.close();
 		}
 		return r;
 	}
-
+	
 	private void addMatchResult(final MatchResult mr) {
 		addMatchResult(mr, importedPairCount);
 		importedPairCount++;
@@ -233,7 +263,7 @@ public class DBMatchResultStore implements MatchResultStore {
 			
 			add_r1 = addRecordIfNeeded(add_r1, uid1);
 			add_r2 = addRecordIfNeeded(add_r2, uid2);
-		
+			
 			for (final String dem : mr.getDemographics()) {
 				final String val1 = record1.getDemographic(dem), val2 = record2.getDemographic(dem);
 				final int agree = mr.matchedOn(dem) ? 1 : 0;
@@ -250,7 +280,8 @@ public class DBMatchResultStore implements MatchResultStore {
 				executeAtLeastOneUpdate(fa_insert);
 			}
 			addCount++;
-		} catch (final SQLException e) {
+		}
+		catch (final SQLException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -270,7 +301,8 @@ public class DBMatchResultStore implements MatchResultStore {
 			if (rs.next() && (rs.getInt(1) > 0)) {
 				return false;
 			}
-		} finally {
+		}
+		finally {
 			rs.close();
 		}
 		rec_insert.setLong(1, uid);
@@ -296,9 +328,11 @@ public class DBMatchResultStore implements MatchResultStore {
 			while (rs.next()) {
 				ret.add(rs.getDate(1));
 			}
-		} catch (final SQLException e) {
+		}
+		catch (final SQLException e) {
 			throw new RuntimeException(e);
-		} finally {
+		}
+		finally {
 			close(rs);
 		}
 		
@@ -311,9 +345,11 @@ public class DBMatchResultStore implements MatchResultStore {
 			min_query.setDate(1, set_date);
 			rs = min_query.executeQuery();
 			return rs.next() ? rs.getInt(1) : 0;
-		} catch (final SQLException e) {
+		}
+		catch (final SQLException e) {
 			throw new RuntimeException(e);
-		} finally {
+		}
+		finally {
 			close(rs);
 		}
 	}
@@ -325,11 +361,12 @@ public class DBMatchResultStore implements MatchResultStore {
 			st.execute("create index if not exists dem_idx on demographic(uid)");
 			st.execute("create index if not exists fa_idx on field_agreement(ID)");
 			st.close();
-		} catch (final SQLException e) {
+		}
+		catch (final SQLException e) {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	@Override
 	public int getSize() {
 		ResultSet rs = null;
@@ -337,13 +374,15 @@ public class DBMatchResultStore implements MatchResultStore {
 			mr_count.setDate(1, set_date);
 			rs = mr_count.executeQuery();
 			return rs.next() ? rs.getInt(1) : 0;
-		} catch (final SQLException e) {
+		}
+		catch (final SQLException e) {
 			throw new RuntimeException(e);
-		} finally {
+		}
+		finally {
 			close(rs);
 		}
 	}
-
+	
 	@Override
 	public void removeMatchResult(final int id) {
 		if (!removeMatchResultIfPresent(id)) {
@@ -362,7 +401,8 @@ public class DBMatchResultStore implements MatchResultStore {
 			mr_delete.setDate(2, set_date);
 			executeAtLeastOneUpdate(mr_delete);
 			return true;
-		} catch (final SQLException e) {
+		}
+		catch (final SQLException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -383,7 +423,8 @@ public class DBMatchResultStore implements MatchResultStore {
 			mr_update.setInt(4, id);
 			mr_update.setDate(5, set_date);
 			mr_update.executeUpdate();
-		} catch (final SQLException e) {
+		}
+		catch (final SQLException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -406,7 +447,8 @@ public class DBMatchResultStore implements MatchResultStore {
 			min_query.close();
 			date_query.close();
 			date_insert.close();
-		} catch (final SQLException e) {
+		}
+		catch (final SQLException e) {
 			System.err.println(e.getMessage());
 		}
 	}
@@ -415,7 +457,8 @@ public class DBMatchResultStore implements MatchResultStore {
 		if (rs != null) {
 			try {
 				rs.close();
-			} catch (final SQLException e) {
+			}
+			catch (final SQLException e) {
 				throw new RuntimeException(e);
 			}
 		}

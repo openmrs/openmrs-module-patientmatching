@@ -38,18 +38,19 @@ import uk.ac.shef.wit.simmetrics.similaritymetrics.SmithWatermanGotohWindowedAff
 import uk.ac.shef.wit.simmetrics.similaritymetrics.Soundex;
 
 /**
- * Class created to test LCS, JWC, and LEV string comparators for
- * accuracy and how they handle different non alpha numeric characters
+ * Class created to test LCS, JWC, and LEV string comparators for accuracy and how they handle
+ * different non alpha numeric characters
  * 
  * @author jegg
- *
  */
 
 public class ComparatorTesting {
 	
-	static String[] random_alpha = {"a","b","c"};
-	static String[] random_alpha_numeric = {"a","b","1","2","3"};
-	static String[] random_all = {"a","b","1","2","3"," ","-",".","_","/","\\"};
+	static String[] random_alpha = { "a", "b", "c" };
+	
+	static String[] random_alpha_numeric = { "a", "b", "1", "2", "3" };
+	
+	static String[] random_all = { "a", "b", "1", "2", "3", " ", "-", ".", "_", "/", "\\" };
 	
 	static Random rand;
 	
@@ -116,18 +117,19 @@ public class ComparatorTesting {
 		*/
 		
 		File names = new File("C:\\Documents and Settings\\jegg\\Desktop\\census common names\\name_combinations.txt");
-		File output = new File("C:\\Documents and Settings\\jegg\\Desktop\\census common names\\reduced_compare_results.txt");
-		try{
+		File output = new File(
+		        "C:\\Documents and Settings\\jegg\\Desktop\\census common names\\reduced_compare_results.txt");
+		try {
 			System.out.println("started at:\t" + new Date());
 			writeComparisonFromFile(names, output);
 			System.out.println("finished at:\t" + new Date());
 		}
-		catch(IOException ioe){
+		catch (IOException ioe) {
 			System.err.println(ioe.getMessage());
 		}
 	}
 	
-	public static void writeComparisonFromFile(File in, File out) throws IOException{
+	public static void writeComparisonFromFile(File in, File out) throws IOException {
 		BufferedReader fin = new BufferedReader(new FileReader(in));
 		BufferedWriter fout = new BufferedWriter(new FileWriter(out));
 		String line;
@@ -160,14 +162,14 @@ public class ComparatorTesting {
 		
 		Iterator<InterfaceStringMetric> it = comparators.iterator();
 		fout.write("name1,name2,lcs,lcs2");
-		while(it.hasNext()){
+		while (it.hasNext()) {
 			InterfaceStringMetric ism = it.next();
 			String desc = ism.getShortDescriptionString();
 			fout.write("," + desc);
 		}
 		fout.write("\n");
 		
-		while((line = fin.readLine()) != null){
+		while ((line = fin.readLine()) != null) {
 			String[] strings = line.split(" ");
 			String str1 = strings[0];
 			String str2 = strings[1];
@@ -181,16 +183,16 @@ public class ComparatorTesting {
 			String out_line = str1 + "," + str2 + "," + lcs + "," + lcs2;
 			
 			Iterator<InterfaceStringMetric> it2 = comparators.iterator();
-			while(it2.hasNext()){
+			while (it2.hasNext()) {
 				InterfaceStringMetric ism = it2.next();
 				float sim = ism.getSimilarity(str1, str2);
-				if(LEVMatch(str1, str2) > 0.5){
+				if (LEVMatch(str1, str2) > 0.5) {
 					match = true;
 				}
 				out_line += "," + sim;
 			}
 			
-			if(match){
+			if (match) {
 				fout.write(out_line + "\n");
 			}
 		}
@@ -199,59 +201,59 @@ public class ComparatorTesting {
 		fout.close();
 	}
 	
-	public static int getRandomInt(int min, int max){
+	public static int getRandomInt(int min, int max) {
 		return rand.nextInt(max - min) + min;
 	}
 	
-	public static String getRandomString(int length){
+	public static String getRandomString(int length) {
 		String ret = new String();
-		for(int i = 0; i < length; i++){
-			ret += random_alpha[getRandomInt(0,random_alpha.length)];
+		for (int i = 0; i < length; i++) {
+			ret += random_alpha[getRandomInt(0, random_alpha.length)];
 		}
 		return ret;
 	}
 	
-	public static String getRandomAlphaString(int length){
+	public static String getRandomAlphaString(int length) {
 		String ret = new String();
-		for(int i = 0; i < length; i++){
-			ret += random_alpha_numeric[getRandomInt(0,random_alpha_numeric.length)];
+		for (int i = 0; i < length; i++) {
+			ret += random_alpha_numeric[getRandomInt(0, random_alpha_numeric.length)];
 		}
 		return ret;
 	}
 	
-	public static String getRandomAllString(int length){
+	public static String getRandomAllString(int length) {
 		String ret = new String();
-		for(int i = 0; i < length; i++){
-			ret += random_all[getRandomInt(0,random_all.length)];
+		for (int i = 0; i < length; i++) {
+			ret += random_all[getRandomInt(0, random_all.length)];
 		}
 		return ret;
 	}
 	
-	public static float exactMatch(String str1, String str2){
-		if(str1.equals(str2) && str1.length() > 0){
+	public static float exactMatch(String str1, String str2) {
+		if (str1.equals(str2) && str1.length() > 0) {
 			return 1;
 		} else {
 			return 0;
 		}
 	}
 	
-	public static float JWCMatch(String str1, String str2){
+	public static float JWCMatch(String str1, String str2) {
 		JaroWinkler jwc = new JaroWinkler();
 		float thresh = jwc.getSimilarity(str1, str2);
 		return thresh;
 	}
 	
-	public static float LCSMatch(String str1, String str2){
+	public static float LCSMatch(String str1, String str2) {
 		float thresh = LongestCommonSubString.getSimilarity(str1, str2);
 		return thresh;
 	}
 	
-	public static float LCS2Match(String str1, String str2){
+	public static float LCS2Match(String str1, String str2) {
 		float thresh = LongestCommonSubString.getSimilarity2(str1, str2);
 		return thresh;
 	}
 	
-	public static float LEVMatch(String str1, String str2){
+	public static float LEVMatch(String str1, String str2) {
 		Levenshtein lev = new Levenshtein();
 		float thresh = lev.getSimilarity(str1, str2);
 		return thresh;

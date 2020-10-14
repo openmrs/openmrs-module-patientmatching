@@ -5,54 +5,49 @@ import org.regenstrief.linkage.*;
 import java.util.*;
 
 /**
- * This DataSourceReader holds one Record that is explicitly given
- * in the LinkDataSource object.  There are multiple constructors:
- * 
- * (LinkDataSource, MatchingConfig) - this constructor does not use the MatchingCofnig
- * object in any way, but mirrors how an ordered reader would be instantiated.  Since there is
- * just one Record, there is no other orders in which to return it.  The LinkDataSource is parsed in 
- * the same way as in the constructor without the MatchingConfig object.
- * 
- * (LinkDataSource) - this constructor parses the information to get the field values for
- * the one Record described.
- * 
- * (Record) - this constructor just stores this given Record to be read later.
- *
+ * This DataSourceReader holds one Record that is explicitly given in the LinkDataSource object.
+ * There are multiple constructors: (LinkDataSource, MatchingConfig) - this constructor does not use
+ * the MatchingCofnig object in any way, but mirrors how an ordered reader would be instantiated.
+ * Since there is just one Record, there is no other orders in which to return it. The
+ * LinkDataSource is parsed in the same way as in the constructor without the MatchingConfig object.
+ * (LinkDataSource) - this constructor parses the information to get the field values for the one
+ * Record described. (Record) - this constructor just stores this given Record to be read later.
  */
 
-public class VectorReader implements DataSourceReader, OrderedDataSourceReader{
+public class VectorReader implements DataSourceReader, OrderedDataSourceReader {
+	
 	private LinkDataSource data_source;
 	
 	private boolean accessed;
+	
 	private Record data;
 	
 	/**
-	 * This constructor uses the same format as the DataSourceReader
-	 * superclass and uses the information held within the LinkDataSource
-	 * object to get field values directly.
+	 * This constructor uses the same format as the DataSourceReader superclass and uses the information
+	 * held within the LinkDataSource object to get field values directly.
 	 * 
-	 * @param lds	the LinkDataSource object with field values
-	 * @param mc	the MatchingConfigObject to determine sort order
+	 * @param lds the LinkDataSource object with field values
+	 * @param mc the MatchingConfigObject to determine sort order
 	 */
-	public VectorReader(LinkDataSource lds, MatchingConfig mc){
+	public VectorReader(LinkDataSource lds, MatchingConfig mc) {
 		data_source = lds;
 		accessed = false;
 		data = buildRecord(lds);
 	}
 	
-	public VectorReader(LinkDataSource lds){
+	public VectorReader(LinkDataSource lds) {
 		data_source = lds;
 		accessed = false;
 		data = buildRecord(lds);
 	}
 	
 	/**
-	 * An alternate method of creating the VectorReader object that will return
-	 * the given Record instead of constructing it from a LinkDataSource object.
+	 * An alternate method of creating the VectorReader object that will return the given Record instead
+	 * of constructing it from a LinkDataSource object.
 	 * 
-	 * @param r	the Record to be returned when nextRecord() is called
+	 * @param r the Record to be returned when nextRecord() is called
 	 */
-	public VectorReader(Record r){
+	public VectorReader(Record r) {
 		data_source = null;
 		accessed = false;
 		data = r;
@@ -61,7 +56,7 @@ public class VectorReader implements DataSourceReader, OrderedDataSourceReader{
 	/**
 	 * Returns the number of fields within the Record object.
 	 */
-	public int getRecordSize(){
+	public int getRecordSize() {
 		return data.getDemographics().size();
 	}
 	
@@ -72,12 +67,12 @@ public class VectorReader implements DataSourceReader, OrderedDataSourceReader{
 	 * @param lds	LinkDataSource with the field names and values
 	 * @return	the Record holding the LinkDataSource information
 	 */
-	private Record buildRecord(LinkDataSource lds){
+	private Record buildRecord(LinkDataSource lds) {
 		Record data = new Record(0, lds.getName());
 		Iterator<DataColumn> it = lds.getDataColumns().iterator();
-		while(it.hasNext()){
+		while (it.hasNext()) {
 			DataColumn dc = it.next();
-			if(dc.getIncludePosition() != DataColumn.INCLUDE_NA){
+			if (dc.getIncludePosition() != DataColumn.INCLUDE_NA) {
 				data.addDemographic(dc.getName(), dc.getColumnID());
 			}
 		}
@@ -93,7 +88,7 @@ public class VectorReader implements DataSourceReader, OrderedDataSourceReader{
 	}
 	
 	public Record nextRecord() {
-		if(!accessed){
+		if (!accessed) {
 			accessed = true;
 			return data;
 		}
@@ -105,9 +100,9 @@ public class VectorReader implements DataSourceReader, OrderedDataSourceReader{
 		return true;
 	}
 	
-	public boolean close(){
+	public boolean close() {
 		data = null;
 		return true;
 	}
-
+	
 }

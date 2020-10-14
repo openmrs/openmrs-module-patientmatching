@@ -11,15 +11,16 @@ import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
 
 /**
- * Calculates the number of unique values in each field of the given stream of
- * Records in one pass.
- * 
+ * Calculates the number of unique values in each field of the given stream of Records in one pass.
  */
 public class UniqueAnalyzer extends DataSourceAnalyzer {
+	
 	private TreeMap<String, Integer> freq_table;
+	
 	private HashSet<String> known_values;
+	
 	private SummaryStatisticsStore sss;
-
+	
 	public UniqueAnalyzer(LinkDataSource lds, MatchingConfig mc, SummaryStatisticsStore s) {
 		super(lds, mc);
 		sss = s;
@@ -30,7 +31,7 @@ public class UniqueAnalyzer extends DataSourceAnalyzer {
 	public TreeMap<String, Integer> getResults() {
 		return freq_table;
 	}
-
+	
 	/**
 	 * @see org.regenstrief.linkage.analysis.DataSourceAnalyzer#analyzeRecord(org.regenstrief.linkage.Record)
 	 */
@@ -58,7 +59,7 @@ public class UniqueAnalyzer extends DataSourceAnalyzer {
 			}
 		}
 	}
-
+	
 	/**
 	 * @see org.regenstrief.linkage.analysis.DataSourceAnalyzer#isAnalyzedDemographic(org.regenstrief.linkage.util.MatchingConfigRow)
 	 */
@@ -66,7 +67,7 @@ public class UniqueAnalyzer extends DataSourceAnalyzer {
 	public boolean isAnalyzedDemographic(MatchingConfigRow mcr) {
 		return false;
 	}
-
+	
 	/**
 	 * @see org.regenstrief.linkage.analysis.Analyzer#finishAnalysis()
 	 */
@@ -75,14 +76,13 @@ public class UniqueAnalyzer extends DataSourceAnalyzer {
 		Iterator<String> demographic_it = freq_table.keySet().iterator();
 		while (demographic_it.hasNext()) {
 			String current_demographic = demographic_it.next();
-
-			log.info("column/demographic " + current_demographic
-					+ " has this many unique values: "
-					+ freq_table.get(current_demographic));
+			
+			log.info("column/demographic " + current_demographic + " has this many unique values: "
+			        + freq_table.get(current_demographic));
 			sss.setUniqueValueCount(current_demographic, freq_table.get(current_demographic));
 		}
 	}
-
+	
 	/**
 	 * Inherited from DataSourceAnalyzer.
 	 * 

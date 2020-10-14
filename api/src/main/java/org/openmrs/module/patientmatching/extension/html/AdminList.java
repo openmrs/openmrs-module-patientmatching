@@ -19,10 +19,10 @@ public class AdminList extends AdministrationSectionExt {
 	public Map<String, String> getLinks() {
 		
 		Map<String, String> map = new HashMap<String, String>();
-        
-        map.put("module/patientmatching/config.list", "patientmatching.config.view");
-        map.put("module/patientmatching/schedule.list", "patientmatching.schedule.view");
-        map.put("module/patientmatching/dupes.list", "patientmatching.report.view");
+		
+		map.put("module/patientmatching/config.list", "patientmatching.config.view");
+		map.put("module/patientmatching/schedule.list", "patientmatching.schedule.view");
+		map.put("module/patientmatching/dupes.list", "patientmatching.report.view");
 		
 		return map;
 	}

@@ -29,7 +29,8 @@ public class FileToDB {
 	
 	private final static void run(final String inFile, String outFile, String tableName) throws Exception {
 		final String delim = System.getProperty(PROP_DELIM);
-		if ((delim == null) || "pipe".equalsIgnoreCase(delim) || "|".equalsIgnoreCase(delim) || "\\|".equalsIgnoreCase(delim)) {
+		if ((delim == null) || "pipe".equalsIgnoreCase(delim) || "|".equalsIgnoreCase(delim)
+		        || "\\|".equalsIgnoreCase(delim)) {
 			patDelim = Pattern.compile("\\|");
 		} else if ("tab".equalsIgnoreCase(delim) || "\t".equalsIgnoreCase(delim) || "\\t".equalsIgnoreCase(delim)) {
 			patDelim = Pattern.compile("\\t");
@@ -62,7 +63,8 @@ public class FileToDB {
 			executeBatch();
 			info("Finished converting " + inFile + " into " + outFile + " after " + n + " records");
 			insert.close();
-		} finally {
+		}
+		finally {
 			in.close();
 			con.close();
 		}

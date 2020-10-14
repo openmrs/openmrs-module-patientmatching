@@ -1,6 +1,5 @@
 package org.openmrs.module.patientmatching;
 
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.openmrs.Location;
@@ -11,16 +10,16 @@ import org.openmrs.test.BaseModuleContextSensitiveTest;
 import org.regenstrief.linkage.Record;
 
 public class LinkDBConnectionsTest extends BaseModuleContextSensitiveTest {
+	
 	/**
 	 * @see LinkDBConnections#patientToRecord(Patient)
 	 * @verifies encode more than one identifier of the same type properly
 	 */
 	@Test
-	public void patientToRecord_shouldEncodeMoreThanOneIdentifierOfTheSameTypeProperly()
-			throws Exception {
+	public void patientToRecord_shouldEncodeMoreThanOneIdentifierOfTheSameTypeProperly() throws Exception {
 		
 		LinkDBConnections linkage = LinkDBConnections.getInstance();
-
+		
 		Patient p = Context.getPatientService().getPatient(2);
 		
 		// add another identifier of an existing type

@@ -24,48 +24,27 @@ public class ArrayDataSourceReader implements DataSourceReader {
 	public final static LinkDataSource SAMPLE_LINK_DATA_SOURCE = new LinkDataSource("Sample", "", "", 0);
 	
 	private final static ArrayDataSourceReader SAMPLE_DOE = new ArrayDataSourceReader(new String[][] {
-		{ "ID", "LAST", "FIRST" },
-		{ "1", "DOE", "JANE" },
-		{ "2", "DOE", "JOHN" },
-		{ "3", "DOE", "JANE" }
-	});
+	        { "ID", "LAST", "FIRST" }, { "1", "DOE", "JANE" }, { "2", "DOE", "JOHN" }, { "3", "DOE", "JANE" } });
 	
-	private final static ArrayDataSourceReader SAMPLE_DOE2 = new ArrayDataSourceReader(new String[][] {
-		{ "ID", "LAST", "FIRST" },
-		{ "4", "DOE", "JANET" },
-		{ "5", "DOE", "JOHN" }
-	});
+	private final static ArrayDataSourceReader SAMPLE_DOE2 = new ArrayDataSourceReader(
+	        new String[][] { { "ID", "LAST", "FIRST" }, { "4", "DOE", "JANET" }, { "5", "DOE", "JOHN" } });
 	
-	private final static ArrayDataSourceReader SAMPLE_MIX = new ArrayDataSourceReader(new String[][] {
-		{ "ID", "LAST", "FIRST" },
-		{ "6", "DOE", "JANET" },
-		{ "7", "DOE", "JOHN" },
-		{ "8", "SMITH", "JANET" },
-		{ "9", "SMITH", "JOHN" },
-		{ "10", "SMITH", "MARY" }
-	});
+	private final static ArrayDataSourceReader SAMPLE_MIX = new ArrayDataSourceReader(
+	        new String[][] { { "ID", "LAST", "FIRST" }, { "6", "DOE", "JANET" }, { "7", "DOE", "JOHN" },
+	                { "8", "SMITH", "JANET" }, { "9", "SMITH", "JOHN" }, { "10", "SMITH", "MARY" } });
 	
-	private final static ArrayDataSourceReader SAMPLE_NULL = new ArrayDataSourceReader(new String[][] {
-		{ "ID", "LAST", "FIRST" },
-		{ "11", "DOE", "JANE" },
-		{ "12", "DOE", "" },
-		{ "13", "DOE", null },
-		{ "14", "", "" },
-		{ "15", null, null }
-	});
+	private final static ArrayDataSourceReader SAMPLE_NULL = new ArrayDataSourceReader(
+	        new String[][] { { "ID", "LAST", "FIRST" }, { "11", "DOE", "JANE" }, { "12", "DOE", "" }, { "13", "DOE", null },
+	                { "14", "", "" }, { "15", null, null } });
 	
 	private final static ArrayDataSourceReader SAMPLE_NULL2 = new ArrayDataSourceReader(new String[][] {
-		{ "ID", "LAST", "FIRST" },
-		{ "16", "DOE", "JANE" },
-		{ "17", "DOE", "" },
-		{ "18", "DOE", null }
-	});
+	        { "ID", "LAST", "FIRST" }, { "16", "DOE", "JANE" }, { "17", "DOE", "" }, { "18", "DOE", null } });
 	
 	private final Record[] records;
 	
 	private int currentIndex = 0;
 	
-	static{
+	static {
 		SAMPLE_LINK_DATA_SOURCE.setUniqueID("ID");
 	}
 	
@@ -87,25 +66,25 @@ public class ArrayDataSourceReader implements DataSourceReader {
 	public int getRecordSize() {
 		return records.length;
 	}
-
+	
 	@Override
 	public boolean hasNextRecord() {
 		return currentIndex < records.length;
 	}
-
+	
 	@Override
 	public Record nextRecord() {
 		final Record r = records[currentIndex];
 		currentIndex++;
 		return r;
 	}
-
+	
 	@Override
 	public boolean reset() {
 		currentIndex = 0;
 		return true;
 	}
-
+	
 	@Override
 	public boolean close() {
 		return true;

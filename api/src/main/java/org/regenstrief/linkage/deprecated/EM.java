@@ -15,26 +15,31 @@ import org.regenstrief.linkage.util.StringMatch;
 public class EM {
 	
 	File pair_file;
+	
 	MatchingConfig mc;
+	
 	LinkDataSource lds;
+	
 	int iterations;
 	
 	// default values to match rates
 	final static double INIT_MEST = 0.9;
+	
 	final static double INIT_UEST = 0.1;
+	
 	final static int INIT_COMP = 0;
 	
 	final static double META_ONE = 0.99999;
+	
 	final static double META_ZERO = 0.00001;
 	
 	/**
-	 * Takes three arguments: record pair file name, meta-file name, and
-	 * number of iterations.
+	 * Takes three arguments: record pair file name, meta-file name, and number of iterations.
 	 * 
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		if(args.length != 3){
+		if (args.length != 3) {
 			System.out.println("EM ERROR:\nNot enough arguments.  Please enter:");
 			System.out.println("\t1) Record Pair file name");
 			System.out.println("\t2) Meta-file name");
@@ -60,14 +65,14 @@ public class EM {
 		*/
 	}
 	
-	public EM(File file, MatchingConfig mc, int iterations, LinkDataSource lds){
+	public EM(File file, MatchingConfig mc, int iterations, LinkDataSource lds) {
 		pair_file = file;
 		this.mc = mc;
 		this.iterations = iterations;
 		this.lds = lds;
 	}
 	
-	public void estimate() throws IOException{
+	public void estimate() throws IOException {
 		int line_count;
 		double gMsum, gUsum, gMtemp, gUtemp, p;
 		double termM, termU;
@@ -86,9 +91,8 @@ public class EM {
 		// extra variable to keep track of matches, used in lieu of vct file
 		//ArrayList<int[]> vect = new ArrayList<int[]>();
 		
-		
 		// initialize estimates for EM parameters
-		for(int i = 0; i < used_len; i++){
+		for (int i = 0; i < used_len; i++) {
 			mest[i] = INIT_MEST;
 			uest[i] = INIT_UEST;
 			comp[i] = INIT_COMP;
@@ -112,7 +116,7 @@ public class EM {
 		BufferedReader pair_in = new BufferedReader(new FileReader(pair_file));
 		
 		String line;
-		while((line = pair_in.readLine()) != null){
+		while ((line = pair_in.readLine()) != null) {
 			String[] data = line.split("\\|", -1);
 			line_count++;
 			
@@ -121,7 +125,7 @@ public class EM {
 			gMtemp = 0;
 			gUtemp = 0;
 			
-			for(int i = 0; i < used_len; i++){
+			for (int i = 0; i < used_len; i++) {
 				int used_index = included_columns[i];
 				String str1 = data[used_index];
 				String str2 = data[used_index + length];
@@ -130,16 +134,16 @@ public class EM {
 				// and use that method to compare the two strings
 				int alg = mc.getAlgorithm(used_index);
 				boolean match = false;
-				if(alg == MatchingConfig.EXACT_MATCH){
+				if (alg == MatchingConfig.EXACT_MATCH) {
 					match = StringMatch.exactMatch(str1, str2);
-				} else if(alg == MatchingConfig.JWC){
+				} else if (alg == MatchingConfig.JWC) {
 					match = StringMatch.JWCMatch(str1, str2);
-				} else if(alg == MatchingConfig.LCS){
+				} else if (alg == MatchingConfig.LCS) {
 					match = StringMatch.LCSMatch(str1, str2);
-				} else if(alg == MatchingConfig.LEV){
+				} else if (alg == MatchingConfig.LEV) {
 					match = StringMatch.LEVMatch(str1, str2);
 				}
-				if(match){
+				if (match) {
 					comp[i] = 1;
 				} else {
 					comp[i] = 0;
@@ -153,7 +157,7 @@ public class EM {
 			int[] v = new int[used_len];
 			
 			// print vector to vector file
-			for(int i = 0; i < used_len; i++){
+			for (int i = 0; i < used_len; i++) {
 				vout.write(Integer.toString(comp[i]));
 				v[i] = comp[i];
 			}
@@ -164,7 +168,7 @@ public class EM {
 			gUtemp = ((1 - p) * termU) / (((1 - p) * termU) + (p * termM));
 			
 			// update the running sum for msum and usum
-			for(int i = 0; i < used_len; i++){
+			for (int i = 0; i < used_len; i++) {
 				msum[i] = msum[i] + comp[i] * gMtemp;
 				usum[i] = usum[i] + comp[i] * gUtemp;
 			}
@@ -183,7 +187,7 @@ public class EM {
 		System.out.println("p: " + p);
 		
 		// update the mest and uest values
-		for(int i = 0; i < used_len; i++){
+		for (int i = 0; i < used_len; i++) {
 			mest[i] = msum[i] / gMsum;
 			uest[i] = usum[i] / gUsum;
 			System.out.println(mc.getRowName(included_columns[i]) + ":   mest: " + mest[i] + "   uest: " + uest[i]);
@@ -192,7 +196,7 @@ public class EM {
 		
 		// now read the vector file
 		// loop through the remaining iterations
-		for(int current_iteration = 1; current_iteration < iterations; current_iteration++){
+		for (int current_iteration = 1; current_iteration < iterations; current_iteration++) {
 			System.out.println("Iteration " + (current_iteration + 1));
 			System.out.println("time is " + new Date());
 			
@@ -203,7 +207,7 @@ public class EM {
 			gUtemp = 0;
 			
 			// zero out the msum and usum arrays for another iteration
-			for(int i = 0; i < used_len; i++){
+			for (int i = 0; i < used_len; i++) {
 				msum[i] = 0;
 				usum[i] = 0;
 			}
@@ -216,7 +220,7 @@ public class EM {
 			//while(it.hasNext()){
 			//	comp = it.next();
 			//	line_count++;
-			while((line = vin.readLine()) != null){
+			while ((line = vin.readLine()) != null) {
 				line_count++;
 				
 				// begin the EM calcluation loop for the current record pair
@@ -224,17 +228,17 @@ public class EM {
 				termU = 1;
 				gMtemp = 0;
 				gUtemp = 0;
-				for(int i = 0; i < used_len; i++){
+				for (int i = 0; i < used_len; i++) {
 					comp[i] = Integer.parseInt(line.substring(i, i + 1));
 					termM = termM * Math.pow(mest[i], comp[i]) * Math.pow(1 - mest[i], 1 - comp[i]);
 					termU = termU * Math.pow(uest[i], comp[i]) * Math.pow(1 - uest[i], 1 - comp[i]);
 				}
 				
 				gMtemp = (p * termM) / ((p * termM) + ((1 - p) * termU));
-				gUtemp = ((1 - p) * termU) / (((1 - p) * termU) + (p * termM)); 
+				gUtemp = ((1 - p) * termU) / (((1 - p) * termU) + (p * termM));
 				
 				// update the running sum for msum and usum
-				for(int i = 0; i < used_len; i++){
+				for (int i = 0; i < used_len; i++) {
 					msum[i] = msum[i] + comp[i] * gMtemp;
 					usum[i] = usum[i] + comp[i] * gUtemp;
 				}
@@ -247,9 +251,8 @@ public class EM {
 			// update p_est
 			p = gMsum / line_count;
 			
-			
 			// update the mest and uest values after each iteration
-			for(int i = 0; i < used_len; i++){
+			for (int i = 0; i < used_len; i++) {
 				mest[i] = msum[i] / gMsum;
 				uest[i] = usum[i] / gUsum;
 				System.out.println(mc.getRowName(included_columns[i]) + ":   mest: " + mest[i] + "   uest: " + uest[i]);
@@ -262,25 +265,25 @@ public class EM {
 		System.out.println("\nThere were " + used_len + " elements in the  \"used\" array");
 		System.out.println(line_count + " record pairs were read per iteration.");
 		System.out.println("gMsum: " + gMsum + " gUsum: " + gUsum);
-		System.out.println("P: " + p +"\n");
-		for(int i = 0; i < used_len; i++){
+		System.out.println("P: " + p + "\n");
+		for (int i = 0; i < used_len; i++) {
 			System.out.println(mc.getRowName(included_columns[i]) + ":   mest: " + mest[i] + "   uest: " + uest[i]);
 		}
 		
 		// set the calculcated values in the MatchingConfig object
-		for(int i = 0; i < used_len; i++){
+		for (int i = 0; i < used_len; i++) {
 			int incl_col = included_columns[i];
 			
-			if(mest[i] > META_ONE){
+			if (mest[i] > META_ONE) {
 				mc.setAgreementValue(incl_col, META_ONE);
-			} else if(mest[i] < META_ZERO){
+			} else if (mest[i] < META_ZERO) {
 				mc.setAgreementValue(incl_col, META_ZERO);
 			} else {
 				mc.setAgreementValue(incl_col, mest[i]);
 			}
-			if(uest[i] > META_ONE){
+			if (uest[i] > META_ONE) {
 				mc.setNonAgreementValue(incl_col, META_ONE);
-			} else if(uest[i] < META_ZERO){
+			} else if (uest[i] < META_ZERO) {
 				mc.setNonAgreementValue(incl_col, META_ZERO);
 			} else {
 				mc.setNonAgreementValue(incl_col, uest[i]);
@@ -288,6 +291,5 @@ public class EM {
 		}
 		
 	}
-	
 	
 }
