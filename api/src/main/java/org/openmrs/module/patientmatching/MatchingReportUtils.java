@@ -94,14 +94,12 @@ public class MatchingReportUtils {
 		log.info("Reading matching config file from " + configFile.getAbsolutePath());
 		
 		RecMatchConfig recMatchConfig = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(configFile));
-		List<PatientMatchingConfiguration> configList = Context.getService(PatientMatchingReportMetadataService.class)
-		        .getMatchingConfigs();
 		List<MatchingConfig> matchingConfigLists = new ArrayList<MatchingConfig>();
 		
 		for (String selectedStrat : selectedStrategies) {
-			for (PatientMatchingConfiguration config : configList) {
-				if (OpenmrsUtil.nullSafeEquals(config.getConfigurationName(), selectedStrat)) {
-					matchingConfigLists.add(ReportMigrationUtils.ptConfigurationToMatchingConfig(config));
+			for (MatchingConfig config : recMatchConfig.getMatchingConfigs()) {
+				if (OpenmrsUtil.nullSafeEquals(config.getName(), selectedStrat)) {
+					matchingConfigLists.add(config);
 				}
 			}
 		}
