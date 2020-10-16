@@ -26,7 +26,8 @@ import org.regenstrief.linkage.util.MatchingConfigRow;
 public class ScaleWeightModifier implements Modifier {
 	
 	public static enum ModifySet {
-		ABOVE, BELOW
+		ABOVE,
+		BELOW
 	};
 	
 	private Hashtable<String, Hashtable<Integer, ModifySet>> percentile_modification_sets;

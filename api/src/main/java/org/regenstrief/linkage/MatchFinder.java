@@ -46,7 +46,8 @@ public class MatchFinder {
 	Scoring scoring;
 	
 	public enum Scoring {
-		BLOCKING_EXCLUSIVE, BLOCKING_INCLUSIVE
+		BLOCKING_EXCLUSIVE,
+		BLOCKING_INCLUSIVE
 	};
 	
 	public MatchFinder(LinkDataSource matching_database, ReaderProvider rp, List<MatchingConfig> analytics,

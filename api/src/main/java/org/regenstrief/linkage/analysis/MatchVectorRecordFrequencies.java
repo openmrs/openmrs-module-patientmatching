@@ -14,7 +14,8 @@ import org.regenstrief.linkage.MatchVector;
 public class MatchVectorRecordFrequencies {
 	
 	public enum Side {
-		LEFT, RIGHT
+		LEFT,
+		RIGHT
 	};
 	
 	protected Hashtable<MatchVector, RecordFrequencies> right_vectors;

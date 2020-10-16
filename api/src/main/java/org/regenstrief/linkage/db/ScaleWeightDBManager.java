@@ -43,7 +43,9 @@ public class ScaleWeightDBManager extends DBManager {
 	// Different types of token counts: 
 	// # of null tokens, # of non-null tokens, # of unique tokens
 	public enum CountType {
-		Null, NonNull, Unique
+		Null,
+		NonNull,
+		Unique
 	};
 	
 	// Constants

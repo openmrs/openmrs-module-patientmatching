@@ -17,7 +17,8 @@ import org.regenstrief.linkage.analysis.Modifier;
 public class ModifiedMatchResult extends MatchResult {
 	
 	public static enum Operator {
-		PLUS, MULTIPLY
+		PLUS,
+		MULTIPLY
 	};
 	
 	protected MatchResult base;

@@ -30,7 +30,9 @@ public class ScoreModifier {
 	HashMap<Record, Matches> pattern_scope;
 	
 	public enum Matches {
-		REC1, REC2, BOTH
+		REC1,
+		REC2,
+		BOTH
 	};
 	
 	public ScoreModifier() {

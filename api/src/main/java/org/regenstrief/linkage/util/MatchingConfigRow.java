@@ -10,7 +10,12 @@ public class MatchingConfigRow implements Cloneable {
 	
 	// Determines if bottom/top N frequencies will be loaded
 	public enum ScaleWeightSetting {
-		TopN, BottomN, TopNPercent, BottomNPercent, AboveN, BelowN
+		TopN,
+		BottomN,
+		TopNPercent,
+		BottomNPercent,
+		AboveN,
+		BelowN
 	}
 	
 	private String name;
