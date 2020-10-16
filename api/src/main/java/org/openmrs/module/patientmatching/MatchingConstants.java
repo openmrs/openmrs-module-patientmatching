@@ -43,4 +43,12 @@ public interface MatchingConstants {
 	 * Multiple-value delimiter
 	 */
 	public static final String MULTI_FIELD_DELIMITER = ",";
+	
+	String GP_STRATEGY = "patientmatching.strategy";
+	
+	String STRATEGY_PROBABILISTIC = "probabilistic";
+	
+	String STRATEGY_DETERMINISTIC = "deterministic";
+	
+	String IS_PROBABILISTIC = "isProbabilistic";
 }

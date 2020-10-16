@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
-<!-- Beans to add to the current Application context definition -->
-
-<beans>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+  		    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
 	<bean id="patientMatchingUrlMapping"
 		class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
@@ -127,4 +127,13 @@
 			</list>
 		</property>
 	</bean>
+
+    <!-- Module global property listeners -->
+    <bean id="${project.parent.artifactId}EventListeners" parent="openmrsEventListeners">
+        <property name="globalPropertyListeners">
+            <list value-type="org.openmrs.api.GlobalPropertyListener" merge="true">
+                <bean class="${project.parent.groupId}.${project.parent.artifactId}.StrategyHolder" />
+            </list>
+        </property>
+    </bean>
 </beans>

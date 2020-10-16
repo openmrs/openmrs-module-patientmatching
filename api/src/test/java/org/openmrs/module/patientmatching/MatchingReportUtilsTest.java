@@ -68,9 +68,9 @@ public class MatchingReportUtilsTest {
 		recMatchConfig.getMatchingConfigs().add(matchingConfig);
 		when(XMLTranslator.createRecMatchConfig(any())).thenReturn(recMatchConfig);
 		
-		Map<String, Object> result = MatchingReportUtils.ReadConfigFile(objects, new String[] { "strategy1" });
+		MatchingReportUtils.ReadConfigFile(objects, new String[] { "strategy1" });
 		
-		Assert.assertEquals(matchingConfig, ((List) result.get("matchingConfigLists")).get(0));
+		Assert.assertEquals(matchingConfig, ((List) objects.get("matchingConfigLists")).get(0));
 	}
 	
 }

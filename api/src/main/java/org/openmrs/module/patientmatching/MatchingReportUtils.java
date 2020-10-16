@@ -22,7 +22,6 @@ import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
 import org.openmrs.util.OpenmrsUtil;
-import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.analysis.EMAnalyzer;
 import org.regenstrief.linkage.analysis.PairDataSourceAnalysis;
@@ -35,7 +34,6 @@ import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.matchresult.DedupMatchResultList;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.RecMatchConfig;
-import org.regenstrief.linkage.util.ScorePair;
 import org.regenstrief.linkage.util.XMLTranslator;
 
 /**
@@ -54,6 +52,8 @@ public class MatchingReportUtils {
 	public static final String END_PROCESS = "Report finished";
 	
 	public static final String PREM_PROCESS = "Prematurely terminated process";
+	
+	public static final String MATCHED_RECORDS_STORE = "matchedRecordsStore";
 	
 	/**
 	 * List of steps in the reporting process.
@@ -83,7 +83,7 @@ public class MatchingReportUtils {
 	}
 	
 	//New Method1 2
-	public static Map<String, Object> ReadConfigFile(Map<String, Object> objects, String[] selectedStrategies) {
+	public static void ReadConfigFile(Map<String, Object> objects, String[] selectedStrategies) {
 		log.info("Starting generate report process sequence");
 		
 		// open the config.xml file
@@ -103,8 +103,6 @@ public class MatchingReportUtils {
 				}
 			}
 		}
-		
-		DedupMatchResultList handler = new DedupMatchResultList();
 		
 		Properties c = Context.getRuntimeProperties();
 		
@@ -132,13 +130,11 @@ public class MatchingReportUtils {
 		objects.put("passwd", passwd);
 		objects.put("matchingConfigLists", matchingConfigLists);
 		objects.put("configFileFolder", configFileFolder);
-		objects.put("handler", handler);
-		return objects;
 	}
 	//New Method1 End 2
 	
 	//New Method2 3
-	public static Map<String, Object> InitScratchTable(Map<String, Object> objects) {
+	public static void InitScratchTable(Map<String, Object> objects) {
 		Connection databaseConnection = (Connection) objects.get("databaseConnection");
 		RecMatchConfig recMatchConfig = (RecMatchConfig) objects.get("recMatchConfig");
 		MatchingConfig matchingConfig = ((List<MatchingConfig>) objects.get("matchingConfigLists")).get(0);
@@ -170,12 +166,11 @@ public class MatchingReportUtils {
 		objects.put("rp", rp);
 		objects.put("recMatchConfig", recMatchConfig);
 		objects.put("matchingConfig", matchingConfig);
-		return objects;
 	}
 	//New Method2 End 3
 	
 	//New Method3 End 4
-	public static Map<String, Object> CreRanSamAnalyzer(Map<String, Object> objects) {
+	public static void CreRanSamAnalyzer(Map<String, Object> objects) {
 		RecMatchConfig recMatchConfig = (RecMatchConfig) objects.get("recMatchConfig");
 		log.info("Creating random sample analyzer");
 		OrderedDataSourceReader databaseReaderRandom = ((ReaderProvider) objects.get("rp")).getReader(
@@ -188,12 +183,11 @@ public class MatchingReportUtils {
 		objects.put("recMatchConfig", recMatchConfig);
 		
 		objects.put("rsa", rsa);
-		return objects;
 	}
 	//New Method3 End 4
 	
 	//New Method4 5
-	public static Map<String, Object> CreAnalFormPairs(Map<String, Object> objects) {
+	public static void CreAnalFormPairs(Map<String, Object> objects) {
 		RecMatchConfig recMatchConfig = (RecMatchConfig) objects.get("recMatchConfig");
 		log.info("Creating analyzer form pairs");
 		OrderedDataSourceReader databaseReader = ((ReaderProvider) objects.get("rp")).getReader(
@@ -204,12 +198,11 @@ public class MatchingReportUtils {
 		
 		objects.put("databaseReader", databaseReader);
 		objects.put("formPairs", formPairs);
-		return objects;
 	}
 	//New Method4 End 5
 	
 	//New Method5 6
-	public static Map<String, Object> CrePairdataSourAnalyzer(Map<String, Object> objects) {
+	public static void CrePairdataSourAnalyzer(Map<String, Object> objects) {
 		RandomSampleAnalyzer rsa = (RandomSampleAnalyzer) objects.get("rsa");
 		DedupOrderedDataSourceFormPairs formPairs = (DedupOrderedDataSourceFormPairs) objects.get("formPairs");
 		log.info("Creating pair data source analyzer");
@@ -219,12 +212,11 @@ public class MatchingReportUtils {
 		pdsa.addAnalyzer(rsa);
 		
 		objects.put("pdsa", pdsa);
-		return objects;
 	}
 	//New Method5 End 6
 	
 	//New Method6 7
-	public static Map<String, Object> CreEMAnalyzer(Map<String, Object> objects) {
+	public static void CreEMAnalyzer(Map<String, Object> objects) {
 		PairDataSourceAnalysis pdsa = (PairDataSourceAnalysis) objects.get("pdsa");
 		log.info("Creating EM analyzer");
 		EMAnalyzer ema = new EMAnalyzer((MatchingConfig) objects.get("matchingConfig"));
@@ -232,12 +224,11 @@ public class MatchingReportUtils {
 		log.info("Adding EM analyzer");
 		pdsa.addAnalyzer(ema);
 		objects.put("pdsa", pdsa);
-		return objects;
 	}
 	//New Method6 End 7
 	
 	//New Method7 8
-	public static Map<String, Object> AnalyzingData(Map<String, Object> objects) {
+	public static void AnalyzingData(Map<String, Object> objects) {
 		OrderedDataSourceReader databaseReader = (OrderedDataSourceReader) objects.get("databaseReader");
 		PairDataSourceAnalysis pdsa = (PairDataSourceAnalysis) objects.get("pdsa");
 		log.info("Analyzing data");
@@ -246,13 +237,12 @@ public class MatchingReportUtils {
 		log.info("patientmatching:  analyzed " + n + " pairs of records");
 		objects.put("pdsa", pdsa);
 		databaseReader.close();
-		return objects;
 	}
 	//New Method7 End 8
 	
 	//New Method8 9
-	public static Map<String, Object> ScoringData(Map<String, Object> objects) throws IOException {
-		DedupMatchResultList handler = (DedupMatchResultList) objects.get("handler");
+	public static void ScoringData(Map<String, Object> objects) throws IOException {
+		boolean isProbabilistic = Boolean.valueOf(objects.get(MatchingConstants.IS_PROBABILISTIC).toString());
 		RecMatchConfig recMatchConfig = (RecMatchConfig) objects.get("recMatchConfig");
 		MatchingConfig matchingConfig = (MatchingConfig) objects.get("matchingConfig");
 		log.info("Scoring data");
@@ -260,25 +250,22 @@ public class MatchingReportUtils {
 		    ((DataBaseRecordStore) objects.get("recordStore")).getRecordStoreLinkDataSource(), matchingConfig);
 		DedupOrderedDataSourceFormPairs formPairsScoring = new DedupOrderedDataSourceFormPairs(databaseReaderScore,
 		        matchingConfig, recMatchConfig.getLinkDataSource1().getTypeTable());
-		ScorePair sp = new ScorePair(matchingConfig);
 		
+		MatchingStrategyAndStore mss = isProbabilistic ? new DedupMatchResultList() : new DeterministicMatchingStrategy();
+		mss.clean();
 		Record[] pair;
-		MatchResult mr;
-		
 		while ((pair = formPairsScoring.getNextRecordPair()) != null) {
-			mr = sp.scorePair(pair[0], pair[1]);
-			handler.acceptMatchResult(mr);
+			mss.matchAndStore(pair[0], pair[1], matchingConfig);
 		}
 		
 		databaseReaderScore.close();
 		
-		objects.put("handler", handler);
-		return objects;
+		objects.put(MATCHED_RECORDS_STORE, mss);
 	}
 	//New Method8 End 9
 	
 	//New Method9 10
-	public static Map<String, Object> CreatingReport(Map<String, Object> objects) throws IOException {
+	public static void CreatingReport(Map<String, Object> objects) throws IOException {
 		log.info("Creating report");
 		
 		SimpleDateFormat format = new SimpleDateFormat("MM-dd-yyyy--HH-mm-ss");
@@ -297,12 +284,11 @@ public class MatchingReportUtils {
 		}
 		
 		String reportName = "dedup-report-" + configString + dateString;
-		DedupMatchResultList handler = (DedupMatchResultList) objects.get("handler");
+		MatchedRecordsStore store = (MatchedRecordsStore) objects.get(MATCHED_RECORDS_STORE);
 		
-		handler.flattenPairIdList();
-		List<Set<Long>> matchingPairs = handler.getFlattenedPairIds();
+		store.flattenPairIdList();
+		List<Set<Long>> matchingPairs = store.getFlattenedPairIds();
 		persistReportToDB(reportName, matchingPairs, globalIncludeColumns);
-		return objects;
 	}
 	//New Method9 End 10
 	

@@ -7,6 +7,9 @@ import java.util.List;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.StringUtils;
+import org.regenstrief.linkage.MatchItem;
+import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.StringMatch;
 
 /**
  * Utility class to perform various task related to the creating matching configuration.
@@ -77,6 +80,76 @@ public class MatchingUtils {
 			configurationEntries.add(configurationEntry);
 		}
 		return configurationEntries;
+	}
+	
+	/**
+	 * Matches the specified strings using the specified algorithm and threshold
+	 * 
+	 * @param algorithm the algorithm to use
+	 * @param threshold the threshold to use
+	 * @param s1 the string to compare
+	 * @param s2 the other string to compare
+	 * @return {@link MatchItem} instance
+	 */
+	public static MatchItem match(int algorithm, double threshold, String s1, String s2) {
+		if (s1 == null || s2 == null) {
+			return new MatchItem(0, false);
+		}
+		
+		final float similarity;
+		final boolean match;
+		switch (algorithm) {
+			case (MatchingConfig.EXACT_MATCH):
+				match = StringMatch.exactMatch(s1, s2);
+				similarity = match ? 1 : 0;
+				break;
+			
+			case (MatchingConfig.JWC):
+				similarity = StringMatch.getJWCMatchSimilarity(s1, s2);
+				match = similarity > threshold;
+				break;
+			
+			case (MatchingConfig.LCS):
+				similarity = StringMatch.getLCSMatchSimilarity(s1, s2);
+				match = similarity > threshold;
+				break;
+			
+			case (MatchingConfig.LEV):
+				similarity = StringMatch.getLEVMatchSimilarity(s1, s2);
+				match = similarity > threshold;
+				break;
+			
+			case (MatchingConfig.DICE):
+				similarity = StringMatch.getDiceMatchSimilarity(s1, s2);
+				match = similarity > threshold;
+				break;
+			
+			default:
+				throw new IllegalArgumentException("Unexpected algorithm: " + algorithm);
+		}
+		
+		return new MatchItem(similarity, match);
+	}
+	
+	/**
+	 * Returns a list of all possible combinations of candidates from multiple field demographics
+	 *
+	 * @param data1
+	 * @param data2
+	 * @return a list of all possible permutations
+	 */
+	public static List<String[]> getCandidatesFromMultiFieldDemographics(String data1, String data2) {
+		String[] a = data1.split(MatchingConstants.MULTI_FIELD_DELIMITER);
+		String[] b = data2.split(MatchingConstants.MULTI_FIELD_DELIMITER);
+		
+		List<String[]> res = new ArrayList();
+		for (String i : a) {
+			for (String j : b) {
+				res.add(new String[] { i, j });
+			}
+		}
+		
+		return res;
 	}
 	
 }

@@ -20,20 +20,20 @@ import org.apache.commons.logging.LogFactory;
 import org.directwebremoting.ServerContext;
 import org.directwebremoting.ServerContextFactory;
 import org.directwebremoting.proxy.dwr.Util;
-
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifier;
 import org.openmrs.PersonAddress;
 import org.openmrs.api.context.Context;
-
 import org.openmrs.module.patientmatching.DataBaseReportReader;
 import org.openmrs.module.patientmatching.LinkDBConnections;
 import org.openmrs.module.patientmatching.MatchingConfigurationUtils;
+import org.openmrs.module.patientmatching.MatchingConstants;
 import org.openmrs.module.patientmatching.MatchingReportUtils;
 import org.openmrs.module.patientmatching.MatchingRunData;
 import org.openmrs.module.patientmatching.PatientMatchingConfiguration;
 import org.openmrs.module.patientmatching.PatientMatchingReportMetadataService;
 import org.openmrs.module.patientmatching.Report;
+import org.openmrs.module.patientmatching.StrategyHolder;
 import org.regenstrief.linkage.util.MatchingConfig;
 
 import uk.ltd.getahead.dwr.WebContext;
@@ -177,44 +177,58 @@ public class DWRMatchingConfigUtilities {
 	public void getCurrentProcessStatus(int nextStep) {
 		
 		time = Calendar.getInstance().getTimeInMillis();
+		boolean isProbabilistic = Context.getRegisteredComponent("patientMatchingStrategyHolder", StrategyHolder.class)
+		        .isProbabilistic();
+		
 		try {
 			switch (nextStep) {
 				case 2:
 					objects = new HashMap<String, Object>();
-					objects = MatchingReportUtils.ReadConfigFile(objects, selectedStrat);
+					objects.put(MatchingConstants.IS_PROBABILISTIC, isProbabilistic);
+					MatchingReportUtils.ReadConfigFile(objects, selectedStrat);
 					break;
 				
 				case 3:
-					objects = MatchingReportUtils.InitScratchTable(objects);
+					MatchingReportUtils.InitScratchTable(objects);
 					size = ((List<MatchingConfig>) objects.get("matchingConfigLists")).size();
 					break;
 				
 				case 4:
-					objects = MatchingReportUtils.CreRanSamAnalyzer(objects);
+					if (isProbabilistic) {
+						MatchingReportUtils.CreRanSamAnalyzer(objects);
+					}
 					break;
 				
 				case 5:
-					objects = MatchingReportUtils.CreAnalFormPairs(objects);
+					if (isProbabilistic) {
+						MatchingReportUtils.CreAnalFormPairs(objects);
+					}
 					break;
 				
 				case 6:
-					objects = MatchingReportUtils.CrePairdataSourAnalyzer(objects);
+					if (isProbabilistic) {
+						MatchingReportUtils.CrePairdataSourAnalyzer(objects);
+					}
 					break;
 				
 				case 7:
-					objects = MatchingReportUtils.CreEMAnalyzer(objects);
+					if (isProbabilistic) {
+						MatchingReportUtils.CreEMAnalyzer(objects);
+					}
 					break;
 				
 				case 8:
-					objects = MatchingReportUtils.AnalyzingData(objects);
+					if (isProbabilistic) {
+						MatchingReportUtils.AnalyzingData(objects);
+					}
 					break;
 				
 				case 9:
-					objects = MatchingReportUtils.ScoringData(objects);
+					MatchingReportUtils.ScoringData(objects);
 					break;
 				
 				case 10:
-					objects = MatchingReportUtils.CreatingReport(objects);
+					MatchingReportUtils.CreatingReport(objects);
 					break;
 			}
 			
