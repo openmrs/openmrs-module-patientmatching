@@ -1,8 +1,11 @@
 package org.regenstrief.linkage.util;
 
+import static org.openmrs.module.patientmatching.MatchingConstants.CONCATENATED_FIELD_PREFIX;
+
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.openmrs.module.patientmatching.MatchingUtils;
@@ -121,22 +124,23 @@ public class ScorePair {
 	 * with each other then the individual columns which make the concat1 column would be set as true
 	 **/
 	private void enableInterchangeableFieldComparison(Record rec1, Record rec2, final MatchVector mv) {
-		for (final String comparision_demographic : mc.getInterchangeableColumns()) {
-			String rec1ConcatValue = rec1.getDemographic(comparision_demographic);
-			String rec2ConcatValue = rec2.getDemographic(comparision_demographic);
-			if (StringUtils.isNotEmpty(rec1ConcatValue) || StringUtils.isNotEmpty(rec2ConcatValue)) {
+		Map<String, List<String>> setIdAndFieldsMap = MatchingUtils.getSetIdAndFieldsMap(mc);
+		Map<String, String> r1Concats = MatchingUtils.getConcatValueMap(rec1, setIdAndFieldsMap);
+		Map<String, String> r2Concats = MatchingUtils.getConcatValueMap(rec2, setIdAndFieldsMap);
+		
+		setIdAndFieldsMap.forEach((setId, fields) -> {
+			String comparision_demographic = CONCATENATED_FIELD_PREFIX + setId;
+			String rec1ConcatValue = r1Concats.get(comparision_demographic);
+			String rec2ConcatValue = r2Concats.get(comparision_demographic);
+			if (StringUtils.isNotBlank(rec1ConcatValue) && StringUtils.isNotBlank(rec2ConcatValue)) {
 				float similarity = StringMatch.getLCSMatchSimilarity(rec1ConcatValue, rec2ConcatValue);
 				if (similarity > StringMatch.LCS_THRESH) {
-					List<String> interchangeableColumns = mc.getConcatenatedDemographics(comparision_demographic);
-					for (String mcr : interchangeableColumns) {
+					for (String mcr : fields) {
 						mv.setMatch(mcr, similarity, true);
 					}
 				}
-				return;
 			}
-		}
-		
-		return;
+		});
 	}
 	
 	public Hashtable<MatchVector, Long> getObservedVectors() {

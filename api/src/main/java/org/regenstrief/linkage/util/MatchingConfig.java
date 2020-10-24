@@ -11,13 +11,12 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.codec.binary.Base64;
+import org.openmrs.module.patientmatching.MatchingUtils;
 
 public class MatchingConfig implements Cloneable {
 	
@@ -299,59 +298,6 @@ public class MatchingConfig implements Cloneable {
 		}
 		return ret;
 	}
-	/*public List<MatchingConfigRow> getInterchangeableColumns(){
-		ArrayList<MatchingConfigRow> ret = new ArrayList<MatchingConfigRow>();
-		Iterator<MatchingConfigRow> it = row_options.iterator();
-		while(it.hasNext()){
-			MatchingConfigRow mcr = it.next();
-			if(!((mcr.getSetID()).equals("0"))){
-				ret.add(mcr);
-			}
-			
-		}
-		return ret;
-	}*/
-	
-	/**
-	 * method to return the interchangeable sets example concat1,concat2
-	 * 
-	 * @return
-	 */
-	public Set<String> getInterchangeableColumns() {
-		Set<String> ret = new HashSet<String>();
-		Iterator<MatchingConfigRow> it = row_options.iterator();
-		while (it.hasNext()) {
-			MatchingConfigRow mcr = it.next();
-			if (((mcr.getSetID()).equals("1")) && (!((mcr.getSetID()).equals("0"))) && (!((mcr.getSetID()).equals("")))) {
-				ret.add("concat" + mcr.getSetID());
-			}
-			if (((mcr.getSetID()).equals("2")) && (!((mcr.getSetID()).equals("0"))) && (!((mcr.getSetID()).equals("")))) {
-				ret.add("concat" + mcr.getSetID());
-			}
-			if (((mcr.getSetID()).equals("3")) && (!((mcr.getSetID()).equals("0"))) && (!((mcr.getSetID()).equals("")))) {
-				ret.add("concat" + mcr.getSetID());
-			}
-		}
-		return ret;
-	}
-	
-	/**
-	 * method to return the demographics of a particular interchangeable set
-	 * 
-	 * @return
-	 */
-	public List<String> getConcatenatedDemographics(String concatenatedFieldName) {
-		List<String> ret = new ArrayList<String>();
-		Iterator<MatchingConfigRow> it = row_options.iterator();
-		while (it.hasNext()) {
-			MatchingConfigRow mcr = it.next();
-			if (concatenatedFieldName.equals("concat" + mcr.getSetID())) {
-				ret.add(mcr.getName());
-			}
-		}
-		
-		return ret;
-	}
 	
 	public List<MatchingConfigRow> getScaleWeightColumns() {
 		ArrayList<MatchingConfigRow> ret = new ArrayList<MatchingConfigRow>();
@@ -521,6 +467,17 @@ public class MatchingConfig implements Cloneable {
 			return null;
 		}
 		
+	}
+	
+	/**
+	 * Checks if the specified {@link MatchingConfigRow} is transposable with at least one or more other
+	 * fields.
+	 * 
+	 * @param mcr the MatchingConfigRow to check
+	 * @return true if it is transpoable otherwise false
+	 */
+	public boolean isTransposableRow(MatchingConfigRow mcr) {
+		return MatchingUtils.getSetIdAndFieldsMap(this).containsKey(mcr.getSetID());
 	}
 	
 	public Object clone() {

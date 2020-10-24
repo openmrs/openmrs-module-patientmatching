@@ -1,5 +1,7 @@
 package org.regenstrief.linkage;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -40,7 +42,7 @@ public class Record {
 		while (e.hasMoreElements()) {
 			String d = e.nextElement();
 			String value = demographics.get(d);
-			if (value == null || value.equals("")) {
+			if (StringUtils.isBlank(value)) {
 				return true;
 			}
 		}
