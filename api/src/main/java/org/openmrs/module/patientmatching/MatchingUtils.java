@@ -1,14 +1,20 @@
 package org.openmrs.module.patientmatching;
 
+import static org.openmrs.module.patientmatching.MatchingConstants.CONCATENATED_FIELD_PREFIX;
+
 import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.StringUtils;
 import org.regenstrief.linkage.MatchItem;
+import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.MatchingConfigRow;
 import org.regenstrief.linkage.util.StringMatch;
 
 /**
@@ -150,6 +156,61 @@ public class MatchingUtils {
 		}
 		
 		return res;
+	}
+	
+	/**
+	 * Utility method which gets a map of setIds and the List of transposable fields that belong to it
+	 * which are generated from the specified {@link MatchingConfig}
+	 * 
+	 * @param mc the MatchConfig object to use
+	 * @return a Map instance
+	 */
+	public static Map<String, List<String>> getSetIdAndFieldsMap(MatchingConfig mc) {
+		Map<String, List<String>> mapTemp = new HashMap();
+		for (MatchingConfigRow row : mc.getIncludedColumns()) {
+			if (StringUtils.isNotBlank(row.getSetID()) && !"0".equals(row.getSetID())) {
+				if (mapTemp.get(row.getSetID()) == null) {
+					mapTemp.put(row.getSetID(), new ArrayList());
+				}
+				
+				mapTemp.get(row.getSetID()).add(row.getName());
+			}
+		}
+		
+		Map<String, List<String>> map = new HashMap(mapTemp.size());
+		//Exclude a set with less than 2 fields
+		mapTemp.forEach((setId, fields) -> {
+			if (fields.size() > 1) {
+				map.put(setId, fields);
+			}
+		});
+		
+		return map;
+	}
+	
+	/**
+	 * Gets a mapping of the concatenated fields and their values for the specified record using the
+	 * specified setId and fields map
+	 * 
+	 * @param record the Record instance
+	 * @param setIdAndFieldsMap a map of setIds and fields that belong to it
+	 * @return Map Instance
+	 */
+	public static Map<String, String> getConcatValueMap(Record record, Map<String, List<String>> setIdAndFieldsMap) {
+		Map<String, String> concats = new HashMap();
+		setIdAndFieldsMap.forEach((setId, fields) -> {
+			String concatValue = "";
+			for (final String demographic : fields) {
+				String fieldValue = record.getDemographic(demographic);
+				if (StringUtils.isNotBlank(fieldValue)) {
+					concatValue += fieldValue;
+				}
+			}
+			
+			concats.put(CONCATENATED_FIELD_PREFIX + setId, concatValue);
+		});
+		
+		return concats;
 	}
 	
 }
