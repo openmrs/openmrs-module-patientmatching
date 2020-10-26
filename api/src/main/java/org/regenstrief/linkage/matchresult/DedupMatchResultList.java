@@ -2,67 +2,40 @@
  */
 package org.regenstrief.linkage.matchresult;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openmrs.module.patientmatching.MatchingConstants;
-import org.openmrs.module.patientmatching.RecordSerializer;
-import org.openmrs.util.OpenmrsUtil;
+import org.openmrs.api.APIException;
+import org.openmrs.module.patientmatching.MatchingStrategy;
+import org.openmrs.module.patientmatching.MatchingStrategyAndStore;
 import org.regenstrief.linkage.MatchResult;
 import org.regenstrief.linkage.Record;
+import org.regenstrief.linkage.util.MatchingConfig;
+import org.regenstrief.linkage.util.ScorePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- *
+ * Probabilistic implementation of a {@link MatchingStrategy}
+ * <p>
+ * TODO Rename to ProbabilisticMatchingStrategy for clarity
+ * </p>
  */
-public class DedupMatchResultList extends MatchResultList {
+public class DedupMatchResultList extends MatchResultList implements MatchingStrategyAndStore {
 	
-	private Log log = LogFactory.getLog(this.getClass());
+	private Logger log = LoggerFactory.getLogger(this.getClass());
 	
-	private List<RecordPairId> pairIdList;
+	private List<RecordPairId> pairIdList = new ArrayList();
 	
-	private List<Set<Long>> flattenedPairIds;
+	private List<Set<Long>> flattenedPairIds = new ArrayList();
 	
-	private Set<Long> serializedRecord;
+	private Set<Long> serializedRecords = new TreeSet();
 	
 	public DedupMatchResultList() {
 		super();
-		
-		pairIdList = new ArrayList<RecordPairId>();
-		flattenedPairIds = new ArrayList<Set<Long>>();
-		serializedRecord = new TreeSet<Long>();
-		
-		String configLocation = MatchingConstants.SERIAL_FOLDER_NAME;
-		File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
-		
-		cleanUpFolder(configFileFolder);
-		boolean deleted = configFileFolder.delete();
-		if (deleted) {
-			log.info("Deleted record serialization folder ...");
-		}
-	}
-	
-	/**
-	 * Clean up the serialization folder to ensure that we will get the latest serialization data.
-	 * 
-	 * @param folder the folder of the serialization will be stored
-	 */
-	public void cleanUpFolder(File folder) {
-		File[] files = folder.listFiles();
-		for (File file : files) {
-			if (file.isDirectory()) {
-				cleanUpFolder(file);
-			} else {
-				file.delete();
-			}
-		}
 	}
 	
 	/**
@@ -70,132 +43,51 @@ public class DedupMatchResultList extends MatchResultList {
 	 */
 	@Override
 	public synchronized void acceptMatchResult(MatchResult mr) {
-		
-		if (mr.getScore() > mr.getMatchingConfig().getScoreThreshold()) {
-			Record r1 = mr.getRecord1();
-			Record r2 = mr.getRecord2();
-			
-			boolean r1SerializedBefore = true;
-			boolean r2SerializedBefore = true;
-			// serialize only record that is not serialized before
-			if (!serializedRecord.contains(r1.getUID())) {
-				try {
-					RecordSerializer.serialize(r1);
-					serializedRecord.add(r1.getUID());
-					r1SerializedBefore = false;
-				}
-				catch (FileNotFoundException e) {
-					log.info(
-					    "FileNotFoundException: Unable to serialize record with id " + r1.getUID() + ": " + e.getMessage());
-				}
-				catch (SecurityException e) {
-					log.info("SecurityException: Unable to serialize record with id " + r1.getUID() + ": " + e.getMessage());
-				}
-				catch (IOException e) {
-					log.info(
-					    "IOException: Error in closing serialized record with id " + r1.getUID() + ": " + e.getMessage());
-				}
+		if (isMatch(mr)) {
+			try {
+				storePair(mr.getRecord1(), mr.getRecord2());
 			}
-			if (!serializedRecord.contains(r2.getUID())) {
-				try {
-					RecordSerializer.serialize(r2);
-					serializedRecord.add(r2.getUID());
-					r2SerializedBefore = false;
-				}
-				catch (FileNotFoundException e) {
-					log.info(
-					    "FileNotFoundException: Unable to serialize record with id " + r2.getUID() + ": " + e.getMessage());
-				}
-				catch (SecurityException e) {
-					log.info("SecurityException: Unable to serialize record with id " + r2.getUID() + ": " + e.getMessage());
-				}
-				catch (IOException e) {
-					log.info(
-					    "IOException: Error in closing serialized record with id " + r2.getUID() + ": " + e.getMessage());
-				}
-			}
-			
-			// if both have been encountered, don't need to process this type of record
-			if (!r1SerializedBefore || !r2SerializedBefore) {
-				RecordPairId r = new RecordPairId(r1.getUID(), r2.getUID());
-				pairIdList.add(r);
+			catch (IOException e) {
+				throw new APIException("Unable to serialize records with ids: " + mr.getRecord1().getUID() + " and "
+				        + mr.getRecord2().getUID(), e);
 			}
 		}
 	}
 	
 	/**
-	 * Flatten the pair id list and make a list id set. The method exploit the ability of a set to
-	 * reject duplicate entries.
+	 * @see MatchingStrategy#match(Record, Record, MatchingConfig)
 	 */
-	public void flattenPairIdList() {
-		for (int i = 0; i < pairIdList.size(); i++) {
-			Set<Long> set = new TreeSet<Long>();
-			RecordPairId currentId = pairIdList.get(i);
-			if (!currentId.isProcessed()) {
-				set.add(currentId.getFirstRecordId());
-				set.add(currentId.getSecondRecordId());
-				for (int j = i + 1; j < pairIdList.size(); j++) {
-					RecordPairId processedIdPair = pairIdList.get(j);
-					if (processedIdPair.flattenable(currentId)) {
-						set.add(processedIdPair.getFirstRecordId());
-						set.add(processedIdPair.getSecondRecordId());
-						processedIdPair.setProcessed(true);
-					}
-				}
-				flattenedPairIds.add(set);
-			}
-		}
-		
-		// if records are expanded so multiple IDs might appear and be paired, then
-		// it's possible that a set of IDs might just have one ID; these need to be removed
-		Iterator<Set<Long>> it = flattenedPairIds.iterator();
-		while (it.hasNext()) {
-			Set<Long> entity = it.next();
-			if (entity.size() == 1) {
-				it.remove();
-			}
-		}
+	@Override
+	public boolean match(Record rec1, Record rec2, MatchingConfig mc) {
+		return isMatch(new ScorePair(mc).scorePair(rec1, rec2));
 	}
 	
 	/**
-	 * @return the pairIdList
+	 * @see org.openmrs.module.patientmatching.MatchedRecordsStore#getPairIdList()
 	 */
+	@Override
 	public List<RecordPairId> getPairIdList() {
 		return pairIdList;
 	}
 	
 	/**
-	 * @param pairIdList the pairIdList to set
+	 * @see org.openmrs.module.patientmatching.MatchedRecordsStore#getFlattenedPairIds()
 	 */
-	public void setPairIdList(List<RecordPairId> pairIdList) {
-		this.pairIdList = pairIdList;
-	}
-	
-	/**
-	 * @return the flattenedPairIds
-	 */
+	@Override
 	public List<Set<Long>> getFlattenedPairIds() {
 		return flattenedPairIds;
 	}
 	
 	/**
-	 * @param flattenedPairIds the flattenedPairIds to set
+	 * @see org.openmrs.module.patientmatching.MatchedRecordsStore#getSerializedRecords()
 	 */
-	public void setFlattenedPairIds(List<Set<Long>> flattenedPairIds) {
-		this.flattenedPairIds = flattenedPairIds;
+	@Override
+	public Set<Long> getSerializedRecords() {
+		return serializedRecords;
 	}
 	
-	/**
-	 * @return the serializedRecord
-	 */
-	public Set<Long> getSerializedRecord() {
-		return serializedRecord;
+	private boolean isMatch(MatchResult mr) {
+		return mr.getScore() > mr.getMatchingConfig().getScoreThreshold();
 	}
 	
-	/**
-	 * @param serializedRecord the serializedRecord to set
-	 */
-	public void setSerializedRecord(Set<Long> serializedRecord) {
-		this.serializedRecord = serializedRecord;
-	}
 }
