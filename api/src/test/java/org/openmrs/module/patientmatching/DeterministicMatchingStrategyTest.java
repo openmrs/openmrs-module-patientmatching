@@ -322,4 +322,31 @@ public class DeterministicMatchingStrategyTest {
 		assertTrue(strategy.match(rec1, rec2, new MatchingConfig(null, new MatchingConfigRow[] { fnMcr, gnMcr, mnMcr })));
 	}
 	
+	@Test
+	public void match_shouldReturnTrueIfOneTransposableAlreadyMatchesTheSameFieldOnTheOtherRecordAndTheOthersDoNot() {
+		final String setId1 = "1";
+		final String firstNameDem = "firstName";
+		final String middleNameDem = "givenName";
+		final String givenNameDem = "givenName";
+		final String commonName = "Horatio";
+		Record rec1 = new Record(1, null);
+		rec1.addDemographic(firstNameDem, commonName);
+		rec1.addDemographic(middleNameDem, "abc");
+		rec1.addDemographic(givenNameDem, "def");
+		Record rec2 = new Record(2, null);
+		rec2.addDemographic(firstNameDem, commonName);
+		rec2.addDemographic(middleNameDem, "ghi");
+		rec2.addDemographic(givenNameDem, "jkl");
+		MatchingConfigRow fnMcr = new MatchingConfigRow(firstNameDem);
+		fnMcr.setInclude(true);
+		fnMcr.setSetID(setId1);
+		MatchingConfigRow mnMcr = new MatchingConfigRow(middleNameDem);
+		mnMcr.setInclude(true);
+		mnMcr.setSetID(setId1);
+		MatchingConfigRow gnMcr = new MatchingConfigRow(givenNameDem);
+		gnMcr.setInclude(true);
+		gnMcr.setSetID(setId1);
+		assertTrue(strategy.match(rec1, rec2, new MatchingConfig(null, new MatchingConfigRow[] { fnMcr, mnMcr, gnMcr })));
+	}
+	
 }

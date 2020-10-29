@@ -48,7 +48,6 @@ public class DeterministicMatchingStrategy implements MatchingStrategyAndStore {
 					// TODO use something other than String[] or guarantee size == 2
 					match = MatchingUtils.match(algorithm, threshold, candidate[0], candidate[1]).isMatch();
 					if (match) {
-						match = true;
 						break;
 					}
 				}
@@ -56,7 +55,12 @@ public class DeterministicMatchingStrategy implements MatchingStrategyAndStore {
 				match = MatchingUtils.match(algorithm, threshold, data1, data2).isMatch();
 			}
 			
-			if (!match) {
+			if (match) {
+				if (mc.isTransposableRow(mcr)) {
+					//Mark all other transposable fields as matches too
+					setIdMatchMap.put(mcr.getSetID(), true);
+				}
+			} else {
 				if (!mc.isTransposableRow(mcr)) {
 					return false;
 				}
@@ -72,7 +76,7 @@ public class DeterministicMatchingStrategy implements MatchingStrategyAndStore {
 		}
 		
 		//At this point, we didn't find a mismatch for any non-transposable field.
-		//If any set didn't match then its a no match otherwsie it's a match
+		//If any set didn't match then its a no match otherwise it's a match
 		return !setIdMatchMap.values().contains(false);
 	}
 	
