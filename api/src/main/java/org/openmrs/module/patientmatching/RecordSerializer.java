@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.openmrs.util.OpenmrsUtil;
 import org.regenstrief.linkage.Record;
 
 import com.thoughtworks.xstream.XStream;
@@ -44,9 +43,7 @@ public class RecordSerializer {
 	public static void serialize(Record record) throws FileNotFoundException, SecurityException, IOException {
 		String filename = String.valueOf(record.getUID());
 		
-		String configLocation = MatchingConstants.SERIAL_FOLDER_NAME;
-		File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
-		File serialFile = new File(configFileFolder, filename);
+		File serialFile = new File(MatchingUtils.getSerializationFolder(), filename);
 		
 		// only serialize if the same record have not been serialized before
 		if (!serialFile.exists()) {
@@ -65,9 +62,7 @@ public class RecordSerializer {
 	 * @throws IOException
 	 */
 	public static Record deserialize(String xmlName) throws FileNotFoundException, SecurityException {
-		String configLocation = MatchingConstants.SERIAL_FOLDER_NAME;
-		File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
-		File serialFile = new File(configFileFolder, xmlName);
+		File serialFile = new File(MatchingUtils.getSerializationFolder(), xmlName);
 		
 		FileInputStream fis = new FileInputStream(serialFile);
 		//hack: need to do this to let know XStream the appropriate type of object to be created

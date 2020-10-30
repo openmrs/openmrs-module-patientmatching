@@ -40,11 +40,26 @@
 	</advice>
 	<!-- /AOP -->
 
+    <globalProperty>
+        <property>patientmatching.configDirectory</property>
+        <defaultValue>patientmatching</defaultValue>
+        <description>The location of the patient matching configuration folder, can be absolute or relative path
+        </description>
+    </globalProperty>
+
 	<globalProperty>
-		<property>patientmatching.linkConfigFile</property>
-		<description>This file can be found at doc/link_config.xml
+		<property>patientmatching.configFile</property>
+        <defaultValue>patientmatching/config.xml</defaultValue>
+		<description>The location of the patient matching configuration file, can be absolute or relative path
 		</description>
 	</globalProperty>
+
+    <globalProperty>
+        <property>patientmatching.serializationDirectory</property>
+        <defaultValue>patientmatching/serial</defaultValue>
+        <description>The location of the serialization folder to be used when matching patients, can be absolute or relative path
+        </description>
+    </globalProperty>
 
 	<globalProperty>
 		<property>patientmatching.excludedProperties</property>

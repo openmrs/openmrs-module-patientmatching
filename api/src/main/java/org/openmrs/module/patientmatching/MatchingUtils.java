@@ -3,6 +3,9 @@ package org.openmrs.module.patientmatching;
 import static org.openmrs.module.patientmatching.MatchingConstants.CONCATENATED_FIELD_PREFIX;
 
 import java.beans.PropertyDescriptor;
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -11,6 +14,8 @@ import java.util.Map;
 
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openmrs.api.context.Context;
+import org.openmrs.util.OpenmrsUtil;
 import org.regenstrief.linkage.MatchItem;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.MatchingConfig;
@@ -211,6 +216,48 @@ public class MatchingUtils {
 		});
 		
 		return concats;
+	}
+	
+	public static File getConfigFile() {
+		String value = Context.getAdministrationService().getGlobalProperty(MatchingConstants.GP_CONFIG_FILE);
+		if (StringUtils.isBlank(value)) {
+			value = MatchingConstants.CONFIG_FILE_DEFAULT;
+		}
+		
+		Path path = Paths.get(value);
+		File configFile;
+		if (path.isAbsolute()) {
+			configFile = path.toFile();
+		} else {
+			File configFileDir;
+			if (path.getParent() != null) {
+				configFileDir = OpenmrsUtil.getDirectoryInApplicationDataDirectory(path.getParent().toString());
+			} else {
+				configFileDir = new File(OpenmrsUtil.getApplicationDataDirectory());
+			}
+			
+			configFile = new File(configFileDir, path.getFileName().toString());
+		}
+		
+		return configFile;
+	}
+	
+	public static File getConfigFolder() {
+		String value = Context.getAdministrationService().getGlobalProperty(MatchingConstants.GP_CONFIG_DIR);
+		if (StringUtils.isBlank(value)) {
+			value = MatchingConstants.CONFIG_DIR_DEFAULT;
+		}
+		
+		return OpenmrsUtil.getDirectoryInApplicationDataDirectory(value);
+	}
+	
+	public static File getSerializationFolder() {
+		String value = Context.getAdministrationService().getGlobalProperty(MatchingConstants.GP_SERIAL_DIR);
+		if (StringUtils.isBlank(value)) {
+			value = MatchingConstants.SERIAL_DIR_DEFAULT;
+		}
+		
+		return OpenmrsUtil.getDirectoryInApplicationDataDirectory(value);
 	}
 	
 }

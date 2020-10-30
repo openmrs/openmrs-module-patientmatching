@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
 import org.openmrs.util.OpenmrsUtil;
 import org.powermock.api.mockito.PowerMockito;
@@ -42,6 +43,9 @@ public class MatchingReportUtilsTest {
 	@Mock
 	private File mockConfigFolder;
 	
+	@Mock
+	private AdministrationService mockAdminService;
+	
 	@Before
 	public void setup() {
 		PowerMockito.mockStatic(Context.class);
@@ -51,10 +55,11 @@ public class MatchingReportUtilsTest {
 		MockitoAnnotations.initMocks(this);
 		Whitebox.setInternalState(mockConfigFolder, "path", "some-path");
 		when(Context.getRuntimeProperties()).thenReturn(mockProperties);
+		when(Context.getAdministrationService()).thenReturn(mockAdminService);
 		when(mockProperties.getProperty("connection.driver_class")).thenReturn(Driver.class.getName());
-		when(OpenmrsUtil.getDirectoryInApplicationDataDirectory(MatchingConstants.CONFIG_FOLDER_NAME))
+		when(OpenmrsUtil.getDirectoryInApplicationDataDirectory(MatchingConstants.CONFIG_DIR_DEFAULT))
 		        .thenReturn(mockConfigFolder);
-		when(OpenmrsUtil.getDirectoryInApplicationDataDirectory(MatchingConstants.SERIAL_FOLDER_NAME))
+		when(OpenmrsUtil.getDirectoryInApplicationDataDirectory(MatchingConstants.SERIAL_DIR_DEFAULT))
 		        .thenReturn(mockSerialFolder);
 		when(mockSerialFolder.listFiles()).thenReturn(new File[] {});
 	}
