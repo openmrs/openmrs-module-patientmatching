@@ -72,7 +72,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	
 	private static final String extention = "patientMatching";
 	
-	public final static String CONFIG_FILE = "link_config.xml";
+	public final static String CONFIG_FILE = "config.xml";
 	
 	public final static String MATCHING_ATTRIBUTE = "Other Matching Information";
 	

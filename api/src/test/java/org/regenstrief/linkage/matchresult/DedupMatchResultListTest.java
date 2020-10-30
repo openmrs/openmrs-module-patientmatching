@@ -13,7 +13,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.openmrs.api.AdministrationService;
+import org.openmrs.api.context.Context;
 import org.openmrs.module.patientmatching.MatchingConstants;
+import org.openmrs.module.patientmatching.MatchingUtils;
 import org.openmrs.module.patientmatching.RecordSerializer;
 import org.openmrs.util.OpenmrsUtil;
 import org.powermock.api.mockito.PowerMockito;
@@ -25,11 +28,14 @@ import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ RecordSerializer.class, OpenmrsUtil.class })
+@PrepareForTest({ RecordSerializer.class, OpenmrsUtil.class, Context.class })
 public class DedupMatchResultListTest {
 	
 	@Mock
 	private File mockSerialFolder;
+	
+	@Mock
+	private AdministrationService mockAdminService;
 	
 	private DedupMatchResultList strategy;
 	
@@ -40,7 +46,9 @@ public class DedupMatchResultListTest {
 		MockitoAnnotations.initMocks(this);
 		PowerMockito.mockStatic(RecordSerializer.class);
 		PowerMockito.mockStatic(OpenmrsUtil.class);
-		when(OpenmrsUtil.getDirectoryInApplicationDataDirectory(MatchingConstants.SERIAL_FOLDER_NAME))
+		PowerMockito.mockStatic(Context.class);
+		when(Context.getAdministrationService()).thenReturn(mockAdminService);
+		when(OpenmrsUtil.getDirectoryInApplicationDataDirectory(MatchingConstants.SERIAL_DIR_DEFAULT))
 		        .thenReturn(mockSerialFolder);
 		strategy = new DedupMatchResultList();
 		strategy.clean();
