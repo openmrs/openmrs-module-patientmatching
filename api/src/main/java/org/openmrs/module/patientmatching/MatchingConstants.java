@@ -51,4 +51,6 @@ public interface MatchingConstants {
 	String STRATEGY_DETERMINISTIC = "deterministic";
 	
 	String IS_PROBABILISTIC = "isProbabilistic";
+	
+	String CONCATENATED_FIELD_PREFIX = "concat";
 }
