@@ -69,7 +69,7 @@
 	</globalProperty>
 	<globalProperty>
 		<property>patientmatching.urlProductionServer</property>
-		<defaultValue>http://link.regenstrief.org:8080/openmrs/admin/patients/mergePatients.form</defaultValue>
+		<defaultValue>http://localhost:8080/openmrs/admin/patients/mergePatients.form</defaultValue>
 		<description>URL pointing to the production server </description>
 	</globalProperty>
 	<globalProperty>
