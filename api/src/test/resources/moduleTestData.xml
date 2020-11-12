@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<dataset>
+    <person person_id="1001" gender="M" birthdate="1948-01-01 00:00:00.0" birthdate_estimated="0" dead="0" creator="1" date_created="2019-05-02 00:00:00.0" voided="0" uuid="1b1b19c2-3ed6-4f62-b8c0-f762dc8d7562" />
+    <person person_id="1002" gender="M" birthdate="1985-01-01 00:00:00.0" birthdate_estimated="0" dead="0" creator="1" date_created="2019-05-24 00:00:00.0" voided="0" uuid="2b1b19c2-3ed6-4f62-b8c0-f762dc8d7562" />
+    <person person_id="1003" gender="F" birthdate="1990-01-01 00:00:00.0" birthdate_estimated="0" dead="0" creator="1" date_created="2019-05-24 00:00:00.0" voided="1" uuid="3b1b19c2-3ed6-4f62-b8c0-f762dc8d7562" />
+
+    <person_name person_name_id="2001" preferred="1" person_id="1001" given_name="Dwight" family_name="Yorke" creator="1" date_created="2019-05-02 00:00:00.0" voided="0" uuid="189e3a7b-6481-487d-94ce-c07bb3ca3cc9" />
+    <person_name person_name_id="2002" preferred="1" person_id="1002" given_name="Jimmy" family_name="Navuga" creator="1" date_created="2019-05-02 00:00:00.0" voided="0" uuid="289e3a7b-6481-487d-94ce-c07bb3ca3cc9" />
+    <person_name person_name_id="2003" preferred="1" person_id="1003" given_name="Stella" family_name="Navuga" creator="1" date_created="2019-05-02 00:00:00.0" voided="1" uuid="389e3a7b-6481-487d-94ce-c07bb3ca3cc9" />
+    <person_name person_name_id="2004" preferred="0" person_id="1001" given_name="David" middle_name="Beckham" creator="1" date_created="2019-05-02 00:00:00.0" voided="1" uuid="489e3a7b-6481-487d-94ce-c07bb3ca3cc9" />
+
+    <person_address person_address_id="5001" person_id="1001" preferred="0" address1="1050 Wishard Blvd" creator="1" date_created="2019-05-02 00:00:00.0" voided="1" uuid="1350d0b5-821d-4e5e-ad1d-a9bce331e119" />
+    <person_address person_address_id="5002" person_id="1001" preferred="1" address1="1101 W 11th St" creator="1" date_created="2019-05-02 00:00:00.0" voided="0" uuid="2350d0b5-821d-4e5e-ad1d-a9bce331e119" />
+    
+    <patient patient_id="1001" creator="1" date_created="2019-05-24 00:00:00.0" voided="0" />
+    <patient patient_id="1002" creator="1" date_created="2019-05-24 00:00:00.0" voided="0" />
+    <patient patient_id="1003" creator="1" date_created="2019-05-24 00:00:00.0" voided="1" />
+
+    <patient_identifier patient_identifier_id="3001" patient_id="1001" identifier="M101" identifier_type="1" preferred="1" creator="1" date_created="2019-05-24 00:00:00.0" voided="0" uuid="1f41928c-3bce-48d9-a4dc-9198f6b2873d" />
+    <patient_identifier patient_identifier_id="3002" patient_id="1002" identifier="M102" identifier_type="1" preferred="1" creator="1" date_created="2019-05-24 00:00:00.0" voided="0" uuid="2f41928c-3bce-48d9-a4dc-9198f6b2873d" />
+    <patient_identifier patient_identifier_id="3003" patient_id="1003" identifier="M103" identifier_type="1" preferred="1" creator="1" date_created="2019-05-24 00:00:00.0" voided="1" uuid="3f41928c-3bce-48d9-a4dc-9198f6b2873d" />
+    <patient_identifier patient_identifier_id="3004" patient_id="1001" identifier="1234" identifier_type="2" preferred="1" creator="1" date_created="2019-05-24 00:00:00.0" voided="1" uuid="4f41928c-3bce-48d9-a4dc-9198f6b2873d" />
+
+    <person_attribute person_attribute_id="4001" person_id="1001" person_attribute_type_id="2" value="Kampala" creator="1" date_created="2019-05-02 00:00:00.0" voided="0" uuid="1768f3da-b692-44b7-a33f-abf2c450474f" />
+    <person_attribute person_attribute_id="4002" person_id="1001" person_attribute_type_id="8" value="5" creator="1" date_created="2019-05-02 00:00:00.0" voided="1" uuid="2768f3da-b692-44b7-a33f-abf2c450474f" />
+
+    <!-- TODO Add addresses -->
+</dataset>
