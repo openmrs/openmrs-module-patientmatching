@@ -88,12 +88,6 @@
 		</property>
 	</bean>
 
-	<bean class="org.openmrs.module.patientmatching.HibernateConnection">
-		<property name="sessionFactory">
-			<ref bean="dbSessionFactory" />
-		</property>
-	</bean>
-
 	<bean parent="serviceContext">
 		<property name="moduleService">
 			<list>
