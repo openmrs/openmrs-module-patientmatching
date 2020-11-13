@@ -3,6 +3,7 @@ package org.openmrs.module.patientmatching;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -87,9 +88,7 @@ public class MatchingReportUtils {
 		log.info("Starting generate report process sequence");
 		
 		// open the config.xml file
-		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
-		File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
-		File configFile = new File(configFileFolder, MatchingConstants.CONFIG_FILE_NAME);
+		File configFile = MatchingUtils.getConfigFile();
 		
 		log.info("Reading matching config file from " + configFile.getAbsolutePath());
 		
@@ -129,7 +128,7 @@ public class MatchingReportUtils {
 		objects.put("user", user);
 		objects.put("passwd", passwd);
 		objects.put("matchingConfigLists", matchingConfigLists);
-		objects.put("configFileFolder", configFileFolder);
+		objects.put("configFileFolder", MatchingUtils.getConfigFolder());
 	}
 	//New Method1 End 2
 	
@@ -295,7 +294,7 @@ public class MatchingReportUtils {
 	/**
 	 * Method to get the list of the available report for display. The method will return all report
 	 * found in the designated folder in the server.
-	 * 
+	 *
 	 * @return all available report in the server
 	 */
 	@Deprecated
@@ -303,10 +302,7 @@ public class MatchingReportUtils {
 		log.info("Listing all available report");
 		List<String> reports = new ArrayList<String>();
 		
-		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
-		File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
-		
-		File[] files = configFileFolder.listFiles();
+		File[] files = MatchingUtils.getConfigFolder().listFiles();
 		for (File file : files) {
 			if (file.getName().startsWith("dedup")) {
 				reports.add(file.getName());

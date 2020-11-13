@@ -15,7 +15,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
-import org.openmrs.util.OpenmrsUtil;
 
 /**
  * Class to read chunk content of a report file and then send it back to the web front end. Current
@@ -214,9 +213,7 @@ public class MatchingReportReader {
 	 * @param filename
 	 */
 	private void setReportFile(String filename) {
-		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
-		File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
-		reportFile = new File(configFileFolder, filename);
+		reportFile = new File(MatchingUtils.getConfigFolder(), filename);
 	}
 	
 	/**

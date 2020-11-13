@@ -7,11 +7,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.SortedSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
@@ -25,7 +25,6 @@ import org.openmrs.api.APIException;
 import org.openmrs.api.PatientService;
 import org.openmrs.api.PersonService;
 import org.openmrs.api.context.Context;
-import org.openmrs.util.OpenmrsUtil;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
@@ -110,9 +109,8 @@ public class MatchingConfigurationUtils {
 	 */
 	public static final PatientMatchingConfiguration loadPatientMatchingConfig(String name,
 	        List<String> listExcludedProperties) {
-		String configurationFolder = MatchingConstants.CONFIG_FOLDER_NAME;
-		File configurationFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configurationFolder);
-		File configurationFile = new File(configurationFileFolder, MatchingConstants.CONFIG_FILE_NAME);
+		
+		File configurationFile = MatchingUtils.getConfigFile();
 		
 		PatientMatchingConfiguration patientMatchingConfig = createPatientMatchingConfig(listExcludedProperties);
 		log.info("Loading PatientMatchingConfig with name: " + name);
@@ -217,12 +215,7 @@ public class MatchingConfigurationUtils {
 	 */
 	public static final void savePatientMatchingConfig(PatientMatchingConfiguration patientMatchingConfig) {
 		
-		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
-		
-		File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
-		
-		File configFile = new File(configFileFolder, MatchingConstants.CONFIG_FILE_NAME);
-		
+		File configFile = MatchingUtils.getConfigFile();
 		RecMatchConfig recMatchConfig = null;
 		LinkDataSource linkDataSource = new LinkDataSource("dummy", "dummy", "dummy", 1);
 		
@@ -331,10 +324,7 @@ public class MatchingConfigurationUtils {
 		log.info("Listing all available blocking run");
 		List<String> blockingRuns = new ArrayList<String>();
 		
-		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
-		File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
-		File configFile = new File(configFileFolder, MatchingConstants.CONFIG_FILE_NAME);
-		
+		File configFile = MatchingUtils.getConfigFile();
 		if (configFile.exists()) {
 			RecMatchConfig recMatchConfig = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(configFile));
 			List<MatchingConfig> matchingConfigLists = recMatchConfig.getMatchingConfigs();
@@ -382,9 +372,7 @@ public class MatchingConfigurationUtils {
 	 */
 	public static final void deleteBlockingRun(String name) {
 		log.info("Deleting blocking run with name: " + name);
-		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
-		File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
-		File configFile = new File(configFileFolder, MatchingConstants.CONFIG_FILE_NAME);
+		File configFile = MatchingUtils.getConfigFile();
 		
 		if (configFile.exists()) {
 			RecMatchConfig recMatchConfig = XMLTranslator.createRecMatchConfig(XMLTranslator.getXMLDocFromFile(configFile));
@@ -473,6 +461,7 @@ public class MatchingConfigurationUtils {
 	 */
 	public static void refreshPatientMatchingConfig(PatientMatchingConfiguration configuration,
 	        List<String> listExcludedProperties) {
+		
 		if (log.isDebugEnabled()) {
 			log.debug("refreshing PatientMatchingConfiguration \"" + configuration.getConfigurationName() + "\"");
 		}

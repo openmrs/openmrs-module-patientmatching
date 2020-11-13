@@ -3,6 +3,8 @@
  */
 package org.openmrs.module.patientmatching;
 
+import java.io.File;
+
 /**
  * Interface to define some of the constants that will be used throughout the patient matching
  * process.
@@ -11,19 +13,26 @@ public interface MatchingConstants {
 	
 	/**
 	 * Folder name to store the configuration file and temporary output of the patient de-duplication
-	 * process
+	 * process and serialized data
 	 */
-	public static final String CONFIG_FOLDER_NAME = "patient-matching";
+	String GP_CONFIG_DIR = "patientmatching.configDirectory";
+	
+	String CONFIG_DIR_DEFAULT = "patientmatching";
+	
+	String GP_CONFIG_FILE = "patientmatching.linkConfigFile";
+	
+	String CONFIG_FILENAME_DEFAULT = "link_config.xml";
+	
+	String CONFIG_FILE_DEFAULT = CONFIG_DIR_DEFAULT + File.separator + CONFIG_FILENAME_DEFAULT;
 	
 	/**
 	 * Folder name for the output of <code>Record</code> serialization process
 	 */
-	public static final String SERIAL_FOLDER_NAME = "patient-matching/serial";
+	String GP_SERIAL_DIR = "patientmatching.serializationDirectory";
 	
-	/**
-	 * Default name for the configuration file name
-	 */
-	public static final String CONFIG_FILE_NAME = "config.xml";
+	String SERIAL_DIRNAME_DEFAULT = "serial";
+	
+	String SERIAL_DIR_DEFAULT = CONFIG_DIR_DEFAULT + File.separator + SERIAL_DIRNAME_DEFAULT;
 	
 	/**
 	 * Default key for the excluded properties of the OpenMRS's object that will be used in the patient

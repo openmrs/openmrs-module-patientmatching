@@ -9,9 +9,6 @@
  */
 package org.openmrs.module.patientmatching;
 
-import static org.openmrs.module.patientmatching.MatchingConstants.SERIAL_FOLDER_NAME;
-
-import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -19,7 +16,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.io.FileUtils;
-import org.openmrs.util.OpenmrsUtil;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.matchresult.RecordPairId;
 import org.slf4j.Logger;
@@ -48,9 +44,7 @@ public interface MatchedRecordsStore {
 		getFlattenedPairIds().clear();
 		getSerializedRecords().clear();
 		
-		//TODO use a utility method to get the folder
-		File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(SERIAL_FOLDER_NAME);
-		FileUtils.deleteDirectory(configFileFolder);
+		FileUtils.deleteDirectory(MatchingUtils.getSerializationFolder());
 		logger.info("Deleted record serialization folder ...");
 	}
 	

@@ -50,8 +50,7 @@ public class ReportMigrationUtils {
 	 * Method to migrate the old reports to the database
 	 */
 	public static void migrateReports() {
-		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
-		File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
+		File configFileFolder = MatchingUtils.getConfigFolder();
 		for (File file : configFileFolder.listFiles()) {
 			/*
 			only the files that has the name starting with "dedup"(for de-duplication) are considered
@@ -219,10 +218,7 @@ public class ReportMigrationUtils {
 	 * This method migrates the old configurations from the config.xml to the database
 	 */
 	public static void migrateConfigurations() {
-		String configLocation = MatchingConstants.CONFIG_FOLDER_NAME;
-		File configFileFolder = OpenmrsUtil.getDirectoryInApplicationDataDirectory(configLocation);
-		File configFile = new File(configFileFolder, MatchingConstants.CONFIG_FILE_NAME);
-		
+		File configFile = MatchingUtils.getConfigFile();
 		if (!configFile.exists()) {
 			return;
 		}

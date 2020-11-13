@@ -73,20 +73,9 @@ public class LinkDBConnections {
 	
 	private LinkDBConnections() {
 		
-		AdministrationService adminService = Context.getAdministrationService();
-		String configFilename = adminService.getGlobalProperty("patientmatching.linkConfigFile",
-		    PatientMatchingActivator.CONFIG_FILE);
-		
-		// used to cache patientToRecord objects
-		/*cache = new LinkedHashMap<Integer,Record>(RECORD_CACHE_SIZE + 1){
-			 public boolean removeEldestEntry(Map.Entry<Integer,Record> eldest) {
-		            return size() > RECORD_CACHE_SIZE;
-		     }
-		};*/
-		
 		running_dedup = false;
 		
-		if (!parseConfig(new File(configFilename))) {
+		if (!parseConfig(MatchingUtils.getConfigFile())) {
 			finder = null;
 			link_db = null;
 			rp = null;
