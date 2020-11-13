@@ -19,7 +19,7 @@ public interface MatchingConstants {
 	
 	String CONFIG_DIR_DEFAULT = "patientmatching";
 	
-	String GP_CONFIG_FILE = "patientmatching.configFile";
+	String GP_CONFIG_FILE = "patientmatching.linkConfigFile";
 	
 	String CONFIG_FILENAME_DEFAULT = "link_config.xml";
 	
