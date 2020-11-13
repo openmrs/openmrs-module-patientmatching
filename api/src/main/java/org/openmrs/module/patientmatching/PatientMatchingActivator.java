@@ -72,8 +72,6 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	
 	private static final String extention = "patientMatching";
 	
-	public final static String CONFIG_FILE = "config.xml";
-	
 	public final static String MATCHING_ATTRIBUTE = "Other Matching Information";
 	
 	public final static String LINK_TABLE_KEY_DEMOGRAPHIC = "openmrs_id";

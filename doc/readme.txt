@@ -46,7 +46,7 @@ and Longest Common Substring is a score 0.8.  The threhold for Levenshtein is 0.
 
 
 CONFIGURATION FILE
-The default name for the configuration file is "config.xml" in the patietmatching directory in the OpenMRS application data directory.
+The default name for the configuration file is "link_config.xml" in the patietmatching directory in the OpenMRS application data directory.
 The JDBC driver needs to be in the classpath when the program is run if the link table is in a non Postgres or MySQL directory.
 
 A excerpt of a valid configuration file for the probabilistic strategy is (see below for that the deterministic):
@@ -169,9 +169,9 @@ KEY MODULE CONFIGURATIONS
         The location of the patient matching configuration folder, can be absolute or relative path, defaults to
         patientmatching in the OpenMRS application data directory.
 
-    patientmatching.configFile
+    patientmatching.linkConfigFile
         The location of the patient matching configuration file, can be absolute or relative path, defaults to
-        patientmatching/config.xml in the OpenMRS application data directory.
+        patientmatching/link_config.xml in the OpenMRS application data directory.
 
     patientmatching.serializationDirectory
         The location of the serialization folder to be used when matching patients, can be absolute or relative path,

@@ -21,14 +21,18 @@ public interface MatchingConstants {
 	
 	String GP_CONFIG_FILE = "patientmatching.configFile";
 	
-	String CONFIG_FILE_DEFAULT = CONFIG_DIR_DEFAULT + File.separator + "config.xml";
+	String CONFIG_FILENAME_DEFAULT = "link_config.xml";
+	
+	String CONFIG_FILE_DEFAULT = CONFIG_DIR_DEFAULT + File.separator + CONFIG_FILENAME_DEFAULT;
 	
 	/**
 	 * Folder name for the output of <code>Record</code> serialization process
 	 */
 	String GP_SERIAL_DIR = "patientmatching.serializationDirectory";
 	
-	String SERIAL_DIR_DEFAULT = CONFIG_DIR_DEFAULT + File.separator + "serial";
+	String SERIAL_DIRNAME_DEFAULT = "serial";
+	
+	String SERIAL_DIR_DEFAULT = CONFIG_DIR_DEFAULT + File.separator + SERIAL_DIRNAME_DEFAULT;
 	
 	/**
 	 * Default key for the excluded properties of the OpenMRS's object that will be used in the patient
