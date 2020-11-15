@@ -4,28 +4,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.criterion.ProjectionList;
-import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
 import org.hibernate.type.StandardBasicTypes;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifierType;
 import org.openmrs.PersonAttributeType;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.hibernate.DbSession;
-import org.openmrs.module.patientmatching.HibernateConnection;
+import org.openmrs.api.db.hibernate.DbSessionFactory;
 import org.openmrs.module.patientmatching.LinkDBConnections;
 import org.regenstrief.linkage.Record;
 
@@ -42,11 +37,6 @@ public class OpenMRSReader implements DataSourceReader {
 	private final static byte MODE_PATIENT = 0;
 	
 	private final static byte MODE_ARRAY = 1;
-	
-	private final static byte MODE_PROJECTION = 2;
-	
-	private final static String[][] PROJECTION_ALIASES = { { "org.openmrs.PersonName", "names" },
-	        { "org.openmrs.PersonAddress", "addresses" }, { "org.openmrs.PatientIdentifier", "identifiers" } };
 	
 	protected final Log log = LogFactory.getLog(this.getClass());
 	
@@ -81,7 +71,7 @@ public class OpenMRSReader implements DataSourceReader {
 		log.info("Getting all patient records ...");
 		updatePatientList();
 		
-		log.info("Finish intialization ...");
+		log.info("Finish initialization ...");
 	}
 	
 	public void setExpandPatient(boolean expand) {
@@ -92,39 +82,13 @@ public class OpenMRSReader implements DataSourceReader {
 		createHibernateSession().clear();
 		criteria = createHibernateSession().createCriteria(Patient.class).setMaxResults(PAGING_SIZE)
 		        .setFirstResult(pageNumber * PAGING_SIZE);
-		if (projections != null) {
-			resultMode = MODE_PROJECTION;
-			ProjectionList projectionList = Projections.projectionList();
-			Set<String> aliases = null;
-			for (String projection : projections) {
-				if (projection.startsWith("org.openmrs.Patient")) {
-					projection = projection.substring(20);
-				} else {
-					for (final String[] aliasDefinition : PROJECTION_ALIASES) {
-						final String className = aliasDefinition[0];
-						if (projection.startsWith(className)) {
-							final String alias = aliasDefinition[1];
-							projection = alias + projection.substring(className.length());
-							if (aliases == null) {
-								aliases = new HashSet<String>();
-							}
-							if (aliases.add(alias)) {
-								criteria = criteria.createAlias(alias, alias);
-							}
-							break;
-						}
-					}
-				}
-				projectionList = projectionList.add(Projections.property(projection));
-			}
-			criteria = criteria.setProjection(projectionList);
-		}
+		criteria.add(Restrictions.eq("voided", false));
+		
 		return criteria;
 	}
 	
 	private DbSession createHibernateSession() {
-		HibernateConnection connection = new HibernateConnection();
-		return connection.getSessionFactory().getCurrentSession();
+		return Context.getRegisteredComponent("dbSessionFactory", DbSessionFactory.class).getCurrentSession();
 	}
 	
 	private void updatePatientList() {
