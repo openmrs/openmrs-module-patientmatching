@@ -2,26 +2,32 @@ package org.regenstrief.linkage.io;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.Subqueries;
 import org.hibernate.type.StandardBasicTypes;
 import org.openmrs.Patient;
 import org.openmrs.PatientIdentifierType;
+import org.openmrs.PersonAttribute;
 import org.openmrs.PersonAttributeType;
+import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.db.hibernate.DbSession;
 import org.openmrs.api.db.hibernate.DbSessionFactory;
 import org.openmrs.module.patientmatching.LinkDBConnections;
+import org.openmrs.module.patientmatching.MatchingConstants;
 import org.regenstrief.linkage.Record;
 
 public class OpenMRSReader implements DataSourceReader {
@@ -50,24 +56,13 @@ public class OpenMRSReader implements DataSourceReader {
 	
 	private boolean expand_patient;
 	
-	private Collection<String> projections;
-	
 	/**
 	 * 
 	 */
 	public OpenMRSReader() {
-		this(null);
-	}
-	
-	public OpenMRSReader(Collection<String> projections) {
 		pageNumber = 0;
 		resultMode = MODE_PATIENT;
 		expand_patient = true;
-		if (projections != null && !projections.contains("org.openmrs.Patient.patientId")) {
-			projections.add("org.openmrs.Patient.patientId");
-		}
-		this.projections = projections;
-		
 		log.info("Getting all patient records ...");
 		updatePatientList();
 		
@@ -84,6 +79,22 @@ public class OpenMRSReader implements DataSourceReader {
 		        .setFirstResult(pageNumber * PAGING_SIZE);
 		criteria.add(Restrictions.eq("voided", false));
 		
+		String uuid = Context.getAdministrationService()
+		        .getGlobalProperty(MatchingConstants.GP_UNKNOWN_PATIENT_ATTR_TYPE_UUID);
+		if (StringUtils.isNotBlank(uuid)) {
+			PersonAttributeType attrType = Context.getPersonService().getPersonAttributeTypeByUuid(uuid);
+			if (attrType == null) {
+				throw new APIException("No patient attribute type found with uuid: " + uuid);
+			}
+			
+			DetachedCriteria detCriteria = DetachedCriteria.forClass(PersonAttribute.class);
+			detCriteria.add(Restrictions.and(Restrictions.eq("attributeType", attrType), Restrictions.eq("value", "true"),
+			    Restrictions.eq("voided", false)));
+			detCriteria.setProjection(Projections.property("person.personId"));
+			
+			criteria.add(Subqueries.propertyNotIn("patientId", detCriteria));
+		}
+		
 		return criteria;
 	}
 	
@@ -98,11 +109,6 @@ public class OpenMRSReader implements DataSourceReader {
 			list = createCriteria().list();
 		}
 		catch (Exception e) {
-			if (projections != null) {
-				projections = null;
-				updatePatientList();
-				return;
-			}
 			log.info("Iterating one by one on patient records ...");
 			List<Object[]> patients = new ArrayList<Object[]>();
 			list = patients;
@@ -268,25 +274,9 @@ public class OpenMRSReader implements DataSourceReader {
 			if (resultMode == MODE_PATIENT) {
 				Patient p = (Patient) o;
 				r = LinkDBConnections.getInstance().patientToRecord(p);
-			} else if (resultMode == MODE_ARRAY) {
-				Object[] objs = (Object[]) o;
-				r = LinkDBConnections.getInstance().patientToRecord(objs);
 			} else {
 				Object[] objs = (Object[]) o;
-				int patientIdIndex = 0;
-				for (final String projection : projections) {
-					if (projection.endsWith("patientId")) {
-						break;
-					}
-					patientIdIndex++;
-				}
-				final long uid = ((Number) objs[patientIdIndex]).longValue();
-				r = new Record(uid, LinkDBConnections.UID_CONTEXT);
-				int i = 0;
-				for (final String projection : projections) {
-					r.addDemographic(projection, String.valueOf(objs[i]));
-					i++;
-				}
+				r = LinkDBConnections.getInstance().patientToRecord(objs);
 			}
 		} else {
 			r = null;

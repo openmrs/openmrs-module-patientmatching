@@ -3,7 +3,6 @@ package org.openmrs.module.patientmatching;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -152,7 +151,7 @@ public class MatchingReportUtils {
 		DataBaseRecordStore recordStore = new DataBaseRecordStore(databaseConnection, recMatchConfig.getLinkDataSource1(),
 		        driver, url, user, passwd);
 		recordStore.clearRecords();
-		OpenMRSReader reader = new OpenMRSReader(globalIncludeColumns);
+		OpenMRSReader reader = new OpenMRSReader();
 		while (reader.hasNextRecord()) {
 			recordStore.storeRecord(reader.nextRecord());
 		}

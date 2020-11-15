@@ -176,5 +176,9 @@ KEY MODULE CONFIGURATIONS
     patientmatching.serializationDirectory
         The location of the serialization folder to be used when matching patients, can be absolute or relative path,
         defaults to patientmatching/serial in the OpenMRS application data directory.
+      
+    patientmatching.unknownPatientAttributeTypeUuid
+        The uuid of the person attribute type that is used to mark a patient as unknown, this assumes the attribute type
+         takes strings values where true is the value for the unknown patient.
 
 Please refer to the OpenMRS settings page in the application for a complete list of all global properties for the module.
