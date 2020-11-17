@@ -19,15 +19,17 @@ import java.util.TreeSet;
 
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.Patient;
 import org.openmrs.api.context.Context;
-import org.openmrs.util.OpenmrsUtil;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
 import org.regenstrief.linkage.util.RecMatchConfig;
 import org.regenstrief.linkage.util.XMLTranslator;
+
+import com.mysql.jdbc.Driver;
 
 /**
  * Utility class that contains methods to migrate the old report files and configurations to the
@@ -150,6 +152,9 @@ public class ReportMigrationUtils {
 		String user = c.getProperty("connection.username");
 		String passwd = c.getProperty("connection.password");
 		String driver = c.getProperty("connection.driver_class");
+		if (StringUtils.isBlank(driver)) {
+			driver = Driver.class.getName();
+		}
 		Connection databaseConnection;
 		try {
 			Class.forName(driver);

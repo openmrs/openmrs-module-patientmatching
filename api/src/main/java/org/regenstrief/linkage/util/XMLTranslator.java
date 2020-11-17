@@ -14,7 +14,6 @@ package org.regenstrief.linkage.util;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IllegalFormatException;
@@ -412,7 +411,10 @@ public class XMLTranslator {
 	public static LinkDataSource createDataSource(Node lds) {
 		String name = lds.getAttributes().getNamedItem("name").getTextContent();
 		String type = lds.getAttributes().getNamedItem("type").getTextContent();
-		String access = lds.getAttributes().getNamedItem("access").getTextContent();
+		String access = null;
+		if (lds.getAttributes().getNamedItem("access") != null) {
+			access = lds.getAttributes().getNamedItem("access").getTextContent();
+		}
 		String header = "false";
 		if (lds.getAttributes().getNamedItem("header") != null) {
 			header = lds.getAttributes().getNamedItem("header").getTextContent();

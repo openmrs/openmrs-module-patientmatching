@@ -27,10 +27,15 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 
+import org.apache.commons.lang3.StringUtils;
+import org.openmrs.api.context.Context;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
+
+import com.mysql.jdbc.Driver;
 
 public class RecordDBManager extends DBManager {
 	
@@ -49,11 +54,22 @@ public class RecordDBManager extends DBManager {
 		super();
 		this.lds = lds;
 		table = lds.getName();
-		String[] access = lds.getAccess().split(",");
-		driver = access[0];
-		url = access[1];
-		user = access[2];
-		passwd = access[3];
+		if (StringUtils.isNotBlank(lds.getAccess())) {
+			String[] access = lds.getAccess().split(",");
+			driver = access[0];
+			url = access[1];
+			user = access[2];
+			passwd = access[3];
+		} else {
+			Properties c = Context.getRuntimeProperties();
+			driver = c.getProperty("connection.driver_class");
+			if (StringUtils.isBlank(driver)) {
+				driver = Driver.class.getName();
+			}
+			url = c.getProperty("connection.url");
+			user = c.getProperty("connection.username");
+			passwd = c.getProperty("connection.password");
+		}
 	}
 	
 	/**

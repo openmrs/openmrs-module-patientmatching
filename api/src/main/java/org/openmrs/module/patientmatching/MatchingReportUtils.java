@@ -17,6 +17,7 @@ import java.util.TreeSet;
 
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.PatientService;
@@ -35,6 +36,8 @@ import org.regenstrief.linkage.matchresult.DedupMatchResultList;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.RecMatchConfig;
 import org.regenstrief.linkage.util.XMLTranslator;
+
+import com.mysql.jdbc.Driver;
 
 /**
  * Utility class to perform various task related to the creating report for all available blocking
@@ -108,6 +111,9 @@ public class MatchingReportUtils {
 		String user = c.getProperty("connection.username");
 		String passwd = c.getProperty("connection.password");
 		String driver = c.getProperty("connection.driver_class");
+		if (StringUtils.isBlank(driver)) {
+			driver = Driver.class.getName();
+		}
 		log.info("URL: " + url);
 		
 		Connection databaseConnection = null;
