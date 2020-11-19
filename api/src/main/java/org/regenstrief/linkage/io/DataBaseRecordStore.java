@@ -1,15 +1,20 @@
 package org.regenstrief.linkage.io;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
+import org.openmrs.api.APIException;
+import org.openmrs.module.patientmatching.MatchingConstants;
+import org.openmrs.module.patientmatching.MatchingRunData;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
@@ -44,6 +49,8 @@ public class DataBaseRecordStore implements RecordStore {
 	
 	private static final int MAXIMUM_BATCH_SIZE = 1000;
 	
+	private boolean newScratchTable = false;
+	
 	/**
 	 * @param db the database connection to create the table of Records
 	 * @param lds information on what fields the Records will have
@@ -55,7 +62,7 @@ public class DataBaseRecordStore implements RecordStore {
 	public DataBaseRecordStore(Connection db, LinkDataSource lds, String driver, String url, String user, String password) {
 		db_connection = db;
 		this.lds = lds;
-		table_name = "import";
+		table_name = MatchingConstants.SCRATCH_TABLE_NAME;
 		this.driver = driver;
 		this.url = url;
 		this.user = user;
@@ -65,43 +72,73 @@ public class DataBaseRecordStore implements RecordStore {
 		batch_size = 0;
 		try {
 			quote_string = db_connection.getMetaData().getIdentifierQuoteString();
-			log.info("Identifier quote string is " + quote_string);
+			log.debug("Identifier quote string is " + quote_string);
 		}
 		catch (SQLException sqle) {
 			log.warn("Unable to get underlying database identifiers' quote character, using none!");
 			quote_string = "";
 		}
 		
-		dropTableIfExists(table_name);
-		if (!createTable()) {
-			close();
-		} else {
-			insert_stmt = createInsertQuery();
-		}
-	}
-	
-	public boolean clearRecords() {
-		String delete_query = "DELETE FROM " + table_name;
 		try {
-			if (db_connection.isClosed()) {
-				return false;
-			}
-			Statement s = db_connection.createStatement();
-			s.execute(delete_query);
-			s.close();
+			prepareScratchTable();
 		}
-		catch (SQLException sqle) {
-			sqle.printStackTrace();
-			return false;
+		catch (SQLException se) {
+			throw new APIException("Failed to prepare scratch table", se);
 		}
-		return true;
 	}
 	
-	protected boolean createTable() {
+	/**
+	 * Convenience method to create the scratch table only if it doesn't exist OR only recreates it if
+	 * there is no other running patient matching task, this ensures we don't drop the table when
+	 * another concurrent task is using it or create a duplicate of another that could have been created
+	 * by another concurrent task.
+	 * 
+	 * @throws SQLException
+	 */
+	private void prepareScratchTable() throws SQLException {
+		boolean tableExists = scratchTableExists();
+		int taskCount = MatchingRunData.getRunningTaskCount();
+		log.info("Scratch table exists: " + tableExists);
+		log.info("Active patient matching run count: " + taskCount);
+		if (!tableExists || taskCount == 1) {
+			dropTableIfExists(table_name);
+			newScratchTable = true;
+			createTable();
+		} else {
+			log.info("Skipping recreation of scratch table because there is " + (taskCount - 1)
+			        + " other running patient matching run(s) using it");
+			
+			for (String dem : lds.getIncludedDataColumns().keySet()) {
+				insert_demographics.add(dem.trim());
+			}
+		}
+		
+		insert_stmt = createInsertQuery();
+	}
+	
+	/**
+	 * Checks if the scratch table exists in the DB
+	 * 
+	 * @return true if the scratch tables exists otherwise false
+	 * @throws SQLException
+	 */
+	public boolean scratchTableExists() throws SQLException {
+		DatabaseMetaData dbmd = db_connection.getMetaData();
+		ResultSet tables = dbmd.getTables(null, null, null, new String[] { "TABLE" });
+		while (tables.next()) {
+			if (table_name.equalsIgnoreCase(tables.getString("TABLE_NAME"))) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	protected void createTable() throws SQLException {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("CREATE TABLE ").append(table_name).append("(").append(UID_COLUMN).append("\tbigint");
 		
-		// iteratoe over lds to see what fields to expect, and set order in insert_demographics
+		// iterator over lds to see what fields to expect, and set order in insert_demographics
 		Enumeration<String> e = lds.getIncludedDataColumns().keys();
 		while (e.hasMoreElements()) {
 			String column = e.nextElement().trim();
@@ -112,29 +149,20 @@ public class DataBaseRecordStore implements RecordStore {
 		}
 		buffer.append(")");
 		
-		try {
-			log.trace("Creating table " + table_name);
-			db_connection.createStatement().execute(buffer.toString());
-		}
-		catch (SQLException sqle) {
-			sqle.printStackTrace();
-			return false;
-		}
-		return true;
-	}
-	
-	protected void dropTableIfExists(String table) {
-		try {
-			log.trace("Dropping table " + table);
-			db_connection.createStatement().execute("DROP TABLE IF EXISTS " + table);
-		}
-		catch (SQLException e) {
-			log.warn("error dropping " + table + " table", e);
+		log.debug("Creating table " + table_name);
+		try (Statement s = db_connection.createStatement()) {
+			s.execute(buffer.toString());
 		}
 	}
 	
-	protected PreparedStatement createInsertQuery() {
-		PreparedStatement stmt = null;
+	protected void dropTableIfExists(String table) throws SQLException {
+		log.debug("Dropping table " + table);
+		try (Statement s = db_connection.createStatement()) {
+			s.execute("DROP TABLE IF EXISTS " + table);
+		}
+	}
+	
+	protected PreparedStatement createInsertQuery() throws SQLException {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("INSERT INTO ").append(table_name);
 		
@@ -152,14 +180,7 @@ public class DataBaseRecordStore implements RecordStore {
 		bufferValues.append(")");
 		buffer.append(bufferColumn).append(" ").append(bufferValues);
 		
-		try {
-			stmt = db_connection.prepareStatement(buffer.toString());
-		}
-		catch (SQLException sqle) {
-			sqle.printStackTrace();
-			return null;
-		}
-		return stmt;
+		return db_connection.prepareStatement(buffer.toString());
 	}
 	
 	/**
@@ -188,19 +209,11 @@ public class DataBaseRecordStore implements RecordStore {
 		return ret;
 	}
 	
-	public Connection getRecordStoreConnection() {
-		return db_connection;
-	}
-	
 	/**
 	 * Stores the Records in the database
 	 */
 	public boolean storeRecord(Record r) {
 		try {
-			if (db_connection.isClosed()) {
-				return false;
-			}
-			
 			insert_stmt.setLong(1, r.getUID());
 			batch_size++;
 			for (int i = 0; i < insert_demographics.size(); i++) {
@@ -212,8 +225,7 @@ public class DataBaseRecordStore implements RecordStore {
 			return true;
 		}
 		catch (SQLException sqle) {
-			sqle.printStackTrace();
-			return false;
+			throw new APIException(sqle);
 		}
 	}
 	
@@ -237,8 +249,17 @@ public class DataBaseRecordStore implements RecordStore {
 			return true;
 		}
 		catch (SQLException sqle) {
-			sqle.printStackTrace();
-			return false;
+			throw new APIException(sqle);
 		}
 	}
+	
+	/**
+	 * Gets the value of newScratchTable
+	 *
+	 * @return the newScratchTable
+	 */
+	public boolean isNewScratchTable() {
+		return newScratchTable;
+	}
+	
 }

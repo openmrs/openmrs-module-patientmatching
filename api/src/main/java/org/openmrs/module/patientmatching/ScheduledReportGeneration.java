@@ -16,35 +16,54 @@ public class ScheduledReportGeneration extends AbstractTask {
 	
 	protected final Log log = LogFactory.getLog(getClass());
 	
-	static Map objects;
+	private Map objects;
 	
-	static Boolean processStarted = false;
+	private Boolean processStarted = false;
 	
-	static String previousProcessTime = "0,0";
+	private String previousProcessTime = "0,0";
 	
-	static List<Long> proTimeList;
+	private List<Long> proTimeList;
 	
-	static Long time;
+	private Long time;
 	
-	static int reset;
+	private int reset;
 	
-	static int index = 1;
+	private int index = 1;
 	
-	static int currentStep;
+	private int currentStep;
 	
-	static int size = 0;
+	private int size = 0;
 	
-	static String[] selectedStrat;
+	private String[] selectedStrat;
+	
+	private MatchingRunData matchingRunData;
 	
 	@Override
 	public void execute() {
 		
 		Context.openSession();
 		
-		MatchingRunData.getInstance().setTimerTaskStarted(true);
-		doAnalysis(taskDefinition.getProperty("blockList"));
-		MatchingRunData.getInstance().setTimerTaskStarted(false);
+		matchingRunData = MatchingRunData.createInstance();
+		matchingRunData.setTimerTaskStarted(true);
+		matchingRunData.setFileStrat(taskDefinition.getProperty("blockList"));
+		matchingRunData.setRunName(getTaskDefinition().getName());
+		
+		MatchingRunData.addTask(getTaskDefinition().getName());
+		try {
+			doAnalysis();
+		}
+		finally {
+			MatchingRunData.removeTask(getTaskDefinition().getName());
+		}
+		
+		matchingRunData.setTimerTaskStarted(false);
 		Context.closeSession();
+	}
+	
+	@Override
+	public void shutdown() {
+		MatchingRunData.removeTask(getTaskDefinition().getName());
+		super.shutdown();
 	}
 	
 	public void getCurrentProcessStatus(int nextStep) {
@@ -97,11 +116,11 @@ public class ScheduledReportGeneration extends AbstractTask {
 					break;
 				
 				case 9:
-					MatchingReportUtils.ScoringData(objects);
+					MatchingReportUtils.ScoringData(objects, matchingRunData);
 					break;
 				
 				case 10:
-					MatchingReportUtils.CreatingReport(objects);
+					MatchingReportUtils.CreatingReport(objects, matchingRunData);
 					break;
 			}
 			
@@ -120,12 +139,10 @@ public class ScheduledReportGeneration extends AbstractTask {
 		time = (Calendar.getInstance().getTimeInMillis() - time);
 	}
 	
-	/**
-	 * @see MatchingReportUtils#doAnalysis()
-	 */
-	public void doAnalysis(String selectedStrategies) {
-		selectedStrat = selectedStrategies.split(",");
-		proTimeList = new ArrayList<Long>();
+	public void doAnalysis() {
+		selectedStrat = matchingRunData.getFileStrat().split(",");
+		proTimeList = new ArrayList();
+		matchingRunData.setProTimeList(proTimeList);
 		reset = 0;
 		for (int i = 2; i < 11; i++) {
 			currentStep = i;

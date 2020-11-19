@@ -251,11 +251,13 @@ public class MatchingUtils {
 		return OpenmrsUtil.getDirectoryInApplicationDataDirectory(value);
 	}
 	
-	public static File getSerializationFolder() {
+	public static File getSerializationFolder(String runName) {
 		String value = Context.getAdministrationService().getGlobalProperty(MatchingConstants.GP_SERIAL_DIR);
 		if (StringUtils.isBlank(value)) {
 			value = MatchingConstants.SERIAL_DIR_DEFAULT;
 		}
+		
+		value += (File.separator + runName.replaceAll("\\s+", "_"));
 		
 		return OpenmrsUtil.getDirectoryInApplicationDataDirectory(value);
 	}

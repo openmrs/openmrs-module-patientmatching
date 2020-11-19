@@ -64,4 +64,8 @@ public interface MatchingConstants {
 	String IS_PROBABILISTIC = "isProbabilistic";
 	
 	String CONCATENATED_FIELD_PREFIX = "concat";
+	
+	String SCRATCH_TABLE_NAME = "import";
+	
+	String MANUAL_RUN_NAME = "patientmatching_manualRun";
 }

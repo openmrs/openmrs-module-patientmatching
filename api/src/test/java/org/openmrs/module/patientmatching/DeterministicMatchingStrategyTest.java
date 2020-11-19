@@ -13,7 +13,7 @@ import org.regenstrief.linkage.util.MatchingConfigRow;
 @RunWith(PowerMockRunner.class)
 public class DeterministicMatchingStrategyTest {
 	
-	private DeterministicMatchingStrategy strategy = new DeterministicMatchingStrategy();
+	private DeterministicMatchingStrategy strategy = new DeterministicMatchingStrategy("test");
 	
 	@Test
 	public void match_shouldReturnFalseIfAnyDemoGraphicDoesNotMatch() {

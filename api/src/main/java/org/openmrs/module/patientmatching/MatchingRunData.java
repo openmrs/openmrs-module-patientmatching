@@ -4,7 +4,10 @@
  */
 package org.openmrs.module.patientmatching;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -13,7 +16,7 @@ import org.apache.commons.logging.LogFactory;
  */
 public class MatchingRunData {
 	
-	protected final Log log = LogFactory.getLog(getClass());
+	protected static final Log log = LogFactory.getLog(MatchingRunData.class);
 	
 	private boolean timerTaskStarted;
 	
@@ -21,7 +24,9 @@ public class MatchingRunData {
 	
 	private String fileStrat;
 	
-	private String rptname;
+	private String runName;
+	
+	private static final List<String> runningTasks = Collections.synchronizedList(new ArrayList());
 	
 	/**
 	 * default constructor, initializes variables
@@ -31,20 +36,12 @@ public class MatchingRunData {
 	}
 	
 	/**
-	 * Bill Pugh form of lazy initialization for singleton instances
-	 */
-	private static class MatchingRunDataSingleton {
-		
-		public static final MatchingRunData instance = new MatchingRunData();
-	}
-	
-	/**
-	 * getter for singleton instance of MatchingRunData
+	 * Creates a MatchingRunData instance
 	 *
 	 * @return singleton MatchingRunData instance
 	 */
-	public static MatchingRunData getInstance() {
-		return MatchingRunDataSingleton.instance;
+	public static MatchingRunData createInstance() {
+		return new MatchingRunData();
 	}
 	
 	public String getFileStrat() {
@@ -63,12 +60,22 @@ public class MatchingRunData {
 		this.proTimeList = proTimeList;
 	}
 	
-	public String getRptname() {
-		return rptname;
+	/**
+	 * Gets the runName
+	 *
+	 * @return the runName
+	 */
+	public String getRunName() {
+		return runName;
 	}
 	
-	public void setRptname(String rptname) {
-		this.rptname = rptname;
+	/**
+	 * Sets the runName
+	 *
+	 * @param runName the runName to set
+	 */
+	public void setRunName(String runName) {
+		this.runName = runName;
 	}
 	
 	public boolean isTimerTaskStarted() {
@@ -78,4 +85,30 @@ public class MatchingRunData {
 	public void setTimerTaskStarted(boolean timerTaskStarted) {
 		this.timerTaskStarted = timerTaskStarted;
 	}
+	
+	/**
+	 * Gets the count of the currently running patient matching tasks
+	 * 
+	 * @return the count of the running patient matching tasks
+	 */
+	public static int getRunningTaskCount() {
+		return runningTasks.size();
+	}
+	
+	/**
+	 * Adds the task name to the running tasks
+	 */
+	public static void addTask(String name) {
+		runningTasks.add(name);
+		log.debug("Added " + name + " to running patient matching tasks");
+	}
+	
+	/**
+	 * Removed the task name to the running tasks
+	 */
+	public static void removeTask(String name) {
+		runningTasks.remove(name);
+		log.debug("Removed " + name + " from running patient matching tasks");
+	}
+	
 }
