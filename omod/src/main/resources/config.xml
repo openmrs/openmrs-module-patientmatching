@@ -59,6 +59,14 @@
         </description>
     </globalProperty>
 
+    <globalProperty>
+        <property>patientmatching.unknownPatientAttributeTypeUuid</property>
+        <description>The uuid of the person attribute type that is used to mark a patient as unknown, this assumes the
+            attribute type takes string values, if the person attribute value is set to true for any patient then it
+            implies that they are unknown.
+        </description>
+    </globalProperty>
+
 	<globalProperty>
 		<property>patientmatching.excludedProperties</property>
 		<defaultValue>void,change,create,creator</defaultValue>

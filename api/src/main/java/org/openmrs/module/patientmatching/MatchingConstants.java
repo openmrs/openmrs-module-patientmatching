@@ -11,6 +11,8 @@ import java.io.File;
  */
 public interface MatchingConstants {
 	
+	String GP_UNKNOWN_PATIENT_ATTR_TYPE_UUID = "patientmatching.unknownPatientAttributeTypeUuid";
+	
 	/**
 	 * Folder name to store the configuration file and temporary output of the patient de-duplication
 	 * process and serialized data
