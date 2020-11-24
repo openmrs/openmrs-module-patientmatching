@@ -21,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.patientmatching.MatchingReportUtils;
+import org.openmrs.module.patientmatching.MatchingRunData;
 import org.openmrs.module.patientmatching.StrategyHolder;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -75,9 +76,9 @@ public class DWRMatchingConfigUtilitiesTest {
 		verifyStatic();
 		MatchingReportUtils.InitScratchTable(anyMap());
 		verifyStatic();
-		MatchingReportUtils.ScoringData(anyMap());
+		MatchingReportUtils.ScoringData(anyMap(), any(MatchingRunData.class));
 		verifyStatic();
-		MatchingReportUtils.CreatingReport(anyMap());
+		MatchingReportUtils.CreatingReport(anyMap(), any(MatchingRunData.class));
 		verifyNoMoreInteractions(MatchingReportUtils.class);
 		MatchingReportUtils.CreRanSamAnalyzer(anyMap());
 		MatchingReportUtils.CreAnalFormPairs(anyMap());
@@ -116,9 +117,9 @@ public class DWRMatchingConfigUtilitiesTest {
 		verifyStatic();
 		MatchingReportUtils.AnalyzingData(anyMap());
 		verifyStatic();
-		MatchingReportUtils.ScoringData(anyMap());
+		MatchingReportUtils.ScoringData(anyMap(), any(MatchingRunData.class));
 		verifyStatic();
-		MatchingReportUtils.CreatingReport(anyMap());
+		MatchingReportUtils.CreatingReport(anyMap(), any(MatchingRunData.class));
 	}
 	
 }

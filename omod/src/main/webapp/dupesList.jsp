@@ -104,8 +104,7 @@ function viewFile(file) {
 
 function viewMetadata(file) {
 
-    DWRMatchingConfigUtilities.setReportName(file);
-	window.open("${pageContext.request.contextPath}/module/patientmatching/metadata.form?<c:out value="${reportParam}" />=" + file,
+    window.open("${pageContext.request.contextPath}/module/patientmatching/metadata.form?<c:out value="${reportParam}" />=" + file,
                 "Report",
                 "toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=no,copyhistory=no");
     //updateStatus();

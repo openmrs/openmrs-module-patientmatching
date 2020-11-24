@@ -3,11 +3,11 @@ package org.openmrs.module.patientmatching;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Mockito.when;
-import static org.openmrs.module.patientmatching.ScheduledReportGeneration.objects;
 import static org.powermock.api.mockito.PowerMockito.verifyNoMoreInteractions;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 
 import java.util.Collections;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -18,6 +18,7 @@ import org.openmrs.api.context.Context;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.reflect.Whitebox;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ MatchingReportUtils.class, Context.class })
@@ -42,7 +43,7 @@ public class ScheduledReportGenerationTest {
 	public void getCurrentProcessStatus_shouldSkipStepsThatDoNotApplyToDeterministicStrategy() throws Exception {
 		when(mockStrategyHolder.isProbabilistic()).thenReturn(false);
 		generator.getCurrentProcessStatus(2);
-		objects.put("matchingConfigLists", Collections.emptyList());
+		((Map) Whitebox.getInternalState(generator, "objects")).put("matchingConfigLists", Collections.emptyList());
 		generator.getCurrentProcessStatus(3);
 		generator.getCurrentProcessStatus(4);
 		generator.getCurrentProcessStatus(5);
@@ -57,9 +58,9 @@ public class ScheduledReportGenerationTest {
 		verifyStatic();
 		MatchingReportUtils.InitScratchTable(anyMap());
 		verifyStatic();
-		MatchingReportUtils.ScoringData(anyMap());
+		MatchingReportUtils.ScoringData(anyMap(), any(MatchingRunData.class));
 		verifyStatic();
-		MatchingReportUtils.CreatingReport(anyMap());
+		MatchingReportUtils.CreatingReport(anyMap(), any(MatchingRunData.class));
 		verifyNoMoreInteractions(MatchingReportUtils.class);
 		MatchingReportUtils.CreRanSamAnalyzer(anyMap());
 		MatchingReportUtils.CreAnalFormPairs(anyMap());
@@ -72,7 +73,7 @@ public class ScheduledReportGenerationTest {
 	public void getCurrentProcessStatus_shouldRunStepsThatApplyToProbabilisticStrategy() throws Exception {
 		when(mockStrategyHolder.isProbabilistic()).thenReturn(true);
 		generator.getCurrentProcessStatus(2);
-		objects.put("matchingConfigLists", Collections.emptyList());
+		((Map) Whitebox.getInternalState(generator, "objects")).put("matchingConfigLists", Collections.emptyList());
 		generator.getCurrentProcessStatus(3);
 		generator.getCurrentProcessStatus(4);
 		generator.getCurrentProcessStatus(5);
@@ -97,9 +98,9 @@ public class ScheduledReportGenerationTest {
 		verifyStatic();
 		MatchingReportUtils.AnalyzingData(anyMap());
 		verifyStatic();
-		MatchingReportUtils.ScoringData(anyMap());
+		MatchingReportUtils.ScoringData(anyMap(), any(MatchingRunData.class));
 		verifyStatic();
-		MatchingReportUtils.CreatingReport(anyMap());
+		MatchingReportUtils.CreatingReport(anyMap(), any(MatchingRunData.class));
 	}
 	
 }

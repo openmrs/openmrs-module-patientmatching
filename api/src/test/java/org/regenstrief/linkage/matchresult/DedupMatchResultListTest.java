@@ -3,6 +3,7 @@ package org.regenstrief.linkage.matchresult;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
+import static org.openmrs.module.patientmatching.MatchingConstants.SERIAL_DIR_DEFAULT;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,8 +16,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
-import org.openmrs.module.patientmatching.MatchingConstants;
-import org.openmrs.module.patientmatching.MatchingUtils;
 import org.openmrs.module.patientmatching.RecordSerializer;
 import org.openmrs.util.OpenmrsUtil;
 import org.powermock.api.mockito.PowerMockito;
@@ -48,9 +47,10 @@ public class DedupMatchResultListTest {
 		PowerMockito.mockStatic(OpenmrsUtil.class);
 		PowerMockito.mockStatic(Context.class);
 		when(Context.getAdministrationService()).thenReturn(mockAdminService);
-		when(OpenmrsUtil.getDirectoryInApplicationDataDirectory(MatchingConstants.SERIAL_DIR_DEFAULT))
+		final String runName = "test";
+		when(OpenmrsUtil.getDirectoryInApplicationDataDirectory(SERIAL_DIR_DEFAULT + File.separator + runName))
 		        .thenReturn(mockSerialFolder);
-		strategy = new DedupMatchResultList();
+		strategy = new DedupMatchResultList(runName);
 		strategy.clean();
 	}
 	

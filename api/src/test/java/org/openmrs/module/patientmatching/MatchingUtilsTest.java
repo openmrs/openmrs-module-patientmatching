@@ -2,6 +2,7 @@ package org.openmrs.module.patientmatching;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
+import static org.openmrs.module.patientmatching.MatchingConstants.SERIAL_DIR_DEFAULT;
 import static org.openmrs.util.OpenmrsUtil.getDirectoryInApplicationDataDirectory;
 
 import java.io.File;
@@ -89,16 +90,17 @@ public class MatchingUtilsTest {
 	
 	@Test
 	public void getSerializationFolder_shouldReturnTheDefaultFolderIfNoneIsSpecified() {
-		when(getDirectoryInApplicationDataDirectory(MatchingConstants.SERIAL_DIR_DEFAULT)).thenReturn(mockFile);
-		assertEquals(mockFile, MatchingUtils.getSerializationFolder());
+		when(getDirectoryInApplicationDataDirectory(SERIAL_DIR_DEFAULT + File.separator + "manual_run"))
+		        .thenReturn(mockFile);
+		assertEquals(mockFile, MatchingUtils.getSerializationFolder("manual run"));
 	}
 	
 	@Test
 	public void getSerializationFolder_shouldReturnTheConfiguredFolderIfSpecified() {
 		final String serialFolderName = "serialFolder";
 		when(mockAdminService.getGlobalProperty(MatchingConstants.GP_SERIAL_DIR)).thenReturn(serialFolderName);
-		when(getDirectoryInApplicationDataDirectory(serialFolderName)).thenReturn(mockFile);
-		assertEquals(mockFile, MatchingUtils.getSerializationFolder());
+		when(getDirectoryInApplicationDataDirectory(serialFolderName + File.separator + "manual_run")).thenReturn(mockFile);
+		assertEquals(mockFile, MatchingUtils.getSerializationFolder("manual run"));
 	}
 	
 	@Test

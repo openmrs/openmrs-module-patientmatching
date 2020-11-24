@@ -44,7 +44,7 @@ public interface MatchedRecordsStore {
 		getFlattenedPairIds().clear();
 		getSerializedRecords().clear();
 		
-		FileUtils.deleteDirectory(MatchingUtils.getSerializationFolder());
+		FileUtils.deleteDirectory(MatchingUtils.getSerializationFolder(getRunName()));
 		logger.info("Deleted record serialization folder ...");
 	}
 	
@@ -60,13 +60,13 @@ public interface MatchedRecordsStore {
 		boolean r1SerializedBefore = true;
 		boolean r2SerializedBefore = true;
 		if (!getSerializedRecords().contains(r1.getUID())) {
-			RecordSerializer.serialize(r1);
+			RecordSerializer.serialize(r1, getRunName());
 			getSerializedRecords().add(r1.getUID());
 			r1SerializedBefore = false;
 		}
 		
 		if (!getSerializedRecords().contains(r2.getUID())) {
-			RecordSerializer.serialize(r2);
+			RecordSerializer.serialize(r2, getRunName());
 			getSerializedRecords().add(r2.getUID());
 			r2SerializedBefore = false;
 		}
@@ -132,5 +132,12 @@ public interface MatchedRecordsStore {
 	 * @return a set of record ids
 	 */
 	Set<Long> getSerializedRecords();
+	
+	/**
+	 * Should return the name of the current matching task run
+	 * 
+	 * @return the name of the run or trask
+	 */
+	String getRunName();
 	
 }

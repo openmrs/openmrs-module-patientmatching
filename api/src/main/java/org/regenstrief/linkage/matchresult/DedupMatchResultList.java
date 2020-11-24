@@ -34,8 +34,11 @@ public class DedupMatchResultList extends MatchResultList implements MatchingStr
 	
 	private Set<Long> serializedRecords = new TreeSet();
 	
-	public DedupMatchResultList() {
+	private String runName;
+	
+	public DedupMatchResultList(String runName) {
 		super();
+		this.runName = runName;
 	}
 	
 	/**
@@ -88,6 +91,14 @@ public class DedupMatchResultList extends MatchResultList implements MatchingStr
 	
 	private boolean isMatch(MatchResult mr) {
 		return mr.getScore() > mr.getMatchingConfig().getScoreThreshold();
+	}
+	
+	/**
+	 * @see org.openmrs.module.patientmatching.MatchedRecordsStore#getRunName()
+	 */
+	@Override
+	public String getRunName() {
+		return runName;
 	}
 	
 }

@@ -2,27 +2,17 @@ package org.regenstrief.linkage.io;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
-import org.hibernate.cfg.Environment;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openmrs.GlobalProperty;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
+import org.openmrs.module.patientmatching.BasePatientMatchingContextSensitiveTest;
 import org.openmrs.module.patientmatching.MatchingConstants;
-import org.openmrs.test.BaseModuleContextSensitiveTest;
 import org.regenstrief.linkage.Record;
 
-public class OpenMRSReaderTest extends BaseModuleContextSensitiveTest {
-	
-	@Override
-	public Properties getRuntimeProperties() {
-		Properties props = super.getRuntimeProperties();
-		//Fixes the error reported by the h2 driver
-		props.setProperty(Environment.URL, props.getProperty(Environment.URL) + ";DB_CLOSE_ON_EXIT=FALSE");
-		return props;
-	}
+public class OpenMRSReaderTest extends BasePatientMatchingContextSensitiveTest {
 	
 	@Test
 	public void shouldLoadAllNonVoidedKnownPatientsExcludingAnyVoidedData() throws Exception {

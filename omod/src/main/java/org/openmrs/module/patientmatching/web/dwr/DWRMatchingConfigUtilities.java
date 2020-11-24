@@ -70,6 +70,8 @@ public class DWRMatchingConfigUtilities {
 	
 	private static String[] selectedStrat;
 	
+	private static MatchingRunData matchingRunData;
+	
 	/**
 	 * Constructor
 	 */
@@ -132,7 +134,10 @@ public class DWRMatchingConfigUtilities {
 	}
 	
 	public String getStep() {
-		boolean timerTaskStarted = MatchingRunData.getInstance().isTimerTaskStarted();
+		boolean timerTaskStarted = false;
+		if (matchingRunData != null) {
+			timerTaskStarted = matchingRunData.isTimerTaskStarted();
+		}
 		
 		int step = currentStep;
 		String activeReverseAjaxEnabled = "true";
@@ -164,7 +169,7 @@ public class DWRMatchingConfigUtilities {
 	}
 	
 	public List<Long> previousProcessStatus() {
-		return MatchingRunData.getInstance().getProTimeList();
+		return matchingRunData.getProTimeList();
 	}
 	
 	public void selStrategy(String selected) {
@@ -224,11 +229,11 @@ public class DWRMatchingConfigUtilities {
 					break;
 				
 				case 9:
-					MatchingReportUtils.ScoringData(objects);
+					MatchingReportUtils.ScoringData(objects, matchingRunData);
 					break;
 				
 				case 10:
-					MatchingReportUtils.CreatingReport(objects);
+					MatchingReportUtils.CreatingReport(objects, matchingRunData);
 					break;
 			}
 			
@@ -248,68 +253,78 @@ public class DWRMatchingConfigUtilities {
 	}
 	
 	public void doAnalysis(String selectedStrategies) {
-		MatchingRunData.getInstance().setFileStrat(selectedStrategies);
-		if (!MatchingRunData.getInstance().isTimerTaskStarted()) {
-			selectedStrat = selectedStrategies.split(",");
-			MatchingRunData.getInstance().setProTimeList(new ArrayList<Long>());
-			Collection sessions = sctx.getScriptSessionsByPage(currentPage);
-			Util pages = new Util(sessions);
-			pages.addFunctionCall("reportProcessStarted");
-			reset = 0;
-			for (int i = 2; i < 11; i++) {
-				currentStep = i;
-				processStarted = true;
-				getCurrentProcessStatus(i);
-				processStarted = false;
-				if (reset == -1) {
-					Collection sessions1 = sctx.getScriptSessionsByPage(currentPage);
-					Util pages1 = new Util(sessions1);
-					pages1.addFunctionCall("enableGenReport");
-					break;
-				}
-				
-				if (size > 1 && index > 1 && i >= 4 && i <= 9) {
-					time = (time + MatchingRunData.getInstance().getProTimeList().get(i - 2));
-					if (i == 9 && size != index) {
-						previousProcessTime = "3," + time + "p";
-					} else {
-						previousProcessTime = i + "," + time;
-					}
-					MatchingRunData.getInstance().getProTimeList().set((i - 2), time);
-				} else {
-					if (size > 1 && i == 9) {
-						previousProcessTime = "3," + time + "p";
-					} else {
-						previousProcessTime = i + "," + time;
-					}
-					MatchingRunData.getInstance().getProTimeList().add(time);
-				}
-				
-				if (i == 9 && size != index && size != 0) {
-					objects.put("matchingConfig", ((List<MatchingConfig>) objects.get("matchingConfigLists")).get(index));
-					index++;
-					i = 3;
-				}
-				
-				if (reset != -1) {
-					Collection sessions2 = sctx.getScriptSessionsByPage(currentPage);
-					Util pages2 = new Util(sessions2);
-					pages2.addFunctionCall("updateChecklist", previousProcessTime);
-					
-				} else {
-					MatchingRunData.getInstance().setProTimeList(null);
-					currentStep = 0;
-				}
-			}
+		MatchingRunData.addTask(MatchingConstants.MANUAL_RUN_NAME);
+		try {
+			matchingRunData = MatchingRunData.createInstance();
+			matchingRunData.setFileStrat(selectedStrategies);
+			matchingRunData.setRunName(MatchingConstants.MANUAL_RUN_NAME);
 			
-			processStarted = false;
-			currentStep = 0;
-			index = 1;
-			size = 0;
-		} else {
-			Collection sessions3 = sctx.getScriptSessionsByPage(currentPage);
-			Util pages3 = new Util(sessions3);
-			pages3.addFunctionCall("scheduledTaskRunning");
+			if (!matchingRunData.isTimerTaskStarted()) {
+				selectedStrat = selectedStrategies.split(",");
+				matchingRunData.setProTimeList(new ArrayList());
+				Collection sessions = sctx.getScriptSessionsByPage(currentPage);
+				Util pages = new Util(sessions);
+				pages.addFunctionCall("reportProcessStarted");
+				reset = 0;
+				for (int i = 2; i < 11; i++) {
+					currentStep = i;
+					processStarted = true;
+					getCurrentProcessStatus(i);
+					processStarted = false;
+					if (reset == -1) {
+						Collection sessions1 = sctx.getScriptSessionsByPage(currentPage);
+						Util pages1 = new Util(sessions1);
+						pages1.addFunctionCall("enableGenReport");
+						break;
+					}
+					
+					if (size > 1 && index > 1 && i >= 4 && i <= 9) {
+						time = (time + matchingRunData.getProTimeList().get(i - 2));
+						if (i == 9 && size != index) {
+							previousProcessTime = "3," + time + "p";
+						} else {
+							previousProcessTime = i + "," + time;
+						}
+						matchingRunData.getProTimeList().set((i - 2), time);
+					} else {
+						if (size > 1 && i == 9) {
+							previousProcessTime = "3," + time + "p";
+						} else {
+							previousProcessTime = i + "," + time;
+						}
+						matchingRunData.getProTimeList().add(time);
+					}
+					
+					if (i == 9 && size != index && size != 0) {
+						objects.put("matchingConfig",
+						    ((List<MatchingConfig>) objects.get("matchingConfigLists")).get(index));
+						index++;
+						i = 3;
+					}
+					
+					if (reset != -1) {
+						Collection sessions2 = sctx.getScriptSessionsByPage(currentPage);
+						Util pages2 = new Util(sessions2);
+						pages2.addFunctionCall("updateChecklist", previousProcessTime);
+						
+					} else {
+						matchingRunData.setProTimeList(null);
+						currentStep = 0;
+					}
+				}
+				
+				processStarted = false;
+				currentStep = 0;
+				index = 1;
+				size = 0;
+			} else {
+				Collection sessions3 = sctx.getScriptSessionsByPage(currentPage);
+				Util pages3 = new Util(sessions3);
+				pages3.addFunctionCall("scheduledTaskRunning");
+			}
+		}
+		finally {
+			MatchingRunData.removeTask(MatchingConstants.MANUAL_RUN_NAME);
 		}
 	}
 	
@@ -327,13 +342,6 @@ public class DWRMatchingConfigUtilities {
 			service.deleteReport(report);
 			log.info("Report Deleted from database");
 		}
-	}
-	
-	/**
-	 * Accessing report name using DWR call
-	 */
-	public static void setReportName(String filename) {
-		MatchingRunData.getInstance().setRptname(filename);
 	}
 	
 	/**

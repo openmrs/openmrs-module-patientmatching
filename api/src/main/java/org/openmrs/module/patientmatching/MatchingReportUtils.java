@@ -33,6 +33,7 @@ import org.regenstrief.linkage.io.OpenMRSReader;
 import org.regenstrief.linkage.io.OrderedDataSourceReader;
 import org.regenstrief.linkage.io.ReaderProvider;
 import org.regenstrief.linkage.matchresult.DedupMatchResultList;
+import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.RecMatchConfig;
 import org.regenstrief.linkage.util.XMLTranslator;
@@ -139,7 +140,7 @@ public class MatchingReportUtils {
 	
 	//New Method2 3
 	public static void InitScratchTable(Map<String, Object> objects) {
-		Connection databaseConnection = (Connection) objects.get("databaseConnection");
+		Connection databaseConn = (Connection) objects.get("databaseConnection");
 		RecMatchConfig recMatchConfig = (RecMatchConfig) objects.get("recMatchConfig");
 		MatchingConfig matchingConfig = ((List<MatchingConfig>) objects.get("matchingConfigLists")).get(0);
 		String driver = (String) objects.get("driver");
@@ -154,13 +155,9 @@ public class MatchingReportUtils {
 		List<String> includeColumns = Arrays.asList(matchingConfig.getIncludedColumnsNames());
 		globalIncludeColumns.addAll(includeColumns);
 		objects.put("globalIncludeColumns", globalIncludeColumns);
-		DataBaseRecordStore recordStore = new DataBaseRecordStore(databaseConnection, recMatchConfig.getLinkDataSource1(),
-		        driver, url, user, passwd);
-		recordStore.clearRecords();
 		OpenMRSReader reader = new OpenMRSReader();
-		while (reader.hasNextRecord()) {
-			recordStore.storeRecord(reader.nextRecord());
-		}
+		DataBaseRecordStore recordStore = createDataBaseRecordStore(reader, databaseConn,
+		    recMatchConfig.getLinkDataSource1(), driver, url, user, passwd);
 		recordStore.close();
 		reader.close();
 		
@@ -170,6 +167,31 @@ public class MatchingReportUtils {
 		objects.put("rp", rp);
 		objects.put("recMatchConfig", recMatchConfig);
 		objects.put("matchingConfig", matchingConfig);
+	}
+	
+	/**
+	 * Convenience method to create a DataBaseRecordStore instance
+	 * 
+	 * @param reader OpenMRSReader object
+	 * @param dbConn the Connection object
+	 * @param lds the LinkDataSource object
+	 * @param driver the drive class name
+	 * @param url the url to the db
+	 * @param user db user
+	 * @param passwd db user password
+	 * @return DataBaseRecordStore object
+	 */
+	protected synchronized static DataBaseRecordStore createDataBaseRecordStore(OpenMRSReader reader, Connection dbConn,
+	        LinkDataSource lds, String driver, String url, String user, String passwd) {
+		
+		DataBaseRecordStore recordStore = new DataBaseRecordStore(dbConn, lds, driver, url, user, passwd);
+		if (recordStore.isNewScratchTable()) {
+			while (reader.hasNextRecord()) {
+				recordStore.storeRecord(reader.nextRecord());
+			}
+		}
+		
+		return recordStore;
 	}
 	//New Method2 End 3
 	
@@ -245,7 +267,7 @@ public class MatchingReportUtils {
 	//New Method7 End 8
 	
 	//New Method8 9
-	public static void ScoringData(Map<String, Object> objects) throws IOException {
+	public static void ScoringData(Map<String, Object> objects, MatchingRunData matchingRunData) throws IOException {
 		boolean isProbabilistic = Boolean.valueOf(objects.get(MatchingConstants.IS_PROBABILISTIC).toString());
 		RecMatchConfig recMatchConfig = (RecMatchConfig) objects.get("recMatchConfig");
 		MatchingConfig matchingConfig = (MatchingConfig) objects.get("matchingConfig");
@@ -255,7 +277,8 @@ public class MatchingReportUtils {
 		DedupOrderedDataSourceFormPairs formPairsScoring = new DedupOrderedDataSourceFormPairs(databaseReaderScore,
 		        matchingConfig, recMatchConfig.getLinkDataSource1().getTypeTable());
 		
-		MatchingStrategyAndStore mss = isProbabilistic ? new DedupMatchResultList() : new DeterministicMatchingStrategy();
+		MatchingStrategyAndStore mss = isProbabilistic ? new DedupMatchResultList(matchingRunData.getRunName())
+		        : new DeterministicMatchingStrategy(matchingRunData.getRunName());
 		mss.clean();
 		Record[] pair;
 		while ((pair = formPairsScoring.getNextRecordPair()) != null) {
@@ -269,7 +292,7 @@ public class MatchingReportUtils {
 	//New Method8 End 9
 	
 	//New Method9 10
-	public static void CreatingReport(Map<String, Object> objects) throws IOException {
+	public static void CreatingReport(Map<String, Object> objects, MatchingRunData matchingRunData) throws IOException {
 		log.info("Creating report");
 		
 		SimpleDateFormat format = new SimpleDateFormat("MM-dd-yyyy--HH-mm-ss");
@@ -292,7 +315,7 @@ public class MatchingReportUtils {
 		
 		store.flattenPairIdList();
 		List<Set<Long>> matchingPairs = store.getFlattenedPairIds();
-		persistReportToDB(reportName, matchingPairs, globalIncludeColumns);
+		persistReportToDB(reportName, matchingPairs, globalIncludeColumns, matchingRunData);
 	}
 	//New Method9 End 10
 	
@@ -328,14 +351,16 @@ public class MatchingReportUtils {
 	 * 
 	 * @param rptName The report name of the new report
 	 * @param matchingPairs A list of the matching pair sets
+	 * @param includeColumns set of included column names
+	 * @param matchingRunData MatchingRunData instance
 	 */
-	public static void persistReportToDB(String rptName, List<Set<Long>> matchingPairs, Set<String> includeColumns)
-	        throws FileNotFoundException {
+	public static void persistReportToDB(String rptName, List<Set<Long>> matchingPairs, Set<String> includeColumns,
+	        MatchingRunData matchingRunData) throws FileNotFoundException {
 		Report report = new Report();
 		report.setCreatedBy(Context.getAuthenticatedUser());
 		report.setReportName(rptName);
 		report.setCreatedOn(new Date());
-		String selectedStrategies = MatchingRunData.getInstance().getFileStrat();
+		String selectedStrategies = matchingRunData.getFileStrat();
 		String[] selectedStrategyNamesArray = selectedStrategies.split(",");
 		Set<PatientMatchingConfiguration> usedConfigurations = new TreeSet<PatientMatchingConfiguration>();
 		PatientMatchingReportMetadataService reportMetadataService = Context
@@ -360,7 +385,7 @@ public class MatchingReportUtils {
 				matchingRecord.setReport(report);
 				
 				Set<MatchingRecordAttribute> matchingRecordAttributeSet = new TreeSet<MatchingRecordAttribute>();
-				Record record = RecordSerializer.deserialize(String.valueOf(patientId));
+				Record record = RecordSerializer.deserialize(String.valueOf(patientId), matchingRunData.getRunName());
 				for (String includedColumn : includeColumns) {
 					MatchingRecordAttribute matchingRecordAttribute = new MatchingRecordAttribute();
 					matchingRecordAttribute.setFieldName(includedColumn);
@@ -375,7 +400,7 @@ public class MatchingReportUtils {
 		report.setMatchingRecordSet(matchingRecordSet);
 		
 		Set<ReportGenerationStep> reportGenerationSteps = new TreeSet<ReportGenerationStep>();
-		List<Long> proTimeList = MatchingRunData.getInstance().getProTimeList();
+		List<Long> proTimeList = matchingRunData.getProTimeList();
 		int noOfSteps = Math.min(proTimeList.size(), REPORT_GEN_STAGES.length);
 		for (int j = 0; j < noOfSteps; j++) {
 			ReportGenerationStep step = new ReportGenerationStep();

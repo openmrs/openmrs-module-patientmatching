@@ -38,12 +38,13 @@ public class RecordSerializer {
 	 * output file name of the serialization process
 	 * 
 	 * @param record that will be serialized
+	 * @param runName The name of the current patient matching run
 	 * @throws IOException
 	 */
-	public static void serialize(Record record) throws FileNotFoundException, SecurityException, IOException {
+	public static void serialize(Record record, String runName) throws SecurityException, IOException {
 		String filename = String.valueOf(record.getUID());
 		
-		File serialFile = new File(MatchingUtils.getSerializationFolder(), filename);
+		File serialFile = new File(MatchingUtils.getSerializationFolder(runName), filename);
 		
 		// only serialize if the same record have not been serialized before
 		if (!serialFile.exists()) {
@@ -58,11 +59,12 @@ public class RecordSerializer {
 	 * and try to reconstruct the <code>Record</code> object from the xml file.
 	 * 
 	 * @param xmlName the uid of the record
+	 * @param runName The name of the current patient matching run
 	 * @return <code>Record</code> object constructed from the xml file
 	 * @throws IOException
 	 */
-	public static Record deserialize(String xmlName) throws FileNotFoundException, SecurityException {
-		File serialFile = new File(MatchingUtils.getSerializationFolder(), xmlName);
+	public static Record deserialize(String xmlName, String runName) throws FileNotFoundException, SecurityException {
+		File serialFile = new File(MatchingUtils.getSerializationFolder(runName), xmlName);
 		
 		FileInputStream fis = new FileInputStream(serialFile);
 		//hack: need to do this to let know XStream the appropriate type of object to be created

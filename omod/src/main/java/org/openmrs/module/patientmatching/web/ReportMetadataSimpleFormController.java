@@ -1,24 +1,20 @@
 package org.openmrs.module.patientmatching.web;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.cfg.Configuration;
 import org.openmrs.api.context.Context;
-import org.openmrs.api.db.hibernate.HibernateSessionFactoryBean;
-import org.openmrs.module.patientmatching.*;
+import org.openmrs.module.patientmatching.MatchingConstants;
+import org.openmrs.module.patientmatching.PatientMatchingConfiguration;
+import org.openmrs.module.patientmatching.PatientMatchingReportMetadataService;
+import org.openmrs.module.patientmatching.Report;
+import org.openmrs.module.patientmatching.ReportGenerationStep;
 import org.springframework.web.servlet.mvc.SimpleFormController;
 
 public class ReportMetadataSimpleFormController extends SimpleFormController {
@@ -36,7 +32,7 @@ public class ReportMetadataSimpleFormController extends SimpleFormController {
 	 */
 	@Override
 	protected Map<String, Object> referenceData(HttpServletRequest req) throws Exception {
-		Map<String, Object> map = showReportDetails(MatchingRunData.getInstance().getRptname());
+		Map<String, Object> map = showReportDetails(req.getParameter(MatchingConstants.PARAM_REPORT));
 		map.put("reportParam", MatchingConstants.PARAM_REPORT);
 		return map;
 	}

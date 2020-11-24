@@ -194,7 +194,6 @@
 				<include method="deleteBlockingRun" />
 				<include method="doAnalysis" />
 				<include method="deleteReportFile" />
-				<include method="setReportName" />
 				<include method="getNextPage" />
 				<include method="getPrevPage" />
 				<include method="resetStep" />
@@ -227,7 +226,6 @@
                 DWRMatchingConfigUtilities.doAnalysis(String)
                 DWRMatchingConfigUtilities.resetStep()
                 DWRMatchingConfigUtilities.deleteReportFile(String)
-				DWRMatchingConfigUtilities.setReportName(String)
  			    DWRMatchingConfigUtilities.getNextPage()
                 DWRMatchingConfigUtilities.getPrevPage()
                 DWRMatchingConfigUtilities.getStep()

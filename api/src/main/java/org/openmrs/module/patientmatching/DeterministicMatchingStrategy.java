@@ -25,6 +25,12 @@ public class DeterministicMatchingStrategy implements MatchingStrategyAndStore {
 	
 	private Set<Long> serializedRecords = new TreeSet();
 	
+	private String runName;
+	
+	public DeterministicMatchingStrategy(String runName) {
+		this.runName = runName;
+	}
+	
 	/**
 	 * @see MatchingStrategy#match(Record, Record, MatchingConfig)
 	 */
@@ -131,6 +137,14 @@ public class DeterministicMatchingStrategy implements MatchingStrategyAndStore {
 	@Override
 	public Set<Long> getSerializedRecords() {
 		return serializedRecords;
+	}
+	
+	/**
+	 * @see MatchedRecordsStore#getRunName()
+	 */
+	@Override
+	public String getRunName() {
+		return runName;
 	}
 	
 }
