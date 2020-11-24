@@ -15,6 +15,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.APIException;
 import org.openmrs.module.patientmatching.MatchingConstants;
 import org.openmrs.module.patientmatching.MatchingRunData;
+import org.openmrs.module.patientmatching.MatchingUtils;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
@@ -27,11 +28,11 @@ import org.regenstrief.linkage.util.LinkDataSource;
 
 public class DataBaseRecordStore implements RecordStore {
 	
-	Connection db_connection;
+	Connection dbConnection;
 	
 	LinkDataSource lds;
 	
-	String table_name, driver, url, user, password;
+	String table_name;
 	
 	PreparedStatement insert_stmt;
 	
@@ -43,8 +44,6 @@ public class DataBaseRecordStore implements RecordStore {
 	
 	public static final String UID_COLUMN = "import_uid";
 	
-	public static final String INVALID_COLUMN_CHARS = "\\W";
-	
 	protected final Log log = LogFactory.getLog(getClass());
 	
 	private static final int MAXIMUM_BATCH_SIZE = 1000;
@@ -52,26 +51,17 @@ public class DataBaseRecordStore implements RecordStore {
 	private boolean newScratchTable = false;
 	
 	/**
-	 * @param db the database connection to create the table of Records
 	 * @param lds information on what fields the Records will have
-	 * @param driver
-	 * @param url
-	 * @param user
-	 * @param password
 	 */
-	public DataBaseRecordStore(Connection db, LinkDataSource lds, String driver, String url, String user, String password) {
-		db_connection = db;
+	public DataBaseRecordStore(LinkDataSource lds) {
+		this.dbConnection = MatchingUtils.getConnection();
 		this.lds = lds;
 		table_name = MatchingConstants.SCRATCH_TABLE_NAME;
-		this.driver = driver;
-		this.url = url;
-		this.user = user;
-		this.password = password;
 		
-		insert_demographics = new ArrayList<String>();
+		insert_demographics = new ArrayList();
 		batch_size = 0;
 		try {
-			quote_string = db_connection.getMetaData().getIdentifierQuoteString();
+			quote_string = dbConnection.getMetaData().getIdentifierQuoteString();
 			log.debug("Identifier quote string is " + quote_string);
 		}
 		catch (SQLException sqle) {
@@ -123,7 +113,7 @@ public class DataBaseRecordStore implements RecordStore {
 	 * @throws SQLException
 	 */
 	public boolean scratchTableExists() throws SQLException {
-		DatabaseMetaData dbmd = db_connection.getMetaData();
+		DatabaseMetaData dbmd = dbConnection.getMetaData();
 		ResultSet tables = dbmd.getTables(null, null, null, new String[] { "TABLE" });
 		while (tables.next()) {
 			if (table_name.equalsIgnoreCase(tables.getString("TABLE_NAME"))) {
@@ -150,14 +140,14 @@ public class DataBaseRecordStore implements RecordStore {
 		buffer.append(")");
 		
 		log.debug("Creating table " + table_name);
-		try (Statement s = db_connection.createStatement()) {
+		try (Statement s = dbConnection.createStatement()) {
 			s.execute(buffer.toString());
 		}
 	}
 	
 	protected void dropTableIfExists(String table) throws SQLException {
 		log.debug("Dropping table " + table);
-		try (Statement s = db_connection.createStatement()) {
+		try (Statement s = dbConnection.createStatement()) {
 			s.execute("DROP TABLE IF EXISTS " + table);
 		}
 	}
@@ -180,7 +170,7 @@ public class DataBaseRecordStore implements RecordStore {
 		bufferValues.append(")");
 		buffer.append(bufferColumn).append(" ").append(bufferValues);
 		
-		return db_connection.prepareStatement(buffer.toString());
+		return dbConnection.prepareStatement(buffer.toString());
 	}
 	
 	/**
@@ -188,10 +178,7 @@ public class DataBaseRecordStore implements RecordStore {
 	 * created from the database table
 	 */
 	public LinkDataSource getRecordStoreLinkDataSource() {
-		StringBuffer buffer = new StringBuffer();
-		buffer.append(driver).append(",").append(url).append(",").append(user).append(",").append(password);
-		String access = buffer.toString();
-		LinkDataSource ret = new LinkDataSource(table_name, "DataBase", access, 0);
+		LinkDataSource ret = new LinkDataSource(table_name, "DataBase", null, 0);
 		ret.setUniqueID(UID_COLUMN);
 		DataColumn dc = new DataColumn(UID_COLUMN);
 		dc.setIncludePosition(0);
@@ -243,8 +230,8 @@ public class DataBaseRecordStore implements RecordStore {
 				insert_stmt.clearParameters();
 				insert_stmt.close();
 			}
-			if (db_connection != null) {
-				db_connection.close();
+			if (dbConnection != null) {
+				dbConnection.close();
 			}
 			return true;
 		}

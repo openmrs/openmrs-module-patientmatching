@@ -3,7 +3,6 @@ package org.openmrs.module.patientmatching;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,13 +10,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.commons.dbcp.ConnectionFactory;
-import org.apache.commons.dbcp.DriverManagerConnectionFactory;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.api.PatientService;
@@ -37,8 +32,6 @@ import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.RecMatchConfig;
 import org.regenstrief.linkage.util.XMLTranslator;
-
-import com.mysql.jdbc.Driver;
 
 /**
  * Utility class to perform various task related to the creating report for all available blocking
@@ -106,33 +99,7 @@ public class MatchingReportUtils {
 			}
 		}
 		
-		Properties c = Context.getRuntimeProperties();
-		
-		String url = c.getProperty("connection.url");
-		String user = c.getProperty("connection.username");
-		String passwd = c.getProperty("connection.password");
-		String driver = c.getProperty("connection.driver_class");
-		if (StringUtils.isBlank(driver)) {
-			driver = Driver.class.getName();
-		}
-		log.info("URL: " + url);
-		
-		Connection databaseConnection = null;
-		try {
-			Class.forName(driver);
-			ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, user, passwd);
-			databaseConnection = connectionFactory.createConnection();
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		
-		objects.put("databaseConnection", databaseConnection);
 		objects.put("recMatchConfig", recMatchConfig);
-		objects.put("driver", driver);
-		objects.put("url", url);
-		objects.put("user", user);
-		objects.put("passwd", passwd);
 		objects.put("matchingConfigLists", matchingConfigLists);
 		objects.put("configFileFolder", MatchingUtils.getConfigFolder());
 	}
@@ -140,13 +107,8 @@ public class MatchingReportUtils {
 	
 	//New Method2 3
 	public static void InitScratchTable(Map<String, Object> objects) {
-		Connection databaseConn = (Connection) objects.get("databaseConnection");
 		RecMatchConfig recMatchConfig = (RecMatchConfig) objects.get("recMatchConfig");
 		MatchingConfig matchingConfig = ((List<MatchingConfig>) objects.get("matchingConfigLists")).get(0);
-		String driver = (String) objects.get("driver");
-		String url = (String) objects.get("url");
-		String user = (String) objects.get("user");
-		String passwd = (String) objects.get("passwd");
 		
 		log.info("Initiating scratch table");
 		List<String> blockingColumns = Arrays.asList(matchingConfig.getBlockingColumns());
@@ -156,8 +118,7 @@ public class MatchingReportUtils {
 		globalIncludeColumns.addAll(includeColumns);
 		objects.put("globalIncludeColumns", globalIncludeColumns);
 		OpenMRSReader reader = new OpenMRSReader();
-		DataBaseRecordStore recordStore = createDataBaseRecordStore(reader, databaseConn,
-		    recMatchConfig.getLinkDataSource1(), driver, url, user, passwd);
+		DataBaseRecordStore recordStore = createDataBaseRecordStore(reader, recMatchConfig.getLinkDataSource1());
 		recordStore.close();
 		reader.close();
 		
@@ -173,18 +134,11 @@ public class MatchingReportUtils {
 	 * Convenience method to create a DataBaseRecordStore instance
 	 * 
 	 * @param reader OpenMRSReader object
-	 * @param dbConn the Connection object
 	 * @param lds the LinkDataSource object
-	 * @param driver the drive class name
-	 * @param url the url to the db
-	 * @param user db user
-	 * @param passwd db user password
 	 * @return DataBaseRecordStore object
 	 */
-	protected synchronized static DataBaseRecordStore createDataBaseRecordStore(OpenMRSReader reader, Connection dbConn,
-	        LinkDataSource lds, String driver, String url, String user, String passwd) {
-		
-		DataBaseRecordStore recordStore = new DataBaseRecordStore(dbConn, lds, driver, url, user, passwd);
+	protected synchronized static DataBaseRecordStore createDataBaseRecordStore(OpenMRSReader reader, LinkDataSource lds) {
+		DataBaseRecordStore recordStore = new DataBaseRecordStore(lds);
 		if (recordStore.isNewScratchTable()) {
 			while (reader.hasNextRecord()) {
 				recordStore.storeRecord(reader.nextRecord());

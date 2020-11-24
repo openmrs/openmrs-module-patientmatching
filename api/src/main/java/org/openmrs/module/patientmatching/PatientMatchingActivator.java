@@ -1,7 +1,6 @@
 package org.openmrs.module.patientmatching;
 
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -13,8 +12,6 @@ import org.openmrs.api.PatientService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.ModuleActivator;
 import org.openmrs.module.patientmatching.advice.PatientMatchingAdvice;
-import org.openmrs.scheduler.SchedulerException;
-import org.openmrs.scheduler.TaskDefinition;
 import org.regenstrief.linkage.db.RecordDBManager;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.support.StaticMethodMatcherPointcutAdvisor;
@@ -98,8 +95,6 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	
 	private Log log = LogFactory.getLog(this.getClass());
 	
-	public static final String FILE_LOG = "patient_matching_file_log";
-	
 	/**
 	 * Method iterates through existing Patient objects and adds them to the linkage database for use
 	 * when matching. Method also creates the table, if needed, with the correct column taken from the
@@ -181,6 +176,9 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	public void contextRefreshed() {
 		log.info("Starting Patient Matching Module");
 		
+		/*TODO In case we re-implement the scratch table such that we populate it only at start up and then update it  
+		   incrementally this code can be reused otherwise remove it.
+		   
 		try {
 			// get privileges
 			Context.addProxyPrivilege(PRIV_VIEW_PATIENTS);
@@ -211,7 +209,7 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 			Context.removeProxyPrivilege(PRIV_GET_PATIENT_COHORTS);
 			Context.removeProxyPrivilege(PRIV_GET_IDENTIFIER_TYPES);
 			Context.removeProxyPrivilege(PRIV_GET_PERSON_ATTRIBUTE_TYPES);
-		}
+		}*/
 	}
 	
 	@Override
@@ -225,22 +223,6 @@ public class PatientMatchingActivator extends StaticMethodMatcherPointcutAdvisor
 	@Override
 	public void willStop() {
 		log.info("Shutting down Patient Matching Module");
-		
-		Collection<TaskDefinition> rTasks = Context.getSchedulerService().getRegisteredTasks();
-		for (TaskDefinition td : rTasks) {
-			if (td.getName().contains(extention)) {
-				try {
-					Context.getSchedulerService().shutdownTask(td);
-				}
-				catch (SchedulerException e) {
-					log.error("SchedulerException encountered while shutting down Patient Matching Module ...", e);
-				}
-			}
-		}
-		
-		LinkDBConnections ldb_con = LinkDBConnections.getInstance();
-		RecordDBManager link_db = ldb_con.getRecDBManager();
-		link_db.disconnect();
 	}
 	
 	@Override

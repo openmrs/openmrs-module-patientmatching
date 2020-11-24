@@ -9,16 +9,14 @@
  */
 package org.openmrs.module.patientmatching;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.LinkedHashSet;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.openmrs.api.context.Context;
+import org.regenstrief.linkage.io.DataBaseRecordStore;
 import org.regenstrief.linkage.io.OpenMRSReader;
 import org.regenstrief.linkage.util.DataColumn;
 import org.regenstrief.linkage.util.LinkDataSource;
@@ -35,10 +33,6 @@ public class MatchingReportUtilsContextSensitiveTest extends BasePatientMatching
 		dc.setName("gender");
 		final LinkDataSource lds = new LinkDataSource(null, null, null, 0);
 		lds.addDataColumn(dc);
-		Properties props = Context.getRuntimeProperties();
-		String url = props.getProperty("connection.url");
-		String user = props.getProperty("connection.username");
-		String pass = props.getProperty("connection.password");
 		
 		final int N = CONCURRENT_RUN_COUNT;
 		final Set<Thread> threads = new LinkedHashSet();
@@ -49,10 +43,11 @@ public class MatchingReportUtilsContextSensitiveTest extends BasePatientMatching
 				try {
 					Context.openSession();
 					Context.authenticate("admin", "test");
-					try (Connection c = DriverManager.getConnection(url, user, pass)) {
-						MatchingReportUtils.createDataBaseRecordStore(new OpenMRSReader(), c, lds, null, null, null, null);
-						Thread.sleep(1000);
-					}
+					OpenMRSReader reader = new OpenMRSReader();
+					DataBaseRecordStore store = MatchingReportUtils.createDataBaseRecordStore(new OpenMRSReader(), lds);
+					Thread.sleep(1000);
+					store.close();
+					reader.close();
 				}
 				catch (Exception se) {
 					hasFailure.set(true);
