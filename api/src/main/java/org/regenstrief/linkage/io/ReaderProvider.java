@@ -2,7 +2,6 @@ package org.regenstrief.linkage.io;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.Hashtable;
 
 import javax.sql.DataSource;
@@ -11,8 +10,10 @@ import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
 import org.apache.commons.dbcp.PoolingDataSource;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
+import org.openmrs.module.patientmatching.MatchingUtils;
 import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.LinkDataSource;
 import org.regenstrief.linkage.util.MatchingConfig;
@@ -84,9 +85,17 @@ public class ReaderProvider {
 	}
 	
 	private Connection getConnection(LinkDataSource lds) {
+		if (StringUtils.isBlank(lds.getAccess())) {
+			return MatchingUtils.getConnection();
+		}
+		
 		DataSource db = database_pools.get(lds);
 		
-		// if link data source hasn't been used to get a database connection yet
+		//TODO See https://issues.openmrs.org/browse/PTM-103, this logic leaks connections because it always creates a
+		//new pooled DatSource since LinkDataSource.equals and hashcode methods are not implemented to be used as keys
+		//in the database_pools Map.
+		
+		//if link data source hasn't been used to get a database connection yet
 		if (db == null) {
 			db = getDataSource(lds);
 			database_pools.put(lds, db);

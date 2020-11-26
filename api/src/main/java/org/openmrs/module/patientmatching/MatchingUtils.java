@@ -6,14 +6,20 @@ import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang.StringUtils;
+import org.hibernate.SessionFactory;
+import org.openmrs.api.APIException;
 import org.openmrs.api.context.Context;
 import org.openmrs.util.OpenmrsUtil;
 import org.regenstrief.linkage.MatchItem;
@@ -21,11 +27,14 @@ import org.regenstrief.linkage.Record;
 import org.regenstrief.linkage.util.MatchingConfig;
 import org.regenstrief.linkage.util.MatchingConfigRow;
 import org.regenstrief.linkage.util.StringMatch;
+import org.springframework.orm.hibernate4.SessionFactoryUtils;
 
 /**
  * Utility class to perform various task related to the creating matching configuration.
  */
 public class MatchingUtils {
+	
+	private static DataSource dataSource;
 	
 	/**
 	 * Inspect a class and retrieve all readable and writable properties of that class excluding
@@ -260,6 +269,26 @@ public class MatchingUtils {
 		value += (File.separator + runName.replaceAll("\\s+", "_"));
 		
 		return OpenmrsUtil.getDirectoryInApplicationDataDirectory(value);
+	}
+	
+	/**
+	 * Gets a database {@link Connection} object from the Datasource defined in core
+	 * 
+	 * @return the Connection object
+	 * @throws SQLException
+	 */
+	public static Connection getConnection() {
+		if (dataSource == null) {
+			SessionFactory sf = Context.getRegisteredComponent("sessionFactory", SessionFactory.class);
+			dataSource = SessionFactoryUtils.getDataSource(sf);
+		}
+		
+		try {
+			return dataSource.getConnection();
+		}
+		catch (SQLException se) {
+			throw new APIException("Failed to obtain a connection object", se);
+		}
 	}
 	
 }

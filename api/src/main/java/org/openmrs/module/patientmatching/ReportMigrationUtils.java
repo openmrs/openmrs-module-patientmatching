@@ -155,7 +155,7 @@ public class ReportMigrationUtils {
 		if (StringUtils.isBlank(driver)) {
 			driver = Driver.class.getName();
 		}
-		Connection databaseConnection;
+		Connection databaseConnection = null;
 		try {
 			Class.forName(driver);
 			ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(url, user, passwd);
@@ -216,6 +216,16 @@ public class ReportMigrationUtils {
 		}
 		catch (ParseException e) {
 			log.error("Invalid date format ", e);
+		}
+		finally {
+			if (databaseConnection != null) {
+				try {
+					databaseConnection.close();
+				}
+				catch (SQLException se) {
+					log.warn("Failed to close connection", se);
+				}
+			}
 		}
 	}
 	
