@@ -88,36 +88,32 @@
 		</property>
 	</bean>
 
+	<bean id="patientMatchingReportMetadataService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+		<property name="transactionManager"><ref bean="transactionManager"/></property>
+		<property name="target">
+			<ref bean="patientMatchingReportMetadataServiceImpl"/>
+		</property>
+		<property name="preInterceptors">
+			<ref bean="serviceInterceptors"/>
+		</property>
+		<property name="transactionAttributeSource">
+			<bean class="org.springframework.transaction.annotation.AnnotationTransactionAttributeSource"/>
+		</property>
+	</bean>
+
+	<bean id="patientMatchingReportMetadataServiceImpl" class="org.openmrs.module.patientmatching.impl.PatientMatchingReportMetadataServiceImpl">
+		<property name="dao">
+			<bean class="org.openmrs.module.patientmatching.db.hibernate.HibernatePatientMatchingReportMetadataDAO">
+				<property name="sessionFactory" ref="dbSessionFactory"/>
+			</bean>
+		</property>
+	</bean>
+
 	<bean parent="serviceContext">
 		<property name="moduleService">
 			<list>
 				<value>org.openmrs.module.patientmatching.PatientMatchingReportMetadataService</value>
-				<bean
-					class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
-					<property name="transactionManager">
-						<ref bean="transactionManager" />
-					</property>
-					<property name="target">
-						<bean
-							class="org.openmrs.module.patientmatching.impl.PatientMatchingReportMetadataServiceImpl">
-							<property name="PatientMatchingReportMetadataDao">
-								<bean
-									class="org.openmrs.module.patientmatching.db.hibernate.HibernatePatientMatchingReportMetadataDAO">
-									<property name="sessionFactory">
-										<ref bean="dbSessionFactory" />
-									</property>
-								</bean>
-							</property>
-						</bean>
-					</property>
-					<property name="preInterceptors">
-						<ref bean="serviceInterceptors" />
-					</property>
-					<property name="transactionAttributeSource">
-						<bean
-							class="org.springframework.transaction.annotation.AnnotationTransactionAttributeSource" />
-					</property>
-				</bean>
+				<ref bean="patientMatchingReportMetadataService"/>
 			</list>
 		</property>
 	</bean>
