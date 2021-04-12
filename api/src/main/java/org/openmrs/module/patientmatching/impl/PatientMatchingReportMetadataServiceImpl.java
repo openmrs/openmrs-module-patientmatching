@@ -26,14 +26,14 @@ public class PatientMatchingReportMetadataServiceImpl implements PatientMatching
 	/**
 	 * setter for PatientMatchingReportMetadataDAO
 	 */
-	public void setPatientMatchingReportMetadataDao(PatientMatchingReportMetadataDao dao) {
+	public void setDao(PatientMatchingReportMetadataDao dao) {
 		this.dao = dao;
 	}
 	
 	/**
 	 * getter for PatientMatchingReportMetadataDAO
 	 */
-	public PatientMatchingReportMetadataDao getPatientMatchingReportMetadataDao() {
+	public PatientMatchingReportMetadataDao getDao() {
 		return dao;
 	}
 	
